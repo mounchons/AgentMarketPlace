@@ -1,0 +1,147 @@
+{
+  "project": "TodoApp API",
+  "description": "RESTful API สำหรับจัดการ Todo items",
+  "features": [
+    {
+      "id": 1,
+      "category": "setup",
+      "description": "สร้าง ASP.NET Core Web API project พร้อม Entity Framework Core",
+      "priority": "high",
+      "steps": [
+        "สร้าง project ใหม่ด้วย dotnet new webapi",
+        "เพิ่ม package EF Core และ SQLite",
+        "ตั้งค่า DbContext",
+        "ทดสอบว่า project รันได้"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 2,
+      "category": "domain",
+      "description": "สร้าง TodoItem entity และ DbContext",
+      "priority": "high",
+      "steps": [
+        "สร้าง TodoItem model class",
+        "สร้าง AppDbContext",
+        "ตั้งค่า connection string",
+        "รัน migration"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "category": "functional",
+      "description": "GET /api/todos - ดึงรายการ todos ทั้งหมด",
+      "priority": "high",
+      "steps": [
+        "สร้าง TodosController",
+        "implement GET endpoint",
+        "ทดสอบด้วย curl หรือ Postman",
+        "ตรวจสอบ response format"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 4,
+      "category": "functional",
+      "description": "GET /api/todos/{id} - ดึง todo ตาม id",
+      "priority": "high",
+      "steps": [
+        "implement GET by id endpoint",
+        "handle กรณีหาไม่เจอ (404)",
+        "ทดสอบทั้ง success และ not found case"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 5,
+      "category": "functional",
+      "description": "POST /api/todos - สร้าง todo ใหม่",
+      "priority": "high",
+      "steps": [
+        "implement POST endpoint",
+        "validate input data",
+        "return 201 Created พร้อม location header",
+        "ทดสอบสร้าง todo ใหม่"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 6,
+      "category": "functional",
+      "description": "PUT /api/todos/{id} - แก้ไข todo",
+      "priority": "medium",
+      "steps": [
+        "implement PUT endpoint",
+        "validate ว่า todo มีอยู่",
+        "update และ save changes",
+        "ทดสอบ update success และ not found"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 7,
+      "category": "functional",
+      "description": "DELETE /api/todos/{id} - ลบ todo",
+      "priority": "medium",
+      "steps": [
+        "implement DELETE endpoint",
+        "handle not found case",
+        "return 204 No Content on success"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 8,
+      "category": "functional",
+      "description": "PATCH /api/todos/{id}/complete - mark todo as complete",
+      "priority": "medium",
+      "steps": [
+        "implement PATCH endpoint",
+        "toggle IsComplete status",
+        "ทดสอบ toggle behavior"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 9,
+      "category": "quality",
+      "description": "Input validation และ error handling",
+      "priority": "medium",
+      "steps": [
+        "เพิ่ม data annotations",
+        "implement global exception handler",
+        "return proper error responses"
+      ],
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": 10,
+      "category": "quality",
+      "description": "Swagger/OpenAPI documentation",
+      "priority": "low",
+      "steps": [
+        "ตั้งค่า Swagger",
+        "เพิ่ม XML comments",
+        "ทดสอบ Swagger UI"
+      ],
+      "passes": false,
+      "notes": ""
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 0,
+    "failed": 10,
+    "last_updated": "2025-01-01T00:00:00Z"
+  }
+}
