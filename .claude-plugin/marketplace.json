@@ -20,6 +20,18 @@
       "author": {
         "name": "Mounchons"
       }
+    },
+    {
+      "name": "dotnet-dev",
+      "source": "./plugins/dotnet-dev",
+      "description": "Expert .NET Core development skill สำหรับ ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns และ .NET Aspire พร้อม Microsoft Learn MCP integration สำหรับค้นหา documentation ล่าสุด",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": [
+        "dotnet", "csharp", "aspnet-core", "entity-framework",
+        "clean-architecture", "repository-pattern", "unit-of-work",
+        "aspire", "postgresql", "mcp", "thai"
+      ]
     }
   ]
 }
