@@ -33,9 +33,11 @@ claude mcp add microsoft-learn --transport streamable-http \
 ```json
 // .mcp.json
 {
-  "microsoft-learn": {
-    "type": "streamable-http",
-    "url": "https://learn.microsoft.com/api/mcp"
+  "mcpServers": {
+    "microsoft-learn": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
+    }
   }
 }
 ```

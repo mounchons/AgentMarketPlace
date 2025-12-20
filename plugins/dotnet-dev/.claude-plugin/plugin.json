@@ -10,8 +10,8 @@
   ],
   "mcpServers": {
     "microsoft-learn": {
-      "type": "streamable-http",
-      "url": "https://learn.microsoft.com/api/mcp"
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
     }
   }
 }
