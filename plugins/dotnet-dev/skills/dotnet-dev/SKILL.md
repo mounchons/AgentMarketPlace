@@ -2,11 +2,12 @@
 name: dotnet-dev
 description: |
   Expert .NET Core development skill for ASP.NET Core MVC, Entity Framework Core, Clean Architecture, 
-  Repository/Unit of Work patterns, and .NET Aspire. Use when: creating .NET projects, writing C# code, 
-  designing Entity Framework models, implementing APIs, setting up dependency injection, database migrations,
-  or any .NET Core development task. Triggers: ".NET", "C#", "Entity Framework", "ASP.NET", "EF Core", 
-  "migration", "repository pattern", "unit of work", "Clean Architecture", "Aspire", "Web API", "MVC",
-  "dependency injection", "DbContext", "LINQ", "Blazor"
+  Repository/Unit of Work patterns, and .NET Aspire. Supports both PostgreSQL and SQL Server.
+  Use when: creating .NET projects, writing C# code, designing Entity Framework models, implementing APIs, 
+  setting up dependency injection, database migrations, or any .NET Core development task. 
+  Triggers: ".NET", "C#", "Entity Framework", "ASP.NET", "EF Core", "migration", "repository pattern", 
+  "unit of work", "Clean Architecture", "Aspire", "Web API", "MVC", "dependency injection", "DbContext", 
+  "LINQ", "Blazor", "SQL Server", "PostgreSQL"
 ---
 
 # .NET Core Development Expert Skill
@@ -29,9 +30,28 @@ description: |
 ### 3. Technology Stack
 - .NET 8+ (Latest LTS)
 - Entity Framework Core (Code First)
-- PostgreSQL เป็น Primary Database
+- **PostgreSQL** หรือ **SQL Server** เป็น Primary Database
 - Redis สำหรับ Caching
 - ASP.NET Core MVC / Web API / Minimal APIs
+
+---
+
+## 🗄️ Database Provider Selection
+
+### เมื่อไหร่ใช้ PostgreSQL
+- Open source, ไม่มีค่า license
+- ต้องการ JSONB columns
+- Full-text search ภาษาไทย
+- Array data types
+- Linux/Container deployment
+
+### เมื่อไหร่ใช้ SQL Server
+- Enterprise environment ที่มี license อยู่แล้ว
+- ต้องการ Temporal Tables (System-Versioned)
+- Row-Level Security (RLS)
+- Always Encrypted
+- Integration กับ Azure services
+- Legacy systems ที่ใช้ SQL Server อยู่
 
 ---
 
@@ -42,7 +62,7 @@ description: |
 ```bash
 # ค้นหา documentation
 npx mcporter call --stdio "streamable-http https://learn.microsoft.com/api/mcp" \
-  search query:"Entity Framework Core migrations"
+  search query:"Entity Framework Core SQL Server"
 
 # หรือใช้ผ่าน mcp tool โดยตรงถ้า configure ไว้แล้ว
 # mcp__microsoft-learn__search query:"ASP.NET Core authentication"
@@ -137,11 +157,6 @@ public interface IRepository<T> where T : BaseEntity
     Task<bool> ExistsAsync(long id, CancellationToken ct = default);
     IQueryable<T> Query();
 }
-
-public interface IRepository<T, TKey> : IRepository<T> where T : BaseEntity<TKey>
-{
-    Task<T?> GetByIdAsync(TKey id, CancellationToken ct = default);
-}
 ```
 
 ### 3. Unit of Work
@@ -151,7 +166,6 @@ public interface IUnitOfWork : IDisposable
     // Repositories
     IRepository<Customer> Customers { get; }
     IRepository<Order> Orders { get; }
-    // Add more as needed...
     
     // Transaction management
     Task<int> SaveChangesAsync(CancellationToken ct = default);
@@ -207,7 +221,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 }
 ```
 
-### 5. DbContext with Audit Trail
+### 5. DbContext - Multi-Database Support
 ```csharp
 public class ApplicationDbContext : DbContext
 {
@@ -273,151 +287,7 @@ public class ApplicationDbContext : DbContext
 }
 ```
 
-### 6. Entity Configuration
-```csharp
-public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
-{
-    public void Configure(EntityTypeBuilder<Customer> builder)
-    {
-        builder.ToTable("Customers");
-        
-        builder.HasKey(c => c.Id);
-        
-        builder.Property(c => c.Name)
-            .IsRequired()
-            .HasMaxLength(200);
-            
-        builder.Property(c => c.Email)
-            .IsRequired()
-            .HasMaxLength(100);
-            
-        builder.HasIndex(c => c.Email)
-            .IsUnique();
-            
-        // Relationships
-        builder.HasMany(c => c.Orders)
-            .WithOne(o => o.Customer)
-            .HasForeignKey(o => o.CustomerId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-```
-
-### 7. CQRS Command Example
-```csharp
-// Command
-public record CreateOrderCommand(
-    long CustomerId,
-    List<OrderItemDto> Items
-) : IRequest<Result<long>>;
-
-// Handler
-public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<long>>
-{
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<CreateOrderHandler> _logger;
-
-    public CreateOrderHandler(IUnitOfWork unitOfWork, ILogger<CreateOrderHandler> logger)
-    {
-        _unitOfWork = unitOfWork;
-        _logger = logger;
-    }
-
-    public async Task<Result<long>> Handle(
-        CreateOrderCommand request, 
-        CancellationToken ct)
-    {
-        try
-        {
-            await _unitOfWork.BeginTransactionAsync(ct);
-            
-            var customer = await _unitOfWork.Customers
-                .GetByIdAsync(request.CustomerId, ct);
-                
-            if (customer is null)
-                return Result<long>.Failure("Customer not found");
-
-            var order = Order.Create(customer);
-            
-            foreach (var item in request.Items)
-            {
-                order.AddItem(item.ProductId, item.Quantity, item.Price);
-            }
-
-            await _unitOfWork.Orders.AddAsync(order, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-            await _unitOfWork.CommitAsync(ct);
-
-            _logger.LogInformation("Order {OrderId} created for customer {CustomerId}", 
-                order.Id, request.CustomerId);
-                
-            return Result<long>.Success(order.Id);
-        }
-        catch (Exception ex)
-        {
-            await _unitOfWork.RollbackAsync(ct);
-            _logger.LogError(ex, "Failed to create order");
-            return Result<long>.Failure(ex.Message);
-        }
-    }
-}
-```
-
-### 8. Controller Pattern
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-[Produces("application/json")]
-public class OrdersController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    public OrdersController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    /// <summary>
-    /// Create a new order
-    /// </summary>
-    [HttpPost]
-    [ProducesResponseType(typeof(long), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create(
-        [FromBody] CreateOrderCommand command,
-        CancellationToken ct)
-    {
-        var result = await _mediator.Send(command, ct);
-        
-        if (!result.IsSuccess)
-            return BadRequest(new ProblemDetails 
-            { 
-                Title = "Failed to create order",
-                Detail = result.Error 
-            });
-            
-        return CreatedAtAction(
-            nameof(GetById), 
-            new { id = result.Value }, 
-            result.Value);
-    }
-
-    [HttpGet("{id:long}")]
-    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(long id, CancellationToken ct)
-    {
-        var result = await _mediator.Send(new GetOrderByIdQuery(id), ct);
-        
-        if (result is null)
-            return NotFound();
-            
-        return Ok(result);
-    }
-}
-```
-
-### 9. Dependency Injection Setup
+### 6. Dependency Injection - Database Provider
 ```csharp
 // Infrastructure/DependencyInjection.cs
 public static class DependencyInjection
@@ -426,11 +296,42 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Database
+        var dbProvider = configuration.GetValue<string>("DatabaseProvider") ?? "PostgreSQL";
+        
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        {
+            switch (dbProvider)
+            {
+                case "SqlServer":
+                    options.UseSqlServer(
+                        configuration.GetConnectionString("DefaultConnection"),
+                        sqlOptions =>
+                        {
+                            sqlOptions.MigrationsAssembly(
+                                typeof(ApplicationDbContext).Assembly.FullName);
+                            sqlOptions.EnableRetryOnFailure(
+                                maxRetryCount: 3,
+                                maxRetryDelay: TimeSpan.FromSeconds(30),
+                                errorNumbersToAdd: null);
+                        });
+                    break;
+                    
+                case "PostgreSQL":
+                default:
+                    options.UseNpgsql(
+                        configuration.GetConnectionString("DefaultConnection"),
+                        npgsqlOptions =>
+                        {
+                            npgsqlOptions.MigrationsAssembly(
+                                typeof(ApplicationDbContext).Assembly.FullName);
+                            npgsqlOptions.EnableRetryOnFailure(
+                                maxRetryCount: 3,
+                                maxRetryDelay: TimeSpan.FromSeconds(30),
+                                errorCodesToAdd: null);
+                        });
+                    break;
+            }
+        });
 
         // Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -446,54 +347,60 @@ public static class DependencyInjection
         return services;
     }
 }
+```
 
-// Application/DependencyInjection.cs
-public static class DependencyInjection
+### 7. appsettings.json - Database Configuration
+```json
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
-    {
-        services.AddMediatR(cfg => 
-            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
-        
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-        
-        services.AddAutoMapper(typeof(DependencyInjection).Assembly);
-
-        // Pipeline behaviors
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-
-        return services;
-    }
+  "DatabaseProvider": "SqlServer",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MyApp;User Id=sa;Password=YourPassword;TrustServerCertificate=True;",
+    "Redis": "localhost:6379"
+  }
 }
 ```
 
-### 10. .NET Aspire AppHost
+```json
+{
+  "DatabaseProvider": "PostgreSQL",
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=myapp;Username=postgres;Password=YourPassword;",
+    "Redis": "localhost:6379"
+  }
+}
+```
+
+### 8. .NET Aspire AppHost - Multi-Database
 ```csharp
 // AppHost/Program.cs
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Infrastructure
-var postgres = builder.AddPostgres("postgres")
-    .WithPgAdmin()
-    .AddDatabase("appdb");
+// Choose database provider
+var usePostgres = builder.Configuration.GetValue<bool>("UsePostgres", true);
+
+IResourceBuilder<IResourceWithConnectionString> database;
+
+if (usePostgres)
+{
+    var postgres = builder.AddPostgres("postgres")
+        .WithPgAdmin()
+        .AddDatabase("appdb");
+    database = postgres;
+}
+else
+{
+    var sqlserver = builder.AddSqlServer("sqlserver")
+        .AddDatabase("appdb");
+    database = sqlserver;
+}
 
 var redis = builder.AddRedis("redis")
     .WithRedisCommander();
 
-var rabbitmq = builder.AddRabbitMQ("rabbitmq")
-    .WithManagementPlugin();
-
 // API Project
 var api = builder.AddProject<Projects.WebApi>("api")
-    .WithReference(postgres)
+    .WithReference(database)
     .WithReference(redis)
-    .WithReference(rabbitmq)
-    .WithExternalHttpEndpoints();
-
-// Web Frontend (if Blazor)
-builder.AddProject<Projects.Web>("web")
-    .WithReference(api)
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();
@@ -518,26 +425,38 @@ dotnet ef migrations script -p Infrastructure -s WebApi -o ./migrations.sql
 dotnet ef migrations remove -p Infrastructure -s WebApi
 ```
 
-### NuGet Packages (Essential)
+### NuGet Packages
+
+#### Common Packages
 ```xml
 <!-- Domain/Application -->
 <PackageReference Include="MediatR" Version="12.*" />
 <PackageReference Include="FluentValidation" Version="11.*" />
 <PackageReference Include="AutoMapper" Version="13.*" />
 
-<!-- Infrastructure -->
+<!-- Infrastructure - Core -->
 <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
-<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
 <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.*" />
 
 <!-- WebApi -->
 <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
 <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
+```
+
+#### PostgreSQL Packages
+```xml
+<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
 
 <!-- Aspire -->
-<PackageReference Include="Aspire.Hosting.AppHost" Version="8.*" />
 <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
-<PackageReference Include="Aspire.StackExchange.Redis" Version="8.*" />
+```
+
+#### SQL Server Packages
+```xml
+<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+
+<!-- Aspire -->
+<PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
 ```
 
 ---
@@ -545,10 +464,10 @@ dotnet ef migrations remove -p Infrastructure -s WebApi
 ## 📖 Reference Files
 
 ดูไฟล์เพิ่มเติมใน:
-- `references/ef-core-patterns.md` - EF Core advanced patterns
+- `references/ef-core-patterns.md` - EF Core advanced patterns (PostgreSQL + SQL Server)
 - `references/aspire-setup.md` - .NET Aspire configuration
 - `references/testing-patterns.md` - Testing strategies
-- `templates/` - Ready-to-use code templates
+- `references/microsoft-learn-mcp.md` - MCP usage guide
 
 ---
 
@@ -564,3 +483,5 @@ dotnet ef migrations remove -p Infrastructure -s WebApi
 8. **Soft delete** - ใช้ IsDeleted flag แทน hard delete
 9. **Audit trail** - CreatedAt, UpdatedAt, CreatedBy, UpdatedBy
 10. **Use transactions** - สำหรับ operations ที่ต้อง atomic
+11. **Enable retry on failure** - สำหรับ database connections
+12. **Use connection resiliency** - ทั้ง PostgreSQL และ SQL Server
