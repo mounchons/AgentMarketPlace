@@ -6,7 +6,7 @@ Custom plugin marketplace สำหรับ Claude Code รองรับง�
 
 ```bash
 # ใน Claude Code CLI
-/plugin marketplace add mounchons/claude-code-marketplace
+/plugin marketplace add mounchons/agentmarketplace
 ```
 
 หรือติดตั้งจาก local path:

@@ -6,6 +6,6 @@
     "name": "Mounchons"
   },
   "skills": [
-    "skills/system-design-doc"
+    "./skills/system-design-doc"
   ]
 }
