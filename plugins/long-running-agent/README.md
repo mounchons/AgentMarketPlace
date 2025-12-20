@@ -181,6 +181,202 @@ Workflow:
 3. ใช้ long-running-agent implement
 ```
 
+## ➕ การเพิ่ม Feature ใหม่ระหว่างการพัฒนา
+
+เมื่อต้องการเพิ่ม feature ใหม่ระหว่างที่โปรเจคกำลังพัฒนาอยู่
+
+### วิธีที่ 1: เพิ่มด้วยตัวเอง (Manual)
+
+#### Step 1: แก้ไข feature_list.json
+
+```json
+{
+  "features": [
+    // ... features เดิม ...
+    
+    // เพิ่ม feature ใหม่
+    {
+      "id": 13,  // ใช้ id ถัดไป
+      "category": "feature",
+      "description": "Feature ใหม่ที่ต้องการเพิ่ม",
+      "priority": "medium",
+      "steps": [
+        "ขั้นตอนที่ 1",
+        "ขั้นตอนที่ 2",
+        "ขั้นตอนที่ 3"
+      ],
+      "dependencies": [5],  // feature ที่ต้องทำก่อน (ถ้ามี)
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    }
+  ],
+  "summary": {
+    "total": 13,  // อัพเดทจำนวน
+    "passed": 8,
+    "failed": 5,  // อัพเดทจำนวน
+    "last_updated": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+#### Step 2: บันทึกใน progress.md
+
+```markdown
+---
+
+## Session X - ADD FEATURE
+**Date**: 2025-01-15 10:00 UTC
+**Type**: Feature Addition
+
+### สิ่งที่ทำ:
+- ➕ เพิ่ม Feature #13: [description]
+  - เหตุผล: [ทำไมต้องเพิ่ม]
+  - Priority: medium
+  - Dependencies: Feature #5
+
+### สถานะปัจจุบัน:
+- Features: 8/13 passed (เพิ่มจาก 12 เป็น 13)
+
+---
+```
+
+#### Step 3: Commit
+
+```bash
+git add feature_list.json .agent/progress.md
+git commit -m "chore: Add Feature #13 - [description]"
+```
+
+---
+
+### วิธีที่ 2: ใช้ Claude ช่วย
+
+```bash
+# บอก Claude ให้เพิ่ม feature
+"เพิ่ม feature ใหม่: [อธิบาย feature ที่ต้องการ]"
+```
+
+Claude จะ:
+1. วิเคราะห์ feature ที่ต้องการ
+2. กำหนด id, priority, steps
+3. หา dependencies
+4. แก้ไข feature_list.json
+5. บันทึกใน progress.md
+6. Commit changes
+
+---
+
+### วิธีที่ 3: เพิ่มหลาย Features พร้อมกัน
+
+```bash
+"เพิ่ม features สำหรับระบบ authentication:
+- Login
+- Register  
+- Forgot password
+- Reset password"
+```
+
+Claude จะสร้าง features เรียงตาม dependency:
+
+```json
+{
+  "features": [
+    { "id": 13, "description": "Auth - Register endpoint", "priority": "high" },
+    { "id": 14, "description": "Auth - Login endpoint", "dependencies": [13], "priority": "high" },
+    { "id": 15, "description": "Auth - Forgot password", "dependencies": [13], "priority": "medium" },
+    { "id": 16, "description": "Auth - Reset password", "dependencies": [15], "priority": "medium" }
+  ]
+}
+```
+
+---
+
+### กฎสำคัญเมื่อเพิ่ม Feature
+
+| ✅ ทำได้ | ❌ ห้ามทำ |
+|---------|----------|
+| เพิ่ม feature ใหม่ | ลบ feature ที่มีอยู่ |
+| แก้ไข priority | แก้ไข description ของ feature เดิม |
+| เพิ่ม dependencies | เปลี่ยน id ของ feature เดิม |
+| แก้ไข steps ของ feature ที่ยังไม่ pass | แก้ไข feature ที่ pass แล้ว |
+
+---
+
+### ตัวอย่าง Scenarios
+
+#### Scenario 1: Client ขอเพิ่ม feature
+
+```
+Client: "เพิ่มระบบ export เป็น Excel ด้วย"
+
+คุณ: "เพิ่ม feature ใหม่: Export data เป็น Excel file"
+
+Claude จะ:
+1. สร้าง Feature #13: Export to Excel
+2. กำหนด priority: medium
+3. หา dependencies (ต้องมี data ก่อน)
+4. อัพเดท feature_list.json
+5. Commit
+```
+
+#### Scenario 2: พบว่าต้องแยก feature ใหญ่
+
+```
+ระหว่างทำ Feature #5 พบว่าใหญ่เกินไป
+
+คุณ: "แยก Feature #5 เป็น 2 features:
+- #5: Basic CRUD (เดิม)
+- #13: Advanced filtering (ใหม่)"
+
+Claude จะ:
+1. แก้ไข steps ของ Feature #5 ให้เล็กลง
+2. เพิ่ม Feature #13 สำหรับส่วนที่แยกออกมา
+3. อัพเดท dependencies
+```
+
+#### Scenario 3: เพิ่ม feature ด่วน (Hotfix)
+
+```
+คุณ: "เพิ่ม feature ด่วน priority high: Fix security vulnerability"
+
+Claude จะ:
+1. สร้าง Feature #13 ด้วย priority: high
+2. ใส่ไว้เป็น feature ถัดไปที่ต้องทำ
+3. /continue จะหยิบ feature นี้ไปทำก่อน
+```
+
+---
+
+### Quick Reference: Feature Template
+
+```json
+{
+  "id": 0,
+  "category": "feature|bugfix|enhancement|refactor",
+  "description": "Short description",
+  "priority": "high|medium|low",
+  "steps": ["Step 1", "Step 2", "Step 3"],
+  "dependencies": [],
+  "estimated_time": "30min",
+  "passes": false,
+  "tested_at": null,
+  "notes": ""
+}
+```
+
+### Category Guidelines
+
+| Category | ใช้เมื่อ |
+|----------|---------|
+| `setup` | ตั้งค่า project, infrastructure |
+| `feature` | ฟีเจอร์ใหม่ |
+| `bugfix` | แก้ bug |
+| `enhancement` | ปรับปรุง feature ที่มี |
+| `refactor` | ปรับโครงสร้าง code |
+| `test` | เพิ่ม tests |
+| `docs` | documentation |
+
 ## 📄 License
 
 MIT
