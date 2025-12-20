@@ -22,8 +22,8 @@ claude mcp add microsoft-learn --transport streamable-http \
 {
   "mcpServers": {
     "microsoft-learn": {
-      "type": "streamable-http",
-      "url": "https://learn.microsoft.com/api/mcp"
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
     }
   }
 }
