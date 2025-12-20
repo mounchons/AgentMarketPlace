@@ -1,0 +1,25 @@
+{
+  "name": "agent-marketplace",
+  "metadata": {
+    "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
+    "version": "1.0.0",
+    "homepage": "https://github.com/mounchons/agentmarketplace"
+  },
+  "owner": {
+    "name": "Mounchons",
+    "email": "mounchons@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "system-design-doc",
+      "source": "./plugins/system-design-doc",
+      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams",
+      "version": "1.0.0",
+      "category": "documentation",
+      "tags": ["thai", "system-design", "mermaid", "reverse-engineering", "documentation"],
+      "author": {
+        "name": "Mounchons"
+      }
+    }
+  ]
+}

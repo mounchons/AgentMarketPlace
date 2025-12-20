@@ -1,0 +1,11 @@
+{
+  "name": "system-design-doc",
+  "version": "1.0.0",
+  "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams",
+  "author": {
+    "name": "Mounchons"
+  },
+  "skills": [
+    "skills/system-design-doc"
+  ]
+}
