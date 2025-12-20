@@ -1,0 +1,211 @@
+{
+  "project": "PROJECT_NAME",
+  "description": "PROJECT_DESCRIPTION",
+  "technology": {
+    "framework": "FRAMEWORK_NAME",
+    "language": "LANGUAGE",
+    "database": "DATABASE",
+    "other": []
+  },
+  "created_at": "TIMESTAMP",
+  "features": [
+    {
+      "id": 1,
+      "category": "setup",
+      "description": "สร้าง project structure",
+      "priority": "high",
+      "steps": [
+        "สร้าง project ใหม่",
+        "ตั้งค่า configuration",
+        "ทดสอบ run project"
+      ],
+      "dependencies": [],
+      "estimated_time": "15min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 2,
+      "category": "setup",
+      "description": "ตั้งค่า database และ ORM",
+      "priority": "high",
+      "steps": [
+        "เพิ่ม packages",
+        "ตั้งค่า connection string",
+        "ทดสอบ connection"
+      ],
+      "dependencies": [1],
+      "estimated_time": "20min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "category": "domain",
+      "description": "สร้าง [Entity] entity",
+      "priority": "high",
+      "steps": [
+        "สร้าง model class",
+        "เพิ่ม properties",
+        "เพิ่ม validations"
+      ],
+      "dependencies": [1],
+      "estimated_time": "15min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 4,
+      "category": "data",
+      "description": "สร้าง DbContext และ Migration",
+      "priority": "high",
+      "steps": [
+        "สร้าง DbContext",
+        "Configure entities",
+        "รัน migration"
+      ],
+      "dependencies": [2, 3],
+      "estimated_time": "20min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 5,
+      "category": "api",
+      "description": "GET /api/[resource] - List all",
+      "priority": "high",
+      "steps": [
+        "สร้าง Controller",
+        "implement endpoint",
+        "ทดสอบ"
+      ],
+      "dependencies": [4],
+      "estimated_time": "20min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 6,
+      "category": "api",
+      "description": "GET /api/[resource]/{id} - Get by ID",
+      "priority": "high",
+      "steps": [
+        "implement endpoint",
+        "handle 404",
+        "ทดสอบ"
+      ],
+      "dependencies": [5],
+      "estimated_time": "15min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 7,
+      "category": "api",
+      "description": "POST /api/[resource] - Create",
+      "priority": "high",
+      "steps": [
+        "สร้าง DTO",
+        "implement endpoint",
+        "ทดสอบ"
+      ],
+      "dependencies": [5],
+      "estimated_time": "20min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 8,
+      "category": "api",
+      "description": "PUT /api/[resource]/{id} - Update",
+      "priority": "medium",
+      "steps": [
+        "สร้าง Update DTO",
+        "implement endpoint",
+        "ทดสอบ"
+      ],
+      "dependencies": [6],
+      "estimated_time": "20min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 9,
+      "category": "api",
+      "description": "DELETE /api/[resource]/{id} - Delete",
+      "priority": "medium",
+      "steps": [
+        "implement endpoint",
+        "return 204",
+        "ทดสอบ"
+      ],
+      "dependencies": [6],
+      "estimated_time": "15min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 10,
+      "category": "quality",
+      "description": "Input validation",
+      "priority": "medium",
+      "steps": [
+        "เพิ่ม validation library",
+        "สร้าง validators",
+        "ทดสอบ"
+      ],
+      "dependencies": [7, 8],
+      "estimated_time": "25min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 11,
+      "category": "quality",
+      "description": "Error handling",
+      "priority": "medium",
+      "steps": [
+        "สร้าง exception handler",
+        "implement ProblemDetails",
+        "ทดสอบ"
+      ],
+      "dependencies": [5],
+      "estimated_time": "20min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": 12,
+      "category": "quality",
+      "description": "API documentation",
+      "priority": "low",
+      "steps": [
+        "ตั้งค่า Swagger",
+        "เพิ่ม comments",
+        "ทดสอบ UI"
+      ],
+      "dependencies": [5],
+      "estimated_time": "15min",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 0,
+    "failed": 12,
+    "last_updated": "TIMESTAMP"
+  }
+}
