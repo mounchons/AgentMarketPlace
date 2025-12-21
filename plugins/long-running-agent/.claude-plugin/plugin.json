@@ -6,9 +6,9 @@
     "name": "Mounchons"
   },
   "skills": [
-    "./skills/long-running-agent"
+    "../skills/long-running-agent"
   ],
   "commands": [
-    "./commands"
+    "../commands"
   ]
 }
