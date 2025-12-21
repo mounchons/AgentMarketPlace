@@ -55,7 +55,7 @@
       "name": "long-running-agent",
       "source": "./plugins/long-running-agent",
       "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging และ incremental development pattern อ้างอิงจาก Anthropic Engineering Blog",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "category": "agent",
       "tags": [
         "long-running",
