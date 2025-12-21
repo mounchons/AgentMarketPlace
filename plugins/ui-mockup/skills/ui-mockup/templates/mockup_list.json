@@ -1,0 +1,100 @@
+{
+  "project": "[Project Name]",
+  "description": "[Project Description]",
+  "source_documents": [],
+  "initialized_at": "[ISO_DATE]",
+  "last_updated": "[ISO_DATE]",
+  "pages": [
+    {
+      "id": "P001",
+      "name": "Login",
+      "name_th": "เข้าสู่ระบบ",
+      "url": "/auth/login",
+      "access": "Public",
+      "category": "auth",
+      "priority": "high",
+      "description": "หน้า login สำหรับเข้าสู่ระบบ",
+      "components": ["Logo", "Card", "Input", "Button"],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "notes": ""
+    },
+    {
+      "id": "P002",
+      "name": "Register",
+      "name_th": "ลงทะเบียน",
+      "url": "/auth/register",
+      "access": "Public",
+      "category": "auth",
+      "priority": "high",
+      "description": "หน้าลงทะเบียนผู้ใช้ใหม่",
+      "components": ["Logo", "Card", "Input", "Button", "Checkbox"],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "notes": ""
+    },
+    {
+      "id": "P003",
+      "name": "Dashboard",
+      "name_th": "แดชบอร์ด",
+      "url": "/dashboard",
+      "access": "User",
+      "category": "main",
+      "priority": "high",
+      "description": "หน้าหลักแสดงภาพรวมของระบบ",
+      "components": ["Navbar", "Sidebar", "StatCard", "Chart", "Table"],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "notes": ""
+    },
+    {
+      "id": "P004",
+      "name": "User List",
+      "name_th": "รายการผู้ใช้",
+      "url": "/admin/users",
+      "access": "Admin",
+      "category": "list",
+      "priority": "medium",
+      "description": "หน้าแสดงรายการผู้ใช้ทั้งหมด",
+      "components": ["Navbar", "Sidebar", "SearchBar", "Table", "Pagination", "ActionButtons"],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "notes": ""
+    },
+    {
+      "id": "P005",
+      "name": "User Form",
+      "name_th": "ฟอร์มผู้ใช้",
+      "url": "/admin/users/new",
+      "access": "Admin",
+      "category": "form",
+      "priority": "medium",
+      "description": "หน้าสร้าง/แก้ไขข้อมูลผู้ใช้",
+      "components": ["Navbar", "Card", "Input", "Select", "Button"],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "notes": ""
+    }
+  ],
+  "categories": {
+    "auth": "Authentication pages (Login, Register, etc.)",
+    "main": "Main application pages (Dashboard, Home)",
+    "list": "List/Table pages (User List, Product List)",
+    "form": "Form pages (Create, Edit)",
+    "detail": "Detail/View pages",
+    "admin": "Admin/Settings pages",
+    "reports": "Report/Analytics pages"
+  },
+  "summary": {
+    "total": 5,
+    "pending": 5,
+    "in_progress": 0,
+    "completed": 0,
+    "approved": 0
+  }
+}
