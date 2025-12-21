@@ -1,12 +1,12 @@
 {
   "name": "dotnet-dev",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Expert .NET Core development skill for ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns, and .NET Aspire. Supports PostgreSQL and SQL Server. Integrates with Microsoft Learn MCP for latest documentation.",
   "author": {
     "name": "Mounchons"
   },
   "skills": [
-    "./skills/dotnet-dev"
+    "./../skills/dotnet-dev"
   ],
   "mcpServers": {
     "microsoft-learn": {
