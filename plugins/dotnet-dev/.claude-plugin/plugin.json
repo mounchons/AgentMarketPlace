@@ -5,9 +5,6 @@
   "author": {
     "name": "Mounchons"
   },
-  "skills": [
-    "./../skills/dotnet-dev"
-  ],
   "mcpServers": {
     "microsoft-learn": {
       "command": "npx",
