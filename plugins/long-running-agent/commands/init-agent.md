@@ -13,6 +13,38 @@ User ต้องการสร้างโปรเจค: $ARGUMENTS
 
 ## ขั้นตอนที่ต้องทำ
 
+### 0. อ่านเอกสารสำคัญก่อนเริ่มงาน (สำคัญมาก!)
+
+**ต้องอ่านเอกสารเหล่านี้ก่อนเสมอ:**
+
+```bash
+# 1. อ่าน CLAUDE.md ที่ root folder (ถ้ามี)
+cat CLAUDE.md 2>/dev/null && echo "--- CLAUDE.md found ---"
+
+# 2. อ่าน .claude/settings.json (ถ้ามี)
+cat .claude/settings.json 2>/dev/null
+
+# 3. อ่าน README.md ของโปรเจค (ถ้ามี)
+cat README.md 2>/dev/null | head -100
+```
+
+**เอกสารที่ควรมองหา:**
+- `CLAUDE.md` - กฎและแนวทางสำหรับ Claude ในโปรเจคนี้
+- `.claude/settings.json` - ตั้งค่า Claude Code
+- `README.md` - คำอธิบายโปรเจค
+- `CONTRIBUTING.md` - แนวทางการพัฒนา
+- `.editorconfig` / `eslintrc` / `.prettierrc` - coding standards
+
+**สิ่งที่ต้องจดจำจากเอกสาร:**
+- Coding standards และ conventions
+- Technology stack ที่กำหนด
+- กฎพิเศษที่ต้องทำตาม
+- คำสั่งที่ห้ามใช้ หรือต้องใช้
+
+⚠️ **ถ้าพบ CLAUDE.md หรือเอกสารสำคัญ ต้องทำตามกฎที่ระบุไว้ทุกครั้ง!**
+
+---
+
 ### 1. วิเคราะห์ Requirements
 - ระบุ project type (API, Web App, CLI, etc.)
 - ระบุ technology stack

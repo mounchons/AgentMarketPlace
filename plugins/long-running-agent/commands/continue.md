@@ -9,6 +9,40 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 
 ## ขั้นตอนที่ต้องทำ (เรียงตามลำดับ)
 
+### Step 0: อ่านเอกสารสำคัญก่อนเริ่มงาน (สำคัญมาก!)
+
+**ทุกครั้งที่เริ่ม session ใหม่ ต้องอ่านเอกสารเหล่านี้:**
+
+```bash
+# 1. อ่าน CLAUDE.md ที่ root folder (ถ้ามี)
+cat CLAUDE.md 2>/dev/null && echo "--- CLAUDE.md found, ทำตามกฎที่ระบุ ---"
+
+# 2. อ่าน .agent/project-rules.md (ถ้ามี - กฎเฉพาะโปรเจค)
+cat .agent/project-rules.md 2>/dev/null
+
+# 3. อ่าน README.md เพื่อเข้าใจโปรเจค
+cat README.md 2>/dev/null | head -50
+```
+
+**เอกสารที่ต้องมองหาและทำตาม:**
+
+| ไฟล์ | ความหมาย |
+|------|----------|
+| `CLAUDE.md` | กฎหลักสำหรับ Claude - **ต้องทำตามทุกข้อ** |
+| `.agent/project-rules.md` | กฎเฉพาะโปรเจค |
+| `CONTRIBUTING.md` | แนวทางการพัฒนา |
+| `.editorconfig` | coding style |
+
+**สิ่งที่ต้องจดจำจากเอกสาร:**
+- ✅ Coding standards และ naming conventions
+- ✅ คำสั่งที่ต้องรันก่อนเริ่มงาน
+- ✅ กฎพิเศษที่ต้องทำตาม
+- ✅ สิ่งที่ห้ามทำ
+
+⚠️ **กฎจาก CLAUDE.md มีความสำคัญสูงสุด ต้องทำตามก่อนกฎอื่นๆ!**
+
+---
+
 ### Step 1: Get Context (ต้องทำก่อนเสมอ!)
 
 ```bash

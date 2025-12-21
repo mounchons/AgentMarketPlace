@@ -9,6 +9,40 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 
 ## ขั้นตอนที่ต้องทำ
 
+### Step 0: อ่านเอกสารสำคัญก่อนเริ่มงาน (สำคัญที่สุด!)
+
+**ต้องอ่านเอกสารเหล่านี้ก่อนทำขั้นตอนอื่นๆ:**
+
+```bash
+# 1. อ่าน CLAUDE.md ที่ root folder (ถ้ามี) - กฎหลักที่ต้องทำตาม
+cat CLAUDE.md 2>/dev/null && echo "=== CLAUDE.md FOUND - ต้องทำตามกฎด้านบน ==="
+
+# 2. อ่าน .claude/settings.json (ถ้ามี)
+cat .claude/settings.json 2>/dev/null
+
+# 3. อ่าน CONTRIBUTING.md (ถ้ามี) - แนวทางการพัฒนา
+cat CONTRIBUTING.md 2>/dev/null | head -50
+```
+
+**เอกสารที่ต้องอ่านและทำตาม:**
+
+| ไฟล์ | สิ่งที่ต้องทำ |
+|------|-------------|
+| `CLAUDE.md` | ทำตามทุกกฎที่ระบุ - **ความสำคัญสูงสุด** |
+| `CONTRIBUTING.md` | ใช้ coding standards ที่กำหนด |
+| `.editorconfig` | ใช้ formatting ที่กำหนด |
+| `README.md` | เข้าใจวัตถุประสงค์โปรเจค |
+
+**สิ่งที่ต้องจดจำและนำไปใช้:**
+- Coding conventions และ naming standards
+- Commands ที่ต้องรัน (build, test, lint)
+- กฎพิเศษสำหรับ Claude
+- Tech stack และ dependencies ที่กำหนด
+
+⚠️ **ถ้าพบ CLAUDE.md ต้องทำตามกฎทุกข้อก่อนทำขั้นตอนถัดไป!**
+
+---
+
 ### Step 1: วิเคราะห์ Project Structure
 
 ```bash
