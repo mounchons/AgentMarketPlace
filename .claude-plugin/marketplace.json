@@ -69,6 +69,26 @@
       "author": {
         "name": "Mounchons"
       }
+    },
+    {
+      "name": "ui-mockup",
+      "source": "./plugins/ui-mockup",
+      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document เป็น bridge ระหว่าง system-design-doc และ frontend-design พร้อม ASCII wireframes, component specs และ mockup tracking system",
+      "version": "1.0.0",
+      "category": "design",
+      "tags": [
+        "ui",
+        "mockup",
+        "wireframe",
+        "ascii-art",
+        "design-system",
+        "responsive",
+        "parallel-agents",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
     }
   ]
 }
