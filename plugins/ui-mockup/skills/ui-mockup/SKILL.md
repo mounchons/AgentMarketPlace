@@ -1,14 +1,6 @@
 ---
 name: ui-mockup
-description: |
-  สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document
-  รองรับการสร้าง ASCII wireframes, component specifications, และ design tokens
-
-  ใช้เมื่อ: (1) สร้าง mockup จาก system-design-doc (2) ออกแบบ UI/UX (3) สร้าง wireframe
-  (4) กำหนด design tokens (5) แก้ไข mockup ที่มีอยู่ (6) สร้าง responsive design specs
-
-  Triggers: "mockup", "wireframe", "UI design", "screen design", "layout", "prototype",
-  "แก้ไข mockup", "ปรับ layout", "เปลี่ยน UI", "ออกแบบหน้าจอ"
+description: สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications, design tokens และ responsive design specs
 ---
 
 # UI Mockup Skill

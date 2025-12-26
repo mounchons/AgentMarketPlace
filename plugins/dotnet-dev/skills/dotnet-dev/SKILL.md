@@ -1,13 +1,6 @@
 ---
 name: dotnet-dev
-description: |
-  Expert .NET Core development skill for ASP.NET Core MVC, Entity Framework Core, Clean Architecture, 
-  Repository/Unit of Work patterns, and .NET Aspire. Supports both PostgreSQL and SQL Server.
-  Use when: creating .NET projects, writing C# code, designing Entity Framework models, implementing APIs, 
-  setting up dependency injection, database migrations, or any .NET Core development task. 
-  Triggers: ".NET", "C#", "Entity Framework", "ASP.NET", "EF Core", "migration", "repository pattern", 
-  "unit of work", "Clean Architecture", "Aspire", "Web API", "MVC", "dependency injection", "DbContext", 
-  "LINQ", "Blazor", "SQL Server", "PostgreSQL"
+description: Expert .NET Core development - ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns, .NET Aspire รองรับ PostgreSQL และ SQL Server
 ---
 
 # .NET Core Development Expert Skill

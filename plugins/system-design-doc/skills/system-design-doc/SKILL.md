@@ -1,11 +1,6 @@
 ---
 name: system-design-doc
-description: |
-  สร้างเอกสารออกแบบระบบมาตรฐานครบวงจร รองรับทั้งภาษาไทยและอังกฤษ ใช้ Mermaid diagrams
-  
-  ใช้เมื่อ: (1) สร้าง System Design Document (2) วิเคราะห์ codebase เก่าแล้วสร้างเอกสาร (3) สร้าง ER Diagram (4) เขียน Flow Diagram (5) สร้าง Data Dictionary (6) ทำ DFD (7) ออกแบบ Sitemap (8) เขียน Sequence Diagram (9) Reverse engineer จาก code
-  
-  ตัวอย่างคำสั่ง: "สร้าง System Design Document สำหรับระบบ HR", "อ่าน codebase แล้วสร้างเอกสาร", "สร้าง ER Diagram จาก Entity classes", "เขียน Flow Diagram สำหรับกระบวนการอนุมัติ", "ทำ Data Dictionary จาก database schema", "วิเคราะห์ code แล้วสร้าง Sequence Diagram"
+description: สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams, ER Diagram, Flow Diagram, DFD, Sitemap, Sequence Diagram และ Data Dictionary
 ---
 
 # System Design Document Skill

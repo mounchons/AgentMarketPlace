@@ -1,14 +1,6 @@
 ---
 name: long-running-agent
-description: |
-  Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
-  รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking และ progress logging
-  
-  ใช้เมื่อ: (1) เริ่มโปรเจคใหม่ที่ต้องทำหลาย sessions (2) ต้องการ initialize long-running agent environment 
-  (3) ทำงานต่อจาก session ก่อน (4) ต้องการ feature tracking (5) ต้องการทำงานแบบ incremental
-  
-  Triggers: "long-running", "multi-session", "initialize agent", "continue project", "feature tracking",
-  "incremental development", "agent harness", "session management", "ทำต่อจากครั้งก่อน", "เริ่มโปรเจคใหม่"
+description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging และ incremental development
 ---
 
 # Long-Running Agent Skill
