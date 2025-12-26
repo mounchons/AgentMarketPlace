@@ -1,0 +1,8 @@
+{
+  "name": "test-runner",
+  "version": "1.0.0",
+  "description": "รัน tests อัตโนมัติ สร้าง test cases, วิเคราะห์ coverage และแนะนำ tests ที่ขาด รองรับ unit test, integration test และ E2E test",
+  "author": {
+    "name": "Mounchons"
+  }
+}

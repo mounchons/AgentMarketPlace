@@ -1,0 +1,8 @@
+{
+  "name": "code-review",
+  "version": "1.0.0",
+  "description": "ตรวจสอบคุณภาพ code อัตโนมัติ รองรับ security vulnerabilities, best practices, code smell detection และ PR review พร้อมให้คำแนะนำการปรับปรุง",
+  "author": {
+    "name": "Mounchons"
+  }
+}
