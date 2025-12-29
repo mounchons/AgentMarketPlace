@@ -43,6 +43,48 @@ cat CONTRIBUTING.md 2>/dev/null | head -50
 
 ---
 
+### Step 0.5: ตรวจสอบเอกสารออกแบบและ UI Mockups (สำคัญมาก!)
+
+**ตรวจสอบว่ามี output จาก skill อื่นหรือไม่:**
+
+```bash
+# 1. ตรวจสอบ UI Mockups (จาก ui-mockup skill)
+echo "=== Checking UI Mockups ==="
+ls -la .mockups/ 2>/dev/null
+ls -la .mockups/*.mockup.md 2>/dev/null
+cat .mockups/mockup_list.json 2>/dev/null
+
+# 2. ตรวจสอบ System Design Document (จาก system-design-doc skill)
+echo "=== Checking System Design Docs ==="
+find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -10
+ls -la docs/*.md 2>/dev/null
+
+# 3. ตรวจสอบ design tokens
+cat .mockups/_design-tokens.yaml 2>/dev/null
+```
+
+**📁 เอกสารจาก Skills อื่นที่ต้องใช้:**
+
+| Folder/File | Skill ที่สร้าง | การใช้งาน |
+|-------------|---------------|----------|
+| `.mockups/` | ui-mockup | **ใช้สร้าง Features สำหรับ UI** |
+| `.mockups/*.mockup.md` | ui-mockup | แปลง wireframe เป็น features |
+| `.mockups/_design-tokens.yaml` | ui-mockup | ใช้เป็น reference |
+| `*design-doc.md` | system-design-doc | **ใช้สร้าง Features สำหรับ Backend** |
+| `docs/` | system-design-doc | แปลง ER Diagram เป็น features |
+
+**🎯 ถ้าพบ `.mockups/` folder:**
+1. **ต้อง**อ่าน mockup ทุกหน้า
+2. **ต้อง**สร้าง features สำหรับ UI ตาม wireframes
+3. **ต้อง**เพิ่ม feature สำหรับแต่ละหน้าใน mockup
+
+**🎯 ถ้าพบ Design Document:**
+1. **ต้อง**อ่าน ER Diagram
+2. **ต้อง**สร้าง features สำหรับ database/entities
+3. **ต้อง**สร้าง features สำหรับ API endpoints จาก Flow Diagram
+
+---
+
 ### Step 1: วิเคราะห์ Project Structure
 
 ```bash
@@ -58,13 +100,80 @@ cat TODO.md 2>/dev/null
 cat CHANGELOG.md 2>/dev/null
 ```
 
-### Step 2: ระบุ Technology Stack
+### Step 2: ระบุ Technology Stack และ Skill ที่รองรับ
+
+**ตรวจสอบไฟล์และเลือก Skill ที่เหมาะสม:**
+
+```bash
+# ตรวจสอบ Technology Stack
+echo "=== Detecting Technology Stack ==="
+
+# .NET Core
+ls -la *.csproj *.sln 2>/dev/null && echo "→ .NET Core detected"
+
+# Node.js / JavaScript / TypeScript
+ls -la package.json 2>/dev/null && echo "→ Node.js detected"
+
+# Python
+ls -la requirements.txt pyproject.toml 2>/dev/null && echo "→ Python detected"
+
+# Go
+ls -la go.mod 2>/dev/null && echo "→ Go detected"
+
+# Rust
+ls -la Cargo.toml 2>/dev/null && echo "→ Rust detected"
+
+# PHP
+ls -la composer.json 2>/dev/null && echo "→ PHP detected"
+
+# Java
+ls -la pom.xml build.gradle 2>/dev/null && echo "→ Java detected"
+```
+
+**🔧 Skills ที่รองรับตาม Technology:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AVAILABLE SKILLS BY TECHNOLOGY                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Technology        │ Files ที่บ่งบอก      │ Skill ที่ใช้            │
+│  ─────────────────────────────────────────────────────────────────  │
+│  .NET Core/ASP.NET │ *.csproj, *.sln      │ /dotnet-dev ⭐         │
+│  Node.js/React/Vue │ package.json         │ (standard practices)   │
+│  Python/FastAPI    │ requirements.txt     │ (standard practices)   │
+│  Go                │ go.mod               │ (standard practices)   │
+│  Rust              │ Cargo.toml           │ (standard practices)   │
+│  PHP/Laravel       │ composer.json        │ (standard practices)   │
+│  Java/Spring       │ pom.xml, build.gradle│ (standard practices)   │
+│                                                                     │
+│  ⭐ = มี specialized skill                                         │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                    UNIVERSAL SKILLS (ใช้ได้กับทุก Technology)        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  /system-design-doc  │ สร้างเอกสารออกแบบระบบ                        │
+│  /ui-mockup          │ สร้าง UI wireframes                          │
+│  /code-review        │ Review code                                  │
+│  /test-runner        │ รัน tests                                    │
+│  /ai-ui-test         │ Test UI automation                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**⚠️ กฎสำคัญ:**
+- ถ้าพบ `.csproj`/`.sln` → **บันทึกใน config ว่าต้องใช้ `/dotnet-dev` skill**
+- บันทึก technology stack ใน `.agent/config.json`
+- ระบุ recommended skills ใน progress log
 
 จากไฟล์ที่พบ:
-- `.csproj` / `.sln` → .NET
+- `.csproj` / `.sln` → .NET → **ใช้ `/dotnet-dev` skill**
 - `package.json` → Node.js
 - `requirements.txt` → Python
 - `composer.json` → PHP
+- `go.mod` → Go
+- `Cargo.toml` → Rust
 
 ### Step 3: วิเคราะห์สิ่งที่ทำไปแล้ว
 
@@ -125,16 +234,59 @@ git commit -m "chore: Add long-running agent environment to existing project"
 - **Existing Files**: 15 source files
 - **Git Commits**: 25 commits
 
+## Design References Found
+- **UI Mockups**: 5 pages found in `.mockups/`
+- **Design Doc**: system-design-doc.md found
+- **Design Tokens**: _design-tokens.yaml found
+
 ## Features Identified
 - Completed: 5 features (marked as passed)
 - Remaining: 8 features (marked as not passed)
+- From Mockups: 5 UI features added
+- From Design Doc: 3 API features added
+
+## Recommended Skills
+- `/dotnet-dev` - สำหรับ .NET Core development
+- `/code-review` - สำหรับ review code
+- `/test-runner` - สำหรับรัน tests
 
 ## Files Created
-- .agent/config.json
+- .agent/config.json (includes technology & recommended skills)
 - .agent/progress.md
 - feature_list.json
 
 ## Next Steps
 1. Review feature_list.json to verify accuracy
 2. Run `/continue` to start working on remaining features
+3. Use recommended skills during development
+```
+
+---
+
+## .agent/config.json Template
+
+```json
+{
+  "project_name": "ชื่อโปรเจค",
+  "technology": ".NET Core",
+  "initialized_at": "2025-01-01T00:00:00Z",
+  "current_session": 1,
+  "design_references": {
+    "mockups_folder": ".mockups/",
+    "design_doc": "system-design-doc.md",
+    "design_tokens": ".mockups/_design-tokens.yaml"
+  },
+  "recommended_skills": [
+    "/dotnet-dev",
+    "/code-review",
+    "/test-runner"
+  ],
+  "settings": {
+    "auto_commit": true,
+    "require_tests": true,
+    "max_features_per_session": 1,
+    "use_mockups_for_ui": true,
+    "use_design_doc_for_db": true
+  }
+}
 ```

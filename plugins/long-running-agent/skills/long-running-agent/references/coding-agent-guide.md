@@ -26,6 +26,63 @@
 
 ## 📋 Step-by-Step Workflow
 
+### Step 0: ตรวจสอบ Design References (สำคัญมาก!)
+
+**ก่อนเริ่มพัฒนา feature ใดๆ ต้องตรวจสอบเอกสารอ้างอิง:**
+
+```bash
+# 1. ตรวจสอบ UI Mockups (จาก ui-mockup skill)
+ls -la .mockups/ 2>/dev/null
+ls -la .mockups/*.mockup.md 2>/dev/null
+
+# 2. ตรวจสอบ System Design Document (จาก system-design-doc skill)
+find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -5
+
+# 3. ตรวจสอบ Technology Stack
+ls -la *.csproj *.sln 2>/dev/null  # .NET Core
+ls -la package.json 2>/dev/null    # Node.js
+```
+
+**📁 แหล่งอ้างอิงหลัก:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DESIGN REFERENCES                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  📐 UI Mockup (.mockups/)                                          │
+│  ├── *.mockup.md   → ASCII Wireframe + Component Specs            │
+│  ├── _design-tokens.yaml → Colors, Spacing, Typography            │
+│  └── mockup_list.json → รายการ mockups ทั้งหมด                    │
+│                                                                     │
+│  📄 System Design Doc                                               │
+│  ├── ER Diagram    → Database Schema                               │
+│  ├── Data Dictionary → Field Specifications                        │
+│  ├── Flow Diagram  → Business Logic                                │
+│  └── API Specs     → Endpoint Definitions                          │
+│                                                                     │
+│  🔧 Technology Skills                                               │
+│  └── /dotnet-dev   → ใช้สำหรับ .NET Core projects                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**🎯 วิธีใช้ References:**
+
+| Feature Type | ต้องอ่าน | ใช้ทำอะไร |
+|--------------|---------|----------|
+| **UI/Frontend** | `.mockups/[page].mockup.md` | ดู wireframe, component specs, design tokens |
+| **Database** | Design Doc - ER Diagram | ดู schema, relationships |
+| **API** | Design Doc - Flow Diagram | ดู business logic, endpoints |
+| **.NET Code** | `/dotnet-dev` skill | ใช้ .NET best practices |
+
+**⚠️ กฎสำคัญ:**
+- ถ้าพบ `.mockups/` folder → **ต้อง**สร้าง UI ตาม wireframe
+- ถ้าพบ Design Doc → **ต้อง**ใช้ ER Diagram สำหรับ database
+- ถ้าเป็น .NET project → **ต้อง**ใช้ `/dotnet-dev` skill
+
+---
+
 ### Step 1: Get Context (สำคัญมาก!)
 
 **ต้องทำทุกครั้งก่อนเริ่มงาน:**

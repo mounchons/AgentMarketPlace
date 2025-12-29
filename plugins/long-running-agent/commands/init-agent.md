@@ -45,16 +45,131 @@ cat README.md 2>/dev/null | head -100
 
 ---
 
+### 0.5. ตรวจสอบเอกสารออกแบบและ UI Mockups (สำคัญมาก!)
+
+**ตรวจสอบว่ามี output จาก skill อื่นหรือไม่:**
+
+```bash
+# 1. ตรวจสอบ UI Mockups (จาก ui-mockup skill)
+echo "=== Checking UI Mockups ==="
+ls -la .mockups/ 2>/dev/null
+ls -la .mockups/*.mockup.md 2>/dev/null
+cat .mockups/mockup_list.json 2>/dev/null
+
+# 2. ตรวจสอบ System Design Document (จาก system-design-doc skill)
+echo "=== Checking System Design Docs ==="
+find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -10
+ls -la docs/*.md 2>/dev/null
+
+# 3. ตรวจสอบ design tokens
+cat .mockups/_design-tokens.yaml 2>/dev/null
+```
+
+**📁 เอกสารจาก Skills อื่นที่ต้องใช้:**
+
+| Folder/File | Skill ที่สร้าง | การใช้งาน |
+|-------------|---------------|----------|
+| `.mockups/` | ui-mockup | **ใช้สร้าง Features สำหรับ UI** |
+| `.mockups/*.mockup.md` | ui-mockup | แปลง wireframe เป็น features |
+| `.mockups/_design-tokens.yaml` | ui-mockup | ใช้เป็น reference |
+| `*design-doc.md` | system-design-doc | **ใช้สร้าง Features สำหรับ Backend** |
+| `docs/` | system-design-doc | แปลง ER Diagram เป็น features |
+
+**🎯 ถ้าพบ `.mockups/` folder:**
+1. **ต้อง**อ่าน mockup ทุกหน้า
+2. **ต้อง**สร้าง features สำหรับ UI ตาม wireframes
+3. **ต้อง**เพิ่ม feature สำหรับแต่ละหน้าใน mockup
+
+**🎯 ถ้าพบ Design Document:**
+1. **ต้อง**อ่าน ER Diagram → สร้าง features สำหรับ entities
+2. **ต้อง**อ่าน Flow Diagram → สร้าง features สำหรับ API endpoints
+3. **ต้อง**อ่าน Data Dictionary → ใช้เป็น reference
+
+---
+
 ### 1. วิเคราะห์ Requirements
 - ระบุ project type (API, Web App, CLI, etc.)
 - ระบุ technology stack
 - ระบุ scope และ features ที่ต้องมี
+- **ถ้ามี mockups** → รวม UI features จาก wireframes
+- **ถ้ามี design doc** → รวม features จาก ER/Flow diagrams
+
+### 1.5. ระบุ Technology Stack และ Skill ที่รองรับ
+
+**ตรวจสอบ technology จาก requirements หรือไฟล์ที่มี:**
+
+```bash
+# ตรวจสอบ Technology Stack
+echo "=== Detecting Technology Stack ==="
+
+# .NET Core
+ls -la *.csproj *.sln 2>/dev/null && echo "→ .NET Core: ใช้ /dotnet-dev skill"
+
+# Node.js / JavaScript / TypeScript
+ls -la package.json 2>/dev/null && echo "→ Node.js detected"
+
+# Python
+ls -la requirements.txt pyproject.toml 2>/dev/null && echo "→ Python detected"
+
+# Go
+ls -la go.mod 2>/dev/null && echo "→ Go detected"
+
+# Rust
+ls -la Cargo.toml 2>/dev/null && echo "→ Rust detected"
+
+# PHP
+ls -la composer.json 2>/dev/null && echo "→ PHP detected"
+
+# Java
+ls -la pom.xml build.gradle 2>/dev/null && echo "→ Java detected"
+```
+
+**🔧 Skills ที่รองรับตาม Technology:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AVAILABLE SKILLS BY TECHNOLOGY                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Technology        │ Files ที่บ่งบอก      │ Skill ที่ใช้            │
+│  ─────────────────────────────────────────────────────────────────  │
+│  .NET Core/ASP.NET │ *.csproj, *.sln      │ /dotnet-dev ⭐         │
+│  Node.js/React/Vue │ package.json         │ (standard practices)   │
+│  Python/FastAPI    │ requirements.txt     │ (standard practices)   │
+│  Go                │ go.mod               │ (standard practices)   │
+│  Rust              │ Cargo.toml           │ (standard practices)   │
+│  PHP/Laravel       │ composer.json        │ (standard practices)   │
+│  Java/Spring       │ pom.xml, build.gradle│ (standard practices)   │
+│                                                                     │
+│  ⭐ = มี specialized skill พร้อมใช้งาน                              │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                    UNIVERSAL SKILLS (ใช้ได้กับทุก Technology)        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  /system-design-doc  │ สร้างเอกสารออกแบบระบบ                        │
+│  /ui-mockup          │ สร้าง UI wireframes                          │
+│  /code-review        │ Review code ก่อน commit                      │
+│  /test-runner        │ รัน tests                                    │
+│  /ai-ui-test         │ Test UI automation                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**⚠️ กฎสำคัญ:**
+- บันทึก technology stack ใน `.agent/config.json`
+- บันทึก recommended skills ใน config
+- ถ้าเป็น .NET → ระบุว่าต้องใช้ `/dotnet-dev` skill
+
+---
 
 ### 2. สร้าง Feature List
 - แตก requirements เป็น features เล็กๆ (10-20 features)
 - แต่ละ feature ทำเสร็จใน 1 session (15-30 นาที)
 - เรียงตาม dependency (setup ก่อน)
 - ทุก feature ต้อง `"passes": false`
+- **ถ้ามี mockups** → เพิ่ม features สำหรับแต่ละหน้า UI
+- **ถ้ามี design doc** → เพิ่ม features จาก ER/Flow diagrams
 
 ### 3. สร้างไฟล์
 
@@ -66,18 +181,36 @@ mkdir -p .agent
 **สร้าง .agent/config.json:**
 ```json
 {
-  "project_name": "...",
-  "description": "...",
-  "technology": "...",
-  "initialized_at": "...",
+  "project_name": "ชื่อโปรเจค",
+  "description": "คำอธิบายโปรเจค",
+  "technology": ".NET Core",
+  "initialized_at": "2025-01-01T00:00:00Z",
   "current_session": 1,
+  "design_references": {
+    "mockups_folder": ".mockups/",
+    "design_doc": "system-design-doc.md",
+    "design_tokens": ".mockups/_design-tokens.yaml"
+  },
+  "recommended_skills": [
+    "/dotnet-dev",
+    "/code-review",
+    "/test-runner"
+  ],
   "settings": {
     "auto_commit": true,
     "require_tests": false,
-    "max_features_per_session": 1
+    "max_features_per_session": 1,
+    "use_mockups_for_ui": true,
+    "use_design_doc_for_db": true
   }
 }
 ```
+
+**หมายเหตุ:**
+- `design_references` - ระบุ paths ของ mockups และ design docs (ถ้ามี)
+- `recommended_skills` - skills ที่แนะนำตาม technology
+- `use_mockups_for_ui` - บังคับสร้าง UI ตาม mockups
+- `use_design_doc_for_db` - บังคับสร้าง DB ตาม ER diagram
 
 **สร้าง .agent/progress.md** - บันทึก session 1
 
@@ -104,8 +237,45 @@ git commit -m "chore: Initialize long-running agent environment"
 
 ## Output ที่คาดหวัง
 
+```markdown
+# ✅ Long-Running Agent Initialized
+
+## Project Info
+- **Name**: ชื่อโปรเจค
+- **Technology**: .NET Core
+- **Type**: Web API
+
+## Design References Found
+- **UI Mockups**: 5 pages in `.mockups/`
+- **Design Doc**: system-design-doc.md
+- **Design Tokens**: _design-tokens.yaml
+
+## Features Created
+- **Total**: 15 features
+- **From Requirements**: 7 features
+- **From Mockups**: 5 UI features
+- **From Design Doc**: 3 API features
+
+## Recommended Skills
+- `/dotnet-dev` - สำหรับ .NET Core development
+- `/code-review` - สำหรับ review code
+- `/test-runner` - สำหรับรัน tests
+
+## Files Created
+- `.agent/config.json` (includes design references & recommended skills)
+- `.agent/progress.md`
+- `feature_list.json`
+
+## Next Steps
+1. Review `feature_list.json` to verify features
+2. Run `/continue` to start Feature #1
+3. Use recommended skills during development
+```
+
 เมื่อเสร็จแล้ว แจ้ง user:
 1. รายการไฟล์ที่สร้าง
-2. จำนวน features ทั้งหมด
-3. Feature ถัดไปที่ต้องทำ
-4. วิธีใช้ `/continue` เพื่อเริ่มทำงาน
+2. จำนวน features ทั้งหมด (รวม features จาก mockups/design doc)
+3. Design references ที่พบ
+4. Recommended skills ตาม technology
+5. Feature ถัดไปที่ต้องทำ
+6. วิธีใช้ `/continue` เพื่อเริ่มทำงาน
