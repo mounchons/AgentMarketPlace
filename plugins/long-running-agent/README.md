@@ -1,5 +1,7 @@
 # Long-Running Agent Skill
 
+> **Version 1.3.0** - เพิ่ม Integration กับ ui-mockup, system-design-doc และ technology-specific skills
+
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
 อ้างอิงจาก [Anthropic Engineering Blog: Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
@@ -11,6 +13,9 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 - **Incremental Development** - ทำทีละ feature ไม่ one-shot
 - **Test-First Approach** - ต้อง test ก่อน mark pass
 - **Git Integration** - Commit แยกต่าง feature
+- **🆕 UI Mockup Integration** - อ่าน `.mockups/` folder และสร้าง UI ตาม wireframe
+- **🆕 Design Doc Integration** - ใช้ ER Diagram, Flow Diagram จาก system-design-doc
+- **🆕 Technology Detection** - ตรวจจับ technology stack และแนะนำ skills ที่เหมาะสม
 
 ## 📦 Installation
 
@@ -58,6 +63,112 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 | `/continue` | ทำงานต่อจาก session ก่อน |
 | `/agent-status` | ดูความคืบหน้าของโปรเจค |
 | `/init-agent-existing` | เพิ่ม agent environment ให้โปรเจคที่มีอยู่ |
+| `/add-feature` | เพิ่ม feature ใหม่เข้าไปใน feature_list.json |
+
+## 🔗 Integration with Other Skills
+
+### 🆕 Complete Development Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    COMPLETE DEVELOPMENT WORKFLOW                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Phase 1: Design (ก่อนพัฒนา)                                        │
+│  ┌─────────────────┐      ┌─────────────────┐                      │
+│  │ /system-design  │ ───▶ │   /ui-mockup    │                      │
+│  │      -doc       │      │                 │                      │
+│  │                 │      │                 │                      │
+│  │ Output:         │      │ Output:         │                      │
+│  │ • ER Diagram    │      │ • Wireframes    │                      │
+│  │ • Flow Diagram  │      │ • Design Tokens │                      │
+│  │ • Data Dict     │      │ • Component Specs│                     │
+│  └─────────────────┘      └─────────────────┘                      │
+│           │                        │                               │
+│           └───────────┬────────────┘                               │
+│                       ▼                                            │
+│  Phase 2: Initialize                                               │
+│  ┌─────────────────────────────────────────┐                       │
+│  │            /init-agent                   │                       │
+│  │                                          │                       │
+│  │ • อ่าน design docs และ mockups          │                       │
+│  │ • สร้าง feature_list.json               │                       │
+│  │ • สร้าง .agent/ folder                  │                       │
+│  └─────────────────────────────────────────┘                       │
+│                       │                                            │
+│                       ▼                                            │
+│  Phase 3: Development (ซ้ำหลายครั้ง)                                │
+│  ┌─────────────────────────────────────────┐                       │
+│  │            /continue                     │                       │
+│  │                                          │                       │
+│  │ 1. อ่าน .mockups/ → สร้าง UI ตาม design │                       │
+│  │ 2. อ่าน design doc → สร้าง DB, API      │                       │
+│  │ 3. ใช้ /dotnet-dev → .NET implementation│                       │
+│  │ 4. Test → Mark pass → Commit            │                       │
+│  └─────────────────────────────────────────┘                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 📐 กับ ui-mockup skill
+
+เมื่อพบ `.mockups/` folder จะ:
+- อ่าน wireframe ของหน้าที่กำลังพัฒนา
+- สร้าง UI ตาม ASCII wireframe
+- ใช้ design tokens (colors, spacing, fonts)
+- implement components ตาม component specs
+
+```bash
+# ตรวจสอบ mockups
+ls -la .mockups/
+ls -la .mockups/*.mockup.md
+```
+
+### 📄 กับ system-design-doc skill
+
+เมื่อพบ Design Document จะ:
+- ใช้ ER Diagram สร้าง database schema
+- ใช้ Data Dictionary สำหรับ field types
+- ใช้ Flow Diagram สำหรับ business logic
+
+```bash
+# ค้นหา design docs
+find . -name "*design*.md" -o -name "*system*.md"
+```
+
+### 🔧 กับ dotnet-dev skill
+
+สำหรับ .NET Core Projects (พบ `.csproj` หรือ `.sln`):
+- ใช้ .NET best practices
+- ใช้ EF Core patterns
+- ใช้ Dependency Injection
+- ใช้ ASP.NET Core conventions
+
+## 🔧 Technology Detection
+
+เมื่อเริ่มพัฒนา จะตรวจจับ technology stack อัตโนมัติ:
+
+| Technology | Files ที่บ่งบอก | Skill ที่ใช้ |
+|------------|----------------|-------------|
+| .NET Core/ASP.NET | `*.csproj`, `*.sln` | `/dotnet-dev` ⭐ |
+| Node.js/React/Vue | `package.json` | (standard practices) |
+| Python/FastAPI | `requirements.txt` | (standard practices) |
+| Go | `go.mod` | (standard practices) |
+| Rust | `Cargo.toml` | (standard practices) |
+| PHP/Laravel | `composer.json` | (standard practices) |
+| Java/Spring | `pom.xml`, `build.gradle` | (standard practices) |
+
+⭐ = มี specialized skill พร้อมใช้งาน
+
+### Universal Skills (ใช้ได้กับทุก Technology)
+
+| Skill | Description |
+|-------|-------------|
+| `/system-design-doc` | สร้างเอกสารออกแบบระบบ |
+| `/ui-mockup` | สร้าง UI wireframes |
+| `/code-review` | Review code ก่อน commit |
+| `/test-runner` | รัน tests |
+| `/ai-ui-test` | Test UI automation |
 
 ## 🏗️ Architecture
 
@@ -79,6 +190,13 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 │   │  • Git History        (ประวัติการเปลี่ยนแปลง)        │   │
 │   └─────────────────────────────────────────────────────┘   │
 │                                                             │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │              DESIGN REFERENCES (v1.3.0)             │   │
+│   │  • .mockups/          (UI Wireframes)               │   │
+│   │  • *design-doc.md     (System Design)               │   │
+│   │  • Design Tokens      (Colors, Spacing)             │   │
+│   └─────────────────────────────────────────────────────┘   │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -87,10 +205,42 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 ```
 project-root/
 ├── .agent/                      # Agent configuration
-│   ├── config.json              # Project settings
+│   ├── config.json              # Project settings + recommended skills
 │   └── progress.md              # Session logs
+├── .mockups/                    # UI Mockups (from ui-mockup skill)
+│   ├── mockup_list.json         # List of all mockups
+│   ├── _design-tokens.yaml      # Shared design tokens
+│   └── *.mockup.md              # Page mockups
 ├── feature_list.json            # Feature tracking
 └── ... (project files)
+```
+
+### .agent/config.json (v1.3.0)
+
+```json
+{
+  "project_name": "ชื่อโปรเจค",
+  "technology": ".NET Core",
+  "initialized_at": "2025-01-01T00:00:00Z",
+  "current_session": 1,
+  "design_references": {
+    "mockups_folder": ".mockups/",
+    "design_doc": "system-design-doc.md",
+    "design_tokens": ".mockups/_design-tokens.yaml"
+  },
+  "recommended_skills": [
+    "/dotnet-dev",
+    "/code-review",
+    "/test-runner"
+  ],
+  "settings": {
+    "auto_commit": true,
+    "require_tests": true,
+    "max_features_per_session": 1,
+    "use_mockups_for_ui": true,
+    "use_design_doc_for_db": true
+  }
+}
 ```
 
 ## 🔄 Workflow
@@ -102,7 +252,7 @@ project-root/
 
 Output:
 ├── feature_list.json (10-15 features, all passes: false)
-├── .agent/config.json
+├── .agent/config.json (includes design_references & recommended_skills)
 ├── .agent/progress.md (Session 1 log)
 └── Git commit: "chore: Initialize agent environment"
 ```
@@ -113,14 +263,17 @@ Output:
 /continue
 
 Workflow:
-1. อ่าน progress.md และ git log
-2. ตรวจสอบ build status
-3. เลือก feature ที่ passes: false
-4. Implement feature
-5. Test feature
-6. Mark pass ใน feature_list.json
-7. Git commit
-8. Update progress.md
+1. อ่าน CLAUDE.md และ project rules
+2. ตรวจสอบ .mockups/ และ design docs ← NEW!
+3. ตรวจสอบ technology stack และ recommended skills ← NEW!
+4. อ่าน progress.md และ git log
+5. ตรวจสอบ build status
+6. เลือก feature ที่ passes: false
+7. Implement feature (ตาม mockup/design doc)
+8. Test feature
+9. Mark pass ใน feature_list.json
+10. Git commit
+11. Update progress.md
 ```
 
 ## ⚠️ Critical Rules
@@ -129,11 +282,17 @@ Workflow:
 - ❌ ห้าม implement code
 - ✅ สร้างแค่ configuration files
 - ✅ Feature list ต้องครบถ้วน
+- ✅ ต้องตรวจสอบ .mockups/ และ design docs
 
 ### Coding Agent
 - ❌ ห้ามทำหลาย features ใน 1 session
 - ❌ ห้าม mark pass โดยไม่ test
+- ❌ ห้ามสร้าง UI ที่แตกต่างจาก mockup
+- ❌ ห้ามสร้าง schema ที่แตกต่างจาก design doc
 - ✅ อ่าน context ก่อนเริ่มงานเสมอ
+- ✅ ใช้ mockup เป็น reference สำหรับ UI
+- ✅ ใช้ design doc เป็น reference สำหรับ DB/API
+- ✅ ใช้ recommended skills ตาม technology
 - ✅ Commit แยกต่าง feature
 - ✅ Update progress ก่อนจบ session
 
@@ -165,27 +324,17 @@ Workflow:
 - ถ้า build fail: แก้ก่อนทำ feature ใหม่
 - ถ้า feature ซับซ้อน: บันทึกใน notes, ให้ session ถัดไปทำต่อ
 
-## 🔗 Integration
-
-### กับ dotnet-dev skill
-```
-1. /init-agent สร้าง ASP.NET Core API
-2. Initializer ใช้ dotnet-dev patterns สำหรับ feature breakdown
-3. Coding Agent ใช้ dotnet-dev สำหรับ implementation
-```
-
-### กับ system-design-doc skill
-```
-1. ใช้ system-design-doc สร้างเอกสารก่อน
-2. แปลง design เป็น feature_list.json
-3. ใช้ long-running-agent implement
-```
-
 ## ➕ การเพิ่ม Feature ใหม่ระหว่างการพัฒนา
 
 เมื่อต้องการเพิ่ม feature ใหม่ระหว่างที่โปรเจคกำลังพัฒนาอยู่
 
-### วิธีที่ 1: เพิ่มด้วยตัวเอง (Manual)
+### วิธีที่ 1: ใช้ Command
+
+```bash
+/add-feature [description]
+```
+
+### วิธีที่ 2: เพิ่มด้วยตัวเอง (Manual)
 
 #### Step 1: แก้ไข feature_list.json
 
@@ -193,7 +342,7 @@ Workflow:
 {
   "features": [
     // ... features เดิม ...
-    
+
     // เพิ่ม feature ใหม่
     {
       "id": 13,  // ใช้ id ถัดไป
@@ -250,48 +399,6 @@ git commit -m "chore: Add Feature #13 - [description]"
 
 ---
 
-### วิธีที่ 2: ใช้ Claude ช่วย
-
-```bash
-# บอก Claude ให้เพิ่ม feature
-"เพิ่ม feature ใหม่: [อธิบาย feature ที่ต้องการ]"
-```
-
-Claude จะ:
-1. วิเคราะห์ feature ที่ต้องการ
-2. กำหนด id, priority, steps
-3. หา dependencies
-4. แก้ไข feature_list.json
-5. บันทึกใน progress.md
-6. Commit changes
-
----
-
-### วิธีที่ 3: เพิ่มหลาย Features พร้อมกัน
-
-```bash
-"เพิ่ม features สำหรับระบบ authentication:
-- Login
-- Register  
-- Forgot password
-- Reset password"
-```
-
-Claude จะสร้าง features เรียงตาม dependency:
-
-```json
-{
-  "features": [
-    { "id": 13, "description": "Auth - Register endpoint", "priority": "high" },
-    { "id": 14, "description": "Auth - Login endpoint", "dependencies": [13], "priority": "high" },
-    { "id": 15, "description": "Auth - Forgot password", "dependencies": [13], "priority": "medium" },
-    { "id": 16, "description": "Auth - Reset password", "dependencies": [15], "priority": "medium" }
-  ]
-}
-```
-
----
-
 ### กฎสำคัญเมื่อเพิ่ม Feature
 
 | ✅ ทำได้ | ❌ ห้ามทำ |
@@ -300,51 +407,6 @@ Claude จะสร้าง features เรียงตาม dependency:
 | แก้ไข priority | แก้ไข description ของ feature เดิม |
 | เพิ่ม dependencies | เปลี่ยน id ของ feature เดิม |
 | แก้ไข steps ของ feature ที่ยังไม่ pass | แก้ไข feature ที่ pass แล้ว |
-
----
-
-### ตัวอย่าง Scenarios
-
-#### Scenario 1: Client ขอเพิ่ม feature
-
-```
-Client: "เพิ่มระบบ export เป็น Excel ด้วย"
-
-คุณ: "เพิ่ม feature ใหม่: Export data เป็น Excel file"
-
-Claude จะ:
-1. สร้าง Feature #13: Export to Excel
-2. กำหนด priority: medium
-3. หา dependencies (ต้องมี data ก่อน)
-4. อัพเดท feature_list.json
-5. Commit
-```
-
-#### Scenario 2: พบว่าต้องแยก feature ใหญ่
-
-```
-ระหว่างทำ Feature #5 พบว่าใหญ่เกินไป
-
-คุณ: "แยก Feature #5 เป็น 2 features:
-- #5: Basic CRUD (เดิม)
-- #13: Advanced filtering (ใหม่)"
-
-Claude จะ:
-1. แก้ไข steps ของ Feature #5 ให้เล็กลง
-2. เพิ่ม Feature #13 สำหรับส่วนที่แยกออกมา
-3. อัพเดท dependencies
-```
-
-#### Scenario 3: เพิ่ม feature ด่วน (Hotfix)
-
-```
-คุณ: "เพิ่ม feature ด่วน priority high: Fix security vulnerability"
-
-Claude จะ:
-1. สร้าง Feature #13 ด้วย priority: high
-2. ใส่ไว้เป็น feature ถัดไปที่ต้องทำ
-3. /continue จะหยิบ feature นี้ไปทำก่อน
-```
 
 ---
 
@@ -376,6 +438,27 @@ Claude จะ:
 | `refactor` | ปรับโครงสร้าง code |
 | `test` | เพิ่ม tests |
 | `docs` | documentation |
+
+## 📝 Changelog
+
+### v1.3.0 (2025-12-29)
+- ✨ เพิ่ม Integration กับ ui-mockup skill
+  - ตรวจสอบ `.mockups/` folder
+  - สร้าง UI ตาม ASCII wireframe
+  - ใช้ design tokens
+- ✨ เพิ่ม Integration กับ system-design-doc skill
+  - ใช้ ER Diagram สำหรับ database
+  - ใช้ Flow Diagram สำหรับ business logic
+- ✨ เพิ่ม Technology Detection
+  - ตรวจจับ 7 technologies
+  - แนะนำ skills ที่เหมาะสม
+- ✨ เพิ่ม dotnet-dev skill integration
+- 📝 อัพเดต config.json template
+  - เพิ่ม `design_references`
+  - เพิ่ม `recommended_skills`
+
+### v1.2.0
+- Initial release with basic features
 
 ## 📄 License
 
