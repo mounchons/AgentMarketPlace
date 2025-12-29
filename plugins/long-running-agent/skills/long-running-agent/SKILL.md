@@ -1,9 +1,12 @@
 ---
 name: long-running-agent
-description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging และ incremental development
+version: 1.3.0
+description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging, incremental development และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills
 ---
 
 # Long-Running Agent Skill
+
+> **Version 1.3.0** - เพิ่ม Integration กับ ui-mockup, system-design-doc และ technology-specific skills
 
 Skill สำหรับจัดการ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 อ้างอิงจาก [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
