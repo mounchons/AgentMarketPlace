@@ -9,49 +9,70 @@ allowed-tools: Bash(*), Read(*), Glob(*)
 
 ## ขั้นตอนที่ต้องทำ
 
-### Step 1: ค้นหา Mockup Files
+### Step 1: อ่าน mockup_list.json (ถ้ามี)
 
 ```bash
-# ค้นหาไฟล์ mockup ทั้งหมด
-ls -la .mockups/*.mockup.md 2>/dev/null
+# ตรวจสอบ mockup_list.json
+cat .mockups/mockup_list.json 2>/dev/null
 ```
 
-### Step 2: อ่าน Page Info จากแต่ละไฟล์
+**ถ้ามี mockup_list.json:** ใช้ข้อมูลจาก json เพื่อแสดงสถานะครบถ้วน
+
+**ถ้าไม่มี mockup_list.json:** ค้นหาไฟล์โดยตรง
+
+### Step 2: ค้นหา Mockup Files
+
+```bash
+# ค้นหาไฟล์ mockup ทั้งหมด (format ใหม่: [NNN]-[name].mockup.md)
+ls -la .mockups/[0-9][0-9][0-9]-*.mockup.md 2>/dev/null
+```
+
+### Step 3: อ่าน Page Info จากแต่ละไฟล์
 
 สำหรับแต่ละไฟล์ ให้อ่านข้อมูล:
+- Page ID (NNN)
 - Page Name
-- Page ID
 - URL
+- CRUD Group
+- Complexity
+- UI Pattern
 - Status
-- Version
 - Last Updated
 
-### Step 3: แสดงผล
+### Step 4: แสดงผล
 
 **Format:**
 
 ```
 📁 UI Mockups in Project
 
-┌────────────────────────────────────────────────────────────────────────────┐
-│ Page Name       │ Page ID  │ URL              │ Status   │ Last Updated   │
-├────────────────────────────────────────────────────────────────────────────┤
-│ Login           │ SCR-001  │ /auth/login      │ Approved │ 2025-01-15     │
-│ Dashboard       │ SCR-002  │ /dashboard       │ Draft    │ 2025-01-14     │
-│ User List       │ SCR-003  │ /admin/users     │ Review   │ 2025-01-13     │
-│ User Form       │ SCR-004  │ /admin/users/new │ Draft    │ 2025-01-13     │
-└────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────────┐
+│ ID  │ Page Name       │ URL              │ CRUD Group   │ UI Pattern │ Status   │ Docs   │
+├───────────────────────────────────────────────────────────────────────────────────────────┤
+│ 001 │ Login           │ /auth/login      │ -            │ -          │ Approved │ 3      │
+│ 002 │ Dashboard       │ /dashboard       │ -            │ -          │ Draft    │ 2      │
+│ 004 │ User List       │ /admin/users     │ User (list)  │ page       │ Review   │ 4      │
+│ 005 │ User Form       │ /admin/users/new │ User (form)  │ page       │ Draft    │ 3      │
+│ 006 │ User Detail     │ /admin/users/:id │ User (detail)│ page       │ Pending  │ 2      │
+│ 010 │ Department List │ /admin/depts     │ Department   │ modal      │ Draft    │ 1      │
+└───────────────────────────────────────────────────────────────────────────────────────────┘
 
 📊 Summary:
-   • Total: 4 mockups
+   • Total: 6 mockups
    • Approved: 1
    • In Review: 1
-   • Draft: 2
+   • Draft: 3
+   • Pending: 1
+
+📋 CRUD Entities:
+   • User (complex) - 3 pages: list ✅, form ✅, detail ⏳
+   • Department (simple) - 1 page: list ✅ (modal pattern)
 
 💡 Commands:
-   • /create-mockup [page]           → สร้าง mockup ใหม่
-   • /edit-mockup [page] - [changes] → แก้ไข mockup
-   • cat .mockups/[page].mockup.md   → ดูรายละเอียด
+   • /create-mockup [page]               → สร้าง mockup ใหม่
+   • /create-mockups-parallel --entity X → สร้าง CRUD pages
+   • /edit-mockup [page] - [changes]     → แก้ไข mockup
+   • cat .mockups/[NNN]-[page].mockup.md → ดูรายละเอียด
 ```
 
 ---
@@ -84,22 +105,47 @@ ls -la .mockups/*.mockup.md 2>/dev/null
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📄 login.mockup.md
+📄 001-login.mockup.md
+   • Page ID: 001
    • Page: Login
    • URL: /auth/login
    • Status: ✅ Approved
+   • CRUD Group: -
+   • UI Pattern: -
    • Components: 8 (Logo, Card, 2x Input, 2x Button, Divider, SocialLogin)
    • Interactions: 3
+   • Related Docs: 3
    • Last Updated: 2025-01-15 by Claude
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📄 dashboard.mockup.md
-   • Page: Dashboard
-   • URL: /dashboard
+📄 004-user-list.mockup.md
+   • Page ID: 004
+   • Page: User List
+   • URL: /admin/users
    • Status: 📝 Draft
-   • Components: 15 (Navbar, Sidebar, 4x StatCard, Chart, Table, etc.)
-   • Interactions: 8
+   • CRUD Group: User (list)
+   • UI Pattern: page (complex)
+   • Components: 8 (Navbar, Sidebar, SearchBar, Table, Pagination, ActionButtons)
+   • Interactions: 5 (View→page, Edit→page, Delete→SweetAlert2, Add→page, Filter)
+   • Action Column: first
+   • Related Docs: 4
+   • Related Pages: 005-user-form, 006-user-detail
+   • Last Updated: 2025-01-14 by Claude
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📄 010-department-list.mockup.md
+   • Page ID: 010
+   • Page: Department List
+   • URL: /admin/departments
+   • Status: 📝 Draft
+   • CRUD Group: Department (list)
+   • UI Pattern: modal (simple)
+   • Components: 6 (Table, Modal, Form, SweetAlert2)
+   • Interactions: 4 (View→modal, Edit→modal, Delete→SweetAlert2, Add→modal)
+   • Action Column: first
+   • Related Docs: 1
    • Last Updated: 2025-01-14 by Claude
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

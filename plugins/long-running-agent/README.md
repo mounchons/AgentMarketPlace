@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 1.3.0** - เพิ่ม Integration กับ ui-mockup, system-design-doc และ technology-specific skills
+> **Version 1.4.0** - เพิ่ม Feature References และ Edit Feature Command
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -64,6 +64,89 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 | `/agent-status` | ดูความคืบหน้าของโปรเจค |
 | `/init-agent-existing` | เพิ่ม agent environment ให้โปรเจคที่มีอยู่ |
 | `/add-feature` | เพิ่ม feature ใหม่เข้าไปใน feature_list.json |
+| `/edit-feature [id] - [changes]` | แก้ไข feature ที่ pass แล้ว (สร้าง feature ใหม่) |
+
+## 📎 Feature References (v1.4.0)
+
+Features สามารถมี references ไปยังเอกสารอื่นๆ ได้:
+
+```json
+{
+  "id": 5,
+  "category": "feature",
+  "description": "สร้างหน้า Login",
+  "references": [
+    ".mockups/login.mockup.md",
+    "docs/auth-flow.md",
+    "sql/create_users.sql"
+  ]
+}
+```
+
+### Reference Types
+
+| Type | Example Path | Usage |
+|------|-------------|-------|
+| Mockup | `.mockups/login.mockup.md` | UI design reference |
+| Design Doc | `docs/system-design.md` | Architecture reference |
+| SQL | `sql/create_table.sql` | Database schema |
+| Logic Doc | `docs/business-logic.md` | Business rules |
+| Wireframe | `.mockups/wireframe.md` | Basic layout reference |
+
+### Using References
+
+เมื่อ Coding Agent ทำ feature ที่มี references:
+- ✅ ต้องอ่าน references ก่อนเริ่มงาน
+- ✅ ใช้ mockup เป็น design reference
+- ✅ ใช้ SQL/design doc เป็น schema reference
+- ❌ ห้ามสร้าง UI ที่แตกต่างจาก mockup
+- ❌ ห้ามสร้าง schema ที่แตกต่างจาก design doc
+
+---
+
+## 🔄 Editing Passed Features (v1.4.0)
+
+เมื่อต้องการแก้ไข feature ที่ผ่านแล้ว:
+
+```bash
+/edit-feature 5 - เพิ่ม OAuth login
+```
+
+### สิ่งที่เกิดขึ้น:
+
+1. **Feature #5 ยังคงอยู่** (passes: true) - เก็บ history
+2. **สร้าง Feature ใหม่ #13** (passes: false)
+3. Feature #13 มี:
+   - `supersedes: 5` - อ้างอิงว่าแทนที่ feature ไหน
+   - `related_features: [5]` - features ที่เกี่ยวข้อง
+4. Summary อัพเดท (total +1, failed +1)
+
+### Feature Evolution Diagram
+
+```
+Feature #5 (Login - Basic)
+    │ passes: true
+    │
+    └──── superseded by ────┐
+                            │
+                            ▼
+                    Feature #13
+                    (Login - OAuth)
+                    passes: false
+                    related_features: [5]
+                    supersedes: 5
+```
+
+### When to Use
+
+| Scenario | Command |
+|----------|---------|
+| Feature pass แล้ว ต้องการเพิ่ม scope | `/edit-feature` |
+| Feature pass แล้ว พบ bug | `/edit-feature` (category: bugfix) |
+| Feature ยังไม่ pass | `/continue` |
+| ต้องการเพิ่ม feature ใหม่ | `/add-feature` |
+
+---
 
 ## 🔗 Integration with Other Skills
 
@@ -440,6 +523,16 @@ git commit -m "chore: Add Feature #13 - [description]"
 | `docs` | documentation |
 
 ## 📝 Changelog
+
+### v1.4.0 (2025-01-04)
+- ✨ เพิ่ม `references` field ใน feature schema
+  - อ้างอิง mockup, design doc, SQL, logic doc
+  - Coding Agent ต้องอ่าน references ก่อนเริ่มงาน
+- ✨ เพิ่ม `/edit-feature` command
+  - แก้ไข feature ที่ pass แล้วโดยสร้าง feature ใหม่
+  - เก็บ history ด้วย `related_features` และ `supersedes` fields
+- 📝 อัพเดต feature schema template
+- 📝 อัพเดต documentation
 
 ### v1.3.0 (2025-12-29)
 - ✨ เพิ่ม Integration กับ ui-mockup skill

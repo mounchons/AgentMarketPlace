@@ -636,3 +636,168 @@ project-root/
 | `references/component-library.md` | Full component library |
 | `references/responsive-patterns.md` | Responsive design patterns |
 | `templates/mockup-template.md` | Template สำหรับ mockup file |
+| `templates/mockup_list.json` | Template สำหรับ mockup tracking |
+
+---
+
+## 🎯 Entity Complexity Classification
+
+### Simple vs Complex Entities
+
+| Complexity | ลักษณะข้อมูล | UI Pattern | ตัวอย่าง |
+|------------|-------------|------------|---------|
+| **simple** | Master data, fields < 10, ไม่มี relations ซับซ้อน | Modal popup | Department, Status, Category, Position |
+| **complex** | Fields >= 10, มี relations ซับซ้อน, ต้องการ wizard | Separate page | User, Order, Product, Employee |
+
+### UI Pattern Decision
+
+```
+Entity Analysis
+      │
+      ├── Fields < 10 && No complex relations
+      │   └── complexity: "simple"
+      │       └── UI Pattern: Modal
+      │           • View → Modal
+      │           • Create → Modal
+      │           • Edit → Modal
+      │           • Delete → SweetAlert2
+      │
+      └── Fields >= 10 || Complex relations
+          └── complexity: "complex"
+              └── UI Pattern: Page
+                  • View → Detail Page
+                  • Create → Form Page
+                  • Edit → Form Page
+                  • Delete → SweetAlert2
+```
+
+---
+
+## 📊 CRUD Page Patterns
+
+### Complex Entity (3 pages)
+
+สำหรับ entity ที่ซับซ้อน จะสร้าง 3 pages:
+
+| Page Type | Filename | Description |
+|-----------|----------|-------------|
+| List | `[NNN]-[entity]-list.mockup.md` | ตารางแสดงรายการ |
+| Form | `[NNN]-[entity]-form.mockup.md` | ฟอร์มสร้าง/แก้ไข |
+| Detail | `[NNN]-[entity]-detail.mockup.md` | แสดงรายละเอียด |
+
+### Simple Entity (1 page with modals)
+
+สำหรับ entity ง่ายๆ (Master Data) จะสร้าง 1 page:
+
+| Page Type | Filename | Description |
+|-----------|----------|-------------|
+| List | `[NNN]-[entity]-list.mockup.md` | ตาราง + Modal สำหรับ View/Create/Edit |
+
+---
+
+## 📁 File Naming Convention
+
+**Format:** `[NNN]-[page-name].mockup.md`
+
+| Component | Description | Example |
+|-----------|-------------|---------|
+| NNN | 3 หลักตัวเลขจาก page ID | 001, 004, 015 |
+| page-name | ชื่อหน้าแบบ kebab-case | login, user-list, department-list |
+
+**ตัวอย่าง:**
+```
+.mockups/
+├── mockup_list.json
+├── 001-login.mockup.md
+├── 002-register.mockup.md
+├── 003-dashboard.mockup.md
+├── 004-user-list.mockup.md
+├── 005-user-form.mockup.md
+├── 006-user-detail.mockup.md
+├── 010-department-list.mockup.md    # simple entity (modal pattern)
+└── _design-tokens.json
+```
+
+---
+
+## 📋 Action Column Position
+
+**Action column ต้องอยู่ด้านหน้า (ซ้ายสุด) ของตาราง:**
+
+```
+┌────────┬─────┬────────────────────┬─────────────────┬──────────┐
+│ Action │ ID  │ Name               │ Email           │ Status   │
+├────────┼─────┼────────────────────┼─────────────────┼──────────┤
+│ 👁 ✏️ 🗑 │ 001 │ John Doe           │ john@email.com  │ Active   │
+│ 👁 ✏️ 🗑 │ 002 │ Jane Smith         │ jane@email.com  │ Active   │
+└────────┴─────┴────────────────────┴─────────────────┴──────────┘
+```
+
+### Action Icons
+
+| Icon | Action | Simple Entity | Complex Entity |
+|------|--------|---------------|----------------|
+| 👁 | View | Open View Modal | Navigate to Detail Page |
+| ✏️ | Edit | Open Edit Modal | Navigate to Edit Page |
+| 🗑 | Delete | SweetAlert2 | SweetAlert2 |
+
+---
+
+## 🔔 SweetAlert2 Usage
+
+**Delete confirmation ใช้ SweetAlert2 เสมอ (ทั้ง simple และ complex entities):**
+
+```javascript
+// Delete Confirmation
+Swal.fire({
+  icon: 'warning',
+  title: 'Are you sure?',
+  text: "You won't be able to revert this!",
+  showCancelButton: true,
+  confirmButtonColor: '#d33',
+  cancelButtonColor: '#3085d6',
+  confirmButtonText: 'Yes, delete it!',
+  cancelButtonText: 'Cancel'
+})
+
+// Success
+Swal.fire({
+  icon: 'success',
+  title: 'Success!',
+  text: 'Your record has been saved.',
+  confirmButtonText: 'OK'
+})
+
+// Error
+Swal.fire({
+  icon: 'error',
+  title: 'Error!',
+  text: 'Something went wrong.',
+  confirmButtonText: 'OK'
+})
+```
+
+---
+
+## 🔗 Related Documents
+
+ทุก page ใน mockup_list.json สามารถมี related_documents:
+
+```json
+{
+  "related_documents": [
+    {"type": "system-design", "path": "system-design.md#user-management"},
+    {"type": "api", "path": "docs/api/users.md"},
+    {"type": "requirements", "path": "requirements.md#FR-001"}
+  ]
+}
+```
+
+**Document Types ที่รองรับ:**
+- `system-design` - System Design Document
+- `api` - API Specification
+- `requirements` - Requirements Document
+- `figma` - Figma Design
+- `erd` - ER Diagram
+- `flow` - Flow Diagram
+- `data-dict` - Data Dictionary

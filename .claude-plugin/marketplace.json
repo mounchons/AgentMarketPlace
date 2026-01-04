@@ -14,7 +14,7 @@
       "name": "system-design-doc",
       "source": "./plugins/system-design-doc",
       "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams",
-      "version": "1.0.0",
+      "version": "1.2.0",
       "category": "documentation",
       "tags": [
         "thai",
@@ -54,8 +54,8 @@
     {
       "name": "long-running-agent",
       "source": "./plugins/long-running-agent",
-      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging และ incremental development pattern อ้างอิงจาก Anthropic Engineering Blog",
-      "version": "1.1.0",
+      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development pattern, feature references และ edit-feature command อ้างอิงจาก Anthropic Engineering Blog",
+      "version": "1.4.0",
       "category": "agent",
       "tags": [
         "long-running",
@@ -74,7 +74,7 @@
       "name": "ui-mockup",
       "source": "./plugins/ui-mockup",
       "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document เป็น bridge ระหว่าง system-design-doc และ frontend-design พร้อม ASCII wireframes, component specs และ mockup tracking system",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "category": "design",
       "tags": [
         "ui",

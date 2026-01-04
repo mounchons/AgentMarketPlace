@@ -416,12 +416,139 @@
     "Step 3: How to verify it works"
   ],
   "dependencies": [1, 2],
+  "references": [],
   "estimated_time": "30min",
   "passes": false,
   "tested_at": null,
   "notes": ""
 }
 ```
+
+---
+
+## 📎 References Field
+
+Feature สามารถมี references ไปยังเอกสารอื่นๆ ได้ เพื่อให้ Coding Agent ใช้เป็น reference ในการพัฒนา
+
+### Reference Types
+
+| Type | Example Path | Usage |
+|------|-------------|-------|
+| Mockup | `.mockups/login.mockup.md` | UI design reference |
+| Design Doc | `docs/system-design.md` | Architecture reference |
+| SQL | `sql/create_table.sql` | Database schema |
+| Logic Doc | `docs/business-logic.md` | Business rules |
+| API Spec | `docs/api-spec.md` | API documentation |
+| Wireframe | `.mockups/wireframe.md` | Basic layout reference |
+
+### Example Usage
+
+```json
+{
+  "id": 5,
+  "category": "feature",
+  "description": "สร้างหน้า Login",
+  "references": [
+    ".mockups/login.mockup.md",
+    "docs/auth-flow.md"
+  ],
+  "passes": false
+}
+```
+
+```json
+{
+  "id": 10,
+  "category": "data",
+  "description": "สร้าง User table และ migration",
+  "references": [
+    "sql/create_users_table.sql",
+    "docs/system-design.md#er-diagram"
+  ],
+  "passes": false
+}
+```
+
+### Using References in Development
+
+เมื่อ Coding Agent ทำ feature ที่มี references:
+
+1. **ต้อง** อ่าน references ก่อนเริ่มงาน
+2. **ต้อง** ใช้ mockup เป็น design reference สำหรับ UI
+3. **ต้อง** ใช้ SQL/design doc เป็น schema reference
+4. **ต้อง** ใช้ logic doc เป็น business rules reference
+5. **ห้าม** สร้าง UI ที่แตกต่างจาก mockup
+6. **ห้าม** สร้าง schema ที่แตกต่างจาก design doc
+
+---
+
+## 🔄 Feature Versioning (Edit Feature)
+
+เมื่อต้องการแก้ไข feature ที่ pass แล้ว ให้สร้าง feature ใหม่แทนการแก้ไข in-place
+
+### Related Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `related_features` | `number[]` | Feature IDs ที่เกี่ยวข้อง |
+| `supersedes` | `number` | Feature ID ที่ถูกแทนที่ |
+
+### Example: Feature Evolution
+
+```json
+// Feature #5 (original, passed)
+{
+  "id": 5,
+  "category": "feature",
+  "description": "สร้างหน้า Login ด้วย username/password",
+  "passes": true,
+  "tested_at": "2025-01-10T10:00:00Z"
+}
+
+// Feature #13 (new version, supersedes #5)
+{
+  "id": 13,
+  "category": "enhancement",
+  "description": "ปรับปรุงหน้า Login - เพิ่ม OAuth login",
+  "related_features": [5],
+  "supersedes": 5,
+  "passes": false,
+  "notes": "Updated from Feature #5 - เพิ่ม OAuth support"
+}
+```
+
+### Feature Relationship Diagram
+
+```
+Feature #5 (Login - Basic)
+    │ passes: true
+    │
+    └──── superseded by ────┐
+                            │
+                            ▼
+                    Feature #13
+                    (Login - OAuth)
+                    passes: false
+                    related_features: [5]
+                    supersedes: 5
+```
+
+### Rules for Edit Feature
+
+1. **ห้ามแก้ไข feature ที่ pass แล้วโดยตรง**
+2. **ต้องสร้าง feature ใหม่เสมอ**
+3. **Feature เดิมยังคงอยู่เพื่อเก็บ history**
+4. **Feature ใหม่ต้อง reference feature เดิม**
+5. **ใช้ `/edit-feature` command**
+
+### When to Use Edit Feature
+
+| Scenario | Use /edit-feature? |
+|----------|-------------------|
+| Feature pass แล้ว ต้องการเพิ่ม scope | ✅ ใช่ |
+| Feature pass แล้ว พบ bug | ✅ ใช่ (category: bugfix) |
+| Feature ยังไม่ pass | ❌ ใช้ /continue แทน |
+| ต้องการเพิ่ม feature ใหม่ | ❌ ใช้ /add-feature แทน |
 
 ---
 

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project_name": "",
+  "description": "",
+  "technology_stack": {
+    "backend": "",
+    "frontend": "",
+    "database": "",
+    "message_queue": "",
+    "cache": ""
+  },
+  "created_at": "",
+  "updated_at": "",
+  "summary": {
+    "total": 0,
+    "draft": 0,
+    "in_progress": 0,
+    "completed": 0,
+    "reviewed": 0
+  },
+  "documents": [
+    {
+      "id": "DOC-001",
+      "name": "System Design Document",
+      "file_path": "system-design-[project-name].md",
+      "status": "draft",
+      "version": "1.0.0",
+      "sections_completed": [],
+      "sections_pending": [
+        "introduction",
+        "requirements",
+        "modules",
+        "data_model",
+        "dfd",
+        "flow_diagrams",
+        "er_diagram",
+        "data_dictionary",
+        "sitemap",
+        "permissions"
+      ],
+      "diagrams": {
+        "high_level_architecture": false,
+        "er_diagram": false,
+        "flow_diagrams": 0,
+        "dfd_level_0": false,
+        "dfd_level_1": false,
+        "dfd_level_2": false,
+        "sequence_diagrams": 0,
+        "sitemap": false,
+        "state_diagrams": 0,
+        "class_diagrams": 0
+      },
+      "statistics": {
+        "entities_count": 0,
+        "tables_count": 0,
+        "relationships_count": 0,
+        "api_endpoints_count": 0,
+        "pages_count": 0,
+        "user_roles_count": 0
+      },
+      "related_mockups": [],
+      "related_features": [],
+      "notes": "",
+      "created_at": "",
+      "updated_at": "",
+      "created_by": "",
+      "last_modified_by": ""
+    }
+  ],
+  "metadata": {
+    "schema_version": "1.0.0",
+    "plugin_version": "1.2.0"
+  }
+}

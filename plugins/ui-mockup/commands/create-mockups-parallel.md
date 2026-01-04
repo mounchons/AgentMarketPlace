@@ -17,6 +17,8 @@ User ต้องการสร้าง mockups: $ARGUMENTS
 /create-mockups-parallel --all                    # สร้างทุกหน้าที่ pending
 /create-mockups-parallel --priority high          # เฉพาะ high priority
 /create-mockups-parallel --category auth          # เฉพาะ category
+/create-mockups-parallel --entity User            # สร้าง CRUD pages ของ entity
+/create-mockups-parallel --entities User,Product  # สร้าง CRUD pages หลาย entities
 /create-mockups-parallel จาก system-design-doc.md
 ```
 
@@ -25,6 +27,7 @@ User ต้องการสร้าง mockups: $ARGUMENTS
 /create-mockups-parallel Login, Dashboard, User List, User Form
 /create-mockups-parallel --all
 /create-mockups-parallel --priority high
+/create-mockups-parallel --entity User
 /create-mockups-parallel จาก system-design.md
 ```
 
@@ -54,9 +57,16 @@ cat .mockups/mockup_list.json 2>/dev/null
    // filter pages where category == "auth" AND status == "pending"
    ```
 
-4. **ระบุชื่อหน้า**: ใช้ข้อมูลจาก json
+4. **--entity [name] flag**: สร้าง CRUD pages ของ entity
    ```json
-   // find page by name, use url, access, components, etc.
+   // find entity in entities array, get all page IDs
+   // สำหรับ complex entity: List + Form + Detail (3 pages)
+   // สำหรับ simple entity: List only (1 page with modals)
+   ```
+
+5. **ระบุชื่อหน้า**: ใช้ข้อมูลจาก json
+   ```json
+   // find page by name, use url, access, components, crud_group, complexity, ui_pattern, etc.
    ```
 
 **ถ้าไม่มี mockup_list.json:**
@@ -74,13 +84,33 @@ cat .mockups/mockup_list.json 2>/dev/null
 ```
 📋 Pages to create (from mockup_list.json):
 
-   ┌─────┬────────────────────┬─────────────────┬──────────┬──────────┐
-   │  #  │ Page Name          │ URL             │ Priority │ Category │
-   ├─────┼────────────────────┼─────────────────┼──────────┼──────────┤
-   │  1  │ Login              │ /auth/login     │ high     │ auth     │
-   │  2  │ Register           │ /auth/register  │ high     │ auth     │
-   │  3  │ Dashboard          │ /dashboard      │ high     │ main     │
-   └─────┴────────────────────┴─────────────────┴──────────┴──────────┘
+   ┌─────┬────────────────────┬─────────────────┬──────────┬──────────────┬────────────┐
+   │  #  │ Page Name          │ URL             │ Priority │ CRUD Group   │ UI Pattern │
+   ├─────┼────────────────────┼─────────────────┼──────────┼──────────────┼────────────┤
+   │  1  │ Login              │ /auth/login     │ high     │ -            │ -          │
+   │  2  │ User List          │ /admin/users    │ medium   │ User (list)  │ page       │
+   │  3  │ User Form          │ /admin/users/new│ medium   │ User (form)  │ page       │
+   │  4  │ Department List    │ /admin/depts    │ low      │ Department   │ modal      │
+   └─────┴────────────────────┴─────────────────┴──────────┴──────────────┴────────────┘
+
+   🚀 Spawning 4 sub-agents in parallel...
+```
+
+**ตัวอย่าง Output เมื่อใช้ --entity:**
+```
+📋 Creating CRUD pages for entity: User
+
+   Entity: User
+   Complexity: complex
+   UI Pattern: page
+
+   ┌─────┬────────────────────┬─────────────────┬────────────┐
+   │ ID  │ Page Name          │ URL             │ CRUD Type  │
+   ├─────┼────────────────────┼─────────────────┼────────────┤
+   │ 004 │ User List          │ /admin/users    │ list       │
+   │ 005 │ User Form          │ /admin/users/new│ form       │
+   │ 006 │ User Detail        │ /admin/users/:id│ detail     │
+   └─────┴────────────────────┴─────────────────┴────────────┘
 
    🚀 Spawning 3 sub-agents in parallel...
 ```
@@ -443,8 +473,10 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 ## Output Instructions
 
 1. สร้างโฟลเดอร์ .mockups (ถ้ายังไม่มี)
-2. สร้างไฟล์ .mockups/{{PAGE_SLUG}}.mockup.md
+2. สร้างไฟล์ .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 หลักจาก page ID)
 3. ใช้ template ด้านล่าง
+4. สำหรับ List pages: Action column ต้องอยู่ด้านหน้า (ซ้ายสุด)
+5. ใช้ SweetAlert2 สำหรับ delete confirmation
 
 ### File Content Template
 
@@ -461,10 +493,16 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 
 | Property | Value |
 |----------|-------|
-| Page ID | SCR-XXX |
+| Page ID | [NNN] |
 | Page Name | {{PAGE_NAME}} |
 | URL | {{URL}} |
 | Access | {{ACCESS_ROLES}} |
+| CRUD Group | [Entity หรือ N/A] |
+| CRUD Type | [list / form / detail / N/A] |
+| Complexity | [simple / complex / N/A] |
+| UI Pattern | [modal / page / N/A] |
+| Action Column | [first / last / N/A] |
+| Alert Library | SweetAlert2 |
 
 ---
 
@@ -523,10 +561,13 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 ```
 
 ## สำคัญ
-- ต้องสร้างไฟล์จริงที่ .mockups/{{PAGE_SLUG}}.mockup.md
+- ต้องสร้างไฟล์จริงที่ .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 หลักจาก page ID)
 - ใช้ Write tool สร้างไฟล์
 - ASCII wireframe ต้องครบทั้ง Desktop และ Mobile
 - ระบุ components และ interactions ให้ครบถ้วน
+- **สำหรับ List pages**: Action column (👁 ✏️ 🗑) ต้องอยู่ด้านหน้า (ซ้ายสุด)
+- **สำหรับ Simple entities**: View/Create/Edit ใช้ Modal, Delete ใช้ SweetAlert2
+- **สำหรับ Complex entities**: View/Create/Edit ใช้หน้าแยก, Delete ใช้ SweetAlert2
 ```
 
 ---
@@ -566,12 +607,22 @@ cat .mockups/mockup_list.json
 ```json
 // สำหรับแต่ละ page ที่สร้างสำเร็จ
 {
-  "id": "P001",
+  "id": "001",
   "name": "Login",
   "status": "completed",           // เปลี่ยนจาก pending
-  "mockup_file": "login.mockup.md",
+  "mockup_file": "001-login.mockup.md",
   "created_at": "2025-01-20T14:30:00Z",
   "notes": "Created by parallel agent"
+}
+
+// สำหรับ List page ของ simple entity
+{
+  "id": "010",
+  "name": "Department List",
+  "status": "completed",
+  "mockup_file": "010-department-list.mockup.md",
+  "created_at": "2025-01-20T14:30:00Z",
+  "notes": "Created with modal pattern, action column first, SweetAlert2 for delete"
 }
 ```
 

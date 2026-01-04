@@ -47,11 +47,18 @@ cat feature_list.json
     "step 2",
     "step 3"
   ],
+  "dependencies": [],
+  "references": [],
+  "estimated_time": "[ESTIMATED_TIME]",
   "passes": false,
+  "tested_at": null,
   "notes": "",
   "added_at": "[TIMESTAMP]"
 }
 ```
+
+**หมายเหตุ:**
+- `references`: array ของ paths ไปยังเอกสารที่เกี่ยวข้อง เช่น `.mockups/page.mockup.md`, `docs/logic.md`, `sql/create_table.sql`
 
 ### Step 5: เพิ่มเข้า feature_list.json
 
@@ -118,8 +125,42 @@ git commit -m "feat: Add feature #[ID] - [short description]"
     "return empty array ถ้าไม่พบ",
     "ทดสอบ search ด้วย keyword ต่างๆ"
   ],
+  "dependencies": [5],
+  "references": ["docs/api-spec.md"],
+  "estimated_time": "20min",
   "passes": false,
+  "tested_at": null,
   "notes": "",
   "added_at": "2025-01-15T10:30:00Z"
+}
+```
+
+### ตัวอย่าง 2: Feature พร้อม references
+
+**Input:** เพิ่ม feature สำหรับหน้า User Profile
+
+**Output ที่ควรสร้าง:**
+```json
+{
+  "id": 12,
+  "category": "feature",
+  "description": "สร้างหน้า User Profile",
+  "priority": "medium",
+  "steps": [
+    "สร้าง ProfileController",
+    "สร้าง Profile view ตาม mockup",
+    "แสดงข้อมูล user จาก database",
+    "ทดสอบ UI และ data binding"
+  ],
+  "dependencies": [3, 5],
+  "references": [
+    ".mockups/profile.mockup.md",
+    "docs/user-entity.md"
+  ],
+  "estimated_time": "25min",
+  "passes": false,
+  "tested_at": null,
+  "notes": "",
+  "added_at": "2025-01-15T11:00:00Z"
 }
 ```

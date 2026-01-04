@@ -1,7 +1,7 @@
 {
   "name": "system-design-doc",
-  "version": "1.1.0",
-  "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams",
+  "version": "1.2.0",
+  "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD)",
   "author": {
     "name": "Mounchons"
   }

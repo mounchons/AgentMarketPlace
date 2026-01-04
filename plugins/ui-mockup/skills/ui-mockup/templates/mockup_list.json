@@ -4,9 +4,48 @@
   "source_documents": [],
   "initialized_at": "[ISO_DATE]",
   "last_updated": "[ISO_DATE]",
+
+  "entities": [
+    {
+      "name": "User",
+      "name_th": "ผู้ใช้",
+      "complexity": "complex",
+      "ui_pattern": "page",
+      "pages": ["004", "005", "006"],
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "api", "path": "docs/api/users.md"}
+      ],
+      "crud_actions": {
+        "list": "page",
+        "view": "page",
+        "create": "page",
+        "edit": "page",
+        "delete": "sweetalert2"
+      }
+    },
+    {
+      "name": "Department",
+      "name_th": "แผนก",
+      "complexity": "simple",
+      "ui_pattern": "modal",
+      "pages": ["007"],
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#master-data"}
+      ],
+      "crud_actions": {
+        "list": "page",
+        "view": "modal",
+        "create": "modal",
+        "edit": "modal",
+        "delete": "sweetalert2"
+      }
+    }
+  ],
+
   "pages": [
     {
-      "id": "P001",
+      "id": "001",
       "name": "Login",
       "name_th": "เข้าสู่ระบบ",
       "url": "/auth/login",
@@ -15,13 +54,23 @@
       "priority": "high",
       "description": "หน้า login สำหรับเข้าสู่ระบบ",
       "components": ["Logo", "Card", "Input", "Button"],
+      "crud_group": null,
+      "crud_type": null,
+      "complexity": null,
+      "ui_pattern": null,
+      "action_column_position": null,
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#authentication"}
+      ],
+      "related_pages": ["002"],
       "status": "pending",
       "mockup_file": null,
       "created_at": null,
+      "updated_at": null,
       "notes": ""
     },
     {
-      "id": "P002",
+      "id": "002",
       "name": "Register",
       "name_th": "ลงทะเบียน",
       "url": "/auth/register",
@@ -30,13 +79,23 @@
       "priority": "high",
       "description": "หน้าลงทะเบียนผู้ใช้ใหม่",
       "components": ["Logo", "Card", "Input", "Button", "Checkbox"],
+      "crud_group": null,
+      "crud_type": null,
+      "complexity": null,
+      "ui_pattern": null,
+      "action_column_position": null,
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#authentication"}
+      ],
+      "related_pages": ["001"],
       "status": "pending",
       "mockup_file": null,
       "created_at": null,
+      "updated_at": null,
       "notes": ""
     },
     {
-      "id": "P003",
+      "id": "003",
       "name": "Dashboard",
       "name_th": "แดชบอร์ด",
       "url": "/dashboard",
@@ -45,13 +104,23 @@
       "priority": "high",
       "description": "หน้าหลักแสดงภาพรวมของระบบ",
       "components": ["Navbar", "Sidebar", "StatCard", "Chart", "Table"],
+      "crud_group": null,
+      "crud_type": null,
+      "complexity": null,
+      "ui_pattern": null,
+      "action_column_position": null,
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#dashboard"}
+      ],
+      "related_pages": [],
       "status": "pending",
       "mockup_file": null,
       "created_at": null,
+      "updated_at": null,
       "notes": ""
     },
     {
-      "id": "P004",
+      "id": "004",
       "name": "User List",
       "name_th": "รายการผู้ใช้",
       "url": "/admin/users",
@@ -60,13 +129,24 @@
       "priority": "medium",
       "description": "หน้าแสดงรายการผู้ใช้ทั้งหมด",
       "components": ["Navbar", "Sidebar", "SearchBar", "Table", "Pagination", "ActionButtons"],
+      "crud_group": "User",
+      "crud_type": "list",
+      "complexity": "complex",
+      "ui_pattern": "page",
+      "action_column_position": "first",
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "api", "path": "docs/api/users.md#list"}
+      ],
+      "related_pages": ["005", "006"],
       "status": "pending",
       "mockup_file": null,
       "created_at": null,
+      "updated_at": null,
       "notes": ""
     },
     {
-      "id": "P005",
+      "id": "005",
       "name": "User Form",
       "name_th": "ฟอร์มผู้ใช้",
       "url": "/admin/users/new",
@@ -75,12 +155,76 @@
       "priority": "medium",
       "description": "หน้าสร้าง/แก้ไขข้อมูลผู้ใช้",
       "components": ["Navbar", "Card", "Input", "Select", "Button"],
+      "crud_group": "User",
+      "crud_type": "form",
+      "complexity": "complex",
+      "ui_pattern": "page",
+      "action_column_position": null,
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "api", "path": "docs/api/users.md#create"},
+        {"type": "api", "path": "docs/api/users.md#update"}
+      ],
+      "related_pages": ["004", "006"],
       "status": "pending",
       "mockup_file": null,
       "created_at": null,
+      "updated_at": null,
       "notes": ""
+    },
+    {
+      "id": "006",
+      "name": "User Detail",
+      "name_th": "รายละเอียดผู้ใช้",
+      "url": "/admin/users/:id",
+      "access": "Admin",
+      "category": "detail",
+      "priority": "medium",
+      "description": "หน้าแสดงรายละเอียดผู้ใช้",
+      "components": ["Navbar", "Card", "Avatar", "DataDisplay", "ActionButtons"],
+      "crud_group": "User",
+      "crud_type": "detail",
+      "complexity": "complex",
+      "ui_pattern": "page",
+      "action_column_position": null,
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "api", "path": "docs/api/users.md#get"}
+      ],
+      "related_pages": ["004", "005"],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "updated_at": null,
+      "notes": ""
+    },
+    {
+      "id": "007",
+      "name": "Department List",
+      "name_th": "รายการแผนก",
+      "url": "/admin/departments",
+      "access": "Admin",
+      "category": "list",
+      "priority": "low",
+      "description": "หน้าจัดการข้อมูลแผนก (Master Data)",
+      "components": ["Navbar", "Sidebar", "SearchBar", "Table", "Pagination", "ActionButtons", "Modal"],
+      "crud_group": "Department",
+      "crud_type": "list",
+      "complexity": "simple",
+      "ui_pattern": "modal",
+      "action_column_position": "first",
+      "related_documents": [
+        {"type": "system-design", "path": "system-design.md#master-data"}
+      ],
+      "related_pages": [],
+      "status": "pending",
+      "mockup_file": null,
+      "created_at": null,
+      "updated_at": null,
+      "notes": "Simple entity - uses modal for CRUD operations"
     }
   ],
+
   "categories": {
     "auth": "Authentication pages (Login, Register, etc.)",
     "main": "Main application pages (Dashboard, Home)",
@@ -90,11 +234,75 @@
     "admin": "Admin/Settings pages",
     "reports": "Report/Analytics pages"
   },
+
+  "document_types": {
+    "system-design": "System Design Document",
+    "api": "API Specification",
+    "requirements": "Requirements Document",
+    "figma": "Figma Design",
+    "erd": "ER Diagram",
+    "flow": "Flow Diagram",
+    "data-dict": "Data Dictionary"
+  },
+
+  "ui_patterns": {
+    "modal": {
+      "description": "ใช้สำหรับ simple entities (Master Data) - View/Create/Edit/Delete ผ่าน Modal",
+      "use_when": ["fields น้อยกว่า 10", "ไม่มี relations ซับซ้อน", "Master data"],
+      "components": ["Modal", "Form", "SweetAlert2"]
+    },
+    "page": {
+      "description": "ใช้สำหรับ complex entities - View/Create/Edit ผ่านหน้าแยก",
+      "use_when": ["fields มากกว่า 10", "มี relations ซับซ้อน", "ต้องการ wizard/steps"],
+      "components": ["Form Page", "Detail Page", "SweetAlert2"]
+    }
+  },
+
+  "alert_config": {
+    "library": "sweetalert2",
+    "templates": {
+      "delete": {
+        "icon": "warning",
+        "title": "Are you sure?",
+        "text": "You won't be able to revert this!",
+        "confirmButtonText": "Yes, delete it!",
+        "cancelButtonText": "Cancel",
+        "confirmButtonColor": "#d33",
+        "cancelButtonColor": "#3085d6"
+      },
+      "success": {
+        "icon": "success",
+        "title": "Success!",
+        "confirmButtonText": "OK"
+      },
+      "error": {
+        "icon": "error",
+        "title": "Error!",
+        "confirmButtonText": "OK"
+      }
+    }
+  },
+
+  "table_config": {
+    "action_column_position": "first",
+    "action_icons": {
+      "view": "👁",
+      "edit": "✏️",
+      "delete": "🗑"
+    },
+    "default_columns": ["action", "id", "name", "status", "created_at"]
+  },
+
   "summary": {
-    "total": 5,
-    "pending": 5,
+    "total": 7,
+    "pending": 7,
     "in_progress": 0,
     "completed": 0,
-    "approved": 0
+    "approved": 0,
+    "entities": {
+      "total": 2,
+      "simple": 1,
+      "complex": 1
+    }
   }
 }
