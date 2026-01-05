@@ -163,13 +163,77 @@ ls -la pom.xml build.gradle 2>/dev/null && echo "→ Java detected"
 
 ---
 
-### 2. สร้าง Feature List
+### 2. สร้าง Feature List (Schema v1.5.0)
+
+**กฎการสร้าง Features:**
 - แตก requirements เป็น features เล็กๆ (10-20 features)
 - แต่ละ feature ทำเสร็จใน 1 session (15-30 นาที)
 - เรียงตาม dependency (setup ก่อน)
-- ทุก feature ต้อง `"passes": false`
+- ทุก feature ต้อง `"status": "pending"` และ `"passes": false`
 - **ถ้ามี mockups** → เพิ่ม features สำหรับแต่ละหน้า UI
 - **ถ้ามี design doc** → เพิ่ม features จาก ER/Flow diagrams
+
+**Schema v1.5.0 ต้องมี fields ใหม่เหล่านี้:**
+
+```json
+{
+  "schema_version": "1.5.0",
+  "epics": [...],       // กลุ่ม features ตาม bounded context
+  "features": [
+    {
+      "id": 1,
+      "epic": "setup",               // NEW: mandatory
+      "category": "setup",
+      "complexity": "simple",        // NEW: simple|medium|complex
+      "status": "pending",           // NEW: pending|in_progress|blocked|review|passed
+      "subtasks": [...],             // NEW: trackable sub-tasks
+      "acceptance_criteria": [...],  // NEW: success criteria
+      "time_tracking": {...},        // NEW: estimated vs actual
+      "mockup_validated": false,     // NEW: for UI features
+      "required_components": [...],  // NEW: from mockup specs
+      ...
+    }
+  ]
+}
+```
+
+**ดูรายละเอียด Schema ใน:** `references/feature-patterns.md` และ `templates/feature_list.json`
+
+### 2.5. Auto-generate Features (ถ้ามี Design Docs/Mockups)
+
+**ถ้าพบ mockups หรือ design docs ให้ใช้ logic เหล่านี้:**
+
+**จาก mockup_list.json → Features:**
+```
+For each page in mockup_list.json:
+  - Create feature: "สร้างหน้า [page.name_th or page.name]"
+  - Set epic: "ui-[category or crud_group]"
+  - Set complexity: from page.complexity or "medium"
+  - Add references: [".mockups/[id]-[name].mockup.md"]
+  - Add required_components: from page.components
+  - Set dependencies: API features ที่เกี่ยวข้อง
+```
+
+**จาก Design Doc (ER Diagram) → Features:**
+```
+For each entity in ER Diagram:
+  - Create feature: "สร้าง [Entity] entity" (category: domain)
+  - Create feature: "สร้าง [Entity] DbContext" (category: data)
+  - Create features: CRUD APIs (category: api)
+  - Create feature: "[Entity] validation" (category: quality)
+  - Set epic: "[entity_name.toLowerCase()]"
+```
+
+**จาก Design Doc (Flow Diagram) → Features:**
+```
+For each flow step:
+  - Create feature for business logic
+  - Set dependencies based on flow order
+```
+
+**ดูรายละเอียดใน commands:**
+- `/generate-features-from-mockups`
+- `/generate-features-from-design`
 
 ### 3. สร้างไฟล์
 

@@ -1,9 +1,12 @@
 {
+  "schema_version": "1.5.0",
   "project": "[Project Name]",
   "description": "[Project Description]",
   "source_documents": [],
   "initialized_at": "[ISO_DATE]",
   "last_updated": "[ISO_DATE]",
+  "feature_list_path": "feature_list.json",
+  "last_synced_with_features": null,
 
   "entities": [
     {
@@ -65,6 +68,9 @@
       "related_pages": ["002"],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -90,6 +96,9 @@
       "related_pages": ["001"],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -115,6 +124,9 @@
       "related_pages": [],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -141,6 +153,9 @@
       "related_pages": ["005", "006"],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -168,6 +183,9 @@
       "related_pages": ["004", "006"],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -194,6 +212,9 @@
       "related_pages": ["004", "005"],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -219,6 +240,9 @@
       "related_pages": [],
       "status": "pending",
       "mockup_file": null,
+      "mockup_version": "1.0",
+      "implemented_by_features": [],
+      "feature_status": null,
       "created_at": null,
       "updated_at": null,
       "notes": "Simple entity - uses modal for CRUD operations"

@@ -1,10 +1,19 @@
 # UI Mockup Plugin
 
-> สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications และ design tokens
+> **Version 1.5.0** - เพิ่ม Feature Integration, Reverse Links และ Version Sync
+
+สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications และ design tokens
 
 ## Overview
 
 Plugin สำหรับสร้าง UI Mockup/Wireframe โดยใช้ ASCII art และ structured specifications ออกแบบมาเพื่อเป็น bridge ระหว่าง `system-design-doc` และ `frontend-design`
+
+### 🆕 New in v1.5.0
+
+- **Feature Integration** - เชื่อมต่อกับ long-running-agent features
+- **Reverse Links** - `implemented_by_features[]` ใน mockup_list.json
+- **Version Sync** - `mockup_version` และ `feature_status` tracking
+- **Auto-generation** - รองรับ `/generate-features-from-mockups`
 
 ```
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐

@@ -233,6 +233,31 @@ cat .agent/config.json 2>/dev/null | grep -A 5 "recommended_skills"
 
 ---
 
+### Step 0.7: ตรวจสอบ Schema Version และ Migration (NEW v1.5.0)
+
+```bash
+# ตรวจสอบ schema version
+cat feature_list.json | grep "schema_version"
+```
+
+**ถ้าไม่พบ `schema_version` หรือเป็น version เก่า:**
+
+```
+⚠️ Detected old schema (no version or < 1.5.0)
+   Current schema: v1.5.0
+
+   แนะนำให้รัน /agent-migrate เพื่อ:
+   - เพิ่ม epics grouping
+   - เพิ่ม subtasks tracking
+   - เพิ่ม acceptance criteria
+   - เพิ่ม time tracking
+   - เพิ่ม mockup sync fields
+
+   ข้อมูลเดิมจะถูกเก็บรักษาไว้
+```
+
+---
+
 ### Step 1: Get Context (ต้องทำก่อนเสมอ!)
 
 ```bash
@@ -265,35 +290,150 @@ npm install && npm run build
 # ถ้า build fail: แก้ไขก่อนทำ feature ใหม่
 ```
 
-### Step 3: Select Feature
+### Step 3: Select Feature (Schema v1.5.0)
 
 จาก feature_list.json:
-- หา feature ที่ `"passes": false`
+- หา feature ที่ `"status": "pending"` (หรือ `"passes": false` สำหรับ old schema)
 - เลือก `"priority": "high"` ก่อน
+- ตรวจสอบว่า dependencies ทั้งหมด passed แล้ว
 - **ทำทีละ 1 feature เท่านั้น!**
 
-### Step 4: Implement Feature
+**ก่อนเริ่ม feature:**
+```json
+// Update status เป็น in_progress
+{
+  "status": "in_progress",
+  "time_tracking": {
+    "started_at": "TIMESTAMP"
+  }
+}
+```
 
-- ทำตาม steps ที่ระบุไว้ใน feature
-- เขียน code ที่ clean และ readable
-- Handle errors appropriately
+### Step 3.5: Validate Mockup References (NEW v1.5.0)
 
-### Step 5: Test Feature (สำคัญมาก!)
+**ถ้า feature มี mockup references:**
 
-**ก่อน mark pass ต้อง test จริง:**
-- Build ผ่าน
-- Manual test ผ่าน (curl, Postman, browser)
-- Edge cases handled
+```bash
+# ตรวจสอบว่า mockup files exist
+for ref in $(cat feature_list.json | jq -r '.features[] | select(.id == X) | .references[]' | grep "mockups"); do
+  ls -la "$ref" 2>/dev/null || echo "⚠️ Missing: $ref"
+done
+```
 
-### Step 6: Mark as Passed
+**ถ้าพบ references:**
+1. **ต้อง**อ่าน mockup file ก่อนเริ่มพัฒนา
+2. **ต้อง**ตรวจสอบ required_components
+3. **ต้อง**สร้าง UI ตาม wireframe ที่ออกแบบ
+4. **ต้อง**ใช้ design tokens
+
+### Step 4: Implement Feature with Subtask Commits (v1.6.0 - Default Behavior)
+
+**🆕 v1.6.0: Commit ทุก subtask โดย default**
+
+หลังทำ subtask เสร็จแต่ละ subtask:
+1. Update `done: true` และ `committed_at`
+2. **Commit ทันที** ด้วย prefix `task:`
+
+```bash
+git add .
+git commit -m "task(#X.Y): [subtask description]"
+```
+
+**Commit Prefixes:**
+| Prefix | Usage |
+|--------|-------|
+| `task:` | Subtask commit (default) |
+| `feat:` | Feature complete (final commit) |
+| `wip:` | Work in progress (optional) |
+
+**Example:**
+```bash
+# Subtask 1.1 เสร็จ
+git commit -m "task(#1.1): สร้าง project structure"
+
+# Subtask 1.2 เสร็จ
+git commit -m "task(#1.2): ตั้งค่า configuration"
+
+# Feature complete
+git commit -m "feat: Feature #1 - สร้าง project structure"
+```
+
+**Update feature_list.json หลังแต่ละ subtask:**
+
+```json
+{
+  "subtasks": [
+    { "id": "1.1", "description": "สร้าง component", "done": true, "committed_at": "2025-01-05T10:00:00Z" },
+    { "id": "1.2", "description": "เพิ่ม styling", "done": false, "committed_at": null }
+  ],
+  "last_committed_subtask": "1.1"
+}
+```
+
+**Implementation checklist:**
+- [ ] ทำตาม subtasks ตามลำดับ
+- [ ] Update subtask.done และ committed_at เมื่อเสร็จแต่ละ subtask
+- [ ] **Commit แต่ละ subtask ด้วย `task(#X.Y):`** ← NEW
+- [ ] Update last_committed_subtask
+- [ ] ตรวจสอบ required_components (ถ้ามี)
+- [ ] เขียน code ที่ clean และ readable
+- [ ] Handle errors appropriately
+
+### Step 5: Verify Acceptance Criteria (NEW v1.5.0)
+
+**ก่อน mark pass ต้องตรวจสอบ acceptance_criteria:**
+
+```json
+// ตัวอย่าง acceptance criteria
+{
+  "acceptance_criteria": [
+    "endpoint ตอบ 200 OK พร้อม array",
+    "รองรับ pagination",
+    "response format ถูกต้อง"
+  ]
+}
+```
+
+**Verification checklist:**
+- [ ] ทุก acceptance criteria ผ่าน
+- [ ] Build ผ่าน
+- [ ] Manual test ผ่าน (curl, Postman, browser)
+- [ ] Edge cases handled
+- [ ] UI ตรงกับ mockup (ถ้าเป็น UI feature)
+
+### Step 6: Mark as Passed (Schema v1.5.0)
 
 แก้ไข feature_list.json:
 ```json
 {
   "id": X,
-  "passes": true,
+  "status": "passed",                    // NEW v1.5.0
+  "subtasks": [
+    { "id": "X.1", "done": true },
+    { "id": "X.2", "done": true },
+    { "id": "X.3", "done": true }
+  ],
+  "time_tracking": {
+    "started_at": "START_TIMESTAMP",
+    "completed_at": "END_TIMESTAMP",      // NEW v1.5.0
+    "actual_time": "25min"                // NEW v1.5.0 - คำนวณจาก started - completed
+  },
+  "mockup_validated": true,               // NEW v1.5.0 - ถ้ามี mockup ref
+  "passes": true,                         // KEEP for backward compat
   "tested_at": "TIMESTAMP",
   "notes": "Test results..."
+}
+```
+
+อัพเดท epic progress:
+```json
+{
+  "epics": [
+    {
+      "id": "setup",
+      "progress": { "total": 2, "passed": 1, "in_progress": 0 }  // ← Updated
+    }
+  ]
 }
 ```
 
@@ -301,8 +441,11 @@ npm install && npm run build
 ```json
 {
   "summary": {
+    "total": 12,
     "passed": N+1,
-    "failed": M-1,
+    "in_progress": 0,
+    "blocked": 0,
+    "pending": M-1,
     "last_updated": "TIMESTAMP"
   }
 }
