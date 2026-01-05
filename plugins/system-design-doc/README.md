@@ -28,6 +28,9 @@ Plugin สำหรับสร้างเอกสารออกแบบร�
 | `/create-diagram` | สร้าง diagram เฉพาะประเภท (ER, Flow, DFD, Sequence, etc.) |
 | `/edit-section` | แก้ไขส่วนใดส่วนหนึ่งของเอกสาร |
 | `/validate-design-doc` | ตรวจสอบความครบถ้วนและความสอดคล้อง |
+| `/sync-with-mockups` | Sync entities และ pages กับ ui-mockup |
+| `/sync-with-features` | Sync APIs และ entities กับ long-running-agent |
+| `/validate-integration` | ตรวจสอบ cross-references ทั้ง 3 plugins |
 | `/system-design-doc` | คำสั่งทั่วไป (รองรับทุก mode) |
 
 ---
@@ -323,11 +326,82 @@ flowchart LR
 
 ---
 
+## Cross-Plugin Integration
+
+### Plugin Ecosystem
+
+system-design-doc ทำงานร่วมกับ ui-mockup และ long-running-agent:
+
+```
+┌─────────────────────┐
+│  system-design-doc  │  ← Source of Truth
+│  design_doc_list    │     (Entities, APIs, Diagrams)
+└──────────┬──────────┘
+           │
+    ┌──────┴──────┐
+    ▼             ▼
+┌─────────┐  ┌──────────────┐
+│ui-mockup│  │long-running  │
+│ Pages   │  │ Features     │
+└─────────┘  └──────────────┘
+```
+
+### Integration Fields (v2.0.0)
+
+**design_doc_list.json:**
+```json
+{
+  "schema_version": "2.0.0",
+  "integration": {
+    "mockup_list_path": ".mockups/mockup_list.json",
+    "feature_list_path": "feature_list.json",
+    "last_synced_with_mockups": null,
+    "last_synced_with_features": null
+  },
+  "entities": [...],
+  "api_endpoints": [...],
+  "layers": [...]
+}
+```
+
+### Sync Workflow
+
+```bash
+# 1. สร้างเอกสาร design
+/create-design-doc หรือ /reverse-engineer
+
+# 2. Sync กับ mockups
+/sync-with-mockups
+
+# 3. Sync กับ features
+/sync-with-features
+
+# 4. Validate integration
+/validate-integration
+```
+
+### Compatible Versions
+
+| Plugin | Minimum Version |
+|--------|-----------------|
+| design_doc_list.json | 2.0.0 |
+| mockup_list.json | 1.6.0 |
+| feature_list.json | 1.10.0 |
+
+---
+
 ## Version
 
-- **Version:** 1.2.0
+- **Version:** 1.3.0
 - **Author:** Mounchons
 - **Last Updated:** 2025-01
+
+### What's New in 1.3.0
+- **Cross-Plugin Integration** - เชื่อมโยงกับ ui-mockup และ long-running-agent
+- **New Schema v2.0.0** - เพิ่ม integration, entities, api_endpoints, layers
+- **Sync Commands** - /sync-with-mockups, /sync-with-features, /validate-integration
+- **Bidirectional References** - cross-references ระหว่าง 3 plugins
+- **Integration Score** - คำนวณ coverage score โดยอัตโนมัติ
 
 ### What's New in 1.2.0
 - Added 5 granular commands (create-design-doc, reverse-engineer, create-diagram, edit-section, validate-design-doc)
@@ -340,6 +414,6 @@ flowchart LR
 
 ## Related Skills
 
-- **[ui-mockup](../ui-mockup/)** - สร้าง UI Mockups จากเอกสาร
-- **[long-running-agent](../long-running-agent/)** - Development workflow
+- **[ui-mockup](../ui-mockup/)** - สร้าง UI Mockups จากเอกสาร (ต้อง v1.4.0+)
+- **[long-running-agent](../long-running-agent/)** - Development workflow (ต้อง v1.10.0+)
 - **[dotnet-dev](../dotnet-dev/)** - .NET Development patterns

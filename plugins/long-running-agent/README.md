@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 1.9.0** - เพิ่ม Version History, Interactions, Component Reuse Tracking
+> **Version 1.10.0** - เพิ่ม Cross-Plugin Integration กับ system-design-doc และ ui-mockup
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -17,7 +17,26 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 - **Design Doc Integration** - ใช้ ER Diagram, Flow Diagram จาก system-design-doc
 - **Technology Detection** - ตรวจจับ technology stack และแนะนำ skills ที่เหมาะสม
 
-### 🆕 New in v1.9.0
+### 🆕 New in v1.10.0
+
+- **Cross-Plugin Integration** - เชื่อมต่อกับ system-design-doc และ ui-mockup
+  - `integration` section ที่ root level
+  - `design_doc_path`, `mockup_list_path` สำหรับ auto-discovery
+  - `last_synced_with_*` timestamps
+- **Design Doc References** - เชื่อมโยง features กับ design document
+  - `design_doc_refs.entity_ref` - อ้างอิง entity จาก design doc
+  - `design_doc_refs.api_ref` - อ้างอิง API endpoint
+  - `design_doc_refs.section` - design section ที่เกี่ยวข้อง
+  - `design_doc_refs.diagram_refs` - diagrams ที่เกี่ยวข้อง
+- **Mockup Page References** - เชื่อมโยง features กับ mockup pages
+  - `mockup_page_refs` - array ของ page IDs
+- **Sync Status Tracking** - ติดตามการ sync
+  - `sync_status` field ใน features
+  - `sync_status` section ที่ root level
+- **Compatibility Metadata** - ระบุ version ที่ต้องการ
+  - `metadata.compatible_with`
+
+### v1.9.0 Features
 
 - **Feature Version History** - ติดตามการเปลี่ยนแปลงของ feature ตลอดเวลา
   - `version_history` array เก็บประวัติการแก้ไข

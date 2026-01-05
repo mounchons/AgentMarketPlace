@@ -1,12 +1,18 @@
 {
-  "schema_version": "1.5.0",
+  "schema_version": "1.6.0",
   "project": "[Project Name]",
   "description": "[Project Description]",
   "source_documents": [],
   "initialized_at": "[ISO_DATE]",
   "last_updated": "[ISO_DATE]",
-  "feature_list_path": "feature_list.json",
-  "last_synced_with_features": null,
+
+  "integration": {
+    "design_doc_path": "design_doc_list.json",
+    "feature_list_path": "feature_list.json",
+    "last_synced_with_design_doc": null,
+    "last_synced_with_features": null,
+    "auto_sync_enabled": false
+  },
 
   "entities": [
     {
@@ -15,6 +21,7 @@
       "complexity": "complex",
       "ui_pattern": "page",
       "pages": ["004", "005", "006"],
+      "design_doc_entity_ref": "ENT-001",
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#user-management"},
         {"type": "api", "path": "docs/api/users.md"}
@@ -25,7 +32,8 @@
         "create": "page",
         "edit": "page",
         "delete": "sweetalert2"
-      }
+      },
+      "sync_status": "pending"
     },
     {
       "name": "Department",
@@ -33,6 +41,7 @@
       "complexity": "simple",
       "ui_pattern": "modal",
       "pages": ["007"],
+      "design_doc_entity_ref": null,
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#master-data"}
       ],
@@ -42,7 +51,8 @@
         "create": "modal",
         "edit": "modal",
         "delete": "sweetalert2"
-      }
+      },
+      "sync_status": "pending"
     }
   ],
 
@@ -62,6 +72,8 @@
       "complexity": null,
       "ui_pattern": null,
       "action_column_position": null,
+      "design_doc_section": "authentication",
+      "design_doc_api_refs": [],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#authentication"}
       ],
@@ -71,6 +83,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -90,6 +103,8 @@
       "complexity": null,
       "ui_pattern": null,
       "action_column_position": null,
+      "design_doc_section": "authentication",
+      "design_doc_api_refs": [],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#authentication"}
       ],
@@ -99,6 +114,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -118,6 +134,8 @@
       "complexity": null,
       "ui_pattern": null,
       "action_column_position": null,
+      "design_doc_section": "dashboard",
+      "design_doc_api_refs": [],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#dashboard"}
       ],
@@ -127,6 +145,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -146,6 +165,8 @@
       "complexity": "complex",
       "ui_pattern": "page",
       "action_column_position": "first",
+      "design_doc_section": "user-management",
+      "design_doc_api_refs": ["API-001"],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#user-management"},
         {"type": "api", "path": "docs/api/users.md#list"}
@@ -156,6 +177,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -175,6 +197,8 @@
       "complexity": "complex",
       "ui_pattern": "page",
       "action_column_position": null,
+      "design_doc_section": "user-management",
+      "design_doc_api_refs": ["API-002", "API-003"],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#user-management"},
         {"type": "api", "path": "docs/api/users.md#create"},
@@ -186,6 +210,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -205,6 +230,8 @@
       "complexity": "complex",
       "ui_pattern": "page",
       "action_column_position": null,
+      "design_doc_section": "user-management",
+      "design_doc_api_refs": ["API-004"],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#user-management"},
         {"type": "api", "path": "docs/api/users.md#get"}
@@ -215,6 +242,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": ""
@@ -234,6 +262,8 @@
       "complexity": "simple",
       "ui_pattern": "modal",
       "action_column_position": "first",
+      "design_doc_section": "master-data",
+      "design_doc_api_refs": [],
       "related_documents": [
         {"type": "system-design", "path": "system-design.md#master-data"}
       ],
@@ -243,6 +273,7 @@
       "mockup_version": "1.0",
       "implemented_by_features": [],
       "feature_status": null,
+      "sync_status": "pending",
       "created_at": null,
       "updated_at": null,
       "notes": "Simple entity - uses modal for CRUD operations"
@@ -317,6 +348,21 @@
     "default_columns": ["action", "id", "name", "status", "created_at"]
   },
 
+  "sync_status": {
+    "design_doc": {
+      "total_entities": 0,
+      "mapped_entities": 0,
+      "unmapped_entities": 0,
+      "last_sync": null
+    },
+    "features": {
+      "total_features": 0,
+      "mapped_pages": 0,
+      "unmapped_pages": 0,
+      "last_sync": null
+    }
+  },
+
   "summary": {
     "total": 7,
     "pending": 7,
@@ -327,6 +373,15 @@
       "total": 2,
       "simple": 1,
       "complex": 1
+    }
+  },
+
+  "metadata": {
+    "schema_version": "1.6.0",
+    "plugin_version": "1.4.0",
+    "compatible_with": {
+      "design_doc_list_schema": ">=2.0.0",
+      "feature_list_schema": ">=1.10.0"
     }
   }
 }

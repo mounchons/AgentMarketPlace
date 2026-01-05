@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "2.0.0",
   "project_name": "",
   "description": "",
   "technology_stack": {
@@ -11,13 +12,150 @@
   },
   "created_at": "",
   "updated_at": "",
-  "summary": {
-    "total": 0,
-    "draft": 0,
-    "in_progress": 0,
-    "completed": 0,
-    "reviewed": 0
+
+  "integration": {
+    "mockup_list_path": ".mockups/mockup_list.json",
+    "feature_list_path": "feature_list.json",
+    "last_synced_with_mockups": null,
+    "last_synced_with_features": null,
+    "auto_sync_enabled": false
   },
+
+  "layers": [
+    {
+      "id": "presentation",
+      "name": "Presentation Layer",
+      "design_sections": ["sitemap", "flow_diagrams", "ui_mockups"],
+      "description": "UI, Controllers, API Endpoints"
+    },
+    {
+      "id": "application",
+      "name": "Application Layer",
+      "design_sections": ["dfd", "sequence_diagrams", "use_cases"],
+      "description": "Use Cases, DTOs, Services"
+    },
+    {
+      "id": "domain",
+      "name": "Domain Layer",
+      "design_sections": ["er_diagram", "data_dictionary", "domain_model"],
+      "description": "Entities, Value Objects, Business Rules"
+    },
+    {
+      "id": "infrastructure",
+      "name": "Infrastructure Layer",
+      "design_sections": ["data_model", "modules", "deployment"],
+      "description": "Database, External APIs, Infrastructure"
+    },
+    {
+      "id": "cross-cutting",
+      "name": "Cross-Cutting Layer",
+      "design_sections": ["security", "logging", "monitoring"],
+      "description": "Logging, Security, Caching, Monitoring"
+    }
+  ],
+
+  "entities": [
+    {
+      "id": "ENT-001",
+      "name": "EntityName",
+      "name_th": "ชื่อ Entity",
+      "table_name": "entity_table",
+      "description": "",
+      "mockup_entity_ref": null,
+      "feature_ids": [],
+      "pages": [],
+      "crud_operations": {
+        "create": { "api": null, "feature_id": null, "page": null },
+        "read": { "api": null, "feature_id": null, "page": null },
+        "update": { "api": null, "feature_id": null, "page": null },
+        "delete": { "api": null, "feature_id": null, "page": null },
+        "list": { "api": null, "feature_id": null, "page": null }
+      },
+      "relationships": [],
+      "attributes": [],
+      "status": "draft"
+    }
+  ],
+
+  "api_endpoints": [
+    {
+      "id": "API-001",
+      "method": "GET",
+      "path": "/api/resource",
+      "description": "",
+      "entity_ref": null,
+      "feature_id": null,
+      "page_refs": [],
+      "request_body": null,
+      "response_schema": null,
+      "auth_required": true,
+      "permissions": [],
+      "documented_in": null,
+      "status": "draft"
+    }
+  ],
+
+  "diagrams": {
+    "high_level_architecture": {
+      "exists": false,
+      "file_path": null,
+      "format": "mermaid",
+      "version": null,
+      "last_updated": null,
+      "description": ""
+    },
+    "er_diagram": {
+      "exists": false,
+      "file_path": null,
+      "format": "mermaid",
+      "entities_mapped": [],
+      "version": null,
+      "last_updated": null
+    },
+    "flow_diagrams": [
+      {
+        "id": "FLOW-001",
+        "name": "",
+        "file_path": null,
+        "format": "mermaid",
+        "related_features": [],
+        "related_pages": [],
+        "version": null
+      }
+    ],
+    "dfd": {
+      "level_0": {
+        "exists": false,
+        "file_path": null,
+        "format": "mermaid",
+        "version": null
+      },
+      "level_1": [],
+      "level_2": []
+    },
+    "sequence_diagrams": [
+      {
+        "id": "SEQ-001",
+        "name": "",
+        "file_path": null,
+        "format": "mermaid",
+        "related_features": [],
+        "related_apis": [],
+        "version": null
+      }
+    ],
+    "sitemap": {
+      "exists": false,
+      "file_path": null,
+      "format": "mermaid",
+      "pages_mapped": [],
+      "version": null,
+      "last_updated": null
+    },
+    "state_diagrams": [],
+    "class_diagrams": []
+  },
+
   "documents": [
     {
       "id": "DOC-001",
@@ -38,18 +176,26 @@
         "sitemap",
         "permissions"
       ],
-      "diagrams": {
-        "high_level_architecture": false,
-        "er_diagram": false,
-        "flow_diagrams": 0,
-        "dfd_level_0": false,
-        "dfd_level_1": false,
-        "dfd_level_2": false,
-        "sequence_diagrams": 0,
-        "sitemap": false,
-        "state_diagrams": 0,
-        "class_diagrams": 0
-      },
+      "related_mockups": [
+        {
+          "page_id": "",
+          "page_name": "",
+          "mockup_file": null,
+          "mockup_version": null,
+          "design_section": "",
+          "sync_status": "pending"
+        }
+      ],
+      "related_features": [
+        {
+          "feature_id": null,
+          "description": "",
+          "epic": "",
+          "layer": "",
+          "design_section": "",
+          "sync_status": "pending"
+        }
+      ],
       "statistics": {
         "entities_count": 0,
         "tables_count": 0,
@@ -58,8 +204,6 @@
         "pages_count": 0,
         "user_roles_count": 0
       },
-      "related_mockups": [],
-      "related_features": [],
       "notes": "",
       "created_at": "",
       "updated_at": "",
@@ -67,8 +211,60 @@
       "last_modified_by": ""
     }
   ],
+
+  "user_roles": [
+    {
+      "id": "ROLE-001",
+      "name": "",
+      "name_th": "",
+      "description": "",
+      "permissions": [],
+      "accessible_pages": [],
+      "accessible_apis": []
+    }
+  ],
+
+  "validation_rules": {
+    "entity_must_have_mockup_pages": true,
+    "api_must_have_feature": true,
+    "page_must_have_feature": true,
+    "diagram_file_must_exist": false,
+    "layer_consistency": true,
+    "crud_completeness": true
+  },
+
+  "sync_status": {
+    "mockups": {
+      "total_pages": 0,
+      "mapped_pages": 0,
+      "unmapped_pages": 0,
+      "last_sync": null
+    },
+    "features": {
+      "total_features": 0,
+      "mapped_features": 0,
+      "unmapped_features": 0,
+      "last_sync": null
+    }
+  },
+
+  "summary": {
+    "total_documents": 0,
+    "draft": 0,
+    "in_progress": 0,
+    "completed": 0,
+    "reviewed": 0,
+    "total_entities": 0,
+    "total_api_endpoints": 0,
+    "total_diagrams": 0
+  },
+
   "metadata": {
-    "schema_version": "1.0.0",
-    "plugin_version": "1.2.0"
+    "schema_version": "2.0.0",
+    "plugin_version": "1.3.0",
+    "compatible_with": {
+      "mockup_list_schema": ">=1.6.0",
+      "feature_list_schema": ">=1.10.0"
+    }
   }
 }

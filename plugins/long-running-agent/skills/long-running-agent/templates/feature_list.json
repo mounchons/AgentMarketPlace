@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.9.0",
+  "schema_version": "1.10.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -9,6 +9,14 @@
     "other": []
   },
   "created_at": "TIMESTAMP",
+
+  "integration": {
+    "design_doc_path": "design_doc_list.json",
+    "mockup_list_path": ".mockups/mockup_list.json",
+    "last_synced_with_design_doc": null,
+    "last_synced_with_mockups": null,
+    "auto_sync_enabled": false
+  },
 
   "layers": [
     {
@@ -126,13 +134,21 @@
       },
       "dependencies": [],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": null,
+        "api_ref": null,
+        "section": "setup",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง project ใหม่",
@@ -173,13 +189,21 @@
       },
       "dependencies": [1],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": null,
+        "api_ref": null,
+        "section": "data_model",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "เพิ่ม packages",
@@ -220,13 +244,21 @@
       },
       "dependencies": [1],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": null,
+        "section": "er_diagram",
+        "diagram_refs": ["er_diagram"]
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง model class",
@@ -267,13 +299,21 @@
       },
       "dependencies": [2, 3],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": null,
+        "section": "data_model",
+        "diagram_refs": ["er_diagram"]
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง DbContext",
@@ -314,13 +354,21 @@
       },
       "dependencies": [4],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": "API-001",
+        "section": "api-endpoints",
+        "diagram_refs": ["sequence_diagrams"]
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": ["004"],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง Controller",
@@ -361,13 +409,21 @@
       },
       "dependencies": [5],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": "API-002",
+        "section": "api-endpoints",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": ["006"],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "implement endpoint",
@@ -408,13 +464,21 @@
       },
       "dependencies": [5],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": "API-003",
+        "section": "api-endpoints",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": ["005"],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง DTO",
@@ -455,13 +519,21 @@
       },
       "dependencies": [6],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": "API-004",
+        "section": "api-endpoints",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": ["005"],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง Update DTO",
@@ -502,13 +574,21 @@
       },
       "dependencies": [6],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": "ENT-001",
+        "api_ref": "API-005",
+        "section": "api-endpoints",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "implement endpoint",
@@ -549,13 +629,21 @@
       },
       "dependencies": [7, 8],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": null,
+        "api_ref": null,
+        "section": "validation",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "เพิ่ม validation library",
@@ -596,13 +684,21 @@
       },
       "dependencies": [5],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": null,
+        "api_ref": null,
+        "section": "error-handling",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "สร้าง exception handler",
@@ -643,13 +739,21 @@
       },
       "dependencies": [5],
       "references": [],
+      "design_doc_refs": {
+        "entity_ref": null,
+        "api_ref": null,
+        "section": "api-documentation",
+        "diagram_refs": []
+      },
       "mockup_validated": false,
       "mockup_version": null,
+      "mockup_page_refs": [],
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
       "interactions": [],
       "version_history": [],
+      "sync_status": "pending",
       "passes": false,
       "steps_legacy": [
         "ตั้งค่า Swagger",
@@ -661,6 +765,21 @@
     }
   ],
 
+  "sync_status": {
+    "design_doc": {
+      "total_entities": 0,
+      "mapped_features": 0,
+      "unmapped_features": 0,
+      "last_sync": null
+    },
+    "mockups": {
+      "total_pages": 0,
+      "mapped_features": 0,
+      "unmapped_features": 0,
+      "last_sync": null
+    }
+  },
+
   "summary": {
     "total": 12,
     "passed": 0,
@@ -668,5 +787,14 @@
     "blocked": 0,
     "pending": 12,
     "last_updated": "TIMESTAMP"
+  },
+
+  "metadata": {
+    "schema_version": "1.10.0",
+    "plugin_version": "1.10.0",
+    "compatible_with": {
+      "design_doc_list_schema": ">=2.0.0",
+      "mockup_list_schema": ">=1.6.0"
+    }
   }
 }
