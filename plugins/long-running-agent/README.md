@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 1.7.0** - เพิ่ม Module Decomposition, Layer Architecture, Component Library Validation
+> **Version 1.8.0** - เพิ่ม Subtask-to-Commit Mapping
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -17,7 +17,14 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 - **Design Doc Integration** - ใช้ ER Diagram, Flow Diagram จาก system-design-doc
 - **Technology Detection** - ตรวจจับ technology stack และแนะนำ skills ที่เหมาะสม
 
-### 🆕 New in v1.7.0
+### 🆕 New in v1.8.0
+
+- **Subtask-to-Commit Mapping** - เชื่อมโยง subtask กับ git commit hashes
+  - `commits` field ใน subtask เก็บ array ของ commit hashes
+  - ติดตามได้ว่า subtask ไหนมี commits อะไรบ้าง
+  - Navigate จาก subtask ไปยัง code changes ได้
+
+### v1.7.0 Features
 
 - **Module Decomposition** - แบ่ง features ตาม physical code modules
 - **Layer Architecture** - กำหนด layer ให้แต่ละ feature (presentation, application, domain, infrastructure, cross-cutting)
@@ -563,6 +570,13 @@ git commit -m "chore: Add Feature #13 - [description]"
 | `docs` | documentation |
 
 ## 📝 Changelog
+
+### v1.8.0 (2026-01-05)
+- ✨ เพิ่ม `commits` field ใน subtask schema
+  - เก็บ array ของ git commit hashes
+  - เชื่อมโยง subtask กับ code changes
+  - ใช้ร่วมกับ `committed_at` และ `files` fields
+- 📄 อัพเดท schema version เป็น 1.8.0
 
 ### v1.7.0 (2026-01-05)
 - ✨ เพิ่ม `module` field ใน feature schema

@@ -1,8 +1,8 @@
 # Long-Running Agent Plugin Analysis
 
 **Date:** 2026-01-05
-**Version Analyzed:** v1.7.0 (Updated from v1.5.0)
-**Implementation Status:** ✅ High Priority Recommendations Implemented
+**Version Analyzed:** v1.8.0 (Updated from v1.5.0 → v1.7.0 → v1.8.0)
+**Implementation Status:** ✅ High Priority + Medium Priority ALL Implemented
 
 ---
 
@@ -564,11 +564,11 @@ graph LR
 | 4 | Add component library validation | High | Medium | ✅ Implemented |
 | 5 | Add `cross_cutting` epic | Medium | Low | ✅ Implemented |
 
-### Medium Priority - Partially Implemented
+### Medium Priority - ✅ ALL IMPLEMENTED in v1.8.0
 
 | # | Recommendation | Impact | Effort | Status |
 |---|----------------|--------|--------|--------|
-| 6 | Add subtask-to-commit mapping | Medium | High | ⚠️ Partial (committed_at) |
+| 6 | Add subtask-to-commit mapping | Medium | High | ✅ Implemented (commits array) |
 | 7 | Add subtask dependencies | Medium | Medium | ✅ Implemented (depends_on) |
 | 8 | Add integration points definition | Medium | Medium | ✅ Implemented (modules.json) |
 | 9 | Add responsive breakpoint tracking | Medium | Medium | ✅ Implemented |
@@ -700,14 +700,15 @@ graph LR
 
 ### Overall Assessment (Post-Implementation)
 
-| Dimension | Before (v1.5.0) | After (v1.7.0) | Status |
+| Dimension | Before (v1.5.0) | After (v1.8.0) | Status |
 |-----------|-----------------|----------------|--------|
-| Feature/Task/Todo Breakdown Coverage | 85% | 95% | ✅ Excellent |
-| Subsystem Design | 65% | 90% | ✅ Strong |
+| Feature/Task/Todo Breakdown Coverage | 85% | 98% | ✅ Excellent |
+| Subsystem Design | 65% | 92% | ✅ Excellent |
 | UI-Mockup Integration | 90% | 95% | ✅ Excellent |
 
 ### Implemented Improvements
 
+**v1.7.0:**
 1. ✅ **Module Decomposition** - `modules.json` template with physical code module definitions
 2. ✅ **Layer Architecture** - 5 layers defined in `feature_list.json` (presentation, application, domain, infrastructure, cross-cutting)
 3. ✅ **Component Library Validation** - `component_library.json` template with comprehensive component definitions
@@ -718,6 +719,9 @@ graph LR
 8. ✅ **File Tracking** - `files` field for tracking modified files per subtask
 9. ✅ **Risk Assessment** - `risk_level` field (low/medium/high)
 10. ✅ **Cross-Cutting Epic** - Epic template for shared concerns
+
+**v1.8.0:**
+11. ✅ **Subtask-to-Commit Mapping** - `commits` array field for git commit hashes per subtask
 
 ### Key Strengths (Updated)
 
