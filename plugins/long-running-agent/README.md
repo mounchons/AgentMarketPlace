@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 1.8.0** - เพิ่ม Subtask-to-Commit Mapping
+> **Version 1.9.0** - เพิ่ม Version History, Interactions, Component Reuse Tracking
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -17,7 +17,22 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 - **Design Doc Integration** - ใช้ ER Diagram, Flow Diagram จาก system-design-doc
 - **Technology Detection** - ตรวจจับ technology stack และแนะนำ skills ที่เหมาะสม
 
-### 🆕 New in v1.8.0
+### 🆕 New in v1.9.0
+
+- **Feature Version History** - ติดตามการเปลี่ยนแปลงของ feature ตลอดเวลา
+  - `version_history` array เก็บประวัติการแก้ไข
+  - บันทึก change reason และ timestamp
+  - ดูย้อนหลังได้ว่า feature เปลี่ยนแปลงอย่างไร
+- **Interaction/Animation Tracking** - ติดตาม interactive elements
+  - `interactions` array เก็บ hover, click, animation states
+  - ระบุว่า element ไหน implement แล้ว/ยัง
+  - ครอบคลุมทุก interactive elements จาก mockup
+- **Component Reuse Tracking** - ติดตามการใช้ซ้ำของ components
+  - `component_usage` section ที่ root level
+  - `shared_components` - components ที่ใช้หลาย features
+  - `reuse_opportunities` - แนะนำ components ที่ควร extract
+
+### v1.8.0 Features
 
 - **Subtask-to-Commit Mapping** - เชื่อมโยง subtask กับ git commit hashes
   - `commits` field ใน subtask เก็บ array ของ commit hashes
@@ -570,6 +585,20 @@ git commit -m "chore: Add Feature #13 - [description]"
 | `docs` | documentation |
 
 ## 📝 Changelog
+
+### v1.9.0 (2026-01-05)
+- ✨ เพิ่ม `version_history` array ใน feature schema
+  - เก็บประวัติการเปลี่ยนแปลงของ feature
+  - บันทึก change reason, timestamp, changed_by
+- ✨ เพิ่ม `interactions` array ใน feature schema
+  - ติดตาม interactive elements (hover, click, animation)
+  - ระบุ implemented status ของแต่ละ interaction
+- ✨ เพิ่ม `component_usage` section ที่ root level
+  - `shared_components`: components ที่ใช้หลาย features
+  - `component_features_map`: mapping component → features
+  - `reuse_opportunities`: แนะนำการ extract components
+- 📄 อัพเดท schema version เป็น 1.9.0
+- ✅ ทุก recommendations จาก analysis ถูก implement แล้ว
 
 ### v1.8.0 (2026-01-05)
 - ✨ เพิ่ม `commits` field ใน subtask schema

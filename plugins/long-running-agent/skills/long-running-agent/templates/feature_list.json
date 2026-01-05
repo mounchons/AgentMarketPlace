@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.8.0",
+  "schema_version": "1.9.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -88,6 +88,12 @@
 
   "modules": [],
 
+  "component_usage": {
+    "shared_components": [],
+    "component_features_map": {},
+    "reuse_opportunities": []
+  },
+
   "features": [
     {
       "id": 1,
@@ -125,6 +131,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง project ใหม่",
@@ -170,6 +178,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "เพิ่ม packages",
@@ -215,6 +225,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง model class",
@@ -260,6 +272,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง DbContext",
@@ -305,6 +319,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง Controller",
@@ -350,6 +366,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "implement endpoint",
@@ -395,6 +413,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง DTO",
@@ -440,6 +460,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง Update DTO",
@@ -485,6 +507,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "implement endpoint",
@@ -530,6 +554,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "เพิ่ม validation library",
@@ -575,6 +601,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "สร้าง exception handler",
@@ -620,6 +648,8 @@
       "required_components": [],
       "design_tokens_used": [],
       "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
       "passes": false,
       "steps_legacy": [
         "ตั้งค่า Swagger",
