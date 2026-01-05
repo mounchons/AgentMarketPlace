@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "project": "PROJECT_NAME",
+  "description": "Module definitions สำหรับ project",
+  "created_at": "TIMESTAMP",
+
+  "architecture_style": "clean-architecture",
+
+  "modules": [
+    {
+      "id": "core-module",
+      "name": "Core Module",
+      "description": "Shared domain entities, interfaces และ utilities",
+      "path": "src/Core/",
+      "bounded_context": "SharedKernel",
+      "layer": "domain",
+      "components": [
+        { "id": "entities", "name": "Entities", "path": "src/Core/Entities/" },
+        { "id": "interfaces", "name": "Interfaces", "path": "src/Core/Interfaces/" },
+        { "id": "value-objects", "name": "Value Objects", "path": "src/Core/ValueObjects/" }
+      ],
+      "features": [],
+      "dependencies": []
+    },
+    {
+      "id": "infrastructure-module",
+      "name": "Infrastructure Module",
+      "description": "Database, external services และ cross-cutting concerns",
+      "path": "src/Infrastructure/",
+      "bounded_context": "Infrastructure",
+      "layer": "infrastructure",
+      "components": [
+        { "id": "data", "name": "Data Access", "path": "src/Infrastructure/Data/" },
+        { "id": "repositories", "name": "Repositories", "path": "src/Infrastructure/Repositories/" },
+        { "id": "services", "name": "External Services", "path": "src/Infrastructure/Services/" }
+      ],
+      "features": [1, 2, 4],
+      "dependencies": ["core-module"]
+    },
+    {
+      "id": "api-module",
+      "name": "API Module",
+      "description": "REST API endpoints และ controllers",
+      "path": "src/Api/",
+      "bounded_context": "Presentation",
+      "layer": "presentation",
+      "components": [
+        { "id": "controllers", "name": "Controllers", "path": "src/Api/Controllers/" },
+        { "id": "dtos", "name": "DTOs", "path": "src/Api/DTOs/" },
+        { "id": "middleware", "name": "Middleware", "path": "src/Api/Middleware/" }
+      ],
+      "features": [5, 6, 7, 8, 9, 10, 11, 12],
+      "dependencies": ["core-module", "infrastructure-module"]
+    }
+  ],
+
+  "integration_points": [
+    {
+      "id": "api-to-infrastructure",
+      "from_module": "api-module",
+      "to_module": "infrastructure-module",
+      "type": "dependency-injection",
+      "description": "API module uses infrastructure through DI",
+      "contracts": [
+        { "interface": "IRepository<T>", "implementation": "Repository<T>" },
+        { "interface": "IDbContext", "implementation": "AppDbContext" }
+      ]
+    }
+  ],
+
+  "component_registry": {
+    "total_modules": 3,
+    "total_components": 9,
+    "last_updated": "TIMESTAMP"
+  }
+}

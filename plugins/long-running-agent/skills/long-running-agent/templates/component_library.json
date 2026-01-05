@@ -1,0 +1,226 @@
+{
+  "schema_version": "1.0.0",
+  "project": "PROJECT_NAME",
+  "description": "UI Component Library สำหรับ validation และ tracking",
+  "created_at": "TIMESTAMP",
+
+  "design_system": {
+    "name": "PROJECT_DESIGN_SYSTEM",
+    "version": "1.0.0",
+    "tokens_file": ".mockups/_design-tokens.yaml"
+  },
+
+  "component_categories": [
+    { "id": "layout", "name": "Layout", "description": "Layout components (Container, Grid, Stack)" },
+    { "id": "navigation", "name": "Navigation", "description": "Navigation components (Navbar, Sidebar, Breadcrumb)" },
+    { "id": "form", "name": "Form", "description": "Form components (Input, Select, Checkbox, Button)" },
+    { "id": "data-display", "name": "Data Display", "description": "Data display components (Table, Card, List)" },
+    { "id": "feedback", "name": "Feedback", "description": "Feedback components (Alert, Toast, Modal, Spinner)" },
+    { "id": "overlay", "name": "Overlay", "description": "Overlay components (Dialog, Drawer, Popover)" }
+  ],
+
+  "components": [
+    {
+      "id": "Button",
+      "name": "Button",
+      "category": "form",
+      "description": "ปุ่มสำหรับ actions",
+      "variants": ["primary", "secondary", "outline", "ghost", "danger"],
+      "sizes": ["sm", "md", "lg"],
+      "props": [
+        { "name": "variant", "type": "string", "required": false, "default": "primary" },
+        { "name": "size", "type": "string", "required": false, "default": "md" },
+        { "name": "disabled", "type": "boolean", "required": false, "default": false },
+        { "name": "loading", "type": "boolean", "required": false, "default": false },
+        { "name": "onClick", "type": "function", "required": false }
+      ],
+      "design_tokens": ["primary-500", "primary-600", "white", "radius-md"],
+      "accessibility": { "role": "button", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Input",
+      "name": "Input",
+      "category": "form",
+      "description": "Text input field",
+      "variants": ["text", "password", "email", "number", "search"],
+      "sizes": ["sm", "md", "lg"],
+      "props": [
+        { "name": "type", "type": "string", "required": false, "default": "text" },
+        { "name": "placeholder", "type": "string", "required": false },
+        { "name": "value", "type": "string", "required": false },
+        { "name": "onChange", "type": "function", "required": false },
+        { "name": "disabled", "type": "boolean", "required": false, "default": false },
+        { "name": "error", "type": "string", "required": false }
+      ],
+      "design_tokens": ["border-300", "focus-primary-500", "radius-md", "text-900"],
+      "accessibility": { "role": "textbox", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Card",
+      "name": "Card",
+      "category": "data-display",
+      "description": "Container สำหรับ content group",
+      "variants": ["default", "outlined", "elevated"],
+      "sizes": [],
+      "props": [
+        { "name": "variant", "type": "string", "required": false, "default": "default" },
+        { "name": "title", "type": "string", "required": false },
+        { "name": "children", "type": "ReactNode", "required": true }
+      ],
+      "design_tokens": ["bg-white", "shadow-md", "radius-lg", "border-200"],
+      "accessibility": { "role": "region", "aria_required": [] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Table",
+      "name": "Table",
+      "category": "data-display",
+      "description": "Data table component",
+      "variants": ["default", "striped", "bordered"],
+      "sizes": ["sm", "md"],
+      "props": [
+        { "name": "columns", "type": "array", "required": true },
+        { "name": "data", "type": "array", "required": true },
+        { "name": "loading", "type": "boolean", "required": false, "default": false },
+        { "name": "pagination", "type": "boolean", "required": false, "default": false }
+      ],
+      "design_tokens": ["border-200", "bg-gray-50", "text-700"],
+      "accessibility": { "role": "table", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Alert",
+      "name": "Alert",
+      "category": "feedback",
+      "description": "Alert message component",
+      "variants": ["info", "success", "warning", "error"],
+      "sizes": [],
+      "props": [
+        { "name": "variant", "type": "string", "required": false, "default": "info" },
+        { "name": "title", "type": "string", "required": false },
+        { "name": "message", "type": "string", "required": true },
+        { "name": "dismissible", "type": "boolean", "required": false, "default": false }
+      ],
+      "design_tokens": ["info-100", "success-100", "warning-100", "error-100", "radius-md"],
+      "accessibility": { "role": "alert", "aria_required": ["aria-live"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Modal",
+      "name": "Modal",
+      "category": "overlay",
+      "description": "Modal dialog component",
+      "variants": ["default", "fullscreen"],
+      "sizes": ["sm", "md", "lg", "xl"],
+      "props": [
+        { "name": "isOpen", "type": "boolean", "required": true },
+        { "name": "onClose", "type": "function", "required": true },
+        { "name": "title", "type": "string", "required": false },
+        { "name": "children", "type": "ReactNode", "required": true }
+      ],
+      "design_tokens": ["bg-white", "shadow-xl", "radius-lg", "overlay-black-50"],
+      "accessibility": { "role": "dialog", "aria_required": ["aria-modal", "aria-labelledby"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Spinner",
+      "name": "Spinner",
+      "category": "feedback",
+      "description": "Loading spinner",
+      "variants": ["default", "dots", "bars"],
+      "sizes": ["sm", "md", "lg"],
+      "props": [
+        { "name": "size", "type": "string", "required": false, "default": "md" },
+        { "name": "color", "type": "string", "required": false, "default": "primary" }
+      ],
+      "design_tokens": ["primary-500"],
+      "accessibility": { "role": "status", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Navbar",
+      "name": "Navbar",
+      "category": "navigation",
+      "description": "Navigation bar component",
+      "variants": ["default", "transparent", "fixed"],
+      "sizes": [],
+      "props": [
+        { "name": "logo", "type": "ReactNode", "required": false },
+        { "name": "items", "type": "array", "required": false },
+        { "name": "actions", "type": "ReactNode", "required": false }
+      ],
+      "design_tokens": ["bg-white", "shadow-sm", "border-bottom-200"],
+      "accessibility": { "role": "navigation", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Sidebar",
+      "name": "Sidebar",
+      "category": "navigation",
+      "description": "Side navigation component",
+      "variants": ["default", "collapsed", "overlay"],
+      "sizes": ["sm", "md", "lg"],
+      "props": [
+        { "name": "items", "type": "array", "required": true },
+        { "name": "collapsed", "type": "boolean", "required": false, "default": false }
+      ],
+      "design_tokens": ["bg-gray-900", "text-white", "border-right-700"],
+      "accessibility": { "role": "navigation", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Form",
+      "name": "Form",
+      "category": "form",
+      "description": "Form container with validation",
+      "variants": ["default", "inline"],
+      "sizes": [],
+      "props": [
+        { "name": "onSubmit", "type": "function", "required": true },
+        { "name": "children", "type": "ReactNode", "required": true },
+        { "name": "validation", "type": "object", "required": false }
+      ],
+      "design_tokens": [],
+      "accessibility": { "role": "form", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    }
+  ],
+
+  "responsive_breakpoints": {
+    "mobile": { "min": 0, "max": 639, "prefix": "sm" },
+    "tablet": { "min": 640, "max": 1023, "prefix": "md" },
+    "desktop": { "min": 1024, "max": 1279, "prefix": "lg" },
+    "wide": { "min": 1280, "max": null, "prefix": "xl" }
+  },
+
+  "validation_rules": {
+    "required_props_must_be_provided": true,
+    "design_tokens_must_exist": true,
+    "accessibility_requirements_enforced": true
+  },
+
+  "summary": {
+    "total_components": 10,
+    "by_category": {
+      "layout": 0,
+      "navigation": 2,
+      "form": 3,
+      "data-display": 2,
+      "feedback": 2,
+      "overlay": 1
+    },
+    "last_updated": "TIMESTAMP"
+  }
+}

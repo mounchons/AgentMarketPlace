@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 1.4.0** - เพิ่ม Feature References และ Edit Feature Command
+> **Version 1.7.0** - เพิ่ม Module Decomposition, Layer Architecture, Component Library Validation
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -13,9 +13,33 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 - **Incremental Development** - ทำทีละ feature ไม่ one-shot
 - **Test-First Approach** - ต้อง test ก่อน mark pass
 - **Git Integration** - Commit แยกต่าง feature
-- **🆕 UI Mockup Integration** - อ่าน `.mockups/` folder และสร้าง UI ตาม wireframe
-- **🆕 Design Doc Integration** - ใช้ ER Diagram, Flow Diagram จาก system-design-doc
-- **🆕 Technology Detection** - ตรวจจับ technology stack และแนะนำ skills ที่เหมาะสม
+- **UI Mockup Integration** - อ่าน `.mockups/` folder และสร้าง UI ตาม wireframe
+- **Design Doc Integration** - ใช้ ER Diagram, Flow Diagram จาก system-design-doc
+- **Technology Detection** - ตรวจจับ technology stack และแนะนำ skills ที่เหมาะสม
+
+### 🆕 New in v1.7.0
+
+- **Module Decomposition** - แบ่ง features ตาม physical code modules
+- **Layer Architecture** - กำหนด layer ให้แต่ละ feature (presentation, application, domain, infrastructure, cross-cutting)
+- **Component Library Validation** - ตรวจสอบ required_components กับ component library
+- **Mockup Version Tracking** - ติดตาม version ของ mockup ที่ feature อ้างอิง
+- **Design Token Validation** - ตรวจสอบ design tokens ที่ใช้
+- **Responsive Breakpoints** - ติดตาม implementation ของแต่ละ breakpoint
+- **Subtask Dependencies** - กำหนด dependencies ระหว่าง subtasks
+- **Subtask File Tracking** - ติดตามไฟล์ที่แก้ไขในแต่ละ subtask
+- **Risk Assessment** - ประเมินความเสี่ยงของ feature (low/medium/high)
+- **Cross-Cutting Epic** - Epic สำหรับ logging, caching, security, monitoring
+
+### v1.5.0 Features
+
+- **Epic Grouping** - จัดกลุ่ม features ตาม Bounded Context
+- **Subtask Tracking** - ติดตาม subtasks ภายใน feature
+- **Acceptance Criteria** - กำหนดเกณฑ์ความสำเร็จ
+- **Time Tracking** - เปรียบเทียบ estimated vs actual time
+- **Auto-generation** - สร้าง features อัตโนมัติจาก mockups/design docs
+- **Coverage Validation** - ตรวจสอบความครอบคลุม
+- **Dependency Visualization** - Mermaid diagram สำหรับ dependencies
+- **Schema Migration** - Migrate จาก schema เก่าอัตโนมัติ
 
 ## 📦 Installation
 
@@ -57,6 +81,8 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 
 ## 📋 Commands
 
+### Core Commands
+
 | Command | Description |
 |---------|-------------|
 | `/init-agent [description]` | Initialize agent environment สำหรับโปรเจคใหม่ |
@@ -65,6 +91,17 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 | `/init-agent-existing` | เพิ่ม agent environment ให้โปรเจคที่มีอยู่ |
 | `/add-feature` | เพิ่ม feature ใหม่เข้าไปใน feature_list.json |
 | `/edit-feature [id] - [changes]` | แก้ไข feature ที่ pass แล้ว (สร้าง feature ใหม่) |
+
+### 🆕 New Commands (v1.5.0)
+
+| Command | Description |
+|---------|-------------|
+| `/generate-features-from-mockups` | สร้าง features อัตโนมัติจาก mockup_list.json |
+| `/generate-features-from-design` | สร้าง features จาก design doc + mockups |
+| `/sync-mockups` | Sync status ระหว่าง features และ mockups |
+| `/validate-coverage` | ตรวจสอบ coverage ของ mockups, design, criteria |
+| `/agent-dependencies` | แสดง dependency graph (Mermaid) |
+| `/agent-migrate` | Migrate จาก schema เก่าเป็น v1.5.0 |
 
 ## 📎 Feature References (v1.4.0)
 
@@ -387,8 +424,11 @@ Workflow:
 | `references/initializer-guide.md` | Initializer Agent guide |
 | `references/coding-agent-guide.md` | Coding Agent guide |
 | `references/feature-patterns.md` | Feature breakdown patterns |
+| `references/module-decomposition.md` | Module and layer design guide |
 | `references/troubleshooting.md` | Problem solving guide |
-| `templates/feature_list.json` | Feature list template |
+| `templates/feature_list.json` | Feature list template (v1.7.0) |
+| `templates/modules.json` | Module definitions template |
+| `templates/component_library.json` | UI Component library template |
 | `templates/progress.md` | Progress log template |
 
 ## 💡 Tips
@@ -523,6 +563,31 @@ git commit -m "chore: Add Feature #13 - [description]"
 | `docs` | documentation |
 
 ## 📝 Changelog
+
+### v1.7.0 (2026-01-05)
+- ✨ เพิ่ม `module` field ใน feature schema
+  - เชื่อมโยง feature กับ physical code module
+  - สร้าง `modules.json` template
+- ✨ เพิ่ม `layer` field ใน feature schema
+  - 5 layers: presentation, application, domain, infrastructure, cross-cutting
+  - กำหนด layer definition ใน feature_list.json
+- ✨ เพิ่ม `component_library.json` template
+  - กำหนด UI components ที่มีอยู่ในระบบ
+  - Validation ของ `required_components` ใน features
+  - Design tokens reference
+  - Responsive breakpoints configuration
+- ✨ เพิ่ม fields ใหม่ใน feature schema:
+  - `risk_level`: low/medium/high
+  - `mockup_version`: version ของ mockup ที่อ้างอิง
+  - `design_tokens_used`: design tokens ที่ใช้
+  - `responsive_breakpoints`: status ของแต่ละ breakpoint
+- ✨ เพิ่ม subtask fields:
+  - `depends_on`: subtask dependencies
+  - `files`: ไฟล์ที่แก้ไข
+- ✨ เพิ่ม `cross-cutting` epic template
+  - Bounded context: SharedKernel
+  - สำหรับ logging, caching, security, monitoring
+- 📄 อัพเดท schema version เป็น 1.7.0
 
 ### v1.4.0 (2025-01-04)
 - ✨ เพิ่ม `references` field ใน feature schema

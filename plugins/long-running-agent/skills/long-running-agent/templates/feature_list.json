@@ -1,4 +1,5 @@
 {
+  "schema_version": "1.7.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -8,216 +9,634 @@
     "other": []
   },
   "created_at": "TIMESTAMP",
+
+  "layers": [
+    {
+      "id": "presentation",
+      "name": "Presentation Layer",
+      "description": "Controllers, API Endpoints, UI Components",
+      "categories": ["api", "feature-frontend"]
+    },
+    {
+      "id": "application",
+      "name": "Application Layer",
+      "description": "Use Cases, DTOs, Validators, Services",
+      "categories": ["feature"]
+    },
+    {
+      "id": "domain",
+      "name": "Domain Layer",
+      "description": "Entities, Value Objects, Domain Events",
+      "categories": ["domain"]
+    },
+    {
+      "id": "infrastructure",
+      "name": "Infrastructure Layer",
+      "description": "DbContext, Repositories, External APIs",
+      "categories": ["setup", "data"]
+    },
+    {
+      "id": "cross-cutting",
+      "name": "Cross-Cutting Layer",
+      "description": "Logging, Caching, Security, Monitoring",
+      "categories": ["quality"]
+    }
+  ],
+
+  "epics": [
+    {
+      "id": "setup",
+      "name": "Project Setup",
+      "description": "การตั้งค่าโปรเจค โครงสร้าง และ dependencies",
+      "bounded_context": "Infrastructure",
+      "features": [1, 2],
+      "progress": { "total": 2, "passed": 0, "in_progress": 0 }
+    },
+    {
+      "id": "domain",
+      "name": "Domain Layer",
+      "description": "Entities, Value Objects และ Business Logic",
+      "bounded_context": "Core",
+      "features": [3, 4],
+      "progress": { "total": 2, "passed": 0, "in_progress": 0 }
+    },
+    {
+      "id": "api",
+      "name": "API Endpoints",
+      "description": "REST API สำหรับ CRUD operations",
+      "bounded_context": "Presentation",
+      "features": [5, 6, 7, 8, 9],
+      "progress": { "total": 5, "passed": 0, "in_progress": 0 }
+    },
+    {
+      "id": "quality",
+      "name": "Quality & Documentation",
+      "description": "Validation, Error Handling และ API Docs",
+      "bounded_context": "CrossCutting",
+      "features": [10, 11, 12],
+      "progress": { "total": 3, "passed": 0, "in_progress": 0 }
+    },
+    {
+      "id": "cross-cutting",
+      "name": "Cross-Cutting Concerns",
+      "description": "Logging, Caching, Security, Monitoring และ Shared Services",
+      "bounded_context": "SharedKernel",
+      "features": [],
+      "progress": { "total": 0, "passed": 0, "in_progress": 0 }
+    }
+  ],
+
+  "modules": [],
+
   "features": [
     {
       "id": 1,
+      "epic": "setup",
+      "module": null,
+      "layer": "infrastructure",
       "category": "setup",
       "description": "สร้าง project structure",
       "priority": "high",
-      "steps": [
+      "complexity": "simple",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "1.1", "description": "สร้าง project ใหม่", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "1.2", "description": "ตั้งค่า configuration", "done": false, "committed_at": null, "depends_on": ["1.1"], "files": [] },
+        { "id": "1.3", "description": "ทดสอบ run project", "done": false, "committed_at": null, "depends_on": ["1.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "project สร้างได้สำเร็จ",
+        "build ผ่านโดยไม่มี error",
+        "run ได้และเข้าถึง localhost ได้"
+      ],
+      "time_tracking": {
+        "estimated_time": "15min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง project ใหม่",
         "ตั้งค่า configuration",
         "ทดสอบ run project"
       ],
-      "dependencies": [],
-      "references": [],
-      "estimated_time": "15min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 2,
+      "epic": "setup",
+      "module": null,
+      "layer": "infrastructure",
       "category": "setup",
       "description": "ตั้งค่า database และ ORM",
       "priority": "high",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "medium",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "2.1", "description": "เพิ่ม packages", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "2.2", "description": "ตั้งค่า connection string", "done": false, "committed_at": null, "depends_on": ["2.1"], "files": [] },
+        { "id": "2.3", "description": "ทดสอบ connection", "done": false, "committed_at": null, "depends_on": ["2.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "packages ติดตั้งสำเร็จ",
+        "connection string ถูกต้อง",
+        "สามารถ connect กับ database ได้"
+      ],
+      "time_tracking": {
+        "estimated_time": "20min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [1],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "เพิ่ม packages",
         "ตั้งค่า connection string",
         "ทดสอบ connection"
       ],
-      "dependencies": [1],
-      "references": [],
-      "estimated_time": "20min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 3,
+      "epic": "domain",
+      "module": null,
+      "layer": "domain",
       "category": "domain",
       "description": "สร้าง [Entity] entity",
       "priority": "high",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "3.1", "description": "สร้าง model class", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "3.2", "description": "เพิ่ม properties", "done": false, "committed_at": null, "depends_on": ["3.1"], "files": [] },
+        { "id": "3.3", "description": "เพิ่ม validations", "done": false, "committed_at": null, "depends_on": ["3.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "entity class สร้างถูกต้องตาม design",
+        "properties ครบตาม requirements",
+        "data annotations/validation ครบ"
+      ],
+      "time_tracking": {
+        "estimated_time": "15min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [1],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง model class",
         "เพิ่ม properties",
         "เพิ่ม validations"
       ],
-      "dependencies": [1],
-      "references": [],
-      "estimated_time": "15min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 4,
+      "epic": "domain",
+      "module": null,
+      "layer": "infrastructure",
       "category": "data",
       "description": "สร้าง DbContext และ Migration",
       "priority": "high",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "medium",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "4.1", "description": "สร้าง DbContext", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "4.2", "description": "Configure entities", "done": false, "committed_at": null, "depends_on": ["4.1"], "files": [] },
+        { "id": "4.3", "description": "รัน migration", "done": false, "committed_at": null, "depends_on": ["4.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "DbContext สร้างถูกต้อง",
+        "entity configurations ครบถ้วน",
+        "migration สำเร็จและ database schema ถูกต้อง"
+      ],
+      "time_tracking": {
+        "estimated_time": "20min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [2, 3],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง DbContext",
         "Configure entities",
         "รัน migration"
       ],
-      "dependencies": [2, 3],
-      "references": [],
-      "estimated_time": "20min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 5,
+      "epic": "api",
+      "module": null,
+      "layer": "presentation",
       "category": "api",
       "description": "GET /api/[resource] - List all",
       "priority": "high",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "5.1", "description": "สร้าง Controller", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "5.2", "description": "implement endpoint", "done": false, "committed_at": null, "depends_on": ["5.1"], "files": [] },
+        { "id": "5.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["5.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "endpoint ตอบ 200 OK พร้อม array",
+        "รองรับ pagination (ถ้าต้องการ)",
+        "response format ถูกต้อง"
+      ],
+      "time_tracking": {
+        "estimated_time": "20min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [4],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง Controller",
         "implement endpoint",
         "ทดสอบ"
       ],
-      "dependencies": [4],
-      "references": [],
-      "estimated_time": "20min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 6,
+      "epic": "api",
+      "module": null,
+      "layer": "presentation",
       "category": "api",
       "description": "GET /api/[resource]/{id} - Get by ID",
       "priority": "high",
-      "steps": [
+      "complexity": "simple",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "6.1", "description": "implement endpoint", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "6.2", "description": "handle 404", "done": false, "committed_at": null, "depends_on": ["6.1"], "files": [] },
+        { "id": "6.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["6.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "endpoint ตอบ 200 OK พร้อม object",
+        "ตอบ 404 เมื่อไม่พบ resource",
+        "response format ถูกต้อง"
+      ],
+      "time_tracking": {
+        "estimated_time": "15min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [5],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "implement endpoint",
         "handle 404",
         "ทดสอบ"
       ],
-      "dependencies": [5],
-      "references": [],
-      "estimated_time": "15min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 7,
+      "epic": "api",
+      "module": null,
+      "layer": "presentation",
       "category": "api",
       "description": "POST /api/[resource] - Create",
       "priority": "high",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "7.1", "description": "สร้าง DTO", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "7.2", "description": "implement endpoint", "done": false, "committed_at": null, "depends_on": ["7.1"], "files": [] },
+        { "id": "7.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["7.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "endpoint ตอบ 201 Created",
+        "return created resource",
+        "validation ทำงานถูกต้อง"
+      ],
+      "time_tracking": {
+        "estimated_time": "20min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [5],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง DTO",
         "implement endpoint",
         "ทดสอบ"
       ],
-      "dependencies": [5],
-      "references": [],
-      "estimated_time": "20min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 8,
+      "epic": "api",
+      "module": null,
+      "layer": "presentation",
       "category": "api",
       "description": "PUT /api/[resource]/{id} - Update",
       "priority": "medium",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "8.1", "description": "สร้าง Update DTO", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "8.2", "description": "implement endpoint", "done": false, "committed_at": null, "depends_on": ["8.1"], "files": [] },
+        { "id": "8.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["8.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "endpoint ตอบ 200 OK พร้อม updated resource",
+        "ตอบ 404 เมื่อไม่พบ resource",
+        "validation ทำงานถูกต้อง"
+      ],
+      "time_tracking": {
+        "estimated_time": "20min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [6],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง Update DTO",
         "implement endpoint",
         "ทดสอบ"
       ],
-      "dependencies": [6],
-      "references": [],
-      "estimated_time": "20min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 9,
+      "epic": "api",
+      "module": null,
+      "layer": "presentation",
       "category": "api",
       "description": "DELETE /api/[resource]/{id} - Delete",
       "priority": "medium",
-      "steps": [
+      "complexity": "simple",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "9.1", "description": "implement endpoint", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "9.2", "description": "return 204", "done": false, "committed_at": null, "depends_on": ["9.1"], "files": [] },
+        { "id": "9.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["9.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "endpoint ตอบ 204 No Content",
+        "ตอบ 404 เมื่อไม่พบ resource",
+        "resource ถูกลบจาก database"
+      ],
+      "time_tracking": {
+        "estimated_time": "15min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [6],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "implement endpoint",
         "return 204",
         "ทดสอบ"
       ],
-      "dependencies": [6],
-      "references": [],
-      "estimated_time": "15min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 10,
+      "epic": "quality",
+      "module": null,
+      "layer": "cross-cutting",
       "category": "quality",
       "description": "Input validation",
       "priority": "medium",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "medium",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "10.1", "description": "เพิ่ม validation library", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "10.2", "description": "สร้าง validators", "done": false, "committed_at": null, "depends_on": ["10.1"], "files": [] },
+        { "id": "10.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["10.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "validation library ติดตั้งแล้ว",
+        "validators ครบทุก DTOs",
+        "error messages ชัดเจน"
+      ],
+      "time_tracking": {
+        "estimated_time": "25min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [7, 8],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "เพิ่ม validation library",
         "สร้าง validators",
         "ทดสอบ"
       ],
-      "dependencies": [7, 8],
-      "references": [],
-      "estimated_time": "25min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 11,
+      "epic": "quality",
+      "module": null,
+      "layer": "cross-cutting",
       "category": "quality",
       "description": "Error handling",
       "priority": "medium",
-      "steps": [
+      "complexity": "medium",
+      "risk_level": "medium",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "11.1", "description": "สร้าง exception handler", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "11.2", "description": "implement ProblemDetails", "done": false, "committed_at": null, "depends_on": ["11.1"], "files": [] },
+        { "id": "11.3", "description": "ทดสอบ", "done": false, "committed_at": null, "depends_on": ["11.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "global exception handler ทำงาน",
+        "errors return ProblemDetails format",
+        "sensitive info ไม่ถูก expose"
+      ],
+      "time_tracking": {
+        "estimated_time": "20min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [5],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "สร้าง exception handler",
         "implement ProblemDetails",
         "ทดสอบ"
       ],
-      "dependencies": [5],
-      "references": [],
-      "estimated_time": "20min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     },
     {
       "id": 12,
+      "epic": "quality",
+      "module": null,
+      "layer": "cross-cutting",
       "category": "quality",
       "description": "API documentation",
       "priority": "low",
-      "steps": [
+      "complexity": "simple",
+      "risk_level": "low",
+      "status": "pending",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "12.1", "description": "ตั้งค่า Swagger", "done": false, "committed_at": null, "depends_on": [], "files": [] },
+        { "id": "12.2", "description": "เพิ่ม comments", "done": false, "committed_at": null, "depends_on": ["12.1"], "files": [] },
+        { "id": "12.3", "description": "ทดสอบ UI", "done": false, "committed_at": null, "depends_on": ["12.2"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Swagger UI เข้าถึงได้",
+        "endpoints ทั้งหมดแสดงถูกต้อง",
+        "descriptions และ examples ครบ"
+      ],
+      "time_tracking": {
+        "estimated_time": "15min",
+        "actual_time": null,
+        "started_at": null,
+        "completed_at": null
+      },
+      "dependencies": [5],
+      "references": [],
+      "mockup_validated": false,
+      "mockup_version": null,
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "passes": false,
+      "steps_legacy": [
         "ตั้งค่า Swagger",
         "เพิ่ม comments",
         "ทดสอบ UI"
       ],
-      "dependencies": [5],
-      "references": [],
-      "estimated_time": "15min",
-      "passes": false,
       "tested_at": null,
       "notes": ""
     }
   ],
+
   "summary": {
     "total": 12,
     "passed": 0,
-    "failed": 12,
+    "in_progress": 0,
+    "blocked": 0,
+    "pending": 12,
     "last_updated": "TIMESTAMP"
   }
 }
