@@ -1,0 +1,8 @@
+{
+  "name": "meta-labeling",
+  "version": "1.0.0",
+  "description": "Implement Meta-Labeling architecture for trading ML systems based on Marcos Lopez de Prado's methodology with two-layer signal filtering and position sizing",
+  "author": {
+    "name": "Mounchons"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "financial-backtesting",
+  "version": "1.0.0",
+  "description": "Rigorous financial backtesting methodology based on Marcos Lopez de Prado with purged k-fold, walk-forward validation, overfitting detection, and transaction cost modeling",
+  "author": {
+    "name": "Mounchons"
+  }
+}

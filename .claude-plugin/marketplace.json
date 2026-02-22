@@ -89,6 +89,65 @@
       "author": {
         "name": "Mounchons"
       }
+    },
+    {
+      "name": "meta-labeling",
+      "source": "./plugins/meta-labeling",
+      "description": "Implement Meta-Labeling architecture for trading ML systems based on Marcos Lopez de Prado's methodology with two-layer signal filtering and position sizing",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": [
+        "meta-labeling",
+        "trading",
+        "ml",
+        "signal-filtering",
+        "position-sizing",
+        "xgboost",
+        "ensemble",
+        "quantitative-finance"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
+    },
+    {
+      "name": "gold-trading-ml",
+      "source": "./plugins/gold-trading-ml",
+      "description": "Build and maintain Gold XAU/USD Day Trading ML system using Meta-Labeling architecture with multi-timeframe analysis, ensemble ML filtering, and ASP.NET Core dashboard",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": [
+        "gold",
+        "xauusd",
+        "day-trading",
+        "meta-labeling",
+        "multi-timeframe",
+        "fastapi",
+        "aspnet-core",
+        "quantitative-finance"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
+    },
+    {
+      "name": "financial-backtesting",
+      "source": "./plugins/financial-backtesting",
+      "description": "Rigorous financial backtesting methodology based on Marcos Lopez de Prado with purged k-fold, walk-forward validation, overfitting detection, and transaction cost modeling",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": [
+        "backtesting",
+        "walk-forward",
+        "purged-kfold",
+        "overfitting-detection",
+        "cross-validation",
+        "quantitative-finance",
+        "lopez-de-prado"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
     }
   ]
 }

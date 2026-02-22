@@ -1,0 +1,8 @@
+{
+  "name": "gold-trading-ml",
+  "version": "1.0.0",
+  "description": "Build and maintain Gold XAU/USD Day Trading ML system using Meta-Labeling architecture with multi-timeframe analysis, ensemble ML filtering, and ASP.NET Core dashboard",
+  "author": {
+    "name": "Mounchons"
+  }
+}
