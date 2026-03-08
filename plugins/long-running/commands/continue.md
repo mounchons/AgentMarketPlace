@@ -66,8 +66,8 @@ cat .mockups/mockup_list.json 2>/dev/null
 
 | Folder/File | Skill ที่สร้าง | ใช้ทำอะไร |
 |-------------|---------------|----------|
-| `.mockups/` | ui-mockup | **UI Wireframes** - ใช้เป็น reference สร้างหน้าเว็บ |
-| `.mockups/*.mockup.md` | ui-mockup | ASCII wireframe + component specs |
+| `.mockups/` | ui-mockup | **UI Structural Spec** - บอก components, data flow, layout structure (ไม่ใช่ visual blueprint) |
+| `.mockups/*.mockup.md` | ui-mockup | Component specs + data requirements (ASCII wireframe เป็นแค่ structural reference) |
 | `.mockups/_design-tokens.yaml` | ui-mockup | Design tokens (colors, spacing, typography) |
 | `*design-doc.md` | system-design-doc | **System Architecture** - ER Diagram, Flow, DFD |
 | `docs/` | system-design-doc | เอกสารออกแบบระบบ |
@@ -79,11 +79,11 @@ cat .mockups/mockup_list.json 2>/dev/null
 │                    REFERENCE DOCUMENT USAGE                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  📐 UI Mockup (.mockups/)                                          │
-│  ├── ดู ASCII wireframe สำหรับ layout                              │
-│  ├── อ่าน component specs สำหรับ UI components                     │
+│  📐 UI Mockup (.mockups/) — Structural Reference เท่านั้น            │
+│  ├── อ่าน component specs → รู้ว่าต้องมี components อะไรบ้าง        │
+│  ├── อ่าน data requirements → รู้ว่าต้องแสดง/รับข้อมูลอะไร          │
 │  ├── ใช้ design tokens สำหรับ styling                              │
-│  └── **สร้าง Frontend ตาม mockup design!**                         │
+│  └── **frontend-design มีอิสระในการออกแบบ visual!**                │
 │                                                                     │
 │  📄 System Design Doc                                               │
 │  ├── ดู ER Diagram สำหรับ database schema                          │
@@ -95,10 +95,12 @@ cat .mockups/mockup_list.json 2>/dev/null
 ```
 
 **⚠️ ถ้าพบ `.mockups/` folder:**
-1. **ต้อง** อ่าน mockup ของหน้าที่กำลังพัฒนา
-2. **ต้อง** สร้าง UI ตาม wireframe ที่ออกแบบไว้
-3. **ต้อง** ใช้ design tokens ที่กำหนด (colors, spacing, fonts)
-4. **ต้อง** implement components ตาม component specs
+1. **ต้อง** อ่าน mockup ของหน้าที่กำลังพัฒนา — เพื่อเข้าใจ structural requirements
+2. **ต้อง** implement ครบทุก components ที่ระบุใน component specs
+3. **ต้อง** แสดง/รับข้อมูลครบตาม data requirements
+4. **ต้อง** ใช้ design tokens ที่กำหนด (colors, spacing, fonts)
+5. **อิสระ** ในการออกแบบ visual, layout, animation, UX — ไม่ต้องเหมือน ASCII wireframe
+6. ถ้าใช้ `/frontend-design` skill → ให้ skill ออกแบบ visual ได้เต็มที่
 
 **⚠️ ถ้าพบ Design Document:**
 1. **ต้อง** อ่าน ER Diagram ก่อนสร้าง database
@@ -262,9 +264,9 @@ cat .agent/config.json 2>/dev/null | grep -A 5 "recommended_skills"
 │      │                                                              │
 │      ▼                                                              │
 │  ┌─────────────────┐                                               │
-│  │ อ่าน mockup.md  │ ← ใช้ design เป็น reference สร้าง UI         │
-│  │ สร้าง UI ตาม    │                                               │
-│  │ wireframe       │                                               │
+│  │ อ่าน mockup.md  │ ← อ่าน structural spec (components, data)    │
+│  │ frontend-design │ ← ออกแบบ visual ได้อิสระ                      │
+│  │ มีอิสระออกแบบ    │                                               │
 │  └─────────────────┘                                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -372,10 +374,10 @@ done
 ```
 
 **ถ้าพบ references:**
-1. **ต้อง**อ่าน mockup file ก่อนเริ่มพัฒนา
-2. **ต้อง**ตรวจสอบ required_components
-3. **ต้อง**สร้าง UI ตาม wireframe ที่ออกแบบ
-4. **ต้อง**ใช้ design tokens
+1. **ต้อง**อ่าน mockup file ก่อนเริ่มพัฒนา — เพื่อเข้าใจ structural requirements
+2. **ต้อง**ตรวจสอบ required_components — implement ครบทุกตัว
+3. **ต้อง**ใช้ design tokens
+4. **อิสระ**ในการออกแบบ visual — wireframe เป็นแค่ structural spec ไม่ใช่ visual blueprint
 
 ### Step 4: Implement Feature with Subtask Commits (v1.6.0 - Default Behavior)
 
@@ -460,7 +462,7 @@ git commit -m "feat: Feature #1 - สร้าง project structure"
 - [ ] Build ผ่าน
 - [ ] Manual test ผ่าน (curl, Postman, browser)
 - [ ] Edge cases handled
-- [ ] UI ตรงกับ mockup (ถ้าเป็น UI feature)
+- [ ] UI implement ครบทุก components และ data requirements จาก mockup (visual ไม่ต้องเหมือน wireframe)
 
 ### Step 6: Mark as Passed (Schema v1.5.0)
 

@@ -71,13 +71,13 @@ ls -la package.json 2>/dev/null    # Node.js
 
 | Feature Type | ต้องอ่าน | ใช้ทำอะไร |
 |--------------|---------|----------|
-| **UI/Frontend** | `.mockups/[page].mockup.md` | ดู wireframe, component specs, design tokens |
+| **UI/Frontend** | `.mockups/[page].mockup.md` | อ่าน component specs, data requirements (wireframe = structural ref, ไม่ใช่ visual blueprint) |
 | **Database** | Design Doc - ER Diagram | ดู schema, relationships |
 | **API** | Design Doc - Flow Diagram | ดู business logic, endpoints |
 | **.NET Code** | `/dotnet-dev` skill | ใช้ .NET best practices |
 
 **⚠️ กฎสำคัญ:**
-- ถ้าพบ `.mockups/` folder → **ต้อง**สร้าง UI ตาม wireframe
+- ถ้าพบ `.mockups/` folder → **ต้อง**อ่าน structural spec (components, data) แต่ **อิสระ**ออกแบบ visual
 - ถ้าพบ Design Doc → **ต้อง**ใช้ ER Diagram สำหรับ database
 - ถ้าเป็น .NET project → **ต้อง**ใช้ `/dotnet-dev` skill
 - ถ้าพบ `design_doc_list.json` → **ต้อง**ตรวจสอบ `crud_operations` ของ entity ก่อน implement CRUD features
