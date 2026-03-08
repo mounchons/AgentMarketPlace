@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.10.0",
+  "schema_version": "2.0.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -16,6 +16,21 @@
     "last_synced_with_design_doc": null,
     "last_synced_with_mockups": null,
     "auto_sync_enabled": false
+  },
+
+  "state_contracts": {
+    "ExampleState": {
+      "description": "ตัวอย่าง state contract - ลบออกเมื่อใช้จริง",
+      "fields": {
+        "id": { "type": "number", "description": "ID ของ resource" },
+        "name": { "type": "string", "description": "ชื่อ resource" },
+        "items": { "type": "Item[]", "description": "รายการ items" },
+        "optional_field": { "type": "string?", "description": "field ที่เป็น optional" }
+      },
+      "persistence": "session",
+      "produced_by": [],
+      "consumed_by": []
+    }
   },
 
   "layers": [
@@ -94,6 +109,40 @@
     }
   ],
 
+  "flows": [
+    {
+      "id": "example-flow",
+      "name": "Example Flow",
+      "description": "ตัวอย่าง flow - ลบออกเมื่อใช้จริง",
+      "type": "wizard",
+      "steps": [
+        { "order": 1, "feature_id": 5, "label": "Step 1 - List" },
+        { "order": 2, "feature_id": 7, "label": "Step 2 - Create" },
+        { "order": 3, "feature_id": 6, "label": "Step 3 - Detail" }
+      ],
+      "entry_conditions": {
+        "required_state": ["AuthState"],
+        "description": "ต้อง login ก่อนเข้า flow"
+      },
+      "exit_conditions": {
+        "produced_state": ["ExampleState"],
+        "description": "สร้าง resource สำเร็จ"
+      },
+      "error_paths": [
+        {
+          "from_step": 2,
+          "condition": "validation_failed",
+          "action": "stay",
+          "description": "validation ไม่ผ่าน → แสดง error อยู่หน้าเดิม"
+        }
+      ],
+      "cancel_path": {
+        "action": "back_to_list",
+        "description": "ยกเลิก → กลับไปหน้า List"
+      }
+    }
+  ],
+
   "modules": [],
 
   "component_usage": {
@@ -106,6 +155,9 @@
     {
       "id": 1,
       "epic": "setup",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "infrastructure",
       "category": "setup",
@@ -161,6 +213,9 @@
     {
       "id": 2,
       "epic": "setup",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "infrastructure",
       "category": "setup",
@@ -216,6 +271,9 @@
     {
       "id": 3,
       "epic": "domain",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "domain",
       "category": "domain",
@@ -271,6 +329,9 @@
     {
       "id": 4,
       "epic": "domain",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "infrastructure",
       "category": "data",
@@ -326,6 +387,9 @@
     {
       "id": 5,
       "epic": "api",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "presentation",
       "category": "api",
@@ -381,6 +445,9 @@
     {
       "id": 6,
       "epic": "api",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "presentation",
       "category": "api",
@@ -436,6 +503,9 @@
     {
       "id": 7,
       "epic": "api",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "presentation",
       "category": "api",
@@ -491,6 +561,9 @@
     {
       "id": 8,
       "epic": "api",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "presentation",
       "category": "api",
@@ -546,6 +619,9 @@
     {
       "id": 9,
       "epic": "api",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "presentation",
       "category": "api",
@@ -601,6 +677,9 @@
     {
       "id": 10,
       "epic": "quality",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "cross-cutting",
       "category": "quality",
@@ -656,6 +735,9 @@
     {
       "id": 11,
       "epic": "quality",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "cross-cutting",
       "category": "quality",
@@ -711,6 +793,9 @@
     {
       "id": 12,
       "epic": "quality",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
       "module": null,
       "layer": "cross-cutting",
       "category": "quality",
@@ -790,11 +875,11 @@
   },
 
   "metadata": {
-    "schema_version": "1.10.0",
-    "plugin_version": "1.10.0",
+    "schema_version": "2.0.0",
+    "plugin_version": "2.0.0",
     "compatible_with": {
-      "design_doc_list_schema": ">=2.0.0",
-      "mockup_list_schema": ">=1.6.0"
+      "design_doc_list_schema": ">=2.1.0",
+      "mockup_list_schema": ">=1.7.0"
     }
   }
 }
