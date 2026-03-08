@@ -91,6 +91,18 @@ cat design_doc_list.json | jq '.entities[] | select(.name == "EntityName") | .cr
 - Delete ต้องใช้ `strategy` ตามที่กำหนด (default: `"soft"` = set is_active = false)
 - ห้ามสร้าง CRUD ครบทุกตัวโดยไม่ตรวจสอบ — บาง entity อาจเป็น read-only
 
+- ถ้าพบ `flows[]` ใน feature_list.json → **ต้อง**อ่าน flow context ก่อนเริ่มงาน
+
+**🔍 Flow Context Check (v2.0.0):**
+```bash
+# ตรวจสอบว่า feature อยู่ใน flow ไหน
+cat feature_list.json | jq --arg fid "FEATURE_ID" '.flows[] | select(.steps[].feature_id == ($fid | tonumber))'
+```
+- ถ้า feature มี `flow_id` → อ่าน entry/exit conditions, error_paths ก่อน implement
+- ถ้า feature มี `state_consumes` → ตรวจว่า state ถูก produce แล้ว
+- ถ้า feature มี `state_produces` → implement state creation ตาม `persistence` type ใน state_contracts
+- ถ้า feature มี `requires_components` → ตรวจว่า components พร้อมใช้แล้ว
+
 ---
 
 ### Step 1: Get Context (สำคัญมาก!)

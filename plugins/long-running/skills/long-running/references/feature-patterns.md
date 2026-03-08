@@ -589,3 +589,56 @@ Feature Y:
 - Feature Y.2: Error handling
 - Feature Y.3: Edge cases
 ```
+
+---
+
+## Flow Patterns (v2.0.0)
+
+### Wizard Flow Pattern
+
+สำหรับ multi-step forms ที่ต้องทำตามลำดับ:
+
+```
+Flow: Checkout
+├── Step 1: Cart Review → produces CartState
+├── Step 2: Shipping Info → consumes CartState, produces ShippingState
+├── Step 3: Payment → consumes CartState + ShippingState, produces PaymentResult
+└── Step 4: Confirmation → consumes PaymentResult, produces OrderState
+```
+
+**Features ที่สร้าง:**
+- 1 feature ต่อ step + shared component features (StepIndicator, PriceDisplay)
+- แต่ละ feature มี `flow_id`, `state_produces`, `state_consumes`
+- Feature สำหรับ shared components ต้องทำก่อน (เป็น dependency)
+
+### CRUD-Group Flow Pattern
+
+สำหรับ entity management ที่มี List + Form + Detail:
+
+```
+Flow: User Management
+├── User List → consumes AuthState
+├── User Form (Create/Edit) → consumes AuthState
+└── User Detail → consumes AuthState
+```
+
+**Features ที่สร้าง:**
+- List, Form, Detail features ทั้งหมดอยู่ใน flow เดียว
+- ไม่ต้องทำตามลำดับ (type: crud-group)
+- แชร์ AuthState และ shared components (DataTable, FormModal)
+
+### Parallel Flow Pattern
+
+สำหรับ dashboard หรือหน้าที่มีหลาย widgets ทำงานอิสระ:
+
+```
+Flow: Dashboard
+├── Stats Widget → consumes AuthState
+├── Chart Widget → consumes AuthState
+└── Recent Activity → consumes AuthState
+```
+
+**Features ที่สร้าง:**
+- แต่ละ widget เป็น feature อิสระ
+- ทำหน้าไหนก่อนก็ได้
+- แชร์ Layout component
