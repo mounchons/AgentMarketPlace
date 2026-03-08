@@ -283,6 +283,94 @@ mkdir -p .agent
 
 **สร้าง feature_list.json** - รายการ features ทั้งหมด
 
+### Step 3.5: Detect Flows
+
+**วิเคราะห์ features ที่สร้างแล้ว เพื่อจัดกลุ่มเป็น flows:**
+
+1. **จาก Design Doc** (ถ้ามี):
+   - อ่าน Flow Diagrams → สร้าง `wizard` flows
+   - อ่าน Sitemap → จัดกลุ่ม CRUD pages เป็น `crud-group` flows
+
+2. **จาก Mockups** (ถ้ามี):
+   - ดู `related_pages` ใน mockup_list.json → จัดกลุ่มเป็น flows
+   - หน้าที่มี StepIndicator component → `wizard` flow
+
+3. **Auto-detect patterns:**
+   - Features ที่มี sequential mockup pages (001 → 002 → 003) → `wizard`
+   - Features ที่มี List + Form + Detail สำหรับ entity เดียว → `crud-group`
+   - Dashboard features ที่ทำงานอิสระ → `parallel`
+
+4. **ถ้าไม่ชัด → ถาม user:**
+   - "Features #5-#8 ดูเหมือนเป็น flow เดียวกัน ใช่ไหม?"
+   - "Flow นี้เป็นแบบ wizard (ทำตามลำดับ) หรือ crud-group (เข้าหน้าไหนก็ได้)?"
+
+**สร้าง flow:**
+```json
+{
+  "id": "[auto-generated-from-name]",
+  "name": "[Flow Name]",
+  "type": "[wizard|crud-group|parallel]",
+  "steps": [
+    { "order": 1, "feature_id": N, "label": "[Step Label]" }
+  ],
+  "entry_conditions": {
+    "required_state": ["[ถ้าต้อง login → AuthState]"],
+    "description": "[เงื่อนไข]"
+  },
+  "exit_conditions": {
+    "produced_state": ["[state ที่สร้าง]"],
+    "description": "[ผลลัพธ์]"
+  },
+  "error_paths": [],
+  "cancel_path": null
+}
+```
+
+### Step 3.6: Define State Contracts
+
+**วิเคราะห์ flows เพื่อหา shared state:**
+
+1. **AuthState** (ถ้ามีหน้า Login):
+   - `persistence: "localStorage"`
+   - `fields`: user_id, role, token
+   - `produced_by`: [login feature id]
+   - `consumed_by`: [ทุก feature ที่ต้อง login]
+
+2. **Entity-based state** (จาก design doc entities):
+   - ดู Flow Diagrams → state ที่ส่งระหว่าง steps
+   - ดู ER Diagram → entity fields → state fields
+   - `persistence`: ตาม use case (session สำหรับ wizard, url สำหรับ filters)
+
+3. **กำหนด persistence type:**
+   | Use Case | Persistence |
+   |----------|-------------|
+   | Auth/Login | `localStorage` |
+   | Wizard (Cart, Checkout) | `session` |
+   | Filters, Search | `url` |
+   | Modal state, Form dirty | `memory` |
+
+4. **เพิ่ม `state_produces` / `state_consumes` ให้ features ที่เกี่ยวข้อง**
+
+### Step 3.7: Identify Shared Components
+
+**ตรวจหา components ที่ใช้ซ้ำหลายหน้า:**
+
+1. **จาก Mockups** (ถ้ามี):
+   - ดู `components` ใน mockup_list.json pages
+   - Components ที่ปรากฏใน 3+ pages → shared component
+
+2. **Common shared components:**
+   - `AuthGuard` — ถ้ามีหน้าที่ต้อง login
+   - `Layout` (Navbar + Sidebar) — ถ้ามี admin pages
+   - `DataTable` — ถ้ามีหลายหน้า list
+   - `FormModal` — ถ้ามี modal CRUD (simple entities)
+   - `StepIndicator` — ถ้ามี wizard flows
+
+3. **สำหรับแต่ละ shared component:**
+   - สร้าง feature แยก (category: "component")
+   - เพิ่มใน `component_usage.shared_components`
+   - เพิ่ม `requires_components` ให้ features ที่ใช้
+
 ### 4. Git Operations
 ```bash
 git init  # ถ้ายังไม่มี
