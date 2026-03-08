@@ -453,8 +453,8 @@ mkdir -p .mockups
       "delete": {
         "icon": "warning",
         "title": "Are you sure?",
-        "text": "You won't be able to revert this!",
-        "confirmButtonText": "Yes, delete it!",
+        "text": "This item will be deactivated.",
+        "confirmButtonText": "Yes, deactivate it!",
         "cancelButtonText": "Cancel",
         "confirmButtonColor": "#d33",
         "cancelButtonColor": "#3085d6"

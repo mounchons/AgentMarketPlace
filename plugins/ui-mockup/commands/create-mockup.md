@@ -407,9 +407,9 @@ icon: "arrow-right"
 │      │                                             │            │
 │      │             Are you sure?                   │            │
 │      │                                             │            │
-│      │   You won't be able to revert this!        │            │
+│      │   This item will be deactivated.             │            │
 │      │                                             │            │
-│      │        [Cancel]    [Yes, delete it!]        │            │
+│      │        [Cancel]  [Yes, deactivate it!]      │            │
 │      │                                             │            │
 │      └─────────────────────────────────────────────┘            │
 └─────────────────────────────────────────────────────────────────┘
@@ -420,13 +420,14 @@ icon: "arrow-right"
 Swal.fire({
   icon: 'warning',
   title: 'Are you sure?',
-  text: "You won't be able to revert this!",
+  text: "This item will be deactivated.",
   showCancelButton: true,
   confirmButtonColor: '#d33',
   cancelButtonColor: '#3085d6',
-  confirmButtonText: 'Yes, delete it!',
+  confirmButtonText: 'Yes, deactivate it!',
   cancelButtonText: 'Cancel'
 })
+// Note: For hard delete, use text: "This action cannot be undone." and confirmButtonText: "Yes, delete it!"
 ```
 
 ### Success Alert

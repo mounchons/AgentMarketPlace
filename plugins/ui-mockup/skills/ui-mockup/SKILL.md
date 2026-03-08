@@ -748,17 +748,18 @@ Entity Analysis
 **Delete confirmation ใช้ SweetAlert2 เสมอ (ทั้ง simple และ complex entities):**
 
 ```javascript
-// Delete Confirmation
+// Delete Confirmation (default: soft delete)
 Swal.fire({
   icon: 'warning',
   title: 'Are you sure?',
-  text: "You won't be able to revert this!",
+  text: "This item will be deactivated.",
   showCancelButton: true,
   confirmButtonColor: '#d33',
   cancelButtonColor: '#3085d6',
-  confirmButtonText: 'Yes, delete it!',
+  confirmButtonText: 'Yes, deactivate it!',
   cancelButtonText: 'Cancel'
 })
+// For hard delete: text: "This action cannot be undone.", confirmButtonText: "Yes, delete it!"
 
 // Success
 Swal.fire({

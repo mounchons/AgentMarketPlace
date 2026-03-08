@@ -338,9 +338,9 @@ SweetAlert2:
 │      │                                             │              │
 │      │             Are you sure?                   │              │
 │      │                                             │              │
-│      │   You won't be able to revert this!        │              │
+│      │   This item will be deactivated.             │              │
 │      │                                             │              │
-│      │        [Cancel]    [Yes, delete it!]        │              │
+│      │        [Cancel]  [Yes, deactivate it!]      │              │
 │      │                                             │              │
 │      └─────────────────────────────────────────────┘              │
 │                                                                    │
@@ -350,10 +350,11 @@ Config:
 Swal.fire({
   icon: 'warning',
   title: 'Are you sure?',
-  text: "You won't be able to revert this!",
+  text: "This item will be deactivated.",
   showCancelButton: true,
   confirmButtonColor: '#d33',
-  confirmButtonText: 'Yes, delete it!'
+  confirmButtonText: 'Yes, deactivate it!'
+  // Note: For hard delete, use text: "This action cannot be undone." and confirmButtonText: "Yes, delete it!"
 })
 ```
 

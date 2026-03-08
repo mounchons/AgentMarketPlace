@@ -478,12 +478,12 @@ Standard Modal:
 Confirmation Dialog:
 ┌────────────────────────────────────────────────────────────────────┐
 │      ┌────────────────────────────────────────────────────┐       │
-│      │              ⚠️ Delete Item?                       │       │
+│      │              ⚠️ Deactivate Item?                    │       │
 │      │                                                    │       │
-│      │  Are you sure you want to delete this item?        │       │
-│      │  This action cannot be undone.                     │       │
+│      │  Are you sure you want to deactivate this item?    │       │
+│      │  This item will be deactivated.                    │       │
 │      │                                                    │       │
-│      │              [Cancel]  [Delete]                   │       │
+│      │            [Cancel]  [Deactivate]                 │       │
 │      └────────────────────────────────────────────────────┘       │
 └────────────────────────────────────────────────────────────────────┘
 ```
@@ -676,9 +676,9 @@ Edit Modal (มีข้อมูลเดิม):
 │      │                                             │            │
 │      │             Are you sure?                   │            │
 │      │                                             │            │
-│      │   You won't be able to revert this!        │            │
+│      │   This item will be deactivated.             │            │
 │      │                                             │            │
-│      │        [Cancel]    [Yes, delete it!]        │            │
+│      │        [Cancel]  [Yes, deactivate it!]      │            │
 │      │                                             │            │
 │      └─────────────────────────────────────────────┘            │
 └─────────────────────────────────────────────────────────────────┘
@@ -687,13 +687,14 @@ Config:
 Swal.fire({
   icon: 'warning',
   title: 'Are you sure?',
-  text: "You won't be able to revert this!",
+  text: "This item will be deactivated.",
   showCancelButton: true,
   confirmButtonColor: '#d33',
   cancelButtonColor: '#3085d6',
-  confirmButtonText: 'Yes, delete it!',
+  confirmButtonText: 'Yes, deactivate it!',
   cancelButtonText: 'Cancel'
 })
+// For hard delete: text: "This action cannot be undone.", confirmButtonText: "Yes, delete it!"
 ```
 
 ### Success Alert

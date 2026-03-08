@@ -1,12 +1,12 @@
 ---
 name: long-running-agent
-version: 1.5.0
-description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills
+version: 1.10.0
+description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, CRUD enabled/disabled, soft delete strategy และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills
 ---
 
 # Long-Running Agent Skill
 
-> **Version 1.5.0** - เพิ่ม Epic Grouping, Subtask Tracking, Acceptance Criteria, Time Tracking, Auto-generation จาก Mockups/Design Docs
+> **Version 1.10.0** - เพิ่ม Cross-Plugin Integration, CRUD enabled/disabled, soft delete strategy, Module Decomposition, Component Library
 
 Skill สำหรับจัดการ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 อ้างอิงจาก [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
