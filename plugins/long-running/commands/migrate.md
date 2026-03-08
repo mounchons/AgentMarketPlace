@@ -293,6 +293,41 @@ else complexity = 'complex';
 
 ---
 
+### Migration: v1.10.0 → v2.0.0
+
+**เพิ่ม fields ใหม่ (backward compatible):**
+
+```javascript
+// 1. เพิ่ม state_contracts (root level)
+if (!data.state_contracts) {
+  data.state_contracts = {};
+}
+
+// 2. เพิ่ม flows (root level, after epics)
+if (!data.flows) {
+  data.flows = [];
+}
+
+// 3. เพิ่ม fields ใหม่ให้ทุก feature
+for (const feature of data.features) {
+  if (feature.flow_id === undefined) feature.flow_id = null;
+  if (!feature.state_produces) feature.state_produces = [];
+  if (!feature.state_consumes) feature.state_consumes = [];
+  // requires_components มีอยู่แล้ว — ไม่ต้องเพิ่ม
+}
+
+// 4. Bump versions
+data.schema_version = "2.0.0";
+data.metadata.schema_version = "2.0.0";
+data.metadata.plugin_version = "2.0.0";
+data.metadata.compatible_with.design_doc_list_schema = ">=2.1.0";
+data.metadata.compatible_with.mockup_list_schema = ">=1.7.0";
+```
+
+**หมายเหตุ:** Migration นี้เป็น additive — ไม่ลบหรือเปลี่ยน fields เดิม projects ที่ไม่ใช้ flows ทำงานได้ปกติ
+
+---
+
 ## Rollback
 
 หากต้องการย้อนกลับ:
