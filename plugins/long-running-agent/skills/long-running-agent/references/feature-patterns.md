@@ -560,14 +560,19 @@ Feature #5 (Login - Basic)
 → แตกเป็น features ตาม action
 ```
 
-### 2. ใช้ CRUD Pattern
+### 2. ใช้ CRUD Pattern (ตาม crud_operations ที่กำหนด)
 ```
-สำหรับทุก entity:
-- Create (1 feature)
-- Read List (1 feature)
-- Read Detail (1 feature)
-- Update (1 feature)
-- Delete (1 feature)
+สำหรับทุก entity — ตรวจสอบ crud_operations จาก design_doc_list.json:
+- Create (1 feature)     ← เฉพาะ create.enabled == true
+- Read List (1 feature)  ← เฉพาะ list.enabled == true
+- Read Detail (1 feature)← เฉพาะ read.enabled == true
+- Update (1 feature)     ← เฉพาะ update.enabled == true
+- Delete (1 feature)     ← เฉพาะ delete.enabled == true
+  → ถ้า delete.strategy == "soft": set is_active = false (default)
+  → ถ้า delete.strategy == "hard": ลบจริง (กรณีพิเศษ)
+
+หมายเหตุ: ไม่ใช่ทุก entity ต้องมี CRUD ครบ
+เช่น audit_logs = read-only (list + read เท่านั้น)
 ```
 
 ### 3. แยก Backend/Frontend

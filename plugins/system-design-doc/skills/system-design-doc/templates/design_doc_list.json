@@ -65,11 +65,11 @@
       "feature_ids": [],
       "pages": [],
       "crud_operations": {
-        "create": { "api": null, "feature_id": null, "page": null },
-        "read": { "api": null, "feature_id": null, "page": null },
-        "update": { "api": null, "feature_id": null, "page": null },
-        "delete": { "api": null, "feature_id": null, "page": null },
-        "list": { "api": null, "feature_id": null, "page": null }
+        "create": { "enabled": true, "api": null, "feature_id": null, "page": null },
+        "read":   { "enabled": true, "api": null, "feature_id": null, "page": null },
+        "update": { "enabled": true, "api": null, "feature_id": null, "page": null },
+        "delete": { "enabled": true, "api": null, "feature_id": null, "page": null, "strategy": "soft" },
+        "list":   { "enabled": true, "api": null, "feature_id": null, "page": null }
       },
       "relationships": [],
       "attributes": [],
@@ -230,7 +230,8 @@
     "page_must_have_feature": true,
     "diagram_file_must_exist": false,
     "layer_consistency": true,
-    "crud_completeness": true
+    "crud_must_be_defined": true,
+    "crud_default_delete_strategy": "soft"
   },
 
   "sync_status": {
@@ -260,7 +261,7 @@
   },
 
   "metadata": {
-    "schema_version": "2.0.0",
+    "schema_version": "2.1.0",
     "plugin_version": "1.3.0",
     "compatible_with": {
       "mockup_list_schema": ">=1.6.0",

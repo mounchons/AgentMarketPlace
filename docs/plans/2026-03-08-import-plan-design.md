@@ -162,11 +162,13 @@ For each of 10 sections:
 
 **Artifact 2: `.design-docs/design_doc_list.json`**
 
-Schema v2.0.0 with:
+Schema v2.1.0 with:
 - `source: "imported"` — distinguishes from `create-design-doc` or `reverse-engineer`
 - `source_file` — path to original input file
-- `entities[]` — with ENT-xxx IDs, CRUD ops, relationships
-- `api_endpoints[]` — with API-xxx IDs, method, path, entity refs
+- `entities[]` — with ENT-xxx IDs, CRUD ops (enabled/disabled + delete strategy), relationships
+- `entities[].crud_operations[].enabled` — boolean ระบุว่า operation นี้รองรับหรือไม่
+- `entities[].crud_operations.delete.strategy` — `"soft"` (default) or `"hard"`
+- `api_endpoints[]` — with API-xxx IDs, method, path, entity refs (สร้างเฉพาะ enabled operations)
 
 **Merge behavior (if design_doc_list.json already exists):**
 - Add new document entry, don't overwrite existing entries
@@ -235,6 +237,10 @@ Step 7: Output       → Summary + next steps
 | File | Action | Description |
 |------|--------|-------------|
 | `plugins/system-design-doc/commands/import-plan.md` | **Create** | Command definition |
-| `plugins/system-design-doc/.claude-plugin/plugin.json` | **Edit** | Register new command |
+| `plugins/system-design-doc/.claude-plugin/plugin.json` | **Edit** | Bump version for new command |
+| `plugins/system-design-doc/skills/.../templates/design_doc_list.json` | **Edit** | Add `enabled` + `strategy` to crud_operations (schema v2.1.0) |
+| `plugins/system-design-doc/commands/validate-integration.md` | **Edit** | Change `crud_completeness` → `crud_must_be_defined` |
+| `plugins/long-running-agent/commands/generate-features-from-design.md` | **Edit** | Read crud_operations, skip disabled, soft delete |
+| `plugins/ui-mockup/skills/.../templates/mockup_list.json` | **Edit** | Add `delete_strategy` to crud_actions |
 
-**No changes needed in long-running-agent** — it already reads `.design-docs/` and `design_doc_list.json`.
+**CRUD changes span all 3 plugins** — system-design-doc defines, long-running-agent reads, ui-mockup displays.

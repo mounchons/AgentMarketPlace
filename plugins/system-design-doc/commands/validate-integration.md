@@ -59,18 +59,26 @@ Design Doc Entities ↔ Mockup Entities ↔ Feature Entities
 For each entity in design_doc:
   1. Check mockup_entity_ref exists in mockup_list
   2. Check feature_ids exist in feature_list
-  3. Verify CRUD operations are complete
+  3. Verify CRUD operations are defined (enabled/disabled)
+  4. Check delete strategy (soft/hard)
 
 Report:
 ✅ ENT-001 "User"
    - mockup_entity_ref: User ✅
    - feature_ids: [3, 5, 6, 7, 8, 9] ✅
-   - CRUD: C✅ R✅ U✅ D✅ L✅
+   - CRUD: C✅ R✅ U✅ D✅(soft) L✅
+   - Delete strategy: soft ✅
 
 ⚠️ ENT-002 "Department"
    - mockup_entity_ref: Department ✅
    - feature_ids: [] ❌ No features reference this entity
-   - CRUD: C❌ R❌ U❌ D❌ L❌
+   - CRUD: C✅ R✅ U✅ D✅(soft) L✅  (defined but no features yet)
+
+ℹ️ ENT-011 "AuditLog"
+   - mockup_entity_ref: AuditLog ✅
+   - feature_ids: [30] ✅
+   - CRUD: C❌(disabled) R✅ U❌(disabled) D❌(disabled) L✅
+   - Note: Read-only entity — C/U/D intentionally disabled
 ```
 
 ### Step 4: Validate API References
@@ -282,7 +290,8 @@ Mockup Categories:
     "page_must_have_feature": true,
     "diagram_file_must_exist": false,
     "layer_consistency": true,
-    "crud_completeness": true,
+    "crud_must_be_defined": true,
+    "crud_default_delete_strategy": "soft",
     "bidirectional_refs": true
   }
 }

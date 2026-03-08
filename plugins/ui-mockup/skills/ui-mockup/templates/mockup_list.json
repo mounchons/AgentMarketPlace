@@ -31,7 +31,8 @@
         "view": "page",
         "create": "page",
         "edit": "page",
-        "delete": "sweetalert2"
+        "delete": "sweetalert2",
+        "delete_strategy": "soft"
       },
       "sync_status": "pending"
     },
@@ -319,11 +320,12 @@
       "delete": {
         "icon": "warning",
         "title": "Are you sure?",
-        "text": "You won't be able to revert this!",
-        "confirmButtonText": "Yes, delete it!",
+        "text": "This item will be deactivated.",
+        "confirmButtonText": "Yes, deactivate it!",
         "cancelButtonText": "Cancel",
         "confirmButtonColor": "#d33",
-        "cancelButtonColor": "#3085d6"
+        "cancelButtonColor": "#3085d6",
+        "note": "Default is soft delete (deactivate). For hard delete, change text to 'This action cannot be undone.'"
       },
       "success": {
         "icon": "success",

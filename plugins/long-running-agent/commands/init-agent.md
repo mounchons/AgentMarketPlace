@@ -219,7 +219,10 @@ For each page in mockup_list.json:
 For each entity in ER Diagram:
   - Create feature: "สร้าง [Entity] entity" (category: domain)
   - Create feature: "สร้าง [Entity] DbContext" (category: data)
-  - Create features: CRUD APIs (category: api)
+  - Create features: API endpoints ตาม crud_operations ที่ enabled เท่านั้น (category: api)
+    → ถ้ามี design_doc_list.json: อ่าน entities[].crud_operations
+    → ถ้าไม่มี: default ทุก operation enabled, delete strategy = soft
+    → Delete: ใช้ soft delete (set is_active = false) เป็น default
   - Create feature: "[Entity] validation" (category: quality)
   - Set epic: "[entity_name.toLowerCase()]"
 ```

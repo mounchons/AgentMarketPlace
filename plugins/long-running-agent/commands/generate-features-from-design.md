@@ -32,21 +32,63 @@ ls -la *system-design*.md docs/*system-design*.md 2>/dev/null
 ls -la .mockups/mockup_list.json 2>/dev/null
 ```
 
+### Step 1.5: อ่าน design_doc_list.json (ถ้ามี)
+
+```bash
+# อ่าน design_doc_list.json เพื่อดู crud_operations ที่กำหนดไว้
+cat .design-docs/design_doc_list.json 2>/dev/null
+cat design_doc_list.json 2>/dev/null
+```
+
+**ถ้ามี design_doc_list.json:**
+- ใช้ `entities[].crud_operations` เป็นตัวกำหนดว่าจะสร้าง features ใดบ้าง
+- ตรวจสอบ `enabled` field ของแต่ละ operation
+- ตรวจสอบ `delete.strategy` (soft/hard)
+
+**ถ้าไม่มี design_doc_list.json:**
+- ใช้ default: สร้างทุก CRUD, delete strategy = soft
+
 ### Step 2: Parse ER Diagram → Entity Features
 
 สำหรับแต่ละ Entity ใน ER Diagram:
 
+**⚠️ สำคัญ: ตรวจสอบ crud_operations จาก design_doc_list.json ก่อนสร้าง features**
+
 ```
-Entity: User
+ถ้ามี design_doc_list.json → อ่าน entities[].crud_operations
+ถ้าไม่มี → default ทุก operation enabled, delete strategy = soft
+```
+
+**Entity ที่มี CRUD ครบ (เช่น User):**
+```
+Entity: User (crud: C✅ R✅ U✅ D✅soft L✅)
 ├── Feature: สร้าง User entity (domain)
 ├── Feature: สร้าง User DbContext configuration (data)
 ├── Feature: GET /api/users - List (api)
 ├── Feature: GET /api/users/{id} - Get by ID (api)
 ├── Feature: POST /api/users - Create (api)
 ├── Feature: PUT /api/users/{id} - Update (api)
-├── Feature: DELETE /api/users/{id} - Delete (api)
+├── Feature: Soft delete User - set is_active = false (api)
 └── Feature: User validation (quality)
 ```
+
+**Entity ที่เป็น read-only (เช่น AuditLog):**
+```
+Entity: AuditLog (crud: C❌ R✅ U❌ D❌ L✅)
+├── Feature: สร้าง AuditLog entity (domain)
+├── Feature: สร้าง AuditLog DbContext configuration (data)
+├── Feature: GET /api/audit-logs - List (api)
+├── Feature: GET /api/audit-logs/{id} - Get by ID (api)
+└── (ไม่สร้าง POST, PUT, DELETE — disabled ใน crud_operations)
+```
+
+**Delete Strategy:**
+- `"strategy": "soft"` → Feature: "Soft delete [Entity] (set is_active = false)"
+  - Subtask: เพิ่ม `is_active` field (ถ้ายังไม่มี)
+  - Subtask: เพิ่ม global query filter `HasQueryFilter(e => e.IsActive)`
+  - Subtask: endpoint return 204 No Content
+- `"strategy": "hard"` → Feature: "DELETE /api/[entities]/{id} - Hard delete"
+  - ใช้กรณีพิเศษเท่านั้น (เช่น draft data, temp records)
 
 **Feature Template for Entity:**
 ```json
@@ -158,15 +200,18 @@ Dependency Order:
 
 ### From ER Diagram (per Entity):
 
-| # | Category | Description | Dependencies |
-|---|----------|-------------|--------------|
-| 1 | domain | สร้าง [Entity] entity | setup |
-| 2 | data | สร้าง [Entity] configuration | entity |
-| 3 | api | GET /api/[entities] - List | data |
-| 4 | api | GET /api/[entities]/{id} - Get | list_api |
-| 5 | api | POST /api/[entities] - Create | list_api |
-| 6 | api | PUT /api/[entities]/{id} - Update | get_api |
-| 7 | api | DELETE /api/[entities]/{id} - Delete | get_api |
+**⚠️ สร้าง API features เฉพาะ operations ที่ `enabled: true` ใน crud_operations เท่านั้น**
+
+| # | Category | Description | Dependencies | Condition |
+|---|----------|-------------|--------------|-----------|
+| 1 | domain | สร้าง [Entity] entity | setup | Always |
+| 2 | data | สร้าง [Entity] configuration | entity | Always |
+| 3 | api | GET /api/[entities] - List | data | `list.enabled == true` |
+| 4 | api | GET /api/[entities]/{id} - Get | list_api | `read.enabled == true` |
+| 5 | api | POST /api/[entities] - Create | list_api | `create.enabled == true` |
+| 6 | api | PUT /api/[entities]/{id} - Update | get_api | `update.enabled == true` |
+| 7 | api | Soft delete [Entity] (set is_active=false) | get_api | `delete.enabled == true && delete.strategy == "soft"` |
+| 7 | api | DELETE /api/[entities]/{id} - Hard delete | get_api | `delete.enabled == true && delete.strategy == "hard"` |
 
 ### From Flow Diagram:
 
@@ -254,7 +299,7 @@ Dependency Order:
     { "id": 6, "epic": "user", "category": "api", "description": "GET /api/users/{id}" },
     { "id": 7, "epic": "user", "category": "api", "description": "POST /api/users" },
     { "id": 8, "epic": "user", "category": "api", "description": "PUT /api/users/{id}" },
-    { "id": 9, "epic": "user", "category": "api", "description": "DELETE /api/users/{id}" },
+    { "id": 9, "epic": "user", "category": "api", "description": "Soft delete User (set is_active = false)" },
 
     // User Registration Flow
     { "id": 10, "epic": "user", "category": "feature", "description": "User Registration flow" },
