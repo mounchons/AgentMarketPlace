@@ -41,6 +41,50 @@ echo "❌ Remaining Features:"
 cat feature_list.json | jq '.features[] | select(.passes == false) | {id, description, priority}'
 ```
 
+### Flow Progress (v2.0.0)
+
+**ถ้ามี `flows[]` ใน feature_list.json:**
+
+แสดง progress ของแต่ละ flow:
+
+```
+📊 Flow Progress:
+
+  [icon] [Flow Name] ([type]): X/Y steps [status]
+     ├── ✅ [Label] (Feature #N)
+     ├── 🔄 [Label] (Feature #N) ← IN PROGRESS
+     ├── 🔲 [Label] (Feature #N)
+     └── 🔲 [Label] (Feature #N)
+     State: [State1] ✅ → [State2] ❌ → [State3] ❌
+```
+
+**Icons:**
+- Flow types: 🛒 wizard, 📋 crud-group, 📊 parallel
+- Step status: ✅ passed, 🔄 in_progress, 🔲 pending, ⛔ blocked
+
+**State Progress:**
+- แสดง state_contracts ที่เกี่ยวข้องกับ flow
+- ✅ = produced_by feature ที่ passes: true
+- ❌ = ยังไม่ถูก produce
+
+**ถ้ามี `state_contracts`:**
+
+```
+🔗 State Contracts:
+  ✅ AuthState (localStorage) — produced by Feature #1
+  ✅ CartState (session) — produced by Feature #3
+  ❌ ShippingState (session) — not yet produced
+  ❌ PaymentResult (session) — not yet produced
+```
+
+**ถ้ามี `requires_components` ที่ยังไม่พร้อม:**
+
+```
+⚠️ Blocked Features:
+  Feature #8 (Payment Page) — requires: StepIndicator ❌, PriceDisplay ❌
+  Feature #10 (User List) — requires: AuthGuard ❌
+```
+
 ### 4. แสดง Recent Progress
 
 ```bash
