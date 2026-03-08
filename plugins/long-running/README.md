@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 1.10.0** - เพิ่ม Cross-Plugin Integration กับ system-design-doc และ ui-mockup
+> **Version 2.0.0** - เพิ่ม Flows, State Contracts, Component Requirements
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -604,6 +604,18 @@ git commit -m "chore: Add Feature #13 - [description]"
 | `docs` | documentation |
 
 ## 📝 Changelog
+
+### v2.0.0 (2026-03-08)
+- ✨ เพิ่ม `flows[]` — จัดกลุ่ม features เป็น user journeys (wizard, crud-group, parallel)
+- ✨ เพิ่ม `state_contracts{}` — shared state definitions with field-level types
+- ✨ เพิ่ม feature fields: `flow_id`, `state_produces`, `state_consumes`
+- ✨ `requires_components` เปลี่ยนจาก tracking เป็น enforcement
+- 🔄 `/continue` — เพิ่ม flow context reading + state/component validation
+- 🔄 `/init` — เพิ่ม flow detection, state contracts, shared components
+- 🔄 `/status` — เพิ่ม Flow Progress display
+- 🔄 `/validate-coverage` — เพิ่ม flow/state/component validation
+- 🔄 `/generate-features-from-design` — เพิ่ม flow detection
+- 🔄 `/migrate` — เพิ่ม v1.10.0 → v2.0.0 migration path
 
 ### v1.9.0 (2026-01-05)
 - ✨ เพิ่ม `version_history` array ใน feature schema

@@ -1,12 +1,12 @@
 ---
 name: long-running
-version: 1.10.0
-description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, CRUD enabled/disabled, soft delete strategy และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills
+version: 2.0.0
+description: Harness สำหรับ AI Agent ทำงานข้าม context windows รองรับ multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, CRUD enabled/disabled, soft delete strategy, flows, state contracts, component requirements และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills
 ---
 
 # Long-Running Agent Skill
 
-> **Version 1.10.0** - เพิ่ม Cross-Plugin Integration, CRUD enabled/disabled, soft delete strategy, Module Decomposition, Component Library
+> **Version 2.0.0** - เพิ่ม Flows, State Contracts, Component Requirements, Cross-Plugin Integration, CRUD enabled/disabled, soft delete strategy, Module Decomposition, Component Library
 
 Skill สำหรับจัดการ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 อ้างอิงจาก [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-harnesses-for-long-runnings)
@@ -294,6 +294,51 @@ Initialize long-running agent environment สำหรับ [อธิบาย
 
 ---
 
+## 🔄 Flows & State Contracts (v2.0.0)
+
+### Flows
+จัดกลุ่ม features เป็น user journeys — wizard, crud-group, หรือ parallel
+
+```json
+{
+  "flows": [{
+    "id": "checkout",
+    "type": "wizard",
+    "steps": [{ "order": 1, "feature_id": 3, "label": "Cart" }],
+    "entry_conditions": { "required_state": ["AuthState"] },
+    "exit_conditions": { "produced_state": ["OrderState"] },
+    "error_paths": [{ "from_step": 3, "condition": "payment_failed", "action": "retry_or_back" }],
+    "cancel_path": { "action": "back_to_cart" }
+  }]
+}
+```
+
+### State Contracts
+กำหนด shared state ระหว่างหน้า — agent สร้าง interface ได้เลย
+
+```json
+{
+  "state_contracts": {
+    "CartState": {
+      "fields": { "items": { "type": "CartItem[]" }, "total": { "type": "number" } },
+      "persistence": "session",
+      "produced_by": [3],
+      "consumed_by": [4, 5, 6]
+    }
+  }
+}
+```
+
+### Feature Fields ใหม่
+| Field | Type | Description |
+|-------|------|-------------|
+| `flow_id` | string \| null | flow ที่ feature อยู่ |
+| `state_produces` | string[] | state ที่ feature สร้าง |
+| `state_consumes` | string[] | state ที่ feature ต้องใช้ |
+| `requires_components` | string[] | components ที่ต้องมีก่อน (enforcement) |
+
+---
+
 ## ⚠️ กฎสำคัญ
 
 ### สำหรับ Initializer Agent
@@ -538,3 +583,11 @@ Workflow ที่แนะนำ:
    - บันทึกความคืบหน้าใน notes
    - Commit สิ่งที่ทำได้
    - ให้ session ถัดไปทำต่อ
+
+---
+
+## 📝 Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.0.0 | 2026-03-08 | Added flows[], state_contracts{}, flow_id/state_produces/state_consumes feature fields, requires_components enforcement, flow-aware /continue + /init + /status + /validate-coverage |
