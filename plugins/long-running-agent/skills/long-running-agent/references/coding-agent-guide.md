@@ -80,6 +80,16 @@ ls -la package.json 2>/dev/null    # Node.js
 - ถ้าพบ `.mockups/` folder → **ต้อง**สร้าง UI ตาม wireframe
 - ถ้าพบ Design Doc → **ต้อง**ใช้ ER Diagram สำหรับ database
 - ถ้าเป็น .NET project → **ต้อง**ใช้ `/dotnet-dev` skill
+- ถ้าพบ `design_doc_list.json` → **ต้อง**ตรวจสอบ `crud_operations` ของ entity ก่อน implement CRUD features
+
+**🔍 CRUD Operations Check (ก่อน implement CRUD):**
+```bash
+# ตรวจสอบว่า entity มี operations ไหน enabled
+cat design_doc_list.json | jq '.entities[] | select(.name == "EntityName") | .crud_operations'
+```
+- สร้าง API เฉพาะ operations ที่ `enabled: true` เท่านั้น
+- Delete ต้องใช้ `strategy` ตามที่กำหนด (default: `"soft"` = set is_active = false)
+- ห้ามสร้าง CRUD ครบทุกตัวโดยไม่ตรวจสอบ — บาง entity อาจเป็น read-only
 
 ---
 
@@ -416,8 +426,8 @@ git checkout .  # revert changes
 
 ### สิ่งที่ทำ:
 - 🐛 พบ bug ใน Feature #4 (GET /api/todos)
-  - Bug: ไม่ filter soft-deleted items
-  - Fix: เพิ่ม .Where(x => !x.IsDeleted)
+  - Bug: ไม่ filter soft-deleted items (is_active = false)
+  - Fix: เพิ่ม .Where(x => x.IsActive) (soft delete = filter by is_active)
 - ✅ Feature #5: GET /api/todos/{id}
 
 ### Git:

@@ -200,12 +200,12 @@
     {
       "id": 9,
       "category": "api",
-      "description": "DELETE /api/todos/{id} - ลบ todo",
+      "description": "Soft delete Todo (set is_active = false)",
       "priority": "medium",
       "steps": [
-        "implement Delete endpoint",
+        "implement Soft Delete endpoint (set is_active = false)",
         "return 204 No Content",
-        "ทดสอบการลบ"
+        "ทดสอบการลบ (verify is_active = false, not hard deleted)"
       ]
     },
     {
@@ -353,7 +353,29 @@ git commit -m "chore: Initialize long-running agent environment
   ]
 }
 ```
-→ ควรแบ่งเป็น 5 features แยกกัน
+→ ควรแบ่งเป็น features แยกกัน (เฉพาะ operations ที่ `enabled: true` ใน design_doc_list.json)
+
+### ⚠️ CRUD Feature Generation Rules
+
+**ก่อนสร้าง CRUD features ต้องตรวจสอบ `design_doc_list.json`:**
+
+```json
+// ถ้า entity มี crud_operations แบบนี้:
+"crud_operations": {
+  "create": { "enabled": true },
+  "read":   { "enabled": true },
+  "update": { "enabled": false },  // ← ไม่สร้าง feature นี้
+  "delete": { "enabled": true, "strategy": "soft" },
+  "list":   { "enabled": true }
+}
+```
+
+**กฎ:**
+- สร้าง feature เฉพาะ operations ที่ `enabled: true` เท่านั้น
+- Delete ต้องใช้ `strategy` จาก design doc (default: `"soft"`)
+  - **soft**: Set `is_active = false` (ไม่ลบจริง)
+  - **hard**: ลบออกจาก database จริง
+- Entity บางตัวอาจเป็น read-only (เช่น AuditLog: read + list เท่านั้น)
 
 ### Feature ที่เล็กเกินไป (ควรรวม)
 

@@ -82,18 +82,22 @@ Epic: Orders
 
 ### 1.4 Feature Mapping จาก Aggregate
 
-สำหรับแต่ละ Aggregate ควรมี features:
+สำหรับแต่ละ Aggregate ควรมี features **ตาม `crud_operations` ที่กำหนดใน design_doc_list.json:**
 
-| Feature Type | Description | Example |
-|-------------|-------------|---------|
-| Entity Creation | สร้าง entity class | "สร้าง Product entity" |
-| CRUD - List | GET all with pagination | "GET /api/products" |
-| CRUD - Get | GET by ID | "GET /api/products/{id}" |
-| CRUD - Create | POST create | "POST /api/products" |
-| CRUD - Update | PUT update | "PUT /api/products/{id}" |
-| CRUD - Delete | DELETE | "DELETE /api/products/{id}" |
-| Validation | Input validation | "Product validation" |
-| Business Logic | Domain logic | "Calculate product price" |
+| Feature Type | Description | Example | Condition |
+|-------------|-------------|---------|-----------|
+| Entity Creation | สร้าง entity class | "สร้าง Product entity" | Always |
+| CRUD - List | GET all with pagination | "GET /api/products" | `list.enabled: true` |
+| CRUD - Get | GET by ID | "GET /api/products/{id}" | `read.enabled: true` |
+| CRUD - Create | POST create | "POST /api/products" | `create.enabled: true` |
+| CRUD - Update | PUT update | "PUT /api/products/{id}" | `update.enabled: true` |
+| CRUD - Delete | Soft delete (set is_active=false) | "Soft delete Product" | `delete.enabled: true` |
+| Validation | Input validation | "Product validation" | ถ้ามี create/update |
+| Business Logic | Domain logic | "Calculate product price" | ตามความต้องการ |
+
+> **⚠️ สำคัญ:** ไม่ใช่ทุก entity จะมี CRUD ครบ — ต้องตรวจสอบ `enabled` ก่อนสร้าง feature
+> - Delete default strategy = `"soft"` (set is_active = false)
+> - Entity บางตัวอาจเป็น read-only เช่น AuditLog (read + list เท่านั้น)
 
 ---
 
@@ -221,17 +225,17 @@ Epic Level: Vertical Slice
 สำหรับแต่ละ Entity ใน ER Diagram:
 
 ```
-Entity: User
-├── Feature: สร้าง User entity (domain)
-├── Feature: สร้าง UserConfiguration (data)
-├── Feature: GET /api/users (api)
-├── Feature: GET /api/users/{id} (api)
-├── Feature: POST /api/users (api)
-├── Feature: PUT /api/users/{id} (api)
-├── Feature: DELETE /api/users/{id} (api)
-└── Feature: User validation (quality)
+Entity: User (ตรวจสอบ crud_operations จาก design_doc_list.json)
+├── Feature: สร้าง User entity (domain)           ← always
+├── Feature: สร้าง UserConfiguration (data)        ← always
+├── Feature: GET /api/users (api)                  ← ถ้า list.enabled: true
+├── Feature: GET /api/users/{id} (api)             ← ถ้า read.enabled: true
+├── Feature: POST /api/users (api)                 ← ถ้า create.enabled: true
+├── Feature: PUT /api/users/{id} (api)             ← ถ้า update.enabled: true
+├── Feature: Soft delete User (api)                ← ถ้า delete.enabled: true (strategy: soft)
+└── Feature: User validation (quality)             ← ถ้ามี create/update
 
-Total: 8 features per entity
+Total: ขึ้นอยู่กับ enabled operations (ไม่จำเป็นต้องครบ 8)
 ```
 
 ### 4.2 Flow Diagram → Features
@@ -433,7 +437,8 @@ After (split):
 ### การแบ่ง Feature
 
 ```
-1 Entity = 8 Features (entity + CRUD + validation + test)
+1 Entity = 2-8 Features (entity + enabled CRUD + validation + test)
+         ← ตรวจสอบ crud_operations.enabled ก่อน — ไม่จำเป็นต้องครบ
 1 UI Page = 1-2 Features (page + API integration)
 1 Business Logic = 1-3 Features (core + edge cases)
 ```
