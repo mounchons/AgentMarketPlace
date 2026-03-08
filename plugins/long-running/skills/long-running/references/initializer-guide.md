@@ -472,7 +472,7 @@ git commit -m "chore: Initialize long-running agent environment
 
 🚀 Next Steps:
 1. รัน `/continue` เพื่อเริ่มทำ Feature #1
-2. หรือดู feature list ด้วย `/agent-status`
+2. หรือดู feature list ด้วย `/status`
 
 📝 Feature #1 (ถัดไป):
 สร้าง ASP.NET Core Web API project structure

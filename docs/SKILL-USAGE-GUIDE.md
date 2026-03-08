@@ -41,9 +41,9 @@
 │  ┌────────────────────────────────────────────────────────────────────┐     │
 │  │                    DEVELOPMENT PHASE                                │     │
 │  │  ┌──────────────────────────────────────────────────────────────┐  │     │
-│  │  │                   long-running-agent                          │  │     │
+│  │  │                   long-running                          │  │     │
 │  │  │                                                               │  │     │
-│  │  │   /init-agent  ──▸  /continue  ──▸  Feature Complete         │  │     │
+│  │  │   /init  ──▸  /continue  ──▸  Feature Complete         │  │     │
 │  │  │                      (loop)                                   │  │     │
 │  │  │                                                               │  │     │
 │  │  │   ┌─────────────────────────────────────────────────────┐    │  │     │
@@ -75,7 +75,7 @@
 |-------|------------|----------|-------|
 | **system-design-doc** | สร้างเอกสารออกแบบระบบ | 9 commands | Design |
 | **ui-mockup** | สร้าง UI Mockup/Wireframe | 5 commands | Design |
-| **long-running-agent** | จัดการโปรเจคข้าม sessions | 13 commands | Development |
+| **long-running** | จัดการโปรเจคข้าม sessions | 13 commands | Development |
 | **dotnet-dev** | พัฒนา .NET Core | skill reference | Implementation |
 | **code-review** | ตรวจสอบคุณภาพ code | 4 commands | Quality |
 | **test-runner** | รัน tests และ coverage | 5 commands | Quality |
@@ -142,7 +142,7 @@
 | `/edit-section` | แก้ไขส่วนใดส่วนหนึ่งของเอกสาร |
 | `/validate-design-doc` | ตรวจสอบความครบถ้วน |
 | `/sync-with-mockups` | Sync กับ ui-mockup |
-| `/sync-with-features` | Sync กับ long-running-agent |
+| `/sync-with-features` | Sync กับ long-running |
 | `/validate-integration` | ตรวจสอบ cross-references |
 
 **Files Created:**
@@ -152,7 +152,7 @@
 
 **Integration Points:**
 - → ui-mockup: Sitemap → pages, Entities → form fields
-- → long-running-agent: Modules → features, APIs → endpoints
+- → long-running: Modules → features, APIs → endpoints
 
 ---
 
@@ -188,12 +188,12 @@
 
 **Integration Points:**
 - ← system-design-doc: Takes Sitemap and entity specs
-- → long-running-agent: Provides UI specs for features
+- → long-running: Provides UI specs for features
 - → frontend-design: Supplies specs for HTML/CSS/React generation
 
 ---
 
-### 2.3 long-running-agent
+### 2.3 long-running
 
 > Harness สำหรับ AI Agent ที่ทำงานข้าม context windows
 
@@ -202,18 +202,18 @@
 | Command | Description |
 |---------|-------------|
 | `/init-project` | สร้าง CLAUDE.md และ project config |
-| `/init-agent` | Initialize agent สำหรับโปรเจคใหม่ |
-| `/init-agent-existing` | Initialize agent สำหรับโปรเจคที่มีอยู่ |
+| `/init` | Initialize agent สำหรับโปรเจคใหม่ |
+| `/init-existing` | Initialize agent สำหรับโปรเจคที่มีอยู่ |
 | `/continue` | ทำงานต่อจาก session ก่อน (Coding Agent) |
-| `/agent-status` | ดูสถานะความคืบหน้า |
+| `/status` | ดูสถานะความคืบหน้า |
 | `/add-feature` | เพิ่ม feature ใหม่ |
 | `/edit-feature` | แก้ไข feature ที่มีอยู่ |
 | `/generate-features-from-design` | สร้าง features จาก design doc |
 | `/generate-features-from-mockups` | สร้าง features จาก mockups |
 | `/validate-coverage` | ตรวจสอบ coverage ครบหรือไม่ |
 | `/sync-mockups` | Sync features กับ mockups |
-| `/agent-dependencies` | ดู dependencies ระหว่าง features |
-| `/agent-migrate` | Migrate schema version |
+| `/dependencies` | ดู dependencies ระหว่าง features |
+| `/migrate` | Migrate schema version |
 
 **Files Created:**
 - `feature_list.json` - Feature tracking
@@ -394,12 +394,12 @@ Solution/
 │ Output:                                                                      │
 │   ✅ Synced design doc ↔ mockups                                            │
 │   📊 15/15 pages mapped, 8/8 entities mapped                                │
-│   💡 Next: /init-agent                                                      │
+│   💡 Next: /init                                                      │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ Step 6: /init-agent สร้าง HR API ด้วย .NET Core, EF Core                     │
+│ Step 6: /init สร้าง HR API ด้วย .NET Core, EF Core                     │
 │                                                                              │
 │ Output:                                                                      │
 │   ✅ feature_list.json created (25 features)                                │
@@ -448,7 +448,7 @@ Solution/
 **Commands:**
 ```bash
 # Step 1: Analyze existing project
-/init-agent-existing
+/init-existing
 
 # Output:
 # ✅ Agent Environment Added!
@@ -461,7 +461,7 @@ Solution/
 #    • Remaining: 5 features (TODO found in code)
 
 # Step 2: Review and continue
-/agent-status
+/status
 
 # Step 3: Continue development
 /continue
@@ -485,7 +485,7 @@ Solution/
 /sync-with-features
 
 # Step 4: Initialize agent
-/init-agent
+/init
 
 # Step 5: Start development
 /continue
@@ -512,7 +512,7 @@ Solution/
 /sync-mockups
 
 # Step 5: Initialize agent and develop
-/init-agent
+/init
 /continue
 ```
 
@@ -525,7 +525,7 @@ Solution/
 **Commands:**
 ```bash
 # Step 1: Initialize with .NET description
-/init-agent สร้าง Todo API ด้วย .NET Core 8, EF Core, PostgreSQL, Clean Architecture
+/init สร้าง Todo API ด้วย .NET Core 8, EF Core, PostgreSQL, Clean Architecture
 
 # Output:
 # ✅ Initialize Long-Running Agent สำเร็จ!
@@ -674,7 +674,7 @@ git commit -m "feat: Add payment processing"
 |--------|--------------|---------|
 | system-design-doc | `design_doc_list.json` | 2.0.0 |
 | ui-mockup | `mockup_list.json` | 1.6.0 |
-| long-running-agent | `feature_list.json` | 1.10.0 |
+| long-running | `feature_list.json` | 1.10.0 |
 
 ### 4.2 Sync Commands
 
@@ -760,7 +760,7 @@ git commit -m "feat: Add payment processing"
 | API without feature | Run `/generate-features-from-design` |
 | Page without feature | Run `/generate-features-from-mockups` |
 | Stale sync timestamps | Run sync commands again |
-| Version mismatch | Run `/agent-migrate` for feature_list |
+| Version mismatch | Run `/migrate` for feature_list |
 
 ---
 
@@ -915,17 +915,17 @@ git commit -m "feat: Add payment processing"
 | Command | Description |
 |---------|-------------|
 | `/init-project` | สร้าง CLAUDE.md และ project config |
-| `/init-agent [description]` | Initialize agent สำหรับโปรเจคใหม่ |
-| `/init-agent-existing` | Initialize agent สำหรับโปรเจคที่มีอยู่ |
+| `/init [description]` | Initialize agent สำหรับโปรเจคใหม่ |
+| `/init-existing` | Initialize agent สำหรับโปรเจคที่มีอยู่ |
 | `/continue` | ทำงานต่อจาก session ก่อน (Coding Agent) |
-| `/agent-status` | ดูสถานะความคืบหน้า |
+| `/status` | ดูสถานะความคืบหน้า |
 | `/add-feature [description]` | เพิ่ม feature ใหม่ |
 | `/edit-feature [id]` | แก้ไข feature ที่มีอยู่ |
 | `/generate-features-from-design` | สร้าง features จาก design doc |
 | `/generate-features-from-mockups` | สร้าง features จาก mockups |
 | `/validate-coverage` | ตรวจสอบ coverage ครบหรือไม่ |
-| `/agent-dependencies` | ดู dependencies ระหว่าง features |
-| `/agent-migrate` | Migrate schema version |
+| `/dependencies` | ดู dependencies ระหว่าง features |
+| `/migrate` | Migrate schema version |
 
 ### 6.4 Quality Phase Commands
 
@@ -955,17 +955,17 @@ git commit -m "feat: Add payment processing"
 │                                                                              │
 │  🆕 โปรเจคใหม่ (Full Workflow):                                               │
 │     /init-project → /system-design-doc → /init-mockup →                     │
-│     /create-mockups-parallel → /sync-with-mockups → /init-agent →           │
+│     /create-mockups-parallel → /sync-with-mockups → /init →           │
 │     /continue (loop) → /code-review → /test                                 │
 │                                                                              │
 │  📂 โปรเจคที่มีอยู่:                                                          │
-│     /init-agent-existing → /agent-status → /continue                        │
+│     /init-existing → /status → /continue                        │
 │                                                                              │
 │  ▶️ ทำต่อจากครั้งก่อน:                                                        │
 │     /continue                                                               │
 │                                                                              │
 │  📊 ดูความคืบหน้า:                                                           │
-│     /agent-status                                                           │
+│     /status                                                           │
 │                                                                              │
 │  ➕ เพิ่ม Feature:                                                           │
 │     /add-feature [description]                                              │

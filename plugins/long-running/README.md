@@ -4,7 +4,7 @@
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
-อ้างอิงจาก [Anthropic Engineering Blog: Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+อ้างอิงจาก [Anthropic Engineering Blog: Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-runnings)
 
 ## ✨ Features
 
@@ -89,7 +89,7 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 /plugin marketplace add mounchons/agentmarketplace
 
 # Install plugin
-/plugin install long-running-agent@agent-marketplace
+/plugin install long-running@agent-marketplace
 ```
 
 ## 🚀 Quick Start
@@ -98,7 +98,7 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 
 ```bash
 # Initialize agent environment
-/init-agent สร้าง Todo API ด้วย ASP.NET Core Web API
+/init สร้าง Todo API ด้วย ASP.NET Core Web API
 
 # Start working on features
 /continue
@@ -108,7 +108,7 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 
 ```bash
 # Analyze existing project and create agent environment
-/init-agent-existing
+/init-existing
 
 # Continue development
 /continue
@@ -117,7 +117,7 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 ### ดูสถานะ
 
 ```bash
-/agent-status
+/status
 ```
 
 ## 📋 Commands
@@ -126,10 +126,10 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 
 | Command | Description |
 |---------|-------------|
-| `/init-agent [description]` | Initialize agent environment สำหรับโปรเจคใหม่ |
+| `/init [description]` | Initialize agent environment สำหรับโปรเจคใหม่ |
 | `/continue` | ทำงานต่อจาก session ก่อน |
-| `/agent-status` | ดูความคืบหน้าของโปรเจค |
-| `/init-agent-existing` | เพิ่ม agent environment ให้โปรเจคที่มีอยู่ |
+| `/status` | ดูความคืบหน้าของโปรเจค |
+| `/init-existing` | เพิ่ม agent environment ให้โปรเจคที่มีอยู่ |
 | `/add-feature` | เพิ่ม feature ใหม่เข้าไปใน feature_list.json |
 | `/edit-feature [id] - [changes]` | แก้ไข feature ที่ pass แล้ว (สร้าง feature ใหม่) |
 
@@ -141,8 +141,8 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 | `/generate-features-from-design` | สร้าง features จาก design doc + mockups |
 | `/sync-mockups` | Sync status ระหว่าง features และ mockups |
 | `/validate-coverage` | ตรวจสอบ coverage ของ mockups, design, criteria |
-| `/agent-dependencies` | แสดง dependency graph (Mermaid) |
-| `/agent-migrate` | Migrate จาก schema เก่าเป็น v1.5.0 |
+| `/dependencies` | แสดง dependency graph (Mermaid) |
+| `/migrate` | Migrate จาก schema เก่าเป็น v1.5.0 |
 
 ## 📎 Feature References (v1.4.0)
 
@@ -250,7 +250,7 @@ Feature #5 (Login - Basic)
 │                       ▼                                            │
 │  Phase 2: Initialize                                               │
 │  ┌─────────────────────────────────────────┐                       │
-│  │            /init-agent                   │                       │
+│  │            /init                   │                       │
 │  │                                          │                       │
 │  │ • อ่าน design docs และ mockups          │                       │
 │  │ • สร้าง feature_list.json               │                       │
@@ -409,7 +409,7 @@ project-root/
 ### Session 1: Initialize
 
 ```
-/init-agent สร้าง Todo API
+/init สร้าง Todo API
 
 Output:
 ├── feature_list.json (10-15 features, all passes: false)

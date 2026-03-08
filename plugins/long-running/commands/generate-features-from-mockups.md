@@ -194,4 +194,4 @@ cat .mockups/mockup_list.json
 
 - Features ที่สร้างจะมี `notes: "Auto-generated from mockup_list.json"`
 - ไม่สร้าง feature ซ้ำถ้ามี feature ที่ reference ไปยัง mockup เดียวกันแล้ว
-- ควรรันหลังจาก `/init-agent` เสร็จ
+- ควรรันหลังจาก `/init` เสร็จ

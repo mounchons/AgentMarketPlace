@@ -444,7 +444,7 @@ Type detected: [Implementation Plan | Free-form Design Document]
 💡 Next steps:
    • /validate-design-doc → ตรวจสอบความครบถ้วน
    • /edit-section [section] → แก้ไขส่วนที่ต้องปรับ
-   • /init-agent → สร้าง feature_list.json จาก design doc
+   • /init → สร้าง feature_list.json จาก design doc
 ``
 
 ---
@@ -453,7 +453,7 @@ Type detected: [Implementation Plan | Free-form Design Document]
 
 ❌ **ห้าม:**
 - สร้าง code จริง (source files, tests)
-- สร้าง feature_list.json (เป็นหน้าที่ของ long-running-agent)
+- สร้าง feature_list.json (เป็นหน้าที่ของ long-running)
 - แก้ไขไฟล์ original input (อ่านอย่างเดียว)
 - เปลี่ยน format ของ implementation plan
 
@@ -556,4 +556,4 @@ git commit -m "fix(system-design-doc): fix /import-plan command issues"
 | Task 2 | `plugins/system-design-doc/commands/import-plan.md` | Create: full command definition |
 | Task 3 | (verification only) | Verify file structure and discoverability |
 
-**Total: 2 files changed, 0 new dependencies, no changes to long-running-agent**
+**Total: 2 files changed, 0 new dependencies, no changes to long-running**

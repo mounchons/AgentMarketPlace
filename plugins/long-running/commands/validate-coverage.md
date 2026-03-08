@@ -245,7 +245,7 @@ Coverage = (features with criteria / total features) * 100%
 ## Workflow
 
 ```
-1. /init-agent
+1. /init
    ↓
 2. /validate-coverage (first check)
    ↓

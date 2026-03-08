@@ -208,7 +208,7 @@ var apiKey = Environment.GetEnvironmentVariable("API_KEY");
 
 ---
 
-## Integration with long-running-agent
+## Integration with long-running
 
 เมื่อ review เสร็จ สามารถเพิ่ม issues เข้า feature_list.json:
 

@@ -1,6 +1,6 @@
 # /validate-integration
 
-ตรวจสอบ cross-references และ consistency ระหว่าง 3 plugins: system-design-doc, ui-mockup, long-running-agent
+ตรวจสอบ cross-references และ consistency ระหว่าง 3 plugins: system-design-doc, ui-mockup, long-running
 
 ---
 
@@ -178,7 +178,7 @@ Mockup Categories:
 ║                 CROSS-PLUGIN INTEGRATION REPORT                     ║
 ╠════════════════════════════════════════════════════════════════════╣
 ║ Generated: 2025-01-05T10:00:00Z                                     ║
-║ Plugins: system-design-doc, ui-mockup, long-running-agent          ║
+║ Plugins: system-design-doc, ui-mockup, long-running          ║
 ╠════════════════════════════════════════════════════════════════════╣
 
 1. SCHEMA COMPATIBILITY

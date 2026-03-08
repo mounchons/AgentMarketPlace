@@ -246,7 +246,7 @@ cat feature_list.json | grep "schema_version"
 ⚠️ Detected old schema (no version or < 1.5.0)
    Current schema: v1.5.0
 
-   แนะนำให้รัน /agent-migrate เพื่อ:
+   แนะนำให้รัน /migrate เพื่อ:
    - เพิ่ม epics grouping
    - เพิ่ม subtasks tracking
    - เพิ่ม acceptance criteria
@@ -275,7 +275,7 @@ git log --oneline -10
 cat feature_list.json
 ```
 
-**ถ้าไม่พบไฟล์เหล่านี้:** แจ้ง user ว่าต้องรัน `/init-agent` ก่อน
+**ถ้าไม่พบไฟล์เหล่านี้:** แจ้ง user ว่าต้องรัน `/init` ก่อน
 
 ### Step 2: Verify Environment
 

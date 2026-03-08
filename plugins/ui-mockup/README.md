@@ -1,6 +1,6 @@
 # UI Mockup Plugin
 
-> **Version 1.6.0** - เพิ่ม Cross-Plugin Integration กับ system-design-doc และ long-running-agent
+> **Version 1.6.0** - เพิ่ม Cross-Plugin Integration กับ system-design-doc และ long-running
 
 สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications และ design tokens
 
@@ -10,7 +10,7 @@ Plugin สำหรับสร้าง UI Mockup/Wireframe โดยใช้ 
 
 ### 🆕 New in v1.6.0
 
-- **Cross-Plugin Integration** - เชื่อมต่อกับ system-design-doc และ long-running-agent
+- **Cross-Plugin Integration** - เชื่อมต่อกับ system-design-doc และ long-running
 - **Design Doc References** - `design_doc_section`, `design_doc_api_refs` ใน pages
 - **Entity Mapping** - `design_doc_entity_ref` ใน entities
 - **Sync Status Tracking** - `sync_status` สำหรับ track การ sync
@@ -19,7 +19,7 @@ Plugin สำหรับสร้าง UI Mockup/Wireframe โดยใช้ 
 
 ### v1.5.0 Features
 
-- **Feature Integration** - เชื่อมต่อกับ long-running-agent features
+- **Feature Integration** - เชื่อมต่อกับ long-running features
 - **Reverse Links** - `implemented_by_features[]` ใน mockup_list.json
 - **Version Sync** - `mockup_version` และ `feature_status` tracking
 - **Auto-generation** - รองรับ `/generate-features-from-mockups`
@@ -785,7 +785,7 @@ layouts:
 │       ↓                                                                      │
 │  Step 3: /init-mockup → /create-mockup  ◄── คุณอยู่ที่นี่                    │
 │       ↓                                                                      │
-│  Step 4: /init-agent                                                         │
+│  Step 4: /init                                                         │
 │       ↓                                                                      │
 │  Step 5: /continue (Development)                                             │
 │       ↓                                                                      │
@@ -855,5 +855,5 @@ plugins/ui-mockup/
 ## Related Skills
 
 - **[system-design-doc](../system-design-doc/)** - สร้างเอกสารออกแบบระบบ
-- **[long-running-agent](../long-running-agent/)** - Development workflow
+- **[long-running](../long-running/)** - Development workflow
 - **[frontend-design](../../)** - Generate HTML/CSS/React จาก mockup

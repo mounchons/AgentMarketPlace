@@ -1,4 +1,4 @@
-# /agent-dependencies
+# /dependencies
 
 สร้าง dependency visualization และวิเคราะห์ critical path ของ features
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```
-/agent-dependencies
+/dependencies
 ```
 
 ---
@@ -250,7 +250,7 @@ Optimization:
 ### View Dependencies for Specific Feature
 
 ```
-/agent-dependencies --feature 5
+/dependencies --feature 5
 ```
 
 Output:
@@ -272,7 +272,7 @@ Blocks:
 ### View Epic Dependencies
 
 ```
-/agent-dependencies --epics
+/dependencies --epics
 ```
 
 Output:
@@ -294,5 +294,5 @@ ui (0% done)
 
 - Read-only command
 - Mermaid diagram can be viewed in VS Code with Mermaid extension
-- Use with `/agent-status` for complete project overview
+- Use with `/status` for complete project overview
 - Run after adding new features to check for issues

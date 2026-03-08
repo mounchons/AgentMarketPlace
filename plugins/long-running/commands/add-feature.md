@@ -20,7 +20,7 @@ Feature ที่ต้องการเพิ่ม: $ARGUMENTS
 cat feature_list.json
 ```
 
-**ถ้าไม่พบ feature_list.json:** แจ้ง user ว่าต้องรัน `/init-agent` ก่อน
+**ถ้าไม่พบ feature_list.json:** แจ้ง user ว่าต้องรัน `/init` ก่อน
 
 ### Step 2: วิเคราะห์ Feature ใหม่
 

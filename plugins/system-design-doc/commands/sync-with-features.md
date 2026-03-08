@@ -254,7 +254,7 @@ Match by:
 ## When to Run
 
 - หลังจากสร้างหรือ update design document
-- หลังจาก /init-agent หรือ /add-feature
+- หลังจาก /init หรือ /add-feature
 - ก่อน /continue เพื่อ validate references
 - เมื่อ design document มีการเปลี่ยนแปลง
 

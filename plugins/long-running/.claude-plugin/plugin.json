@@ -1,5 +1,5 @@
 {
-  "name": "long-running-agent",
+  "name": "long-running",
   "version": "1.10.0",
   "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development pattern และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills",
   "author": {

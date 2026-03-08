@@ -9,12 +9,12 @@
 
 ## 1. Problem Statement
 
-`long-running-agent` ต้องการ structured design doc (10 sections + `design_doc_list.json`) เพื่อ auto-generate `feature_list.json` แต่ developer มักเขียนเอกสารแบบ free-form เช่น:
+`long-running` ต้องการ structured design doc (10 sections + `design_doc_list.json`) เพื่อ auto-generate `feature_list.json` แต่ developer มักเขียนเอกสารแบบ free-form เช่น:
 
 - **Implementation Plan** — Task-based with bash commands, code snippets, dependencies
 - **Free-form Design Doc** — มี ER Diagram, architecture, user flows แต่ไม่ตรงรูปแบบ 10 sections
 
-`/import-plan` ทำหน้าที่เป็น **adapter** ที่แปลง free-form docs → standardized format ที่ downstream plugins (long-running-agent, ui-mockup) อ่านได้
+`/import-plan` ทำหน้าที่เป็น **adapter** ที่แปลง free-form docs → standardized format ที่ downstream plugins (long-running, ui-mockup) อ่านได้
 
 ---
 
@@ -25,7 +25,7 @@
 | Plugin location | system-design-doc | Single Responsibility — system-design-doc owns document transformation |
 | Input types | 2 (implementation plan + free-form design doc) | ครอบคลุม format ที่ใช้จริงใน project |
 | Existing doc handling | เสริม sections ที่ขาด, ถ้ายังไม่มีสร้างใหม่ | ยืดหยุ่น ไม่ทำลาย work ที่มีอยู่ |
-| Implementation plan tasks | แปลงเป็น design doc sections เท่านั้น | Separation of concerns — long-running-agent สร้าง features เอง |
+| Implementation plan tasks | แปลงเป็น design doc sections เท่านั้น | Separation of concerns — long-running สร้าง features เอง |
 | Section reformat | สร้างทุก section ใหม่เป็น format มาตรฐาน | ให้ parser ทำงานได้ 100%, consistency |
 | Approach | Analyze-then-Generate | User เห็น gap report ก่อน generate |
 
@@ -227,7 +227,7 @@ Step 7: Output       → Summary + next steps
 💡 Next steps:
    • /validate-design-doc → ตรวจสอบความครบถ้วน
    • /edit-section [section] → แก้ไขส่วนที่ต้องปรับ
-   • /init-agent → สร้าง feature_list.json จาก design doc
+   • /init → สร้าง feature_list.json จาก design doc
 ```
 
 ---
@@ -240,7 +240,7 @@ Step 7: Output       → Summary + next steps
 | `plugins/system-design-doc/.claude-plugin/plugin.json` | **Edit** | Bump version for new command |
 | `plugins/system-design-doc/skills/.../templates/design_doc_list.json` | **Edit** | Add `enabled` + `strategy` to crud_operations (schema v2.1.0) |
 | `plugins/system-design-doc/commands/validate-integration.md` | **Edit** | Change `crud_completeness` → `crud_must_be_defined` |
-| `plugins/long-running-agent/commands/generate-features-from-design.md` | **Edit** | Read crud_operations, skip disabled, soft delete |
+| `plugins/long-running/commands/generate-features-from-design.md` | **Edit** | Read crud_operations, skip disabled, soft delete |
 | `plugins/ui-mockup/skills/.../templates/mockup_list.json` | **Edit** | Add `delete_strategy` to crud_actions |
 
-**CRUD changes span all 3 plugins** — system-design-doc defines, long-running-agent reads, ui-mockup displays.
+**CRUD changes span all 3 plugins** — system-design-doc defines, long-running reads, ui-mockup displays.

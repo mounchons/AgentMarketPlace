@@ -209,7 +209,7 @@ git commit -m "chore: Add CLAUDE.md project configuration"
    1. Review and customize CLAUDE.md
    2. Run /system-design-doc to create design documents
    3. Run /init-mockup to create UI mockups
-   4. Run /init-agent to start development
+   4. Run /init to start development
 ```
 
 ## CLAUDE.md Purpose
@@ -232,7 +232,7 @@ git commit -m "chore: Add CLAUDE.md project configuration"
 │                                                                              │
 │  Claude จะอ่าน CLAUDE.md:                                                    │
 │  • เมื่อเริ่ม session ใหม่                                                   │
-│  • เมื่อใช้ /init-agent หรือ /init-agent-existing                          │
+│  • เมื่อใช้ /init หรือ /init-existing                          │
 │  • เมื่อใช้ /continue                                                       │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘

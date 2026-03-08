@@ -491,7 +491,7 @@ Permission matrix:
 🚀 Next steps:
    • /validate-design-doc — ตรวจสอบความถูกต้องของ design doc
    • /edit-section [section-number] — แก้ไข section ที่ต้องการ
-   • /init-agent — เริ่มสร้าง implementation tasks จาก design doc
+   • /init — เริ่มสร้าง implementation tasks จาก design doc
 ```
 
 ### 7.3 Git Commit

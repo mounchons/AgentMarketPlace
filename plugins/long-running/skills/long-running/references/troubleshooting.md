@@ -297,9 +297,9 @@ cat feature_list.json | jq '.features[] | select(.passes == true) | .id'
 ### 1. Always Use Commands
 
 ```bash
-# ใช้ /init-agent แทนการ initialize เอง
+# ใช้ /init แทนการ initialize เอง
 # ใช้ /continue แทนการบอกให้ทำต่อ
-# ใช้ /agent-status เพื่อตรวจสอบสถานะ
+# ใช้ /status เพื่อตรวจสอบสถานะ
 ```
 
 ### 2. Commit Often

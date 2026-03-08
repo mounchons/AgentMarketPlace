@@ -15,7 +15,7 @@ allowed-tools: Bash(*), Read(*)
 if [ -f ".agent/config.json" ]; then
   echo "✅ Agent environment found"
 else
-  echo "❌ No agent environment - run /init-agent first"
+  echo "❌ No agent environment - run /init first"
   exit 1
 fi
 ```

@@ -397,7 +397,7 @@ public async Task CreateOrder_IntegrationTest()
 
 ---
 
-## Integration with long-running-agent
+## Integration with long-running
 
 เมื่อ test fail สามารถเพิ่มเป็น feature ใน feature_list.json:
 
