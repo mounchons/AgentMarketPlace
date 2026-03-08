@@ -279,11 +279,20 @@ mkdir -p .mockups
 
 ### Action Icons
 
-| Icon | Action | Behavior (Simple Entity) | Behavior (Complex Entity) |
-|------|--------|--------------------------|---------------------------|
-| 👁 | View | Open View Modal | Navigate to Detail Page |
-| ✏️ | Edit | Open Edit Modal | Navigate to Edit Page |
-| 🗑 | Delete | SweetAlert2 Confirmation | SweetAlert2 Confirmation |
+**⚠️ แสดงเฉพาะ icons ของ operations ที่ `enabled: true` ใน `crud_actions` เท่านั้น**
+
+| Icon | Action | Condition | Behavior (Simple Entity) | Behavior (Complex Entity) |
+|------|--------|-----------|--------------------------|---------------------------|
+| 👁 | View | `view.enabled == true` | Open View Modal | Navigate to Detail Page |
+| ✏️ | Edit | `edit.enabled == true` | Open Edit Modal | Navigate to Edit Page |
+| 🗑 | Delete | `delete.enabled == true` | SweetAlert2 Confirmation | SweetAlert2 Confirmation |
+
+**Delete Strategy:**
+- `delete.strategy == "soft"` → SweetAlert2 text: "This item will be deactivated."
+- `delete.strategy == "hard"` → SweetAlert2 text: "This action cannot be undone."
+
+**ตัวอย่าง entity ที่เป็น read-only (เช่น AuditLog):**
+- action column จะมีแค่ 👁 (ไม่มี ✏️ และ 🗑)
 
 ---
 
@@ -319,9 +328,9 @@ icon: "arrow-right"
 | ID | Trigger | Action | Result |
 |----|---------|--------|--------|
 | INT-001 | Click "Submit" button | Validate form → API POST | Success: SweetAlert2 success, redirect<br>Error: SweetAlert2 error |
-| INT-002 | Click 👁 View icon | Open modal (simple) or navigate (complex) | Show record details |
-| INT-003 | Click ✏️ Edit icon | Open modal (simple) or navigate (complex) | Show edit form |
-| INT-004 | Click 🗑 Delete icon | SweetAlert2 confirmation | Confirm: Delete + refresh<br>Cancel: Close alert |
+| INT-002 | Click 👁 View icon | Open modal (simple) or navigate (complex) | Show record details (ถ้า view.enabled) |
+| INT-003 | Click ✏️ Edit icon | Open modal (simple) or navigate (complex) | Show edit form (ถ้า edit.enabled) |
+| INT-004 | Click 🗑 Delete icon | SweetAlert2 confirmation | Soft delete (default): deactivate + refresh<br>Hard delete: remove + refresh<br>(ถ้า delete.enabled) |
 | INT-005 | Click "+ Add New" button | Open modal (simple) or navigate (complex) | Show create form |
 
 ---

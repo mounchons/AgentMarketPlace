@@ -156,7 +156,15 @@ mkdir -p .mockups
 
 ### Step 3.5: Auto-generate CRUD Pages
 
-**สำหรับแต่ละ Entity ให้สร้าง pages ตาม complexity:**
+**⚠️ ตรวจสอบ `crud_actions` ก่อนสร้าง pages:**
+- สร้าง pages เฉพาะ operations ที่ `enabled: true` เท่านั้น
+- ถ้า `create.enabled == false && edit.enabled == false` → ไม่สร้างหน้า Form
+- ถ้า `view.enabled == false` → ไม่สร้างหน้า Detail
+- ถ้า `list.enabled == false` → ไม่สร้างหน้า List
+- ถ้า `delete.enabled == false` → ไม่ใส่ 🗑 icon ใน action column
+- ถ้า `delete.strategy == "soft"` → SweetAlert2 text: "This item will be deactivated."
+
+**สำหรับแต่ละ Entity ให้สร้าง pages ตาม complexity (เฉพาะ enabled operations):**
 
 #### Complex Entities (3 pages: List + Form + Detail)
 
@@ -326,11 +334,11 @@ mkdir -p .mockups
         {"type": "api", "path": "docs/api/users.md"}
       ],
       "crud_actions": {
-        "list": "page",
-        "view": "page",
-        "create": "page",
-        "edit": "page",
-        "delete": "sweetalert2"
+        "list":   { "enabled": true, "ui_type": "page" },
+        "view":   { "enabled": true, "ui_type": "page" },
+        "create": { "enabled": true, "ui_type": "page" },
+        "edit":   { "enabled": true, "ui_type": "page" },
+        "delete": { "enabled": true, "ui_type": "sweetalert2", "strategy": "soft" }
       }
     },
     {
@@ -343,11 +351,11 @@ mkdir -p .mockups
         {"type": "system-design", "path": "system-design.md#master-data"}
       ],
       "crud_actions": {
-        "list": "page",
-        "view": "modal",
-        "create": "modal",
-        "edit": "modal",
-        "delete": "sweetalert2"
+        "list":   { "enabled": true, "ui_type": "page" },
+        "view":   { "enabled": true, "ui_type": "modal" },
+        "create": { "enabled": true, "ui_type": "modal" },
+        "edit":   { "enabled": true, "ui_type": "modal" },
+        "delete": { "enabled": true, "ui_type": "sweetalert2", "strategy": "soft" }
       }
     }
   ],
@@ -777,11 +785,11 @@ interface Entity {
   pages: string[];
   related_documents: RelatedDocument[];
   crud_actions: {
-    list: "page";
-    view: "modal" | "page";
-    create: "modal" | "page";
-    edit: "modal" | "page";
-    delete: "sweetalert2";
+    list:   { enabled: boolean; ui_type: "page" };
+    view:   { enabled: boolean; ui_type: "modal" | "page" };
+    create: { enabled: boolean; ui_type: "modal" | "page" };
+    edit:   { enabled: boolean; ui_type: "modal" | "page" };
+    delete: { enabled: boolean; ui_type: "sweetalert2"; strategy: "soft" | "hard" };
   };
 }
 

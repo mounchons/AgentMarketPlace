@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.6.0",
+  "schema_version": "1.7.0",
   "project": "[Project Name]",
   "description": "[Project Description]",
   "source_documents": [],
@@ -27,12 +27,11 @@
         {"type": "api", "path": "docs/api/users.md"}
       ],
       "crud_actions": {
-        "list": "page",
-        "view": "page",
-        "create": "page",
-        "edit": "page",
-        "delete": "sweetalert2",
-        "delete_strategy": "soft"
+        "list":   { "enabled": true, "ui_type": "page" },
+        "view":   { "enabled": true, "ui_type": "page" },
+        "create": { "enabled": true, "ui_type": "page" },
+        "edit":   { "enabled": true, "ui_type": "page" },
+        "delete": { "enabled": true, "ui_type": "sweetalert2", "strategy": "soft" }
       },
       "sync_status": "pending"
     },
@@ -47,11 +46,11 @@
         {"type": "system-design", "path": "system-design.md#master-data"}
       ],
       "crud_actions": {
-        "list": "page",
-        "view": "modal",
-        "create": "modal",
-        "edit": "modal",
-        "delete": "sweetalert2"
+        "list":   { "enabled": true, "ui_type": "page" },
+        "view":   { "enabled": true, "ui_type": "modal" },
+        "create": { "enabled": true, "ui_type": "modal" },
+        "edit":   { "enabled": true, "ui_type": "modal" },
+        "delete": { "enabled": true, "ui_type": "sweetalert2", "strategy": "soft" }
       },
       "sync_status": "pending"
     }
@@ -379,7 +378,7 @@
   },
 
   "metadata": {
-    "schema_version": "1.6.0",
+    "schema_version": "1.7.0",
     "plugin_version": "1.4.0",
     "compatible_with": {
       "design_doc_list_schema": ">=2.0.0",
