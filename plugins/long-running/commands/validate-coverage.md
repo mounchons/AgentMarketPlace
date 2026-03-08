@@ -85,6 +85,46 @@ For each feature:
 Coverage = (features with criteria / total features) * 100%
 ```
 
+### Flow Coverage Validation (v2.0.0)
+
+**ตรวจสอบความครบถ้วนของ flows:**
+
+1. **Orphan features**: features ที่มี `flow_id` แต่ไม่อยู่ใน `flows[].steps`
+2. **Missing steps**: flows ที่มี `steps[].feature_id` อ้างอิง feature ที่ไม่มีอยู่
+3. **State contract integrity**:
+   - state ที่ถูก consumed แต่ไม่มี feature ที่ produce → ❌ Error
+   - state ที่ถูก produced แต่ไม่มี feature ที่ consume → ⚠️ Warning (unused state)
+   - `produced_by` / `consumed_by` ตรงกับ features ที่ประกาศ `state_produces` / `state_consumes`
+4. **Component requirements**:
+   - features ที่มี `requires_components` → ตรวจว่า component มี feature ที่สร้าง
+   - components ใน `shared_components` ที่ไม่มี feature ใดใช้ → ⚠️ Warning
+5. **Flow completeness**:
+   - wizard flows ต้องมี entry_conditions (อย่างน้อย description)
+   - wizard flows ที่มี > 2 steps ควรมี error_paths
+   - crud-group flows ควรมีทั้ง list + form features
+
+**Output format:**
+
+```
+🔍 Flow & State Validation:
+
+  Flows: 3 total
+  ├── ✅ checkout (wizard) — 4 steps, entry/exit defined
+  ├── ✅ user-management (crud-group) — 3 steps
+  └── ⚠️ dashboard (parallel) — no entry_conditions defined
+
+  State Contracts: 4 total
+  ├── ✅ AuthState — produced by #1, consumed by #3,#4,#5,#6
+  ├── ✅ CartState — produced by #3, consumed by #4,#5
+  ├── ❌ ShippingState — consumed by #5 but no producer!
+  └── ⚠️ TempState — produced by #7 but never consumed
+
+  Component Requirements: 5 components
+  ├── ✅ AuthGuard — Feature #2 (passed)
+  ├── ✅ DataTable — Feature #3 (passed)
+  └── ❌ StepIndicator — no feature creates this component
+```
+
 ---
 
 ## Output Format
