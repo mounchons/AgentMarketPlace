@@ -116,6 +116,33 @@ Entity: AuditLog (crud: C❌ R✅ U❌ D❌ L✅)
 }
 ```
 
+### Step 2.5: Detect Flows from Design Doc (v2.0.0)
+
+**อ่าน Flow Diagrams จาก design doc:**
+
+1. **Flow Diagram → wizard flow:**
+   - แต่ละ flowchart ที่มี sequential steps → สร้าง flow type `wizard`
+   - Decision points → สร้าง `error_paths`
+   - End states → สร้าง `exit_conditions`
+
+2. **Sitemap → crud-group flow:**
+   - Pages ที่อยู่ใต้ parent เดียวกันและเป็น entity เดียวกัน → `crud-group`
+   - เช่น `/admin/users`, `/admin/users/new`, `/admin/users/:id` → "User Management" flow
+
+3. **สร้าง state_contracts จาก entities:**
+   - Entity ที่ถูกส่งระหว่าง steps ใน flow → state contract
+   - ใช้ Data Dictionary fields → state contract fields
+   - กำหนด persistence ตาม context:
+     - Form wizard → `session`
+     - Filter/Search → `url`
+     - Auth → `localStorage`
+
+4. **เพิ่ม flow_id, state_produces, state_consumes ให้ features ที่สร้าง**
+
+5. **สร้าง features สำหรับ shared components:**
+   - Components ที่ใช้ใน 3+ pages → สร้าง feature แยก
+   - เพิ่ม `requires_components` ให้ features ที่ใช้
+
 ### Step 3: Parse Flow Diagram → Logic Features
 
 สำหรับแต่ละ Flow ใน Flow Diagram:
