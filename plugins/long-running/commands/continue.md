@@ -107,6 +107,45 @@ cat .mockups/mockup_list.json 2>/dev/null
 
 ---
 
+### Step 0.5.1: Read Flow Context (v2.0.0)
+
+**ถ้า feature_list.json มี `flows` หรือ `state_contracts`:**
+
+```bash
+# อ่าน flows
+cat feature_list.json | jq '.flows[] | {id, name, type, steps: [.steps[].label]}'
+
+# อ่าน state contracts
+cat feature_list.json | jq '.state_contracts | keys'
+
+# ดู flow progress
+cat feature_list.json | jq '.flows[] | {
+  name,
+  progress: ([.steps[] | select(.feature_id as $fid | $fid)] | length),
+  total: (.steps | length)
+}'
+```
+
+**แสดง Flow Summary:**
+
+```
+📊 Flow Progress:
+  🛒 [Flow Name] ([type]): X/Y steps ✅
+     ├── ✅ [Step 1] (Feature #N)
+     ├── 🔲 [Step 2] (Feature #N) ← NEXT
+     └── 🔲 [Step 3] (Feature #N)
+     State: [StateA] ✅ → [StateB] ❌
+
+  (แสดงทุก flows)
+```
+
+**⚠️ กฎ:**
+- ต้องอ่าน flows ก่อนเลือก feature — เข้าใจ big picture
+- ถ้า feature อยู่ใน flow → อ่าน entry/exit conditions และ error_paths
+- ถ้า feature มี state_consumes → ตรวจว่า state ถูก produce แล้ว
+
+---
+
 ### Step 0.6: ตรวจสอบ Technology Stack และเรียกใช้ Skill ที่เหมาะสม
 
 **ตรวจสอบว่าโปรเจคใช้ technology อะไร:**
@@ -309,6 +348,18 @@ npm install && npm run build
 }
 ```
 
+**v2.0.0 Validation ก่อนเลือก feature:**
+
+1. **State check**: ถ้า feature มี `state_consumes` → ตรวจว่า features ที่ produce state นั้น `passes: true` แล้ว
+   - ถ้ายังไม่ pass → ⚠️ Warning: "[StateName] ยังไม่ถูกสร้าง — ทำ Feature #N ก่อน"
+
+2. **Component check**: ถ้า feature มี `requires_components` → ตรวจว่า components เหล่านั้นถูกสร้างแล้ว
+   - ตรวจจาก `component_usage.shared_components` หรือ feature ที่สร้าง component นั้น passes: true
+   - ถ้ายังไม่มี → ⚠️ Warning: "[ComponentName] ยังไม่ถูกสร้าง — สร้าง component ก่อน"
+
+3. **Flow order check**: ถ้า feature อยู่ใน wizard flow → ตรวจว่า step ก่อนหน้าเสร็จแล้ว
+   - ถ้ายังไม่เสร็จ → ⚠️ Warning: "Flow [name] step [N-1] ยังไม่เสร็จ"
+
 ### Step 3.5: Validate Mockup References (NEW v1.5.0)
 
 **ถ้า feature มี mockup references:**
@@ -369,6 +420,16 @@ git commit -m "feat: Feature #1 - สร้าง project structure"
   "last_committed_subtask": "1.1"
 }
 ```
+
+**v2.0.0 Flow-Aware Implementation:**
+
+- ถ้ามี `flow_id` → อ่าน `flows[flow_id]` สำหรับ:
+  - `entry_conditions` → implement guard/redirect ถ้า state ไม่ครบ
+  - `error_paths` ที่ `from_step` ตรงกับ feature นี้ → implement error handling
+  - `cancel_path` → implement cancel button/action
+- ถ้ามี `state_consumes` → import/read state ก่อนใช้ (ตาม `persistence` type)
+- ถ้ามี `state_produces` → implement state creation + save (ตาม `persistence` type)
+- ถ้ามี `requires_components` → import และใช้ components ที่ระบุ
 
 **Implementation checklist:**
 - [ ] ทำตาม subtasks ตามลำดับ
