@@ -1,7 +1,7 @@
 {
   "name": "long-running",
-  "version": "2.0.0",
-  "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development pattern และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills",
+  "version": "2.1.0",
+  "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, model assignment & review system, incremental development pattern และ integration กับ ui-mockup, system-design-doc, dotnet-dev skills",
   "author": {
     "name": "Mounchons"
   }

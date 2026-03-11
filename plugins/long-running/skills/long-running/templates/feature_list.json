@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -16,6 +16,45 @@
     "last_synced_with_design_doc": null,
     "last_synced_with_mockups": null,
     "auto_sync_enabled": false
+  },
+
+  "model_config": {
+    "available_models": {
+      "opus": {
+        "role": "architect",
+        "description": "งานซับซ้อน, prototype, reference implementation, UI mockup-based",
+        "handles": ["complex", "prototype", "reference"],
+        "can_review": true
+      },
+      "sonnet": {
+        "role": "implementer",
+        "description": "ทำตาม pattern ที่ opus สร้างไว้",
+        "handles": ["medium", "simple"],
+        "can_review": false
+      },
+      "minimax": {
+        "role": "implementer",
+        "description": "ทำตาม pattern ที่ opus สร้างไว้",
+        "handles": ["medium", "simple"],
+        "can_review": false
+      },
+      "glm": {
+        "role": "implementer",
+        "description": "ทำตาม pattern ที่ opus สร้างไว้",
+        "handles": ["medium", "simple"],
+        "can_review": false
+      }
+    },
+    "assignment_strategy": {
+      "auto_assign_rules": [
+        { "condition": "complexity == 'complex'", "assign_to": "opus" },
+        { "condition": "is_first_in_category", "assign_to": "opus" },
+        { "condition": "has_mockup_refs && complexity == 'medium'", "assign_to": "opus" },
+        { "condition": "complexity == 'medium'", "assign_to": "sonnet" },
+        { "condition": "complexity == 'simple'", "assign_to": "sonnet" }
+      ],
+      "review_policy": "required_for_non_opus"
+    }
   },
 
   "state_contracts": {
@@ -208,6 +247,9 @@
         "ทดสอบ run project"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -266,6 +308,9 @@
         "ทดสอบ connection"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -324,6 +369,9 @@
         "เพิ่ม validations"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -382,6 +430,9 @@
         "รัน migration"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -440,6 +491,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -498,6 +552,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -556,6 +613,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -614,6 +674,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -672,6 +735,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -730,6 +796,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -788,6 +857,9 @@
         "ทดสอบ"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     },
     {
@@ -846,6 +918,9 @@
         "ทดสอบ UI"
       ],
       "tested_at": null,
+      "assigned_model": null,
+      "is_reference_impl": false,
+      "review": null,
       "notes": ""
     }
   ],
@@ -871,12 +946,25 @@
     "in_progress": 0,
     "blocked": 0,
     "pending": 12,
-    "last_updated": "TIMESTAMP"
+    "last_updated": "TIMESTAMP",
+    "model_workload": {
+      "opus": { "assigned": 0, "completed": 0, "in_progress": 0 },
+      "sonnet": { "assigned": 0, "completed": 0, "in_progress": 0 },
+      "minimax": { "assigned": 0, "completed": 0, "in_progress": 0 },
+      "glm": { "assigned": 0, "completed": 0, "in_progress": 0 },
+      "unassigned": 0
+    },
+    "review_status": {
+      "reviewed": 0,
+      "pending_review": 0,
+      "passed": 0,
+      "failed": 0
+    }
   },
 
   "metadata": {
-    "schema_version": "2.0.0",
-    "plugin_version": "2.0.0",
+    "schema_version": "2.1.0",
+    "plugin_version": "2.1.0",
     "compatible_with": {
       "design_doc_list_schema": ">=2.1.0",
       "mockup_list_schema": ">=1.7.0"

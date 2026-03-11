@@ -331,6 +331,149 @@ npm install && npm run build
 # ถ้า build fail: แก้ไขก่อนทำ feature ใหม่
 ```
 
+### Step 2.5: ตรวจสอบ Review Reminder (v2.1.0)
+
+**ถ้ามี `model_config` ใน feature_list.json:**
+
+```bash
+# นับ features ที่รอ review
+cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assigned_model != "opus" and .assigned_model != null and .review == null)] | length'
+```
+
+**ถ้ามี features รอ review:**
+```
+⏳ N features awaiting opus review. Run /review to review them.
+   Pending: #6, #9, #12
+```
+
+---
+
+### Step 2.6: ตรวจสอบ Review Fix — features ที่ถูกส่งกลับจาก /review (v2.1.0)
+
+**ตรวจหา features ที่ fail review และถูกส่งกลับ:**
+
+```bash
+# หา features ที่ถูกส่งกลับจาก review
+cat feature_list.json | jq '[.features[] | select(.status == "in_progress" and .review != null and .review.result == "fail")] | map({id, description, assigned_model, blocked_reason, issues: .review.remaining_issues})'
+```
+
+**ถ้าพบ features ที่ถูกส่งกลับ → ต้องทำก่อน feature ใหม่!**
+
+```
+🔴 Review Fix Required!
+   Feature #X: [description]
+   ส่งกลับจาก opus review — ต้องแก้ไขก่อนทำ feature ใหม่
+
+   📋 Issues ที่ต้องแก้ (N items):
+   1. [Medium] pattern-adherence: [description]
+      📁 File: [path]
+      💡 Suggestion: [suggestion]
+   2. [Low] coding-standards: [description]
+      📁 File: [path]
+      💡 Suggestion: [suggestion]
+
+   📐 Reference Implementation: Feature #Y (opus)
+      ดูไฟล์ต้นแบบที่: [reference files]
+```
+
+**Flow สำหรับ Review Fix:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    REVIEW FIX FLOW                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. อ่าน review.remaining_issues ทั้งหมด                        │
+│                                                                 │
+│  2. อ่าน reference implementation (review.reference_feature_id)  │
+│     → เปรียบเทียบโค้ดกับ reference                               │
+│                                                                 │
+│  3. แก้ไขทีละ issue:                                             │
+│     ├── อ่าน file ที่มีปัญหา                                     │
+│     ├── อ่าน file เดียวกันจาก reference (ถ้ามี)                   │
+│     ├── แก้ไขตาม suggestion                                     │
+│     └── Commit: review-fix(#X): fix [issue description]         │
+│                                                                 │
+│  4. ตรวจสอบว่า build ผ่าน                                        │
+│                                                                 │
+│  5. ตรวจสอบ acceptance criteria อีกครั้ง                          │
+│                                                                 │
+│  6. Update feature_list.json:                                   │
+│     ├── status: "passed"                                        │
+│     ├── blocked_reason: null                                    │
+│     ├── review: null  ← ล้าง review เพื่อรอ review รอบใหม่       │
+│     └── passes: true                                            │
+│                                                                 │
+│  7. Commit: feat: Feature #X - [description] (review-fixed)     │
+│                                                                 │
+│  8. แจ้ง user:                                                   │
+│     "✅ Feature #X แก้ไขตาม review feedback แล้ว                  │
+│      → รัน /review #X เพื่อ review อีกครั้ง"                      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Commit prefix สำหรับ Review Fix:**
+| Prefix | Usage |
+|--------|-------|
+| `review-fix(#X):` | แก้ไข issue จาก review |
+| `review-fix(#X.Y):` | แก้ไข issue เฉพาะ subtask |
+
+**ตัวอย่าง:**
+```bash
+# แก้ไข naming issue
+git commit -m "review-fix(#6): fix naming convention to match reference pattern"
+
+# แก้ไข error handling
+git commit -m "review-fix(#6): add error handling matching opus reference"
+
+# Feature fixed
+git commit -m "feat: Feature #6 - GET by ID (review-fixed)"
+```
+
+**⚠️ กฎ:**
+- **Review fix มีความสำคัญสูงกว่า feature ใหม่** — ต้องแก้ไขก่อน
+- **ต้องอ่าน reference implementation** ก่อนแก้ — เพื่อให้ pattern ตรงกัน
+- **ล้าง review field เป็น null** หลังแก้ไข — เพื่อรอ review รอบใหม่
+- **ห้ามลบ review history** — ถ้าต้องการเก็บ ย้ายไปที่ `version_history[]`
+- หลังแก้ไข → แจ้ง user ให้รัน `/review` อีกครั้ง
+
+**Update feature_list.json หลังแก้ไข:**
+```json
+{
+  "id": 6,
+  "status": "passed",
+  "blocked_reason": null,
+  "review": null,
+  "passes": true,
+  "notes": "Review-fixed: แก้ไข N issues ตาม opus feedback. รอ review รอบ 2."
+}
+```
+
+**Update progress log:**
+```markdown
+---
+
+## Session N - REVIEW FIX
+**Date**: TIMESTAMP
+**Type**: Review Fix
+
+### สิ่งที่ทำ:
+- 🔧 Feature #X: แก้ไขตาม opus review feedback
+  - Fixed: [issue 1 description]
+  - Fixed: [issue 2 description]
+  - Reference: Feature #Y (opus)
+
+### สถานะปัจจุบัน:
+- Features passed: X/Y
+- Build: ✅
+- ⏳ Feature #X รอ review รอบ 2
+
+---
+```
+
+---
+
 ### Step 3: Select Feature (Schema v1.5.0)
 
 จาก feature_list.json:
@@ -346,6 +489,38 @@ npm install && npm run build
   "status": "in_progress",
   "time_tracking": {
     "started_at": "TIMESTAMP"
+  }
+}
+```
+
+**v2.1.0 Auto-Assign Model:**
+
+ถ้า `assigned_model == null` → assign ตาม `model_config.assignment_strategy.auto_assign_rules`:
+
+```
+Auto-assign logic:
+1. complexity == 'complex' → opus
+2. is_first_in_category (ไม่มี feature อื่นใน category เดียวกันที่ passed) → opus
+3. has_mockup_refs && complexity == 'medium' (มี mockup_page_refs) → opus
+4. complexity == 'medium' → sonnet
+5. complexity == 'simple' → sonnet
+```
+
+**ถ้า assign เป็น opus และเป็น first-in-category → set `is_reference_impl: true`**
+
+```json
+// Update feature เมื่อ auto-assign
+{
+  "assigned_model": "opus",
+  "is_reference_impl": true
+}
+```
+
+**อัพเดท summary.model_workload:**
+```json
+{
+  "model_workload": {
+    "opus": { "in_progress": "+1" }
   }
 }
 ```

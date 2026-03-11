@@ -328,6 +328,113 @@ data.metadata.compatible_with.mockup_list_schema = ">=1.7.0";
 
 ---
 
+### Migration: v2.0.0 → v2.1.0
+
+**เพิ่ม Model Assignment & Review System (backward compatible):**
+
+```javascript
+// 1. เพิ่ม model_config (root level, หลัง integration)
+if (!data.model_config) {
+  data.model_config = {
+    available_models: {
+      opus: {
+        role: "architect",
+        description: "งานซับซ้อน, prototype, reference implementation, UI mockup-based",
+        handles: ["complex", "prototype", "reference"],
+        can_review: true
+      },
+      sonnet: {
+        role: "implementer",
+        description: "ทำตาม pattern ที่ opus สร้างไว้",
+        handles: ["medium", "simple"],
+        can_review: false
+      },
+      minimax: {
+        role: "implementer",
+        description: "ทำตาม pattern ที่ opus สร้างไว้",
+        handles: ["medium", "simple"],
+        can_review: false
+      },
+      glm: {
+        role: "implementer",
+        description: "ทำตาม pattern ที่ opus สร้างไว้",
+        handles: ["medium", "simple"],
+        can_review: false
+      }
+    },
+    assignment_strategy: {
+      auto_assign_rules: [
+        { condition: "complexity == 'complex'", assign_to: "opus" },
+        { condition: "is_first_in_category", assign_to: "opus" },
+        { condition: "has_mockup_refs && complexity == 'medium'", assign_to: "opus" },
+        { condition: "complexity == 'medium'", assign_to: "sonnet" },
+        { condition: "complexity == 'simple'", assign_to: "sonnet" }
+      ],
+      review_policy: "required_for_non_opus"
+    }
+  };
+}
+
+// 2. เพิ่ม fields ใหม่ให้ทุก feature
+for (const feature of data.features) {
+  if (feature.assigned_model === undefined) feature.assigned_model = null;
+  if (feature.is_reference_impl === undefined) feature.is_reference_impl = false;
+  if (feature.review === undefined) feature.review = null;
+}
+
+// 3. เพิ่ม model_workload & review_status ใน summary
+if (!data.summary.model_workload) {
+  data.summary.model_workload = {
+    opus: { assigned: 0, completed: 0, in_progress: 0 },
+    sonnet: { assigned: 0, completed: 0, in_progress: 0 },
+    minimax: { assigned: 0, completed: 0, in_progress: 0 },
+    glm: { assigned: 0, completed: 0, in_progress: 0 },
+    unassigned: 0
+  };
+  // นับจาก features ที่มี assigned_model อยู่แล้ว
+  for (const feature of data.features) {
+    if (feature.assigned_model) {
+      const model = feature.assigned_model;
+      data.summary.model_workload[model].assigned++;
+      if (feature.status === "passed") data.summary.model_workload[model].completed++;
+      if (feature.status === "in_progress") data.summary.model_workload[model].in_progress++;
+    } else {
+      data.summary.model_workload.unassigned++;
+    }
+  }
+}
+if (!data.summary.review_status) {
+  data.summary.review_status = {
+    reviewed: 0,
+    pending_review: 0,
+    passed: 0,
+    failed: 0
+  };
+  // นับจาก features ที่มี review อยู่แล้ว
+  for (const feature of data.features) {
+    if (feature.review) {
+      data.summary.review_status.reviewed++;
+      if (feature.review.result === "pass" || feature.review.result === "pass_with_suggestions") {
+        data.summary.review_status.passed++;
+      } else if (feature.review.result === "fail") {
+        data.summary.review_status.failed++;
+      }
+    } else if (feature.status === "passed" && feature.assigned_model && feature.assigned_model !== "opus") {
+      data.summary.review_status.pending_review++;
+    }
+  }
+}
+
+// 4. Bump versions
+data.schema_version = "2.1.0";
+data.metadata.schema_version = "2.1.0";
+data.metadata.plugin_version = "2.1.0";
+```
+
+**หมายเหตุ:** Migration นี้เป็น additive — ไม่ลบหรือเปลี่ยน fields เดิม. Projects ที่ไม่ใช้ model assignment ทำงานได้ปกติ (assigned_model จะเป็น null)
+
+---
+
 ## Rollback
 
 หากต้องการย้อนกลับ:

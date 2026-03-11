@@ -41,6 +41,73 @@ echo "❌ Remaining Features:"
 cat feature_list.json | jq '.features[] | select(.passes == false) | {id, description, priority}'
 ```
 
+### Model Assignment Overview (v2.1.0)
+
+**ถ้ามี `model_config` ใน feature_list.json:**
+
+```bash
+# ดู model workload
+cat feature_list.json | jq '.summary.model_workload'
+
+# ดู features แยกตาม model
+cat feature_list.json | jq '[.features[] | {id, description, assigned_model, status, is_reference_impl, review_result: .review.result}]'
+```
+
+แสดงผล:
+
+```
+🤖 Model Workload:
+  Model     │ Assigned │ Done │ In Progress │ Pending Review
+  ──────────┼──────────┼──────┼─────────────┼───────────────
+  opus      │    4     │  3   │      1      │     -
+  sonnet    │    5     │  2   │      1      │     2
+  minimax   │    0     │  0   │      0      │     0
+  glm       │    0     │  0   │      0      │     0
+  unassigned│    3     │  -   │      -      │     -
+
+📋 Features by Model:
+  opus:
+    ✅ #1 สร้าง project structure (reference)
+    🔄 #5 GET /api/resource
+  sonnet:
+    ✅ #2 ตั้งค่า database (reviewed ✅ 85/100)
+    ✅ #6 GET by ID (pending review ⏳)
+  unassigned:
+    🔲 #10 Input validation
+```
+
+**Icons:**
+- Status: ✅ passed, 🔄 in_progress, 🔲 pending, ⛔ blocked
+- Review: ✅ reviewed & passed, ⚠️ pass with suggestions, ❌ failed, ⏳ pending review
+- `(reference)` = `is_reference_impl: true`
+
+### Review Status (v2.1.0)
+
+**ถ้ามี `review_status` ใน summary:**
+
+```bash
+cat feature_list.json | jq '.summary.review_status'
+
+# Features ที่รอ review
+cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assigned_model != "opus" and .review == null) | {id, description}]'
+```
+
+แสดงผล:
+
+```
+📝 Review Summary: 2 reviewed, 3 pending
+  ✅ Passed: 2 | ❌ Failed: 0
+
+⏳ Awaiting Review: #6, #9, #12
+  → Run /review to review next feature
+
+✅ Recently Reviewed:
+  #2 ตั้งค่า database — pass (85/100) by opus
+  #3 สร้าง Entity — pass_with_suggestions (72/100) by opus
+```
+
+---
+
 ### Flow Progress (v2.0.0)
 
 **ถ้ามี `flows[]` ใน feature_list.json:**
