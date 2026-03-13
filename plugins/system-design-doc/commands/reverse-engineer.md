@@ -1,29 +1,29 @@
 ---
-description: สร้างเอกสารออกแบบระบบจาก codebase ที่มีอยู่ (Reverse Engineering)
+description: Create a system design document from an existing codebase (Reverse Engineering)
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Reverse Engineer Command
 
-วิเคราะห์ codebase ที่มีอยู่แล้วสร้างเอกสารออกแบบระบบอัตโนมัติ
+Analyze an existing codebase and automatically create a system design document.
 
-## Input ที่ได้รับ
+## Input Received
 
 ```
-/reverse-engineer วิเคราะห์ codebase นี้
-/reverse-engineer สร้างเอกสารจาก code
+/reverse-engineer analyze this codebase
+/reverse-engineer create document from code
 /reverse-engineer $ARGUMENTS
 ```
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: สแกนโครงสร้าง Project
+### Step 1: Scan Project Structure
 
 ```bash
-# ดู directory structure
+# View directory structure
 ls -la
 
-# หา config files เพื่อระบุ technology
+# Find config files to identify technology
 cat package.json 2>/dev/null | head -30
 cat requirements.txt 2>/dev/null | head -20
 cat *.csproj 2>/dev/null | head -30
@@ -32,7 +32,7 @@ cat composer.json 2>/dev/null | head -20
 cat go.mod 2>/dev/null | head -10
 ```
 
-### Step 2: ระบุ Technology Stack
+### Step 2: Identify Technology Stack
 
 | File Pattern | Technology | Framework |
 |--------------|------------|-----------|
@@ -45,11 +45,11 @@ cat go.mod 2>/dev/null | head -10
 | `go.mod` | Go | Gin, Echo, Fiber |
 | `Cargo.toml` | Rust | Actix, Rocket |
 
-### Step 3: วิเคราะห์ไฟล์สำคัญ
+### Step 3: Analyze Key Files
 
-**อ่าน `references/codebase-analysis.md` สำหรับรายละเอียด**
+**Read `references/codebase-analysis.md` for details**
 
-#### สำหรับ ER Diagram & Data Dictionary
+#### For ER Diagram & Data Dictionary
 
 | Technology | Files to Analyze |
 |------------|------------------|
@@ -60,13 +60,13 @@ cat go.mod 2>/dev/null | head -10
 | Laravel | `app/Models/`, `database/migrations/` |
 | Java/Spring | `**/entity/*.java`, `@Entity` classes |
 
-**สิ่งที่ต้องดู:**
+**What to look for:**
 - Class/Model names → Table names
 - Properties → Columns
 - Data Annotations → Constraints
 - Relationships (HasMany, BelongsTo, ForeignKey)
 
-#### สำหรับ Flow Diagram & Sequence Diagram
+#### For Flow Diagram & Sequence Diagram
 
 | Technology | Files to Analyze |
 |------------|------------------|
@@ -75,13 +75,13 @@ cat go.mod 2>/dev/null | head -10
 | Python/Django | `views.py`, `urls.py` |
 | Laravel | `app/Http/Controllers/`, `routes/` |
 
-**สิ่งที่ต้องดู:**
+**What to look for:**
 - API endpoints
 - Method calls (Controller → Service → Repository)
 - Business logic flow
 - Async operations
 
-#### สำหรับ Sitemap
+#### For Sitemap
 
 | Technology | Files to Analyze |
 |------------|------------------|
@@ -90,7 +90,7 @@ cat go.mod 2>/dev/null | head -10
 | Python/Django | `urls.py`, templates |
 | Laravel | `routes/web.php`, `routes/api.php` |
 
-### Step 4: สกัดข้อมูลและแปลงเป็น Diagrams
+### Step 4: Extract Data and Convert to Diagrams
 
 **Mapping:**
 
@@ -104,23 +104,23 @@ cat go.mod 2>/dev/null | head -10
 | API endpoints | Sequence Diagrams |
 | Auth/Role code | 10. User Roles & Permissions |
 
-### Step 5: สร้างเอกสาร
+### Step 5: Create Document
 
 **File Output:**
 ```
 .design-docs/system-design-[project-name].md
 ```
 
-**ใช้ template จาก:**
+**Use template from:**
 - `templates/design-doc-template.md`
 
-### Step 6: Validate กับ Code
+### Step 6: Validate Against Code
 
-**ตรวจสอบ:**
-- [ ] Entities ใน ER Diagram ตรงกับ Models ใน code
-- [ ] Relationships ถูกต้อง
-- [ ] API endpoints ใน Sequence Diagram ตรงกับ Controllers
-- [ ] Routes ใน Sitemap ครบตาม routing config
+**Verify:**
+- [ ] Entities in ER Diagram match Models in code
+- [ ] Relationships are correct
+- [ ] API endpoints in Sequence Diagram match Controllers
+- [ ] Routes in Sitemap cover all routes in routing config
 
 ---
 
@@ -144,7 +144,7 @@ modelBuilder.Entity<Order>()
     .WithMany(u => u.Orders);
 ```
 
-**แปลงเป็น ER:**
+**Convert to ER:**
 ```mermaid
 erDiagram
     USER ||--o{ ORDER : places
@@ -223,7 +223,7 @@ class Order(models.Model):
    • /ui-mockup → สร้าง UI Mockups
 ```
 
-### Partial Success (บางส่วนไม่สามารถวิเคราะห์ได้)
+### Partial Success (some parts could not be analyzed)
 
 ```
 ⚠️ Reverse Engineering สำเร็จบางส่วน
@@ -251,7 +251,7 @@ class Order(models.Model):
 
 ### ASP.NET WebForms
 
-**ไฟล์ที่ต้องดู:**
+**Files to examine:**
 ```
 App_Code/
 ├── DAL/           → Data Access → ER Diagram
@@ -265,7 +265,7 @@ Web.config         → Configuration → Tech Stack
 
 ### Classic ASP
 
-**ไฟล์ที่ต้องดู:**
+**Files to examine:**
 ```
 *.asp              → Pages + Logic
 includes/
@@ -273,7 +273,7 @@ includes/
 ├── functions.asp  → Business functions
 ```
 
-**วิเคราะห์ SQL queries เพื่อเข้าใจ schema:**
+**Analyze SQL queries to understand the schema:**
 ```vbscript
 sql = "SELECT u.Id, u.Username FROM Users u INNER JOIN Roles r ON u.RoleId = r.Id"
 ```
@@ -284,10 +284,10 @@ sql = "SELECT u.Id, u.Username FROM Users u INNER JOIN Roles r ON u.RoleId = r.I
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| No models found | Non-standard folder structure | ค้นหาด้วย pattern `*.entity.*`, `*.model.*` |
-| Relationships missing | No FK annotations | ดู migrations หรือ DbContext config |
-| Incomplete sitemap | SPA without routes file | ดู router config (React Router, Vue Router) |
-| Mixed patterns | Legacy code | วิเคราะห์ทีละ layer แยก |
+| No models found | Non-standard folder structure | Search with pattern `*.entity.*`, `*.model.*` |
+| Relationships missing | No FK annotations | Check migrations or DbContext config |
+| Incomplete sitemap | SPA without routes file | Check router config (React Router, Vue Router) |
+| Mixed patterns | Legacy code | Analyze layer by layer separately |
 
 ---
 
@@ -295,7 +295,9 @@ sql = "SELECT u.Id, u.Username FROM Users u INNER JOIN Roles r ON u.RoleId = r.I
 
 | Resource | Description |
 |----------|-------------|
-| `references/codebase-analysis.md` | รายละเอียดการวิเคราะห์แต่ละ framework |
-| `references/mermaid-patterns.md` | รูปแบบ diagrams |
-| `references/troubleshooting.md` | แก้ไขปัญหาที่พบบ่อย |
-| `templates/design-doc-template.md` | Template เอกสาร |
+| `references/codebase-analysis.md` | Detailed analysis guide for each framework |
+| `references/mermaid-patterns.md` | Diagram patterns |
+| `references/troubleshooting.md` | Common problem solutions |
+| `templates/design-doc-template.md` | Document template |
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

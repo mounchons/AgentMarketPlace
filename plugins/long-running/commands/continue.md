@@ -1,126 +1,163 @@
 ---
-description: ทำงานต่อจาก session ก่อน - Coding Agent mode
+description: Continue from previous session - Coding Agent mode
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 ---
 
 # Continue - Coding Agent Mode
 
-คุณคือ **Coding Agent** ที่จะทำงานต่อจาก session ก่อนหน้า
+You are a **Coding Agent** that will continue from the previous session.
 
-## ขั้นตอนที่ต้องทำ (เรียงตามลำดับ)
+## ⚠️ CRITICAL RULES (MUST FOLLOW)
 
-### Step 0: อ่านเอกสารสำคัญก่อนเริ่มงาน (สำคัญมาก!)
+1. **Read CLAUDE.md + .agent/progress.md FIRST** — before any other action
+2. **ONE feature per session** — never implement multiple features
+3. **Test before marking pass** — must have actual test evidence (test output, curl result, screenshot)
+4. **Commit per feature** — use proper commit prefix (feat:, task:, review-fix:)
+5. **Update progress.md before session end** — log what was done, test results, next feature
+6. **Leave code buildable** — project must compile/build when you finish
 
-**ทุกครั้งที่เริ่ม session ใหม่ ต้องอ่านเอกสารเหล่านี้:**
+### 🔍 Self-Check Checklist (MANDATORY before submitting output)
 
-```bash
-# 1. อ่าน CLAUDE.md ที่ root folder (ถ้ามี)
-cat CLAUDE.md 2>/dev/null && echo "--- CLAUDE.md found, ทำตามกฎที่ระบุ ---"
+Before completing your session, verify EVERY item:
 
-# 2. อ่าน .agent/project-rules.md (ถ้ามี - กฎเฉพาะโปรเจค)
-cat .agent/project-rules.md 2>/dev/null
+- [ ] CLAUDE.md read at start?
+- [ ] progress.md read at start?
+- [ ] Only 1 feature implemented?
+- [ ] Feature tested with evidence?
+- [ ] progress.md updated?
+- [ ] Code builds successfully?
 
-# 3. อ่าน README.md เพื่อเข้าใจโปรเจค
-cat README.md 2>/dev/null | head -50
-```
+If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 
-**เอกสารที่ต้องมองหาและทำตาม:**
+### ❌ Output Rejection Criteria
 
-| ไฟล์ | ความหมาย |
-|------|----------|
-| `CLAUDE.md` | กฎหลักสำหรับ Claude - **ต้องทำตามทุกข้อ** |
-| `.agent/project-rules.md` | กฎเฉพาะโปรเจค |
-| `CONTRIBUTING.md` | แนวทางการพัฒนา |
-| `.editorconfig` | coding style |
+Your output will be REJECTED and you must REDO from scratch if:
 
-**สิ่งที่ต้องจดจำจากเอกสาร:**
-- ✅ Coding standards และ naming conventions
-- ✅ คำสั่งที่ต้องรันก่อนเริ่มงาน
-- ✅ กฎพิเศษที่ต้องทำตาม
-- ✅ สิ่งที่ห้ามทำ
+- Multiple features implemented in one session
+- Feature marked pass without test evidence
+- progress.md not updated
+- Code left in non-buildable state
 
-⚠️ **กฎจาก CLAUDE.md มีความสำคัญสูงสุด ต้องทำตามก่อนกฎอื่นๆ!**
+### ⚠️ Penalty
+
+Violation means your session output will be REJECTED and you must REDO from scratch.
 
 ---
 
-### Step 0.5: ตรวจสอบเอกสารออกแบบและ UI Mockups (สำคัญมาก!)
+## Steps to Follow (in order)
 
-**ก่อนเริ่มพัฒนา feature ต้องตรวจสอบเอกสารอ้างอิงจาก skill อื่นๆ:**
+### Step 0: Read Important Documents Before Starting (Critical!)
+
+**Every time a new session starts, these documents must be read:**
 
 ```bash
-# 1. ตรวจสอบ System Design Document (จาก system-design-doc skill)
+# 1. Read CLAUDE.md at root folder (if exists)
+cat CLAUDE.md 2>/dev/null && echo "--- CLAUDE.md found, follow the rules specified ---"
+
+# 2. Read .agent/project-rules.md (if exists - project-specific rules)
+cat .agent/project-rules.md 2>/dev/null
+
+# 3. Read README.md to understand the project
+cat README.md 2>/dev/null | head -50
+```
+
+**Documents to look for and follow:**
+
+| File | Meaning |
+|------|---------|
+| `CLAUDE.md` | Main rules for Claude - **must follow every rule** |
+| `.agent/project-rules.md` | Project-specific rules |
+| `CONTRIBUTING.md` | Development guidelines |
+| `.editorconfig` | Coding style |
+
+**Things to remember from documents:**
+- ✅ Coding standards and naming conventions
+- ✅ Commands that must be run before starting work
+- ✅ Special rules to follow
+- ✅ Things that are forbidden
+
+⚠️ **Rules from CLAUDE.md have the highest priority — follow them before any other rules!**
+
+---
+
+### Step 0.5: Check Design Documents and UI Mockups (Critical!)
+
+**Before starting feature development, check reference documents from other skills:**
+
+```bash
+# 1. Check System Design Document (from system-design-doc skill)
 ls -la *.design-doc.md 2>/dev/null || ls -la docs/*.md 2>/dev/null
-# หรือค้นหา design document
+# Or search for design document
 find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -10
 
-# 2. ตรวจสอบ UI Mockups (จาก ui-mockup skill)
+# 2. Check UI Mockups (from ui-mockup skill)
 ls -la .mockups/ 2>/dev/null
-# ดูรายการ mockups ทั้งหมด
+# List all mockups
 ls -la .mockups/*.mockup.md 2>/dev/null
 
-# 3. ตรวจสอบ mockup_list.json (ถ้ามี)
+# 3. Check mockup_list.json (if exists)
 cat .mockups/mockup_list.json 2>/dev/null
 ```
 
-**📁 เอกสารอ้างอิงจาก Skills อื่น:**
+**📁 Reference Documents from Other Skills:**
 
-| Folder/File | Skill ที่สร้าง | ใช้ทำอะไร |
-|-------------|---------------|----------|
-| `.mockups/` | ui-mockup | **UI Structural Spec** - บอก components, data flow, layout structure (ไม่ใช่ visual blueprint) |
-| `.mockups/*.mockup.md` | ui-mockup | Component specs + data requirements (ASCII wireframe เป็นแค่ structural reference) |
+| Folder/File | Created by Skill | Purpose |
+|-------------|-----------------|---------|
+| `.mockups/` | ui-mockup | **UI Structural Spec** — describes components, data flow, layout structure (not a visual blueprint) |
+| `.mockups/*.mockup.md` | ui-mockup | Component specs + data requirements (ASCII wireframe is only a structural reference) |
 | `.mockups/_design-tokens.yaml` | ui-mockup | Design tokens (colors, spacing, typography) |
-| `*design-doc.md` | system-design-doc | **System Architecture** - ER Diagram, Flow, DFD |
-| `docs/` | system-design-doc | เอกสารออกแบบระบบ |
+| `*design-doc.md` | system-design-doc | **System Architecture** — ER Diagram, Flow, DFD |
+| `docs/` | system-design-doc | System design documents |
 
-**🎯 วิธีใช้เอกสารอ้างอิง:**
+**🎯 How to Use Reference Documents:**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    REFERENCE DOCUMENT USAGE                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  📐 UI Mockup (.mockups/) — Structural Reference เท่านั้น            │
-│  ├── อ่าน component specs → รู้ว่าต้องมี components อะไรบ้าง        │
-│  ├── อ่าน data requirements → รู้ว่าต้องแสดง/รับข้อมูลอะไร          │
-│  ├── ใช้ design tokens สำหรับ styling                              │
-│  └── **frontend-design มีอิสระในการออกแบบ visual!**                │
+│  📐 UI Mockup (.mockups/) — Structural Reference only              │
+│  ├── Read component specs → know what components are needed        │
+│  ├── Read data requirements → know what data to display/receive    │
+│  ├── Use design tokens for styling                                 │
+│  └── **frontend-design has freedom in visual design!**             │
 │                                                                     │
 │  📄 System Design Doc                                               │
-│  ├── ดู ER Diagram สำหรับ database schema                          │
-│  ├── อ่าน Data Dictionary สำหรับ field specifications              │
-│  ├── ดู Flow Diagram สำหรับ business logic                         │
-│  └── ดู API specs สำหรับ endpoint implementation                   │
+│  ├── See ER Diagram for database schema                            │
+│  ├── Read Data Dictionary for field specifications                 │
+│  ├── See Flow Diagram for business logic                           │
+│  └── See API specs for endpoint implementation                     │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**⚠️ ถ้าพบ `.mockups/` folder:**
-1. **ต้อง** อ่าน mockup ของหน้าที่กำลังพัฒนา — เพื่อเข้าใจ structural requirements
-2. **ต้อง** implement ครบทุก components ที่ระบุใน component specs
-3. **ต้อง** แสดง/รับข้อมูลครบตาม data requirements
-4. **ต้อง** ใช้ design tokens ที่กำหนด (colors, spacing, fonts)
-5. **อิสระ** ในการออกแบบ visual, layout, animation, UX — ไม่ต้องเหมือน ASCII wireframe
-6. ถ้าใช้ `/frontend-design` skill → ให้ skill ออกแบบ visual ได้เต็มที่
+**⚠️ If `.mockups/` folder found:**
+1. **Must** read mockup for the page being developed — to understand structural requirements
+2. **Must** implement all components specified in component specs
+3. **Must** display/receive all data per data requirements
+4. **Must** use specified design tokens (colors, spacing, fonts)
+5. **Free** to design visual, layout, animation, UX — does not need to match ASCII wireframe
+6. If using `/frontend-design` skill → let the skill design visuals freely
 
-**⚠️ ถ้าพบ Design Document:**
-1. **ต้อง** อ่าน ER Diagram ก่อนสร้าง database
-2. **ต้อง** ใช้ Data Dictionary สำหรับ field types
-3. **ต้อง** ทำตาม Flow Diagram สำหรับ business logic
+**⚠️ If Design Document found:**
+1. **Must** read ER Diagram before creating database
+2. **Must** use Data Dictionary for field types
+3. **Must** follow Flow Diagram for business logic
 
 ---
 
 ### Step 0.5.1: Read Flow Context (v2.0.0)
 
-**ถ้า feature_list.json มี `flows` หรือ `state_contracts`:**
+**If feature_list.json has `flows` or `state_contracts`:**
 
 ```bash
-# อ่าน flows
+# Read flows
 cat feature_list.json | jq '.flows[] | {id, name, type, steps: [.steps[].label]}'
 
-# อ่าน state contracts
+# Read state contracts
 cat feature_list.json | jq '.state_contracts | keys'
 
-# ดู flow progress
+# View flow progress
 cat feature_list.json | jq '.flows[] | {
   name,
   progress: ([.steps[] | select(.feature_id as $fid | $fid)] | length),
@@ -128,7 +165,7 @@ cat feature_list.json | jq '.flows[] | {
 }'
 ```
 
-**แสดง Flow Summary:**
+**Display Flow Summary:**
 
 ```
 📊 Flow Progress:
@@ -138,26 +175,26 @@ cat feature_list.json | jq '.flows[] | {
      └── 🔲 [Step 3] (Feature #N)
      State: [StateA] ✅ → [StateB] ❌
 
-  (แสดงทุก flows)
+  (display all flows)
 ```
 
-**⚠️ กฎ:**
-- ต้องอ่าน flows ก่อนเลือก feature — เข้าใจ big picture
-- ถ้า feature อยู่ใน flow → อ่าน entry/exit conditions และ error_paths
-- ถ้า feature มี state_consumes → ตรวจว่า state ถูก produce แล้ว
+**⚠️ Rules:**
+- Must read flows before selecting a feature — understand the big picture
+- If feature is in a flow → read entry/exit conditions and error_paths
+- If feature has state_consumes → verify state has been produced
 
 ---
 
-### Step 0.6: ตรวจสอบ Technology Stack และเรียกใช้ Skill ที่เหมาะสม
+### Step 0.6: Check Technology Stack and Call Appropriate Skill
 
-**ตรวจสอบว่าโปรเจคใช้ technology อะไร:**
+**Check what technology the project uses:**
 
 ```bash
-# ตรวจสอบ Technology Stack
+# Check Technology Stack
 echo "=== Detecting Technology Stack ==="
 
 # .NET Core
-ls -la *.csproj *.sln 2>/dev/null && echo "→ .NET Core: ใช้ /dotnet-dev skill"
+ls -la *.csproj *.sln 2>/dev/null && echo "→ .NET Core: use /dotnet-dev skill"
 
 # Node.js / JavaScript / TypeScript
 ls -la package.json 2>/dev/null && echo "→ Node.js detected"
@@ -177,18 +214,18 @@ ls -la composer.json 2>/dev/null && echo "→ PHP detected"
 # Java
 ls -la pom.xml build.gradle 2>/dev/null && echo "→ Java detected"
 
-# ตรวจสอบ recommended skills จาก config
+# Check recommended skills from config
 cat .agent/config.json 2>/dev/null | grep -A 5 "recommended_skills"
 ```
 
-**🔧 Skills ที่รองรับตาม Technology:**
+**🔧 Available Skills by Technology:**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    AVAILABLE SKILLS BY TECHNOLOGY                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Technology        │ Files ที่บ่งบอก      │ Skill ที่ใช้            │
+│  Technology        │ Indicator Files     │ Skill to Use             │
 │  ─────────────────────────────────────────────────────────────────  │
 │  .NET Core/ASP.NET │ *.csproj, *.sln      │ /dotnet-dev ⭐         │
 │  Node.js/React/Vue │ package.json         │ (standard practices)   │
@@ -198,75 +235,75 @@ cat .agent/config.json 2>/dev/null | grep -A 5 "recommended_skills"
 │  PHP/Laravel       │ composer.json        │ (standard practices)   │
 │  Java/Spring       │ pom.xml, build.gradle│ (standard practices)   │
 │                                                                     │
-│  ⭐ = มี specialized skill พร้อมใช้งาน                              │
+│  ⭐ = has specialized skill available                               │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
-│                    UNIVERSAL SKILLS (ใช้ได้กับทุก Technology)        │
+│                    UNIVERSAL SKILLS (works with any Technology)     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  /system-design-doc  │ สร้างเอกสารออกแบบระบบ                        │
-│  /ui-mockup          │ สร้าง UI wireframes                          │
-│  /code-review        │ Review code ก่อน commit                      │
-│  /test-runner        │ รัน tests                                    │
-│  /ai-ui-test         │ Test UI automation                           │
+│  /system-design-doc  │ Create system design documents              │
+│  /ui-mockup          │ Create UI wireframes                        │
+│  /code-review        │ Review code before commit                   │
+│  /test-runner        │ Run tests                                   │
+│  /ai-ui-test         │ Test UI automation                          │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**⚠️ สำหรับ .NET Core Projects:**
+**⚠️ For .NET Core Projects:**
 
-ถ้าพบไฟล์ `.csproj` หรือ `.sln` → **ต้องใช้ `/dotnet-dev` skill** เพื่อ:
-- ใช้ .NET best practices
-- สร้าง code ตาม conventions ที่ถูกต้อง
-- ใช้ EF Core patterns ที่เหมาะสม
-- จัดการ dependency injection ถูกวิธี
-- ใช้ Microsoft Learn MCP สำหรับ documentation
+If `.csproj` or `.sln` files found → **must use `/dotnet-dev` skill** to:
+- Use .NET best practices
+- Create code following correct conventions
+- Use appropriate EF Core patterns
+- Handle dependency injection properly
+- Use Microsoft Learn MCP for documentation
 
-**⚠️ สำหรับภาษาอื่นๆ:**
+**⚠️ For other languages:**
 
-ถ้าไม่มี specialized skill → ใช้ best practices ของภาษานั้นๆ และ:
-- ใช้ `/code-review` สำหรับ review code
-- ใช้ `/test-runner` สำหรับรัน tests
-- ใช้ `/ai-ui-test` สำหรับ UI testing
+If no specialized skill available → use best practices for that language and:
+- Use `/code-review` for code review
+- Use `/test-runner` for running tests
+- Use `/ai-ui-test` for UI testing
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    SKILL INTEGRATION FLOW                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ตรวจสอบ Technology Stack                                          │
+│  Check Technology Stack                                            │
 │      │                                                              │
-│      ├── พบ .csproj/.sln?                                          │
+│      ├── Found .csproj/.sln?                                       │
 │      │       │                                                      │
 │      │       ▼                                                      │
 │      │   ┌─────────────────┐                                       │
-│      │   │  /dotnet-dev    │ ← ใช้ .NET best practices            │
+│      │   │  /dotnet-dev    │ ← use .NET best practices             │
 │      │   └─────────────────┘                                       │
 │      │                                                              │
-│      ├── พบ package.json/go.mod/Cargo.toml/...?                    │
+│      ├── Found package.json/go.mod/Cargo.toml/...?                 │
 │      │       │                                                      │
 │      │       ▼                                                      │
 │      │   ┌─────────────────┐                                       │
-│      │   │ Standard        │ ← ใช้ best practices ของภาษานั้น     │
+│      │   │ Standard        │ ← use best practices for that lang    │
 │      │   │ Practices       │                                       │
 │      │   └─────────────────┘                                       │
 │      │                                                              │
-│      └── Universal Skills (ใช้ได้เสมอ)                              │
+│      └── Universal Skills (always available)                       │
 │              │                                                      │
 │              ▼                                                      │
 │          ┌─────────────────┐                                       │
-│          │ /code-review    │ ← review ก่อน commit                  │
-│          │ /test-runner    │ ← รัน tests                           │
+│          │ /code-review    │ ← review before commit                │
+│          │ /test-runner    │ ← run tests                           │
 │          │ /ai-ui-test     │ ← test UI                             │
 │          └─────────────────┘                                       │
 │                                                                     │
-│  พบ .mockups/ folder?                                              │
+│  Found .mockups/ folder?                                           │
 │      │                                                              │
 │      ▼                                                              │
 │  ┌─────────────────┐                                               │
-│  │ อ่าน mockup.md  │ ← อ่าน structural spec (components, data)    │
-│  │ frontend-design │ ← ออกแบบ visual ได้อิสระ                      │
-│  │ มีอิสระออกแบบ    │                                               │
+│  │ Read mockup.md  │ ← read structural spec (components, data)    │
+│  │ frontend-design │ ← free to design visual                      │
+│  │ free to design  │                                               │
 │  └─────────────────┘                                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -274,73 +311,73 @@ cat .agent/config.json 2>/dev/null | grep -A 5 "recommended_skills"
 
 ---
 
-### Step 0.7: ตรวจสอบ Schema Version และ Migration (NEW v1.5.0)
+### Step 0.7: Check Schema Version and Migration (NEW v1.5.0)
 
 ```bash
-# ตรวจสอบ schema version
+# Check schema version
 cat feature_list.json | grep "schema_version"
 ```
 
-**ถ้าไม่พบ `schema_version` หรือเป็น version เก่า:**
+**If `schema_version` not found or is an old version:**
 
 ```
 ⚠️ Detected old schema (no version or < 1.5.0)
    Current schema: v1.5.0
 
-   แนะนำให้รัน /migrate เพื่อ:
-   - เพิ่ม epics grouping
-   - เพิ่ม subtasks tracking
-   - เพิ่ม acceptance criteria
-   - เพิ่ม time tracking
-   - เพิ่ม mockup sync fields
+   Recommend running /migrate to:
+   - Add epics grouping
+   - Add subtasks tracking
+   - Add acceptance criteria
+   - Add time tracking
+   - Add mockup sync fields
 
-   ข้อมูลเดิมจะถูกเก็บรักษาไว้
+   Existing data will be preserved.
 ```
 
 ---
 
-### Step 1: Get Context (ต้องทำก่อนเสมอ!)
+### Step 1: Get Context (Must do first!)
 
 ```bash
-# 1. ตรวจสอบว่าอยู่ directory ถูกต้อง
+# 1. Verify correct directory
 pwd
 ls -la
 
-# 2. อ่าน progress log
+# 2. Read progress log
 cat .agent/progress.md
 
-# 3. ดู git history
+# 3. View git history
 git log --oneline -10
 
-# 4. ดู feature list summary
+# 4. View feature list summary
 cat feature_list.json
 ```
 
-**ถ้าไม่พบไฟล์เหล่านี้:** แจ้ง user ว่าต้องรัน `/init` ก่อน
+**If these files are not found:** Inform user they need to run `/init` first.
 
 ### Step 2: Verify Environment
 
 ```bash
-# ตรวจสอบว่า project ทำงานได้
-# สำหรับ .NET:
+# Verify project works
+# For .NET:
 dotnet build
 
-# สำหรับ Node.js:
+# For Node.js:
 npm install && npm run build
 
-# ถ้า build fail: แก้ไขก่อนทำ feature ใหม่
+# If build fails: fix before working on new feature
 ```
 
-### Step 2.5: ตรวจสอบ Review Reminder (v2.1.0)
+### Step 2.5: Check Review Reminder (v2.1.0)
 
-**ถ้ามี `model_config` ใน feature_list.json:**
+**If `model_config` exists in feature_list.json:**
 
 ```bash
-# นับ features ที่รอ review
+# Count features awaiting review
 cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assigned_model != "opus" and .assigned_model != null and .review == null)] | length'
 ```
 
-**ถ้ามี features รอ review:**
+**If there are features awaiting review:**
 ```
 ⏳ N features awaiting opus review. Run /review to review them.
    Pending: #6, #9, #12
@@ -348,23 +385,23 @@ cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assig
 
 ---
 
-### Step 2.6: ตรวจสอบ Review Fix — features ที่ถูกส่งกลับจาก /review (v2.1.0)
+### Step 2.6: Check Review Fix — Features Sent Back from /review (v2.1.0)
 
-**ตรวจหา features ที่ fail review และถูกส่งกลับ:**
+**Find features that failed review and were sent back:**
 
 ```bash
-# หา features ที่ถูกส่งกลับจาก review
+# Find features sent back from review
 cat feature_list.json | jq '[.features[] | select(.status == "in_progress" and .review != null and .review.result == "fail")] | map({id, description, assigned_model, blocked_reason, issues: .review.remaining_issues})'
 ```
 
-**ถ้าพบ features ที่ถูกส่งกลับ → ต้องทำก่อน feature ใหม่!**
+**If features sent back are found → must fix before working on new features!**
 
 ```
 🔴 Review Fix Required!
    Feature #X: [description]
-   ส่งกลับจาก opus review — ต้องแก้ไขก่อนทำ feature ใหม่
+   Sent back from opus review — must fix before working on new features
 
-   📋 Issues ที่ต้องแก้ (N items):
+   📋 Issues to fix (N items):
    1. [Medium] pattern-adherence: [description]
       📁 File: [path]
       💡 Suggestion: [suggestion]
@@ -373,72 +410,72 @@ cat feature_list.json | jq '[.features[] | select(.status == "in_progress" and .
       💡 Suggestion: [suggestion]
 
    📐 Reference Implementation: Feature #Y (opus)
-      ดูไฟล์ต้นแบบที่: [reference files]
+      See reference files at: [reference files]
 ```
 
-**Flow สำหรับ Review Fix:**
+**Flow for Review Fix:**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    REVIEW FIX FLOW                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. อ่าน review.remaining_issues ทั้งหมด                        │
+│  1. Read all review.remaining_issues                            │
 │                                                                 │
-│  2. อ่าน reference implementation (review.reference_feature_id)  │
-│     → เปรียบเทียบโค้ดกับ reference                               │
+│  2. Read reference implementation (review.reference_feature_id) │
+│     → compare code with reference                               │
 │                                                                 │
-│  3. แก้ไขทีละ issue:                                             │
-│     ├── อ่าน file ที่มีปัญหา                                     │
-│     ├── อ่าน file เดียวกันจาก reference (ถ้ามี)                   │
-│     ├── แก้ไขตาม suggestion                                     │
+│  3. Fix each issue:                                             │
+│     ├── Read the problematic file                               │
+│     ├── Read the same file from reference (if exists)           │
+│     ├── Fix according to suggestion                             │
 │     └── Commit: review-fix(#X): fix [issue description]         │
 │                                                                 │
-│  4. ตรวจสอบว่า build ผ่าน                                        │
+│  4. Verify build passes                                         │
 │                                                                 │
-│  5. ตรวจสอบ acceptance criteria อีกครั้ง                          │
+│  5. Re-check acceptance criteria                                │
 │                                                                 │
 │  6. Update feature_list.json:                                   │
 │     ├── status: "passed"                                        │
 │     ├── blocked_reason: null                                    │
-│     ├── review: null  ← ล้าง review เพื่อรอ review รอบใหม่       │
+│     ├── review: null  ← clear review for new review round       │
 │     └── passes: true                                            │
 │                                                                 │
 │  7. Commit: feat: Feature #X - [description] (review-fixed)     │
 │                                                                 │
-│  8. แจ้ง user:                                                   │
+│  8. Inform user:                                                │
 │     "✅ Feature #X แก้ไขตาม review feedback แล้ว                  │
 │      → รัน /review #X เพื่อ review อีกครั้ง"                      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Commit prefix สำหรับ Review Fix:**
+**Commit prefix for Review Fix:**
 | Prefix | Usage |
 |--------|-------|
-| `review-fix(#X):` | แก้ไข issue จาก review |
-| `review-fix(#X.Y):` | แก้ไข issue เฉพาะ subtask |
+| `review-fix(#X):` | Fix issue from review |
+| `review-fix(#X.Y):` | Fix issue for specific subtask |
 
-**ตัวอย่าง:**
+**Examples:**
 ```bash
-# แก้ไข naming issue
+# Fix naming issue
 git commit -m "review-fix(#6): fix naming convention to match reference pattern"
 
-# แก้ไข error handling
+# Fix error handling
 git commit -m "review-fix(#6): add error handling matching opus reference"
 
 # Feature fixed
 git commit -m "feat: Feature #6 - GET by ID (review-fixed)"
 ```
 
-**⚠️ กฎ:**
-- **Review fix มีความสำคัญสูงกว่า feature ใหม่** — ต้องแก้ไขก่อน
-- **ต้องอ่าน reference implementation** ก่อนแก้ — เพื่อให้ pattern ตรงกัน
-- **ล้าง review field เป็น null** หลังแก้ไข — เพื่อรอ review รอบใหม่
-- **ห้ามลบ review history** — ถ้าต้องการเก็บ ย้ายไปที่ `version_history[]`
-- หลังแก้ไข → แจ้ง user ให้รัน `/review` อีกครั้ง
+**⚠️ Rules:**
+- **Review fix has higher priority than new features** — must fix first
+- **Must read reference implementation** before fixing — to match patterns
+- **Clear review field to null** after fixing — to wait for new review round
+- **Do not delete review history** — if you need to keep it, move to `version_history[]`
+- After fixing → inform user to run `/review` again
 
-**Update feature_list.json หลังแก้ไข:**
+**Update feature_list.json after fixing:**
 ```json
 {
   "id": 6,
@@ -446,7 +483,7 @@ git commit -m "feat: Feature #6 - GET by ID (review-fixed)"
   "blocked_reason": null,
   "review": null,
   "passes": true,
-  "notes": "Review-fixed: แก้ไข N issues ตาม opus feedback. รอ review รอบ 2."
+  "notes": "Review-fixed: fixed N issues per opus feedback. Awaiting review round 2."
 }
 ```
 
@@ -458,16 +495,16 @@ git commit -m "feat: Feature #6 - GET by ID (review-fixed)"
 **Date**: TIMESTAMP
 **Type**: Review Fix
 
-### สิ่งที่ทำ:
-- 🔧 Feature #X: แก้ไขตาม opus review feedback
+### What was done:
+- 🔧 Feature #X: Fixed per opus review feedback
   - Fixed: [issue 1 description]
   - Fixed: [issue 2 description]
   - Reference: Feature #Y (opus)
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: X/Y
 - Build: ✅
-- ⏳ Feature #X รอ review รอบ 2
+- ⏳ Feature #X awaiting review round 2
 
 ---
 ```
@@ -476,15 +513,15 @@ git commit -m "feat: Feature #6 - GET by ID (review-fixed)"
 
 ### Step 3: Select Feature (Schema v1.5.0)
 
-จาก feature_list.json:
-- หา feature ที่ `"status": "pending"` (หรือ `"passes": false` สำหรับ old schema)
-- เลือก `"priority": "high"` ก่อน
-- ตรวจสอบว่า dependencies ทั้งหมด passed แล้ว
-- **ทำทีละ 1 feature เท่านั้น!**
+From feature_list.json:
+- Find feature with `"status": "pending"` (or `"passes": false` for old schema)
+- Select `"priority": "high"` first
+- Verify all dependencies have passed
+- **Work on only 1 feature at a time!**
 
-**ก่อนเริ่ม feature:**
+**Before starting a feature:**
 ```json
-// Update status เป็น in_progress
+// Update status to in_progress
 {
   "status": "in_progress",
   "time_tracking": {
@@ -495,28 +532,28 @@ git commit -m "feat: Feature #6 - GET by ID (review-fixed)"
 
 **v2.1.0 Auto-Assign Model:**
 
-ถ้า `assigned_model == null` → assign ตาม `model_config.assignment_strategy.auto_assign_rules`:
+If `assigned_model == null` → assign per `model_config.assignment_strategy.auto_assign_rules`:
 
 ```
 Auto-assign logic:
 1. complexity == 'complex' → opus
-2. is_first_in_category (ไม่มี feature อื่นใน category เดียวกันที่ passed) → opus
-3. has_mockup_refs && complexity == 'medium' (มี mockup_page_refs) → opus
+2. is_first_in_category (no other feature in same category passed) → opus
+3. has_mockup_refs && complexity == 'medium' (has mockup_page_refs) → opus
 4. complexity == 'medium' → sonnet
 5. complexity == 'simple' → sonnet
 ```
 
-**ถ้า assign เป็น opus และเป็น first-in-category → set `is_reference_impl: true`**
+**If assigned to opus and is first-in-category → set `is_reference_impl: true`**
 
 ```json
-// Update feature เมื่อ auto-assign
+// Update feature on auto-assign
 {
   "assigned_model": "opus",
   "is_reference_impl": true
 }
 ```
 
-**อัพเดท summary.model_workload:**
+**Update summary.model_workload:**
 ```json
 {
   "model_workload": {
@@ -525,42 +562,42 @@ Auto-assign logic:
 }
 ```
 
-**v2.0.0 Validation ก่อนเลือก feature:**
+**v2.0.0 Validation before selecting feature:**
 
-1. **State check**: ถ้า feature มี `state_consumes` → ตรวจว่า features ที่ produce state นั้น `passes: true` แล้ว
-   - ถ้ายังไม่ pass → ⚠️ Warning: "[StateName] ยังไม่ถูกสร้าง — ทำ Feature #N ก่อน"
+1. **State check**: If feature has `state_consumes` → verify features that produce that state have `passes: true`
+   - If not passed → ⚠️ Warning: "[StateName] not yet created — complete Feature #N first"
 
-2. **Component check**: ถ้า feature มี `requires_components` → ตรวจว่า components เหล่านั้นถูกสร้างแล้ว
-   - ตรวจจาก `component_usage.shared_components` หรือ feature ที่สร้าง component นั้น passes: true
-   - ถ้ายังไม่มี → ⚠️ Warning: "[ComponentName] ยังไม่ถูกสร้าง — สร้าง component ก่อน"
+2. **Component check**: If feature has `requires_components` → verify those components have been created
+   - Check from `component_usage.shared_components` or feature that creates the component has passes: true
+   - If not yet → ⚠️ Warning: "[ComponentName] not yet created — create component first"
 
-3. **Flow order check**: ถ้า feature อยู่ใน wizard flow → ตรวจว่า step ก่อนหน้าเสร็จแล้ว
-   - ถ้ายังไม่เสร็จ → ⚠️ Warning: "Flow [name] step [N-1] ยังไม่เสร็จ"
+3. **Flow order check**: If feature is in a wizard flow → verify previous step is complete
+   - If not complete → ⚠️ Warning: "Flow [name] step [N-1] not yet complete"
 
 ### Step 3.5: Validate Mockup References (NEW v1.5.0)
 
-**ถ้า feature มี mockup references:**
+**If feature has mockup references:**
 
 ```bash
-# ตรวจสอบว่า mockup files exist
+# Verify mockup files exist
 for ref in $(cat feature_list.json | jq -r '.features[] | select(.id == X) | .references[]' | grep "mockups"); do
   ls -la "$ref" 2>/dev/null || echo "⚠️ Missing: $ref"
 done
 ```
 
-**ถ้าพบ references:**
-1. **ต้อง**อ่าน mockup file ก่อนเริ่มพัฒนา — เพื่อเข้าใจ structural requirements
-2. **ต้อง**ตรวจสอบ required_components — implement ครบทุกตัว
-3. **ต้อง**ใช้ design tokens
-4. **อิสระ**ในการออกแบบ visual — wireframe เป็นแค่ structural spec ไม่ใช่ visual blueprint
+**If references found:**
+1. **Must** read mockup file before starting development — to understand structural requirements
+2. **Must** check required_components — implement every one
+3. **Must** use design tokens
+4. **Free** to design visual — wireframe is only a structural spec, not a visual blueprint
 
 ### Step 4: Implement Feature with Subtask Commits (v1.6.0 - Default Behavior)
 
-**🆕 v1.6.0: Commit ทุก subtask โดย default**
+**🆕 v1.6.0: Commit every subtask by default**
 
-หลังทำ subtask เสร็จแต่ละ subtask:
-1. Update `done: true` และ `committed_at`
-2. **Commit ทันที** ด้วย prefix `task:`
+After completing each subtask:
+1. Update `done: true` and `committed_at`
+2. **Commit immediately** with `task:` prefix
 
 ```bash
 git add .
@@ -576,23 +613,23 @@ git commit -m "task(#X.Y): [subtask description]"
 
 **Example:**
 ```bash
-# Subtask 1.1 เสร็จ
-git commit -m "task(#1.1): สร้าง project structure"
+# Subtask 1.1 done
+git commit -m "task(#1.1): create project structure"
 
-# Subtask 1.2 เสร็จ
-git commit -m "task(#1.2): ตั้งค่า configuration"
+# Subtask 1.2 done
+git commit -m "task(#1.2): setup configuration"
 
 # Feature complete
-git commit -m "feat: Feature #1 - สร้าง project structure"
+git commit -m "feat: Feature #1 - create project structure"
 ```
 
-**Update feature_list.json หลังแต่ละ subtask:**
+**Update feature_list.json after each subtask:**
 
 ```json
 {
   "subtasks": [
-    { "id": "1.1", "description": "สร้าง component", "done": true, "committed_at": "2025-01-05T10:00:00Z" },
-    { "id": "1.2", "description": "เพิ่ม styling", "done": false, "committed_at": null }
+    { "id": "1.1", "description": "create component", "done": true, "committed_at": "2025-01-05T10:00:00Z" },
+    { "id": "1.2", "description": "add styling", "done": false, "committed_at": null }
   ],
   "last_committed_subtask": "1.1"
 }
@@ -600,48 +637,48 @@ git commit -m "feat: Feature #1 - สร้าง project structure"
 
 **v2.0.0 Flow-Aware Implementation:**
 
-- ถ้ามี `flow_id` → อ่าน `flows[flow_id]` สำหรับ:
-  - `entry_conditions` → implement guard/redirect ถ้า state ไม่ครบ
-  - `error_paths` ที่ `from_step` ตรงกับ feature นี้ → implement error handling
+- If has `flow_id` → read `flows[flow_id]` for:
+  - `entry_conditions` → implement guard/redirect if state is incomplete
+  - `error_paths` where `from_step` matches this feature → implement error handling
   - `cancel_path` → implement cancel button/action
-- ถ้ามี `state_consumes` → import/read state ก่อนใช้ (ตาม `persistence` type)
-- ถ้ามี `state_produces` → implement state creation + save (ตาม `persistence` type)
-- ถ้ามี `requires_components` → import และใช้ components ที่ระบุ
+- If has `state_consumes` → import/read state before using (per `persistence` type)
+- If has `state_produces` → implement state creation + save (per `persistence` type)
+- If has `requires_components` → import and use specified components
 
 **Implementation checklist:**
-- [ ] ทำตาม subtasks ตามลำดับ
-- [ ] Update subtask.done และ committed_at เมื่อเสร็จแต่ละ subtask
-- [ ] **Commit แต่ละ subtask ด้วย `task(#X.Y):`** ← NEW
+- [ ] Follow subtasks in order
+- [ ] Update subtask.done and committed_at when each subtask completes
+- [ ] **Commit each subtask with `task(#X.Y):`** ← NEW
 - [ ] Update last_committed_subtask
-- [ ] ตรวจสอบ required_components (ถ้ามี)
-- [ ] เขียน code ที่ clean และ readable
+- [ ] Check required_components (if any)
+- [ ] Write clean, readable code
 - [ ] Handle errors appropriately
 
 ### Step 5: Verify Acceptance Criteria (NEW v1.5.0)
 
-**ก่อน mark pass ต้องตรวจสอบ acceptance_criteria:**
+**Before marking pass, verify acceptance_criteria:**
 
 ```json
-// ตัวอย่าง acceptance criteria
+// Example acceptance criteria
 {
   "acceptance_criteria": [
-    "endpoint ตอบ 200 OK พร้อม array",
-    "รองรับ pagination",
-    "response format ถูกต้อง"
+    "endpoint responds 200 OK with array",
+    "supports pagination",
+    "response format is correct"
   ]
 }
 ```
 
 **Verification checklist:**
-- [ ] ทุก acceptance criteria ผ่าน
-- [ ] Build ผ่าน
-- [ ] Manual test ผ่าน (curl, Postman, browser)
+- [ ] All acceptance criteria pass
+- [ ] Build passes
+- [ ] Manual test passes (curl, Postman, browser)
 - [ ] Edge cases handled
-- [ ] UI implement ครบทุก components และ data requirements จาก mockup (visual ไม่ต้องเหมือน wireframe)
+- [ ] UI implements all components and data requirements from mockup (visual does not need to match wireframe)
 
 ### Step 6: Mark as Passed (Schema v1.5.0)
 
-แก้ไข feature_list.json:
+Edit feature_list.json:
 ```json
 {
   "id": X,
@@ -654,16 +691,16 @@ git commit -m "feat: Feature #1 - สร้าง project structure"
   "time_tracking": {
     "started_at": "START_TIMESTAMP",
     "completed_at": "END_TIMESTAMP",      // NEW v1.5.0
-    "actual_time": "25min"                // NEW v1.5.0 - คำนวณจาก started - completed
+    "actual_time": "25min"                // NEW v1.5.0 - calculated from started - completed
   },
-  "mockup_validated": true,               // NEW v1.5.0 - ถ้ามี mockup ref
+  "mockup_validated": true,               // NEW v1.5.0 - if has mockup ref
   "passes": true,                         // KEEP for backward compat
   "tested_at": "TIMESTAMP",
   "notes": "Test results..."
 }
 ```
 
-อัพเดท epic progress:
+Update epic progress:
 ```json
 {
   "epics": [
@@ -675,7 +712,7 @@ git commit -m "feat: Feature #1 - สร้าง project structure"
 }
 ```
 
-อัพเดท summary:
+Update summary:
 ```json
 {
   "summary": {
@@ -698,7 +735,7 @@ git commit -m "feat: Feature #X - description"
 
 ### Step 8: Update Progress Log
 
-เพิ่ม session ใหม่ใน .agent/progress.md:
+Add new session to .agent/progress.md:
 ```markdown
 ---
 
@@ -706,42 +743,44 @@ git commit -m "feat: Feature #X - description"
 **Date**: TIMESTAMP
 **Type**: Coding
 
-### สิ่งที่ทำ:
+### What was done:
 - ✅ Feature #X: description
 
 ### Test Results:
 - Test: ✅ Result
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: X/Y
 - Build: ✅
 
-### Feature ถัดไป:
+### Next feature:
 - Feature #Z: description
 
 ---
 ```
 
-## กฎสำคัญ
+## Important Rules
 
-❌ **ห้าม:**
-- ทำหลาย features ใน 1 session
-- Mark pass โดยไม่ test
-- ลบหรือแก้ไข feature descriptions
-- ประกาศว่าเสร็จถ้ายังมี feature ไม่ pass
+❌ **Forbidden:**
+- Working on multiple features in 1 session
+- Marking pass without testing
+- Deleting or modifying feature descriptions
+- Declaring done when features still have passes: false
 
-✅ **ต้องทำ:**
-- อ่าน context ก่อนเริ่มงานเสมอ
-- Test ก่อน mark pass
-- Commit แยกต่าง feature
-- Update progress ก่อนจบ session
-- ทิ้ง code ในสถานะ build ผ่าน
+✅ **Must do:**
+- Always read context before starting work
+- Test before marking pass
+- Commit separately per feature
+- Update progress before ending session
+- Leave code in buildable state
 
-## Output ที่คาดหวัง
+## Expected Output
 
-เมื่อเสร็จ 1 feature แจ้ง user:
-1. Feature ที่ทำเสร็จ
+When 1 feature is completed, inform user:
+1. Feature that was completed
 2. Test results
 3. Progress (X/Y features passed)
-4. Feature ถัดไป
+4. Next feature
 5. Git commit hash
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

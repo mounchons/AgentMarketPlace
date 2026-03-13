@@ -1,6 +1,6 @@
 # /generate-features-from-mockups
 
-สร้าง features อัตโนมัติจาก mockup_list.json เพื่อให้ครอบคลุมทุก UI page ที่ออกแบบไว้
+Automatically generate features from mockup_list.json to cover all designed UI pages.
 
 ---
 
@@ -14,36 +14,36 @@
 
 ## Prerequisites
 
-- ต้องมี `.mockups/mockup_list.json` อยู่ในโปรเจค
-- ควรรัน `/init-mockup` หรือ `/ui-mockup` ก่อน
+- `.mockups/mockup_list.json` must exist in the project
+- Should run `/init-mockup` or `/ui-mockup` first
 
 ---
 
 ## Process
 
-### Step 1: อ่าน mockup_list.json
+### Step 1: Read mockup_list.json
 
 ```bash
-# ตรวจสอบว่ามี mockup_list.json
+# Check if mockup_list.json exists
 ls -la .mockups/mockup_list.json
 
-# อ่านเนื้อหา
+# Read contents
 cat .mockups/mockup_list.json
 ```
 
-### Step 2: Parse pages และสร้าง features
+### Step 2: Parse pages and create features
 
-สำหรับแต่ละ page ใน `mockup_list.json`:
+For each page in `mockup_list.json`:
 
 | Page Category | Feature Template | Epic |
 |---------------|------------------|------|
-| `auth` | "สร้างหน้า [name]" | ui-auth |
-| `main` | "สร้างหน้า [name]" | ui-main |
-| `list` | "สร้างหน้า [name] List" | ui-[crud_group] |
-| `form` | "สร้างหน้า [name] Form" | ui-[crud_group] |
-| `detail` | "สร้างหน้า [name] Detail" | ui-[crud_group] |
+| `auth` | "Create [name] page" | ui-auth |
+| `main` | "Create [name] page" | ui-main |
+| `list` | "Create [name] List page" | ui-[crud_group] |
+| `form` | "Create [name] Form page" | ui-[crud_group] |
+| `detail` | "Create [name] Detail page" | ui-[crud_group] |
 
-### Step 3: สร้าง Feature Structure
+### Step 3: Create Feature Structure
 
 ```json
 {
@@ -56,16 +56,16 @@ cat .mockups/mockup_list.json
   "status": "pending",
   "blocked_reason": null,
   "subtasks": [
-    { "id": "[id].1", "description": "สร้าง layout ตาม mockup", "done": false },
-    { "id": "[id].2", "description": "สร้าง components ตาม specs", "done": false },
-    { "id": "[id].3", "description": "เชื่อมต่อ API", "done": false },
-    { "id": "[id].4", "description": "ทดสอบ UI", "done": false }
+    { "id": "[id].1", "description": "Create layout per mockup", "done": false },
+    { "id": "[id].2", "description": "Create components per specs", "done": false },
+    { "id": "[id].3", "description": "Connect to API", "done": false },
+    { "id": "[id].4", "description": "Test UI", "done": false }
   ],
   "acceptance_criteria": [
-    "UI ตรงกับ wireframe ใน mockup",
-    "Components ครบตาม specs",
-    "Responsive design ทำงานถูกต้อง",
-    "API integration สมบูรณ์"
+    "UI matches wireframe in mockup",
+    "Components are complete per specs",
+    "Responsive design works correctly",
+    "API integration is complete"
   ],
   "time_tracking": {
     "estimated_time": "[based on complexity]",
@@ -87,13 +87,13 @@ cat .mockups/mockup_list.json
 }
 ```
 
-### Step 4: สร้าง Epic สำหรับ UI
+### Step 4: Create Epic for UI
 
 ```json
 {
   "id": "ui-pages",
   "name": "UI Pages",
-  "description": "หน้า UI ทั้งหมดจาก mockups",
+  "description": "All UI pages from mockups",
   "bounded_context": "Presentation",
   "features": [generated_feature_ids],
   "progress": { "total": X, "passed": 0, "in_progress": 0 }
@@ -102,7 +102,7 @@ cat .mockups/mockup_list.json
 
 ### Step 5: Update mockup_list.json
 
-เพิ่ม reverse link:
+Add reverse link:
 
 ```json
 {
@@ -132,11 +132,11 @@ cat .mockups/mockup_list.json
 
 ## Dependency Rules
 
-1. **List page** ขึ้นกับ **GET list API**
-2. **Form page** ขึ้นกับ **POST/PUT API**
-3. **Detail page** ขึ้นกับ **GET by ID API**
-4. **Auth pages** ไม่มี dependencies (ทำก่อน)
-5. **Dashboard** ขึ้นกับ **all entities** (ทำหลัง)
+1. **List page** depends on **GET list API**
+2. **Form page** depends on **POST/PUT API**
+3. **Detail page** depends on **GET by ID API**
+4. **Auth pages** have no dependencies (do first)
+5. **Dashboard** depends on **all entities** (do last)
 
 ---
 
@@ -183,15 +183,17 @@ cat .mockups/mockup_list.json
 
 ## Post-Generation Actions
 
-1. **Review generated features** - ตรวจสอบว่า features ถูกต้อง
-2. **Adjust dependencies** - เพิ่ม dependencies ที่ขาดหายไป
-3. **Run /validate-coverage** - ตรวจสอบ coverage
-4. **Run /sync-mockups** - sync status ระหว่าง files
+1. **Review generated features** — verify that features are correct
+2. **Adjust dependencies** — add any missing dependencies
+3. **Run /validate-coverage** — check coverage
+4. **Run /sync-mockups** — sync status between files
 
 ---
 
 ## Notes
 
-- Features ที่สร้างจะมี `notes: "Auto-generated from mockup_list.json"`
-- ไม่สร้าง feature ซ้ำถ้ามี feature ที่ reference ไปยัง mockup เดียวกันแล้ว
-- ควรรันหลังจาก `/init` เสร็จ
+- Generated features will have `notes: "Auto-generated from mockup_list.json"`
+- Will not create duplicate features if a feature already references the same mockup
+- Should be run after `/init` is complete
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

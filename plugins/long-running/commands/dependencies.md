@@ -1,6 +1,6 @@
 # /dependencies
 
-สร้าง dependency visualization และวิเคราะห์ critical path ของ features
+Create dependency visualization and analyze the critical path of features.
 
 ---
 
@@ -14,7 +14,7 @@
 
 ## Purpose
 
-1. **Visualize** dependencies ระหว่าง features ด้วย Mermaid diagram
+1. **Visualize** dependencies between features with Mermaid diagram
 2. **Detect** circular dependencies
 3. **Identify** critical path (longest dependency chain)
 4. **Find** blocked features
@@ -151,7 +151,7 @@ graph TD
 
 ## Mermaid Export
 
-Command จะสร้างไฟล์ `.agent/dependencies.mmd`:
+The command will create a file `.agent/dependencies.mmd`:
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4F46E5'}}}%%
@@ -296,3 +296,5 @@ ui (0% done)
 - Mermaid diagram can be viewed in VS Code with Mermaid extension
 - Use with `/status` for complete project overview
 - Run after adding new features to check for issues
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

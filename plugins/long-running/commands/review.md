@@ -1,117 +1,154 @@
 ---
-description: Opus review งานที่ model อื่นทำ (ตรวจความถูกต้อง, pattern adherence, code quality) พร้อม auto-fix สำหรับ Critical/High issues
+description: Opus reviews work done by other models (correctness, pattern adherence, code quality) with auto-fix for Critical/High issues
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # /review — Model Review System (Hybrid Auto-Fix)
 
-Opus ตรวจสอบงานที่ model อื่นทำ เทียบกับ reference implementation
+Opus reviews work done by other models against the reference implementation.
+
+## ⚠️ CRITICAL RULES (MUST FOLLOW)
+
+1. **Read ALL source files** — read every file the feature modified before scoring
+2. **Compare with reference implementation** — always find and read the reference feature's files
+3. **Score honestly** — use the weighted formula, do not inflate scores
+4. **Auto-fix Critical/High only** — never auto-fix Medium/Low issues, send them back
+5. **Update feature_list.json** — review record must be saved with all fields (score, issues, result)
+
+### 🔍 Self-Check Checklist (MANDATORY before submitting output)
+
+Before completing the review, verify EVERY item:
+
+- [ ] All modified files read?
+- [ ] Reference implementation found and compared?
+- [ ] Score calculated using weighted formula?
+- [ ] Issues categorized by severity correctly?
+- [ ] Critical/High auto-fixed (if any)?
+- [ ] feature_list.json updated with review record?
+- [ ] progress.md updated with review session?
+
+If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
+
+### ❌ Output Rejection Criteria
+
+Your output will be REJECTED and you must REDO the entire review if:
+
+- Files not actually read before scoring
+- Score inflated without justification
+- Review record not saved to feature_list.json
+- Critical/High issues not auto-fixed
+
+### ⚠️ Penalty
+
+Violating these rules means your review output is INVALID. You must redo the ENTIRE review from scratch.
+
+---
 
 **Hybrid Strategy:**
-- **Critical / High** issues → opus แก้ไขเองทันที (auto-fix)
-- **Medium / Low / Info** issues → ส่งกลับ model เดิมแก้ไข
+- **Critical / High** issues → opus fixes immediately (auto-fix)
+- **Medium / Low / Info** issues → sent back to original model to fix
 
 ## Usage
 
 ```
-/review           # auto-select feature ที่ต้อง review
-/review #6        # review feature #6 โดยเฉพาะ
+/review           # auto-select feature that needs review
+/review #6        # review feature #6 specifically
 ```
 
 ---
 
-## ขั้นตอน
+## Steps
 
-### Step 1: อ่าน feature_list.json และหา features ที่ต้อง review
+### Step 1: Read feature_list.json and Find Features That Need Review
 
 ```bash
 cat feature_list.json
 ```
 
-**หา features ที่ต้อง review:**
-- `status == "passed"` — ทำเสร็จแล้ว
-- `assigned_model != "opus"` — ไม่ใช่ opus ทำเอง
-- `review == null` — ยังไม่ถูก review
+**Find features that need review:**
+- `status == "passed"` — already completed
+- `assigned_model != "opus"` — not done by opus itself
+- `review == null` — not yet reviewed
 
-**ถ้ามี argument (เช่น `#6`):** review feature นั้นโดยตรง
-**ถ้าไม่มี argument:** เลือก feature แรกที่ตรงเงื่อนไข (เรียงตาม id)
+**If argument provided (e.g., `#6`):** review that feature directly
+**If no argument:** select first feature matching criteria (ordered by id)
 
-**ถ้าไม่มี feature ที่ต้อง review:**
+**If no feature needs review:**
 ```
 ✅ ไม่มี feature ที่รอ review
    - Features ทั้งหมดที่ไม่ใช่ opus ได้รับการ review แล้ว
    - หรือยังไม่มี feature ที่ passed โดย model อื่น
 ```
 
-### Step 2: หา Reference Implementation
+### Step 2: Find Reference Implementation
 
-หา opus feature ที่ `is_reference_impl: true` ใน epic/category เดียวกัน
+Find opus feature with `is_reference_impl: true` in the same epic/category.
 
 ```bash
-# ดู reference features
+# View reference features
 cat feature_list.json | jq '.features[] | select(.is_reference_impl == true) | {id, epic, category, description}'
 ```
 
-**ถ้าไม่มี reference ใน epic เดียวกัน:**
-- ใช้ reference จาก epic ที่ใกล้เคียงที่สุด
-- หรือใช้ best practices ทั่วไปเป็นเกณฑ์
+**If no reference in same epic:**
+- Use reference from closest epic
+- Or use general best practices as criteria
 
-### Step 3: อ่านโค้ดจาก feature ที่จะ review
+### Step 3: Read Code from Feature Being Reviewed
 
-**อ่าน subtasks และ files:**
+**Read subtasks and files:**
 
 ```bash
-# ดู files ที่ feature แก้ไข
+# View files the feature modified
 cat feature_list.json | jq '.features[] | select(.id == FEATURE_ID) | .subtasks[].files[]'
 
-# ดู git commits ที่เกี่ยวข้อง
+# View related git commits
 cat feature_list.json | jq '.features[] | select(.id == FEATURE_ID) | .subtasks[].commits[]'
 ```
 
-**อ่านทุกไฟล์ที่เกี่ยวข้อง** — ทั้งจาก subtasks.files และ git log
+**Read every related file** — from both subtasks.files and git log
 
-### Step 4: อ่าน Reference Implementation (ถ้ามี)
+### Step 4: Read Reference Implementation (if exists)
 
 ```bash
-# อ่าน files จาก reference feature
+# Read files from reference feature
 cat feature_list.json | jq '.features[] | select(.id == REFERENCE_ID) | .subtasks[].files[]'
 ```
 
-**เปรียบเทียบ:**
-- โครงสร้างไฟล์
+**Compare:**
+- File structure
 - Naming conventions
 - Error handling patterns
 - Code organization
 
 ### Step 5: Review Checklist
 
-ตรวจสอบตาม 4 เกณฑ์หลัก:
+Review against 4 main criteria:
 
-#### 5.1 Pattern Adherence (น้ำหนัก: 30%)
-- [ ] โครงสร้างไฟล์เหมือน reference?
-- [ ] Naming conventions ตรงกัน?
-- [ ] Error handling pattern เดียวกัน?
-- [ ] Code organization เหมือนกัน?
-- [ ] Design patterns ที่ใช้ถูกต้อง?
+#### 5.1 Pattern Adherence (weight: 30%)
+- [ ] File structure matches reference?
+- [ ] Naming conventions match?
+- [ ] Same error handling pattern?
+- [ ] Same code organization?
+- [ ] Design patterns used correctly?
 
-#### 5.2 Acceptance Criteria (น้ำหนัก: 30%)
-- [ ] ครบทุก acceptance criteria?
+#### 5.2 Acceptance Criteria (weight: 30%)
+- [ ] All acceptance criteria met?
 - [ ] Edge cases handled?
-- [ ] Error responses ถูกต้อง?
+- [ ] Error responses correct?
 
-#### 5.3 Code Correctness (น้ำหนัก: 25%)
-- [ ] ไม่มี security vulnerabilities?
-- [ ] Logic ถูกต้อง?
+#### 5.3 Code Correctness (weight: 25%)
+- [ ] No security vulnerabilities?
+- [ ] Logic correct?
 - [ ] Edge cases handled?
-- [ ] Resource cleanup ถูกต้อง?
+- [ ] Resource cleanup correct?
 
-#### 5.4 Coding Standards (น้ำหนัก: 15%)
-- [ ] ตาม project conventions?
+#### 5.4 Coding Standards (weight: 15%)
+- [ ] Follows project conventions?
 - [ ] Consistent indentation & formatting?
-- [ ] ไม่มี dead code?
-- [ ] Comments เหมาะสม?
+- [ ] No dead code?
+- [ ] Appropriate comments?
 
-### Step 6: คำนวณ Score และจำแนก Issues
+### Step 6: Calculate Score and Classify Issues
 
 **Scoring:**
 ```
@@ -121,9 +158,9 @@ Score = (pattern_adherence * 0.3) + (acceptance_criteria * 0.3) + (code_correctn
 **Result mapping:**
 | Score | Result | Action |
 |-------|--------|--------|
-| 80-100 | `pass` | เก็บ review record |
-| 60-79 | `pass_with_suggestions` | เก็บ review record + suggestions |
-| 0-59 | `fail` | ดู Step 7 สำหรับ Hybrid Action |
+| 80-100 | `pass` | Store review record |
+| 60-79 | `pass_with_suggestions` | Store review record + suggestions |
+| 0-59 | `fail` | See Step 7 for Hybrid Action |
 
 **Pattern Adherence mapping:**
 | Score | Level |
@@ -133,31 +170,31 @@ Score = (pattern_adherence * 0.3) + (acceptance_criteria * 0.3) + (code_correctn
 | 50-74 | `needs_improvement` |
 | 0-49 | `poor` |
 
-**จำแนก issues ตาม severity:**
+**Classify issues by severity:**
 ```
-issues_critical_high = issues ที่ severity == "Critical" หรือ "High"
-issues_medium_low    = issues ที่ severity == "Medium", "Low" หรือ "Info"
+issues_critical_high = issues with severity == "Critical" or "High"
+issues_medium_low    = issues with severity == "Medium", "Low" or "Info"
 ```
 
-### Step 7: Hybrid Action — แก้ไขตาม Severity
+### Step 7: Hybrid Action — Fix Based on Severity
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    HYBRID AUTO-FIX DECISION                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  มี Critical/High issues?                                       │
+│  Has Critical/High issues?                                      │
 │      │                                                          │
-│      ├── YES → Opus AUTO-FIX ทันที (Step 7A)                   │
-│      │         แก้โค้ดเอง → commit → re-score                   │
+│      ├── YES → Opus AUTO-FIX immediately (Step 7A)              │
+│      │         Fix code → commit → re-score                     │
 │      │                                                          │
-│      └── NO  → มี Medium/Low issues?                            │
+│      └── NO  → Has Medium/Low issues?                           │
 │               │                                                 │
-│               ├── YES + score < 60 → SEND BACK (Step 7B)       │
-│               │   ส่งกลับ model เดิมแก้ไข                       │
+│               ├── YES + score < 60 → SEND BACK (Step 7B)        │
+│               │   Send back to original model to fix            │
 │               │                                                 │
 │               ├── YES + score >= 60 → PASS WITH SUGGESTIONS     │
-│               │   เก็บ review record + suggestions              │
+│               │   Store review record + suggestions             │
 │               │                                                 │
 │               └── NO → PASS ✅                                  │
 │                                                                 │
@@ -168,19 +205,19 @@ issues_medium_low    = issues ที่ severity == "Medium", "Low" หรือ
 
 #### Step 7A: Auto-Fix (Critical / High Issues)
 
-**Opus แก้ไขโค้ดเองทันที:**
+**Opus fixes code immediately:**
 
-1. **แสดง issues ที่จะแก้:**
+1. **Display issues to fix:**
 ```
-🔧 Auto-Fix: พบ N Critical/High issues — opus จะแก้ไขทันที
+🔧 Auto-Fix: Found N Critical/High issues — opus will fix immediately
 
-  ❌ [Critical] SQL Injection ใน UserController.cs:45
-  ❌ [High] Missing null check ใน OrderService.cs:102
+  ❌ [Critical] SQL Injection in UserController.cs:45
+  ❌ [High] Missing null check in OrderService.cs:102
 ```
 
-2. **แก้ไขโค้ด** — อ่านไฟล์ → แก้ไข → ตรวจสอบว่า build ผ่าน
+2. **Fix code** — read file → fix → verify build passes
 
-3. **Commit การแก้ไข:**
+3. **Commit fix:**
 ```bash
 git add [fixed files]
 git commit -m "review-fix(#FEATURE_ID): fix Critical/High issues from opus review
@@ -192,12 +229,12 @@ Reviewed-By: opus
 Original-Author: [assigned_model]"
 ```
 
-4. **Re-score หลังแก้ไข** — คำนวณ score ใหม่โดยไม่นับ Critical/High issues ที่แก้แล้ว
+4. **Re-score after fix** — calculate new score without counting fixed Critical/High issues
 
-5. **ตัดสินใจต่อ:**
-   - ถ้ายังมี Medium/Low issues + score < 60 → **ส่งกลับ** model เดิม (Step 7B)
-   - ถ้า score >= 60 → **pass_with_suggestions** (มี issues เหลือเป็น suggestions)
-   - ถ้า score >= 80 → **pass**
+5. **Decide next:**
+   - If still has Medium/Low issues + score < 60 → **send back** to original model (Step 7B)
+   - If score >= 60 → **pass_with_suggestions** (remaining issues as suggestions)
+   - If score >= 80 → **pass**
 
 6. **Update review record:**
 ```json
@@ -214,16 +251,16 @@ Original-Author: [assigned_model]"
         {
           "severity": "Critical",
           "category": "security",
-          "description": "SQL Injection ใน UserController.cs:45",
+          "description": "SQL Injection in UserController.cs:45",
           "file": "Controllers/UserController.cs",
-          "fix_description": "ใช้ parameterized query แทน string concatenation"
+          "fix_description": "Used parameterized query instead of string concatenation"
         },
         {
           "severity": "High",
           "category": "code-correctness",
-          "description": "Missing null check ใน OrderService.cs:102",
+          "description": "Missing null check in OrderService.cs:102",
           "file": "Services/OrderService.cs",
-          "fix_description": "เพิ่ม null check + throw ArgumentNullException"
+          "fix_description": "Added null check + throw ArgumentNullException"
         }
       ]
     },
@@ -231,9 +268,9 @@ Original-Author: [assigned_model]"
       {
         "severity": "Medium",
         "category": "pattern-adherence",
-        "description": "Naming ไม่ตรงกับ reference",
+        "description": "Naming doesn't match reference",
         "file": "path/to/file",
-        "suggestion": "เปลี่ยนจาก getData เป็น GetData ตาม .NET convention"
+        "suggestion": "Change getData to GetData per .NET convention"
       }
     ],
     "reference_feature_id": 5,
@@ -247,13 +284,13 @@ Original-Author: [assigned_model]"
 
 #### Step 7B: Send Back (Medium/Low Issues Only, Score < 60)
 
-**ส่งกลับ model เดิมแก้ไข:**
+**Send back to original model to fix:**
 
 1. **Update feature status:**
 ```json
 {
   "status": "in_progress",
-  "blocked_reason": "Review failed — [สรุปปัญหาหลัก]. ดู review.remaining_issues สำหรับรายละเอียด"
+  "blocked_reason": "Review failed — [summary of main issues]. See review.remaining_issues for details"
 }
 ```
 
@@ -277,34 +314,34 @@ Original-Author: [assigned_model]"
     ],
     "reference_feature_id": 5,
     "pattern_adherence": "needs_improvement",
-    "notes": "ส่งกลับ [model] แก้ไข: [สรุป issues]"
+    "notes": "Sent back to [model] for fixes: [issue summary]"
   }
 }
 ```
 
-3. **แสดง instructions สำหรับ model เดิม:**
+3. **Display instructions for original model:**
 ```
 📋 Instructions for [model] — Feature #X:
 
-  ต้องแก้ไข:
+  Must fix:
   1. [Medium] pattern-adherence: [description] → [suggestion]
   2. [Medium] coding-standards: [description] → [suggestion]
 
-  Reference: ดู Feature #Y (opus reference implementation)
+  Reference: See Feature #Y (opus reference implementation)
   Files to compare:
   - reference: [file from opus feature]
   - yours: [file from this feature]
 
-  หลังแก้ไข: run /review #X อีกครั้ง
+  After fixing: run /review #X again
 ```
 
 ---
 
 #### Step 7C: Pass / Pass with Suggestions
 
-**ไม่มี Critical/High issues:**
+**No Critical/High issues:**
 
-**ถ้า score >= 80 → `pass`:**
+**If score >= 80 → `pass`:**
 ```json
 {
   "review": {
@@ -316,12 +353,12 @@ Original-Author: [assigned_model]"
     "remaining_issues": [],
     "reference_feature_id": 5,
     "pattern_adherence": "good",
-    "notes": "ผ่านการ review — code quality ดี"
+    "notes": "Passed review — good code quality"
   }
 }
 ```
 
-**ถ้า score 60-79 → `pass_with_suggestions`:**
+**If score 60-79 → `pass_with_suggestions`:**
 ```json
 {
   "review": {
@@ -341,7 +378,7 @@ Original-Author: [assigned_model]"
     ],
     "reference_feature_id": 5,
     "pattern_adherence": "good",
-    "notes": "ผ่านพร้อม suggestions — ปรับปรุงได้ใน iteration ถัดไป"
+    "notes": "Passed with suggestions — can improve in next iteration"
   }
 }
 ```
@@ -365,7 +402,7 @@ Original-Author: [assigned_model]"
 
 ### Step 9: Update .agent/progress.md
 
-เพิ่ม entry:
+Add entry:
 
 ```markdown
 ---
@@ -392,7 +429,7 @@ Original-Author: [assigned_model]"
 ### Remaining Issues (for [model]):
 - 📋 [Medium] [category]: [description] — [file]
 
-### สถานะปัจจุบัน:
+### Current status:
 - Reviewed: X features
 - Pending Review: Y features
 
@@ -403,7 +440,7 @@ Original-Author: [assigned_model]"
 
 ## Output Format
 
-แสดงผลในรูปแบบ:
+Display in this format:
 
 ```markdown
 # 📝 Review Report: Feature #X
@@ -453,17 +490,17 @@ Original-Author: [assigned_model]"
 ├──────────────────┬──────────────────────────────────────────────┤
 │ Scenario         │ Action                                       │
 ├──────────────────┼──────────────────────────────────────────────┤
-│ No issues        │ ✅ pass — เก็บ review record                 │
+│ No issues        │ ✅ pass — store review record                │
 │                  │                                              │
 │ Medium/Low only  │ score >= 80: ✅ pass                         │
 │ (no Crit/High)   │ score 60-79: ⚠️ pass_with_suggestions       │
-│                  │ score < 60:  ❌ fail — ส่งกลับ model เดิม    │
+│                  │ score < 60:  ❌ fail — send back to model    │
 │                  │                                              │
-│ Has Crit/High    │ 🔧 opus auto-fix Crit/High ทันที            │
-│                  │ แล้ว re-score:                                │
+│ Has Crit/High    │ 🔧 opus auto-fix Crit/High immediately      │
+│                  │ then re-score:                               │
 │                  │   score >= 80: ✅ pass                        │
 │                  │   score 60-79: ⚠️ pass_with_suggestions      │
-│                  │   score < 60:  ❌ fail — ส่งกลับ Medium/Low  │
+│                  │   score < 60:  ❌ fail — send back Med/Low   │
 └──────────────────┴──────────────────────────────────────────────┘
 ```
 
@@ -471,22 +508,24 @@ Original-Author: [assigned_model]"
 
 ## Issue Severity Guide
 
-| Severity | Description | ตัวอย่าง | Action |
+| Severity | Description | Examples | Action |
 |----------|-------------|---------|--------|
-| **Critical** | ใช้งานไม่ได้ / Security vulnerability | SQL injection, crash | 🔧 Opus auto-fix |
-| **High** | Logic ผิดหรือขาด feature สำคัญ | Missing validation, wrong calculation | 🔧 Opus auto-fix |
-| **Medium** | Pattern ไม่ตรง / Missing edge case | Different naming, no error handling | 📋 ส่งกลับ model เดิม |
-| **Low** | Style / Minor improvements | Inconsistent formatting | 📋 ส่งกลับ model เดิม |
-| **Info** | Suggestion / Nice to have | Alternative approach suggestion | 📋 ส่งกลับ model เดิม |
+| **Critical** | Non-functional / Security vulnerability | SQL injection, crash | 🔧 Opus auto-fix |
+| **High** | Logic error or missing critical feature | Missing validation, wrong calculation | 🔧 Opus auto-fix |
+| **Medium** | Pattern mismatch / Missing edge case | Different naming, no error handling | 📋 Send back to original model |
+| **Low** | Style / Minor improvements | Inconsistent formatting | 📋 Send back to original model |
+| **Info** | Suggestion / Nice to have | Alternative approach suggestion | 📋 Send back to original model |
 
 ## Issue Categories
 
 | Category | Description |
 |----------|-------------|
-| `pattern-adherence` | ไม่ตรงตาม reference implementation |
-| `acceptance-criteria` | Acceptance criteria ไม่ครบ |
-| `code-correctness` | Logic ผิด, bugs |
+| `pattern-adherence` | Doesn't match reference implementation |
+| `acceptance-criteria` | Acceptance criteria not fully met |
+| `code-correctness` | Logic errors, bugs |
 | `security` | Security vulnerabilities |
 | `performance` | Performance issues |
-| `coding-standards` | ไม่ตาม conventions |
-| `error-handling` | Error handling ไม่เหมาะสม |
+| `coding-standards` | Doesn't follow conventions |
+| `error-handling` | Inappropriate error handling |
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

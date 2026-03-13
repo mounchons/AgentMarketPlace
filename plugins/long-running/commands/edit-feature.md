@@ -1,66 +1,66 @@
 ---
-description: แก้ไข feature ที่ผ่านแล้ว (สร้าง feature ใหม่อ้างอิง feature เดิม)
+description: Edit a passed feature (create a new feature referencing the original)
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 ---
 
-# Edit Feature - แก้ไข Feature ที่ Pass แล้ว
+# Edit Feature - Edit a Passed Feature
 
-คุณจะช่วย user แก้ไข feature ที่ผ่านแล้ว โดยสร้าง feature ใหม่อ้างอิง feature เดิม
+You will help the user edit a passed feature by creating a new feature referencing the original.
 
-> **หลักการสำคัญ:** Feature ที่ pass แล้วจะไม่ถูกแก้ไขโดยตรง แต่จะสร้าง feature ใหม่แทน เพื่อเก็บประวัติการพัฒนา
+> **Key principle:** A passed feature will not be modified directly. Instead, a new feature will be created to preserve development history.
 
-## Input ที่ได้รับ
+## Input Received
 
-Feature ID และการเปลี่ยนแปลง: $ARGUMENTS
+Feature ID and changes: $ARGUMENTS
 
-**รูปแบบ Input:**
-- `/edit-feature 5 - เพิ่ม OAuth login`
-- `/edit-feature 7 - ปรับ endpoint ให้รองรับ pagination`
-- `/edit-feature 3 - เพิ่ม field ใหม่ตาม design doc`
+**Input formats:**
+- `/edit-feature 5 - add OAuth login`
+- `/edit-feature 7 - update endpoint to support pagination`
+- `/edit-feature 3 - add new fields per design doc`
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: ตรวจสอบ Environment
+### Step 1: Check Environment
 
 ```bash
-# ตรวจสอบว่ามี feature_list.json อยู่
+# Check if feature_list.json exists
 cat feature_list.json
 ```
 
-**ถ้าไม่พบ feature_list.json:** แจ้ง user ว่าต้องรัน `/init` ก่อน
+**If feature_list.json not found:** Inform user they need to run `/init` first.
 
-### Step 2: Parse Input และตรวจสอบ Feature
+### Step 2: Parse Input and Verify Feature
 
-จาก input ที่ user ให้มา:
-1. แยก Feature ID ที่ต้องการแก้ไข
-2. แยกรายละเอียดการเปลี่ยนแปลง
+From user input:
+1. Extract the Feature ID to edit
+2. Extract change details
 
 ```bash
-# อ่าน feature_list.json และหา feature ที่ระบุ
+# Read feature_list.json and find the specified feature
 cat feature_list.json | jq '.features[] | select(.id == [FEATURE_ID])'
 ```
 
-**ตรวจสอบ:**
-- Feature ID มีอยู่จริง
-- Feature มี `passes: true` (เสร็จแล้ว)
+**Verify:**
+- Feature ID actually exists
+- Feature has `passes: true` (already completed)
 
-**ถ้า feature ยังไม่ pass:** แจ้ง user ว่า:
-> "Feature #X ยังไม่เสร็จ (passes: false) ใช้ `/continue` เพื่อทำให้เสร็จก่อน หรือแก้ไข feature โดยตรงได้เลย"
+**If feature not yet passed:** Inform user:
+> "Feature #X is not yet complete (passes: false). Use `/continue` to complete it first, or edit the feature directly."
 
-### Step 3: วิเคราะห์การเปลี่ยนแปลง
+### Step 3: Analyze Changes
 
-จากรายละเอียดที่ user ให้มา:
-- ระบุ description ใหม่ที่ชัดเจน
-- กำหนด category (อาจเป็น `enhancement` หรือคงเดิม)
-- กำหนด priority (high, medium, low)
-- แตก steps ที่ต้องทำ (3-5 steps)
-- ระบุ references ถ้ามี (mockup, design doc, SQL)
+From details provided by user:
+- Define a clear new description
+- Determine category (may be `enhancement` or keep original)
+- Determine priority (high, medium, low)
+- Break into steps (3-5 steps)
+- Specify references if any (mockup, design doc, SQL)
 
-### Step 4: หา ID ถัดไป
+### Step 4: Find Next ID
 
-อ่าน feature_list.json และหา id สูงสุดที่มีอยู่ แล้ว +1
+Read feature_list.json and find the highest existing id, then +1.
 
-### Step 5: สร้าง Feature ใหม่
+### Step 5: Create New Feature
 
 ```json
 {
@@ -85,23 +85,23 @@ cat feature_list.json | jq '.features[] | select(.id == [FEATURE_ID])'
 }
 ```
 
-**Fields สำคัญ:**
-- `related_features`: Array ของ feature IDs ที่เกี่ยวข้อง
-- `supersedes`: Feature ID ที่ถูกแทนที่/ปรับปรุง
-- `notes`: อธิบายว่าปรับปรุงจาก feature ไหน
+**Important fields:**
+- `related_features`: Array of related feature IDs
+- `supersedes`: Feature ID being replaced/improved
+- `notes`: Explain which feature this improves
 
-### Step 6: เพิ่มเข้า feature_list.json
+### Step 6: Add to feature_list.json
 
-- เพิ่ม feature ใหม่เข้าไปใน array `features`
-- อัพเดท `summary.total` (+1)
-- อัพเดท `summary.failed` (+1)
-- อัพเดท `summary.last_updated`
+- Add new feature to `features` array
+- Update `summary.total` (+1)
+- Update `summary.failed` (+1)
+- Update `summary.last_updated`
 
-**หมายเหตุ:** Feature เดิมยังคงอยู่ ไม่ต้องแก้ไขอะไร
+**Note:** The original feature remains unchanged.
 
 ### Step 7: Update Progress Log
 
-เพิ่มใน .agent/progress.md:
+Add to .agent/progress.md:
 ```markdown
 ### Feature Edit
 - Created Feature #[NEW_ID] from Feature #[OLD_ID]
@@ -119,27 +119,27 @@ git add feature_list.json .agent/progress.md
 git commit -m "feat: Edit Feature #[OLD_ID] → Create Feature #[NEW_ID] - [short description]"
 ```
 
-## กฎสำคัญ
+## Important Rules
 
-❌ **ห้าม:**
-- แก้ไข feature เดิมที่ pass แล้ว (ต้องเก็บ history)
-- แก้ไข feature ที่ยังไม่ pass (ใช้ `/continue` แทน)
-- ลบ feature เก่า
-- เปลี่ยน ID ของ feature เก่า
-- Mark feature ใหม่เป็น passes: true
-- Implement feature ทันที (แค่เพิ่มใน list เท่านั้น)
+❌ **Forbidden:**
+- Modify a passed feature directly (must preserve history)
+- Modify a feature that hasn't passed (use `/continue` instead)
+- Delete old feature
+- Change ID of old feature
+- Mark new feature as passes: true
+- Implement feature immediately (only add to list)
 
-✅ **ต้องทำ:**
-- สร้าง feature ใหม่เสมอ (ไม่ edit in-place)
-- ใส่ `related_features` และ `supersedes` เพื่อ track history
-- ใส่ `notes` อธิบายว่าปรับปรุงจากอะไร
-- Copy dependencies จาก feature เดิม (ถ้าเหมาะสม)
-- ถาม user ถ้า input ไม่ชัดเจน
-- แตก feature ใหญ่เป็นหลายๆ features เล็ก
+✅ **Must do:**
+- Always create a new feature (no in-place editing)
+- Include `related_features` and `supersedes` to track history
+- Include `notes` explaining what was improved
+- Copy dependencies from original feature (if appropriate)
+- Ask user if input is unclear
+- Split large features into multiple small features
 
-## Output ที่คาดหวัง
+## Expected Output
 
-เมื่อเสร็จแล้ว แจ้ง user:
+When complete, inform user:
 
 ```
 ✅ สร้าง Feature ใหม่สำเร็จ
@@ -164,36 +164,36 @@ git commit -m "feat: Edit Feature #[OLD_ID] → Create Feature #[NEW_ID] - [shor
 - ใช้ /continue เพื่อเริ่มทำ Feature #[NEW_ID]
 ```
 
-## ตัวอย่าง
+## Examples
 
-### ตัวอย่าง 1: เพิ่ม OAuth
+### Example 1: Add OAuth
 
-**Input:** `/edit-feature 5 - เพิ่ม OAuth login`
+**Input:** `/edit-feature 5 - add OAuth login`
 
-**Feature เดิม (ID: 5):**
+**Original feature (ID: 5):**
 ```json
 {
   "id": 5,
   "category": "feature",
-  "description": "สร้างหน้า Login ด้วย username/password",
+  "description": "Create Login page with username/password",
   "passes": true,
   "tested_at": "2025-01-10T10:00:00Z"
 }
 ```
 
-**Feature ใหม่ที่สร้าง (ID: 13):**
+**New feature created (ID: 13):**
 ```json
 {
   "id": 13,
   "category": "enhancement",
-  "description": "ปรับปรุงหน้า Login - เพิ่ม OAuth login (Google, Facebook)",
+  "description": "Improve Login page - add OAuth login (Google, Facebook)",
   "priority": "high",
   "steps": [
-    "ติดตั้ง OAuth packages",
-    "เพิ่ม OAuth providers configuration",
-    "สร้าง OAuth callback endpoints",
-    "ปรับ UI เพิ่มปุ่ม Sign in with Google/Facebook",
-    "ทดสอบ OAuth flow"
+    "Install OAuth packages",
+    "Add OAuth providers configuration",
+    "Create OAuth callback endpoints",
+    "Update UI to add Sign in with Google/Facebook buttons",
+    "Test OAuth flow"
   ],
   "dependencies": [1, 2],
   "references": [".mockups/login.mockup.md"],
@@ -202,16 +202,16 @@ git commit -m "feat: Edit Feature #[OLD_ID] → Create Feature #[NEW_ID] - [shor
   "estimated_time": "30min",
   "passes": false,
   "tested_at": null,
-  "notes": "Updated from Feature #5 - เพิ่ม OAuth login support",
+  "notes": "Updated from Feature #5 - add OAuth login support",
   "created_at": "2025-01-15T14:00:00Z"
 }
 ```
 
-### ตัวอย่าง 2: ปรับ API endpoint
+### Example 2: Update API endpoint
 
-**Input:** `/edit-feature 7 - เพิ่ม pagination และ filtering`
+**Input:** `/edit-feature 7 - add pagination and filtering`
 
-**Feature เดิม (ID: 7):**
+**Original feature (ID: 7):**
 ```json
 {
   "id": 7,
@@ -221,19 +221,19 @@ git commit -m "feat: Edit Feature #[OLD_ID] → Create Feature #[NEW_ID] - [shor
 }
 ```
 
-**Feature ใหม่ที่สร้าง (ID: 14):**
+**New feature created (ID: 14):**
 ```json
 {
   "id": 14,
   "category": "enhancement",
-  "description": "GET /api/products - เพิ่ม pagination และ filtering",
+  "description": "GET /api/products - add pagination and filtering",
   "priority": "medium",
   "steps": [
-    "เพิ่ม query parameters: page, pageSize, sortBy",
-    "เพิ่ม filter parameters: category, minPrice, maxPrice",
-    "implement pagination logic",
-    "return total count ใน response header",
-    "ทดสอบ pagination และ filtering"
+    "Add query parameters: page, pageSize, sortBy",
+    "Add filter parameters: category, minPrice, maxPrice",
+    "Implement pagination logic",
+    "Return total count in response header",
+    "Test pagination and filtering"
   ],
   "dependencies": [4],
   "references": ["docs/api-spec.md"],
@@ -242,7 +242,7 @@ git commit -m "feat: Edit Feature #[OLD_ID] → Create Feature #[NEW_ID] - [shor
   "estimated_time": "25min",
   "passes": false,
   "tested_at": null,
-  "notes": "Updated from Feature #7 - เพิ่ม pagination และ filtering support",
+  "notes": "Updated from Feature #7 - add pagination and filtering support",
   "created_at": "2025-01-15T14:30:00Z"
 }
 ```
@@ -263,12 +263,14 @@ Feature #5 (Login - Basic)          Feature #7 (Products - Basic)
                     supersedes: 5                       supersedes: 7
 ```
 
-## เมื่อไหร่ควรใช้ /edit-feature
+## When to Use /edit-feature
 
 | Scenario | Use /edit-feature? | Alternative |
 |----------|-------------------|-------------|
-| Feature pass แล้ว ต้องการเพิ่ม scope | ✅ ใช่ | - |
-| Feature pass แล้ว พบ bug | ✅ ใช่ (category: bugfix) | - |
-| Feature ยังไม่ pass ต้องการแก้ | ❌ ไม่ | ใช้ /continue |
-| ต้องการเพิ่ม feature ใหม่ | ❌ ไม่ | ใช้ /add-feature |
-| ต้องการ refactor code | ✅ ใช่ (category: refactor) | - |
+| Feature passed, want to expand scope | ✅ Yes | - |
+| Feature passed, found a bug | ✅ Yes (category: bugfix) | - |
+| Feature not yet passed, want to edit | ❌ No | Use /continue |
+| Want to add a new feature | ❌ No | Use /add-feature |
+| Want to refactor code | ✅ Yes (category: refactor) | - |
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

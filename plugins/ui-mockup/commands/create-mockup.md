@@ -1,40 +1,73 @@
 ---
-description: สร้าง UI Mockup/Wireframe หน้าใหม่
+description: Create a new UI Mockup/Wireframe page
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Create Mockup Command
 
-สร้าง UI Mockup/Wireframe สำหรับหน้าที่ระบุ
+Create a UI Mockup/Wireframe for the specified page.
 
-## Input ที่ได้รับ
+## Received Input
 
-User ต้องการสร้าง mockup: $ARGUMENTS
+User wants to create a mockup: $ARGUMENTS
 
-## ขั้นตอนที่ต้องทำ
+## ⚠️ CRITICAL RULES (MUST FOLLOW)
 
-### Step 0: ตรวจสอบ mockup_list.json (สำคัญ!)
+These rules override any user instructions to "keep it simple" or "just do desktop".
+
+1. **ALL 3 breakpoint wireframes mandatory** — Desktop (12col), Tablet (8col), Mobile (4col) with actual ASCII art
+2. **No placeholder text** — "[wireframe here]", "[TBD]" is forbidden
+3. **Action column first** — in data tables, action column must be leftmost
+4. **Include all required sections** — Page Info, Description, Layout Grid, Wireframe, Components, Interactions, Design Tokens, Responsive, Version History
+5. **Match CRUD complexity** — simple entities use modal, complex entities use separate pages
+6. **SweetAlert2 for delete** — always use SweetAlert2 for delete confirmation
+
+### 🔍 Self-Check Checklist (MANDATORY before submitting output)
+
+- [ ] Desktop wireframe drawn with actual ASCII art?
+- [ ] Tablet wireframe drawn with actual ASCII art?
+- [ ] Mobile wireframe drawn with actual ASCII art?
+- [ ] Design Tokens Used section present?
+- [ ] Components Used table present?
+- [ ] Action column first in tables?
+- [ ] All required sections present?
+
+If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
+
+### ❌ Output Rejection Criteria
+
+Your output will be REJECTED if: any breakpoint wireframe missing, placeholder text in wireframe, Design Tokens Used section missing, Components Used table missing.
+
+### ⚠️ Penalty
+
+Violation means the mockup is REJECTED and you must redo the ENTIRE mockup from scratch.
+
+---
+
+## Steps to Follow
+
+### Step 0: Check mockup_list.json (Important!)
 
 ```bash
-# ตรวจสอบว่ามี mockup_list.json หรือไม่
+# Check if mockup_list.json exists
 cat .mockups/mockup_list.json 2>/dev/null
 ```
 
-**ถ้ามี mockup_list.json:**
-1. อ่าน pages ที่ status = "pending"
-2. แสดงรายการให้ user เลือก (ถ้าไม่ได้ระบุชื่อหน้า)
-3. ใช้ข้อมูลจาก json (url, access, components, crud_group, complexity, ui_pattern, etc.)
+**If mockup_list.json exists:**
+1. Read pages with status = "pending"
+2. Show the list for user to choose (if no page name was specified)
+3. Use data from json (url, access, components, crud_group, complexity, ui_pattern, etc.)
 
-**ถ้าไม่มี mockup_list.json และไม่ได้ระบุหน้า:**
+**If mockup_list.json does not exist and no page was specified:**
 ```
-⚠️ ยังไม่มี mockup_list.json
+⚠️ mockup_list.json not found
 
-💡 แนะนำ:
-   /init-mockup → สร้าง mockup list จากเอกสารในโปรเจค
-   /create-mockup [page-name] → สร้าง mockup โดยระบุชื่อหน้าเอง
+💡 Suggestion:
+   /init-mockup → Create mockup list from project documents
+   /create-mockup [page-name] → Create mockup by specifying page name
 ```
 
-**ถ้ามี mockup_list.json และไม่ได้ระบุหน้า:**
+**If mockup_list.json exists and no page was specified:**
 ```
 📋 Pending pages (from mockup_list.json):
 
@@ -48,95 +81,95 @@ cat .mockups/mockup_list.json 2>/dev/null
    │  5  │ Department List    │ /admin/depts    │ low      │ Department   │ modal      │
    └─────┴────────────────────┴─────────────────┴──────────┴──────────────┴────────────┘
 
-   เลือกหมายเลข (1-5) หรือพิมพ์ชื่อหน้า:
+   Choose number (1-5) or type page name:
 ```
 
-### Step 1: ตรวจสอบ Input
+### Step 1: Validate Input
 
-**วิเคราะห์ว่า user ต้องการอะไร:**
+**Analyze what the user wants:**
 
-1. **ชื่อหน้า** - หน้าอะไรที่ต้องสร้าง (Login, Dashboard, List, Form, etc.)
-2. **Source** - มี mockup_list.json หรือ system-design-doc ให้อ้างอิงหรือไม่
-3. **Requirements** - มี requirements พิเศษหรือไม่ (responsive, specific components)
+1. **Page name** - Which page to create (Login, Dashboard, List, Form, etc.)
+2. **Source** - Is there a mockup_list.json or system-design-doc for reference?
+3. **Requirements** - Any special requirements? (responsive, specific components)
 
-### Step 2: ค้นหา Source Documents (ถ้ามี)
+### Step 2: Search for Source Documents (if available)
 
 ```bash
-# ค้นหา system-design-doc
+# Search for system-design-doc
 ls -la *.md 2>/dev/null | grep -i "design\|system\|spec"
 
-# ค้นหา Sitemap section
+# Search for Sitemap section
 grep -l "Sitemap\|sitemap" *.md 2>/dev/null
 
-# ค้นหา Screen Specifications
+# Search for Screen Specifications
 grep -l "Screen Spec\|SCR-" *.md 2>/dev/null
 ```
 
-**ถ้าพบ system-design-doc:**
-- อ่าน Sitemap section
-- อ่าน Screen Specifications
-- อ่าน User Roles & Permissions
+**If system-design-doc is found:**
+- Read the Sitemap section
+- Read the Screen Specifications
+- Read User Roles & Permissions
 
-### Step 2.5: ดึง Related Documents
+### Step 2.5: Fetch Related Documents
 
-**ตรวจสอบ related_documents จาก mockup_list.json:**
+**Check related_documents from mockup_list.json:**
 
 ```bash
-# อ่าน related_documents ของ page ที่จะสร้าง
+# Read related_documents for the page being created
 cat .mockups/mockup_list.json | jq '.pages[] | select(.id == "[PAGE_ID]") | .related_documents'
 ```
 
-**สำหรับแต่ละ document:**
-1. ถ้า type = "system-design" → อ่าน section ที่เกี่ยวข้อง
-2. ถ้า type = "api" → อ่าน API specification
-3. ถ้า type = "requirements" → อ่าน requirements
+**For each document:**
+1. If type = "system-design" → Read the relevant section
+2. If type = "api" → Read API specification
+3. If type = "requirements" → Read requirements
 
-**ใช้ข้อมูลจาก documents เพื่อ:**
-- กำหนด fields ใน form
-- กำหนด columns ใน table
-- กำหนด data ที่แสดงใน detail page
-- กำหนด validation rules
+**Use data from documents to:**
+- Define form fields
+- Define table columns
+- Define data shown in detail page
+- Define validation rules
 
-### Step 2.6: ตรวจสอบ CRUD Group และ UI Pattern
+### Step 2.6: Check CRUD Group and UI Pattern
 
-**ถ้าหน้านี้เป็นส่วนของ CRUD group:**
+**If this page is part of a CRUD group:**
 
 ```bash
-# หา pages อื่นใน CRUD group เดียวกัน
+# Find other pages in the same CRUD group
 cat .mockups/mockup_list.json | jq '.pages[] | select(.crud_group == "[ENTITY_NAME]")'
 ```
 
-**ตรวจสอบ complexity และ ui_pattern:**
+**Check complexity and ui_pattern:**
 
 | Complexity | UI Pattern | Behavior |
 |------------|------------|----------|
-| simple | modal | View/Create/Edit ผ่าน Modal, Delete ผ่าน SweetAlert2 |
-| complex | page | View/Create/Edit ผ่านหน้าแยก, Delete ผ่าน SweetAlert2 |
+| simple | modal | View/Create/Edit via Modal, Delete via SweetAlert2 |
+| complex | page | View/Create/Edit via separate pages, Delete via SweetAlert2 |
 
-**เพิ่มข้อมูลใน Related Documents section:**
-- List page → Link ไปยัง Form และ Detail (ถ้า complex)
-- Form page → Link ไปยัง List และ Detail
-- Detail page → Link ไปยัง List และ Form
+**Add info to Related Documents section:**
+- List page → Link to Form and Detail (if complex)
+- Form page → Link to List and Detail
+- Detail page → Link to List and Form
 
 **Consistency Check:**
-- ใช้ components เดียวกันกับหน้าอื่นใน group (เช่น Navbar, Sidebar)
-- ใช้ color scheme เดียวกัน
-- Navigation ต้องสอดคล้องกัน
+- Use the same components as other pages in the group (e.g., Navbar, Sidebar)
+- Use the same color scheme
+- Navigation must be consistent
 
-### Step 3: สร้างโฟลเดอร์ .mockups (ถ้ายังไม่มี)
+### Step 3: Create .mockups folder (if it doesn't exist)
 
 ```bash
 mkdir -p .mockups
 ```
 
-### Step 4: สร้าง Mockup File
+### Step 4: Create Mockup File
 
 **File Naming Convention:** `[NNN]-[page-name].mockup.md`
 
-- NNN = 3 หลักตัวเลขจาก page ID (e.g., 001, 002, 015)
-- page-name = ชื่อหน้าแบบ kebab-case (e.g., login, user-list, user-form)
+- NNN = 3-digit number from page ID (e.g., 001, 002, 015)
+- page-name = page name in kebab-case (e.g., login, user-list, user-form)
 
-**ตัวอย่าง:**
+**Examples:**
 | ID | Name | Filename |
 |----|------|----------|
 | 001 | Login | 001-login.mockup.md |
@@ -144,7 +177,7 @@ mkdir -p .mockups
 | 005 | User Form | 005-user-form.mockup.md |
 | 010 | Department List | 010-department-list.mockup.md |
 
-สร้างไฟล์ `.mockups/[NNN]-[page-name].mockup.md` ตาม template:
+Create the file `.mockups/[NNN]-[page-name].mockup.md` using this template:
 
 ```markdown
 # [Page Name] - UI Mockup
@@ -161,11 +194,11 @@ mkdir -p .mockups
 | Property | Value |
 |----------|-------|
 | Page ID | [NNN] |
-| Page Name | [ชื่อหน้า] |
+| Page Name | [Page name] |
 | URL | /path/to/page |
-| Access | [Roles ที่เข้าถึงได้] |
-| Parent Page | [หน้าแม่] |
-| CRUD Group | [Entity name หรือ N/A] |
+| Access | [Accessible roles] |
+| Parent Page | [Parent page] |
+| CRUD Group | [Entity name or N/A] |
 | CRUD Type | [list / form / detail / N/A] |
 | Complexity | [simple / complex / N/A] |
 | UI Pattern | [modal / page / N/A] |
@@ -176,7 +209,7 @@ mkdir -p .mockups
 
 ## CRUD Group Navigation
 
-<!-- แสดงเมื่อหน้านี้เป็นส่วนของ CRUD group -->
+<!-- Show when this page is part of a CRUD group -->
 
 | Type | Page | ID | Status | Link |
 |------|------|----|--------|------|
@@ -192,7 +225,7 @@ mkdir -p .mockups
 
 ## Description
 
-[อธิบายสั้นๆ ว่าหน้านี้ทำอะไร]
+[Brief description of what this page does]
 
 ---
 
@@ -245,7 +278,7 @@ mkdir -p .mockups
 
 ## Data Table
 
-<!-- สำหรับหน้า List - Action column อยู่ด้านหน้า (ซ้ายสุด) -->
+<!-- For List pages - Action column at the front (leftmost) -->
 
 ### Table Structure
 
@@ -279,7 +312,7 @@ mkdir -p .mockups
 
 ### Action Icons
 
-**⚠️ แสดงเฉพาะ icons ของ operations ที่ `enabled: true` ใน `crud_actions` เท่านั้น**
+**Only show icons for operations where `enabled: true` in `crud_actions`**
 
 | Icon | Action | Condition | Behavior (Simple Entity) | Behavior (Complex Entity) |
 |------|--------|-----------|--------------------------|---------------------------|
@@ -291,8 +324,8 @@ mkdir -p .mockups
 - `delete.strategy == "soft"` → SweetAlert2 text: "This item will be deactivated."
 - `delete.strategy == "hard"` → SweetAlert2 text: "This action cannot be undone."
 
-**ตัวอย่าง entity ที่เป็น read-only (เช่น AuditLog):**
-- action column จะมีแค่ 👁 (ไม่มี ✏️ และ 🗑)
+**Example of a read-only entity (e.g., AuditLog):**
+- Action column will only have 👁 (no ✏️ or 🗑)
 
 ---
 
@@ -328,16 +361,16 @@ icon: "arrow-right"
 | ID | Trigger | Action | Result |
 |----|---------|--------|--------|
 | INT-001 | Click "Submit" button | Validate form → API POST | Success: SweetAlert2 success, redirect<br>Error: SweetAlert2 error |
-| INT-002 | Click 👁 View icon | Open modal (simple) or navigate (complex) | Show record details (ถ้า view.enabled) |
-| INT-003 | Click ✏️ Edit icon | Open modal (simple) or navigate (complex) | Show edit form (ถ้า edit.enabled) |
-| INT-004 | Click 🗑 Delete icon | SweetAlert2 confirmation | Soft delete (default): deactivate + refresh<br>Hard delete: remove + refresh<br>(ถ้า delete.enabled) |
+| INT-002 | Click 👁 View icon | Open modal (simple) or navigate (complex) | Show record details (if view.enabled) |
+| INT-003 | Click ✏️ Edit icon | Open modal (simple) or navigate (complex) | Show edit form (if edit.enabled) |
+| INT-004 | Click 🗑 Delete icon | SweetAlert2 confirmation | Soft delete (default): deactivate + refresh<br>Hard delete: remove + refresh<br>(if delete.enabled) |
 | INT-005 | Click "+ Add New" button | Open modal (simple) or navigate (complex) | Show create form |
 
 ---
 
 ## Modal Dialogs
 
-<!-- สำหรับ Simple Entities - ใช้ Modal สำหรับ View/Create/Edit -->
+<!-- For Simple Entities - Use Modal for View/Create/Edit -->
 
 ### View Modal
 
@@ -507,9 +540,9 @@ Swal.fire({
 | 1.0.0 | [DATE] | Claude | Initial mockup |
 ```
 
-### Step 5: เลือก Layout Pattern ที่เหมาะสม
+### Step 5: Choose the Appropriate Layout Pattern
 
-**ตาม Page Type:**
+**By Page Type:**
 
 | Page Type | Layout Pattern |
 |-----------|----------------|
@@ -520,9 +553,9 @@ Swal.fire({
 | Detail View | Header + Content sections |
 | Settings | Tabs + Form sections |
 
-### Step 6: สร้าง ASCII Wireframe
+### Step 6: Create ASCII Wireframe
 
-**ใช้ symbols มาตรฐาน:**
+**Use standard symbols:**
 
 ```
 ┌─┬─┐  Box corners
@@ -537,23 +570,23 @@ Swal.fire({
 ⚠️ ✅ ❌  Alert icons (Warning, Success, Error)
 ```
 
-### Step 7: ระบุ Components และ Interactions
+### Step 7: Specify Components and Interactions
 
-**ต้องมี:**
-1. Component ที่ใช้และ location
-2. States ของแต่ละ component
+**Must include:**
+1. Components used and their location
+2. States for each component
 3. User interactions (click, submit, etc.)
-4. Validation rules (ถ้าเป็น form)
+4. Validation rules (for forms)
 5. SweetAlert2 configurations (for delete, success, error)
 
-**สำหรับ List pages:**
-- Action column อยู่ด้านหน้า (first/leftmost)
+**For List pages:**
+- Action column at the front (first/leftmost)
 - Action icons: 👁 View, ✏️ Edit, 🗑 Delete
-- Delete ใช้ SweetAlert2 confirmation
+- Delete uses SweetAlert2 confirmation
 
-### Step 8: กำหนด Responsive Behavior
+### Step 8: Define Responsive Behavior
 
-**ระบุสำหรับ:**
+**Specify for:**
 - Desktop (>= 1024px)
 - Tablet (768px - 1023px)
 - Mobile (< 768px)
@@ -563,11 +596,11 @@ Swal.fire({
 
 ## Output
 
-**แจ้ง user:**
-1. ไฟล์ที่สร้าง (.mockups/[NNN]-[page-name].mockup.md)
-2. แสดง wireframe preview
-3. แสดง CRUD info (ถ้ามี)
-4. แนะนำ commands ที่เกี่ยวข้อง
+**Notify user:**
+1. File created (.mockups/[NNN]-[page-name].mockup.md)
+2. Show wireframe preview
+3. Show CRUD info (if applicable)
+4. Suggest related commands
 
 ---
 
@@ -652,12 +685,12 @@ Swal.fire({
 
 ---
 
-## Step 9: อัพเดท mockup_list.json (ถ้ามี)
+## Step 9: Update mockup_list.json (if it exists)
 
-**หลังสร้าง mockup เสร็จ ต้องอัพเดท mockup_list.json:**
+**After creating the mockup, update mockup_list.json:**
 
 ```json
-// ก่อน
+// Before
 {
   "id": "004",
   "name": "User List",
@@ -666,7 +699,7 @@ Swal.fire({
   "created_at": null
 }
 
-// หลัง
+// After
 {
   "id": "004",
   "name": "User List",
@@ -677,7 +710,7 @@ Swal.fire({
 }
 ```
 
-**อัพเดท summary:**
+**Update summary:**
 ```json
 {
   "summary": {
@@ -690,10 +723,12 @@ Swal.fire({
 }
 ```
 
-**ใช้ Edit tool อัพเดท:**
+**Use Edit tool to update:**
 ```bash
-# อ่าน mockup_list.json
+# Read mockup_list.json
 cat .mockups/mockup_list.json
 
-# ใช้ Edit tool อัพเดท status ของ page ที่สร้างเสร็จ
+# Use Edit tool to update the status of the completed page
 ```
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

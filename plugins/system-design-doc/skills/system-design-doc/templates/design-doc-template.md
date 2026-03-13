@@ -1,8 +1,8 @@
-# [ชื่อโครงการ] - System Design Document
+# [Project Name] - System Design Document
 
-**Version**: 1.0.0  
-**Date**: [DD/MM/YYYY]  
-**Author**: [ชื่อผู้จัดทำ]  
+**Version**: 1.0.0
+**Date**: [DD/MM/YYYY]
+**Author**: [Author Name]
 **Status**: Draft | Review | Approved
 
 ---
@@ -17,9 +17,9 @@
 
 ## Table of Contents
 
-1. [บทนำและภาพรวมระบบ](#1-บทนำและภาพรวมระบบ)
-2. [ความต้องการระบบ](#2-ความต้องการระบบ)
-3. [โมดูลที่เกี่ยวข้อง](#3-โมดูลที่เกี่ยวข้อง)
+1. [Introduction & System Overview](#1-introduction--system-overview)
+2. [System Requirements](#2-system-requirements)
+3. [Related Modules](#3-related-modules)
 4. [Data Model](#4-data-model)
 5. [Data Flow Diagram](#5-data-flow-diagram)
 6. [Flow Diagrams](#6-flow-diagrams)
@@ -30,41 +30,41 @@
 
 ---
 
-## 1. บทนำและภาพรวมระบบ
+## 1. Introduction & System Overview
 
-### 1.1 ข้อมูลโครงการ
+### 1.1 Project Information
 
-| รายการ | รายละเอียด |
-|--------|-----------|
-| ชื่อโครงการ | [ชื่อ] |
-| รหัสโครงการ | [รหัส] |
-| เจ้าของโครงการ | [ชื่อ/แผนก] |
-| วันที่เริ่มโครงการ | [DD/MM/YYYY] |
-| วันที่คาดว่าจะแล้วเสร็จ | [DD/MM/YYYY] |
+| Item | Details |
+|------|---------|
+| Project Name | [Name] |
+| Project Code | [Code] |
+| Project Owner | [Name/Department] |
+| Project Start Date | [DD/MM/YYYY] |
+| Expected Completion Date | [DD/MM/YYYY] |
 
-### 1.2 วัตถุประสงค์
+### 1.2 Objectives
 
-[อธิบายวัตถุประสงค์หลักของระบบ]
+[Describe the primary objectives of the system]
 
-- วัตถุประสงค์ที่ 1
-- วัตถุประสงค์ที่ 2
-- วัตถุประสงค์ที่ 3
+- Objective 1
+- Objective 2
+- Objective 3
 
-### 1.3 ขอบเขตระบบ (Scope)
+### 1.3 System Scope
 
 #### In Scope
-- [รายการ 1]
-- [รายการ 2]
+- [Item 1]
+- [Item 2]
 
 #### Out of Scope
-- [รายการ 1]
-- [รายการ 2]
+- [Item 1]
+- [Item 2]
 
 ### 1.4 Stakeholders
 
-| ผู้มีส่วนได้ส่วนเสีย | บทบาท | ความรับผิดชอบ |
-|---------------------|-------|--------------|
-| [ชื่อ/กลุ่ม] | [บทบาท] | [ความรับผิดชอบ] |
+| Stakeholder | Role | Responsibility |
+|-------------|------|----------------|
+| [Name/Group] | [Role] | [Responsibility] |
 
 ### 1.5 High-Level Architecture
 
@@ -100,46 +100,46 @@ flowchart TB
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | [เทคโนโลยี] |
-| Backend | [เทคโนโลยี] |
-| Database | [เทคโนโลยี] |
-| Infrastructure | [เทคโนโลยี] |
+| Frontend | [Technology] |
+| Backend | [Technology] |
+| Database | [Technology] |
+| Infrastructure | [Technology] |
 
 ---
 
-## 2. ความต้องการระบบ
+## 2. System Requirements
 
 ### 2.1 Functional Requirements
 
-| รหัส | ความต้องการ | Priority | Module |
-|------|-------------|----------|--------|
-| FR-001 | [รายละเอียด] | High | [module] |
-| FR-002 | [รายละเอียด] | Medium | [module] |
-| FR-003 | [รายละเอียด] | Low | [module] |
+| ID | Requirement | Priority | Module |
+|----|-------------|----------|--------|
+| FR-001 | [Details] | High | [module] |
+| FR-002 | [Details] | Medium | [module] |
+| FR-003 | [Details] | Low | [module] |
 
-#### FR-001: [ชื่อ Requirement]
+#### FR-001: [Requirement Name]
 
-**คำอธิบาย**: [รายละเอียด]
+**Description**: [Details]
 
 **Input**:
-- [ข้อมูลนำเข้า 1]
-- [ข้อมูลนำเข้า 2]
+- [Input data 1]
+- [Input data 2]
 
 **Process**:
-1. [ขั้นตอนที่ 1]
-2. [ขั้นตอนที่ 2]
+1. [Step 1]
+2. [Step 2]
 
 **Output**:
-- [ผลลัพธ์]
+- [Result]
 
 **Business Rules**:
-- [กฎ 1]
-- [กฎ 2]
+- [Rule 1]
+- [Rule 2]
 
 ### 2.2 Non-Functional Requirements
 
-| รหัส | ประเภท | ความต้องการ | เกณฑ์วัด |
-|------|--------|-------------|----------|
+| ID | Type | Requirement | Metric |
+|----|------|-------------|--------|
 | NFR-001 | Performance | Response time | < 3 seconds |
 | NFR-002 | Availability | Uptime | 99.9% |
 | NFR-003 | Security | Authentication | JWT, HTTPS |
@@ -147,22 +147,22 @@ flowchart TB
 
 ### 2.3 Business Rules
 
-| รหัส | Business Rule | Module |
-|------|---------------|--------|
-| BR-001 | [กฎ] | [module] |
-| BR-002 | [กฎ] | [module] |
+| ID | Business Rule | Module |
+|----|---------------|--------|
+| BR-001 | [Rule] | [module] |
+| BR-002 | [Rule] | [module] |
 
 ---
 
-## 3. โมดูลที่เกี่ยวข้อง
+## 3. Related Modules
 
 ### 3.1 Module Overview
 
-| Module | คำอธิบาย | Dependencies |
-|--------|---------|--------------|
-| AUTH | การยืนยันตัวตนและ authorization | - |
-| USER | จัดการข้อมูลผู้ใช้ | AUTH |
-| [MODULE] | [คำอธิบาย] | [dependencies] |
+| Module | Description | Dependencies |
+|--------|-------------|--------------|
+| AUTH | Authentication and authorization | - |
+| USER | User data management | AUTH |
+| [MODULE] | [Description] | [dependencies] |
 
 ### 3.2 Module Dependency Diagram
 
@@ -185,18 +185,18 @@ flowchart LR
 
 #### 3.3.1 AUTH Module
 
-**หน้าที่**: จัดการการ login/logout และ token management
+**Responsibility**: Handle login/logout and token management
 
 **APIs**:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | /api/auth/login | เข้าสู่ระบบ |
-| POST | /api/auth/logout | ออกจากระบบ |
-| POST | /api/auth/refresh | รีเฟรช token |
+| POST | /api/auth/login | Login |
+| POST | /api/auth/logout | Logout |
+| POST | /api/auth/refresh | Refresh token |
 
 #### 3.3.2 [Module Name]
 
-**หน้าที่**: [คำอธิบาย]
+**Responsibility**: [Description]
 
 **APIs**:
 | Method | Endpoint | Description |
@@ -251,9 +251,9 @@ classDiagram
 
 | Entity 1 | Relationship | Entity 2 | Description |
 |----------|--------------|----------|-------------|
-| User | 1:N | Order | ผู้ใช้ 1 คนมีได้หลาย Order |
-| Order | 1:N | OrderItem | Order 1 รายการมีได้หลาย Item |
-| Product | 1:N | OrderItem | สินค้า 1 ชิ้นอยู่ได้หลาย OrderItem |
+| User | 1:N | Order | One user can have many orders |
+| Order | 1:N | OrderItem | One order can have many items |
+| Product | 1:N | OrderItem | One product can be in many order items |
 
 ---
 
@@ -263,38 +263,38 @@ classDiagram
 
 ```mermaid
 flowchart LR
-    E1((ผู้ใช้งาน)) -->|คำขอ/ข้อมูล| S[ระบบ]
-    S -->|ผลลัพธ์/รายงาน| E1
-    
-    E2((ผู้ดูแลระบบ)) -->|การตั้งค่า| S
-    S -->|รายงาน/Logs| E2
-    
-    E3((ระบบภายนอก)) <-->|ข้อมูล| S
+    E1((User)) -->|Request/Data| S[System]
+    S -->|Result/Report| E1
+
+    E2((Administrator)) -->|Configuration| S
+    S -->|Report/Logs| E2
+
+    E3((External System)) <-->|Data| S
 ```
 
 ### 5.2 Level 1 DFD
 
 ```mermaid
 flowchart TB
-    E1((ผู้ใช้)) -->|1. ข้อมูลลงทะเบียน| P1[1.0 จัดการผู้ใช้]
-    P1 -->|2. ข้อมูลผู้ใช้| D1[(Users)]
-    
-    E1 -->|3. ข้อมูลสั่งซื้อ| P2[2.0 จัดการคำสั่งซื้อ]
-    P2 <-->|4. ข้อมูล Order| D2[(Orders)]
-    P2 <-->|5. ตรวจสอบสต็อก| D3[(Products)]
-    P2 -->|6. ยืนยัน Order| E1
-    
-    E2((Admin)) -->|7. ดูรายงาน| P3[3.0 สร้างรายงาน]
-    P3 <-->|8. ดึงข้อมูล| D2
-    P3 -->|9. รายงาน| E2
+    E1((User)) -->|1. Registration data| P1[1.0 Manage Users]
+    P1 -->|2. User data| D1[(Users)]
+
+    E1 -->|3. Order data| P2[2.0 Manage Orders]
+    P2 <-->|4. Order data| D2[(Orders)]
+    P2 <-->|5. Check stock| D3[(Products)]
+    P2 -->|6. Confirm order| E1
+
+    E2((Admin)) -->|7. View report| P3[3.0 Generate Reports]
+    P3 <-->|8. Fetch data| D2
+    P3 -->|9. Report| E2
 ```
 
 ### 5.3 Data Flow Description
 
 | Flow ID | From | To | Data Description |
 |---------|------|-----|------------------|
-| 1 | ผู้ใช้ | Process 1.0 | ข้อมูลลงทะเบียน |
-| 2 | Process 1.0 | D1: Users | ข้อมูลผู้ใช้ |
+| 1 | User | Process 1.0 | Registration data |
+| 2 | Process 1.0 | D1: Users | User data |
 
 ---
 
@@ -302,31 +302,31 @@ flowchart TB
 
 ### 6.1 [Process Name] Flow
 
-**วัตถุประสงค์**: [อธิบาย]
+**Objective**: [Description]
 
-**Actors**: [ผู้เกี่ยวข้อง]
+**Actors**: [Involved parties]
 
 ```mermaid
 flowchart TD
-    A[เริ่มต้น] --> B[ขั้นตอนที่ 1]
-    B --> C{ตรวจสอบ}
-    C -->|ผ่าน| D[ดำเนินการ]
-    C -->|ไม่ผ่าน| E[แจ้งข้อผิดพลาด]
+    A[Start] --> B[Step 1]
+    B --> C{Validate}
+    C -->|Pass| D[Process]
+    C -->|Fail| E[Show Error]
     E --> B
-    D --> F[บันทึกข้อมูล]
-    F --> G[จบ]
+    D --> F[Save Data]
+    F --> G[End]
 ```
 
 **Steps**:
-1. [ขั้นตอนที่ 1]
-2. [ขั้นตอนที่ 2]
-3. [ขั้นตอนที่ 3]
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
 
 ### 6.2 [Another Process] Flow
 
 ```mermaid
 flowchart TD
-    A[เริ่มต้น] --> B[...]
+    A[Start] --> B[...]
 ```
 
 ---
@@ -389,10 +389,10 @@ erDiagram
 
 | Entity 1 | Cardinality | Entity 2 | Relationship Description |
 |----------|-------------|----------|-------------------------|
-| USERS | 1:N | ORDERS | ผู้ใช้ 1 คนสร้างได้หลาย Order |
-| ORDERS | 1:N | ORDER_ITEMS | Order มีได้หลายรายการสินค้า |
-| PRODUCTS | 1:N | ORDER_ITEMS | สินค้าถูกสั่งได้หลายครั้ง |
-| USERS | N:1 | ROLES | ผู้ใช้มี Role เดียว |
+| USERS | 1:N | ORDERS | One user can create many orders |
+| ORDERS | 1:N | ORDER_ITEMS | One order can have many items |
+| PRODUCTS | 1:N | ORDER_ITEMS | One product can be ordered many times |
+| USERS | N:1 | ROLES | A user has one role |
 
 ---
 
@@ -400,18 +400,18 @@ erDiagram
 
 ### 8.1 Table: users
 
-**Description**: เก็บข้อมูลผู้ใช้งานระบบ
+**Description**: Stores system user information
 
 | Column | Data Type | Constraints | Default | Description |
 |--------|-----------|-------------|---------|-------------|
-| id | INT | PK, AI | - | รหัสผู้ใช้ |
-| username | VARCHAR(50) | UK, NN | - | ชื่อผู้ใช้ |
-| email | VARCHAR(100) | UK, NN | - | อีเมล |
-| password_hash | VARCHAR(255) | NN | - | รหัสผ่าน (hashed) |
-| role_id | INT | FK, NN | - | รหัส Role |
-| is_active | BOOLEAN | NN | true | สถานะใช้งาน |
-| created_at | DATETIME | NN | NOW() | วันที่สร้าง |
-| updated_at | DATETIME | | NULL | วันที่แก้ไข |
+| id | INT | PK, AI | - | User ID |
+| username | VARCHAR(50) | UK, NN | - | Username |
+| email | VARCHAR(100) | UK, NN | - | Email |
+| password_hash | VARCHAR(255) | NN | - | Password (hashed) |
+| role_id | INT | FK, NN | - | Role ID |
+| is_active | BOOLEAN | NN | true | Active status |
+| created_at | DATETIME | NN | NOW() | Created date |
+| updated_at | DATETIME | | NULL | Updated date |
 
 **Indexes**:
 - PRIMARY KEY (id)
@@ -425,19 +425,19 @@ erDiagram
 
 ### 8.2 Table: orders
 
-**Description**: เก็บข้อมูลคำสั่งซื้อ
+**Description**: Stores order information
 
 | Column | Data Type | Constraints | Default | Description |
 |--------|-----------|-------------|---------|-------------|
-| id | INT | PK, AI | - | รหัส Order |
-| order_no | VARCHAR(20) | UK, NN | - | เลขที่ Order |
-| user_id | INT | FK, NN | - | รหัสผู้สั่ง |
-| order_date | DATETIME | NN | NOW() | วันที่สั่ง |
-| subtotal | DECIMAL(12,2) | NN | 0 | ยอดรวมก่อน VAT |
+| id | INT | PK, AI | - | Order ID |
+| order_no | VARCHAR(20) | UK, NN | - | Order number |
+| user_id | INT | FK, NN | - | Orderer's user ID |
+| order_date | DATETIME | NN | NOW() | Order date |
+| subtotal | DECIMAL(12,2) | NN | 0 | Subtotal before VAT |
 | vat_amount | DECIMAL(12,2) | NN | 0 | VAT |
-| total_amount | DECIMAL(12,2) | NN | 0 | ยอดรวมสุทธิ |
-| status | ENUM | NN | 'pending' | สถานะ |
-| created_at | DATETIME | NN | NOW() | วันที่สร้าง |
+| total_amount | DECIMAL(12,2) | NN | 0 | Net total |
+| status | ENUM | NN | 'pending' | Status |
+| created_at | DATETIME | NN | NOW() | Created date |
 
 **Status Values**: pending, confirmed, processing, shipped, delivered, cancelled
 
@@ -445,7 +445,7 @@ erDiagram
 
 ### 8.3 Table: [table_name]
 
-**Description**: [คำอธิบาย]
+**Description**: [Description]
 
 | Column | Data Type | Constraints | Default | Description |
 |--------|-----------|-------------|---------|-------------|
@@ -459,62 +459,62 @@ erDiagram
 
 ```mermaid
 flowchart TD
-    HOME[🏠 หน้าแรก]
-    
+    HOME[🏠 Home]
+
     HOME --> AUTH[🔐 Authentication]
     HOME --> DASH[📊 Dashboard]
     HOME --> MASTER[⚙️ Master Data]
     HOME --> REPORT[📈 Reports]
     HOME --> SETTING[🛠️ Settings]
-    
-    AUTH --> LOGIN[เข้าสู่ระบบ]
-    AUTH --> REGISTER[ลงทะเบียน]
-    AUTH --> FORGOT[ลืมรหัสผ่าน]
-    AUTH --> RESET[รีเซ็ตรหัสผ่าน]
-    
-    DASH --> OVERVIEW[ภาพรวม]
-    DASH --> NOTI[การแจ้งเตือน]
-    
-    MASTER --> USER_MGT[จัดการผู้ใช้]
-    MASTER --> PRODUCT_MGT[จัดการสินค้า]
-    MASTER --> ORDER_MGT[จัดการคำสั่งซื้อ]
-    
-    USER_MGT --> USER_LIST[รายการผู้ใช้]
-    USER_MGT --> USER_ADD[เพิ่มผู้ใช้]
-    USER_MGT --> USER_EDIT[แก้ไขผู้ใช้]
-    
-    REPORT --> RPT_SALES[รายงานยอดขาย]
-    REPORT --> RPT_INV[รายงานสต็อก]
-    REPORT --> RPT_USER[รายงานผู้ใช้]
-    
-    SETTING --> PROFILE[โปรไฟล์]
-    SETTING --> CHANGE_PWD[เปลี่ยนรหัสผ่าน]
-    SETTING --> SYS_CONFIG[ตั้งค่าระบบ]
+
+    AUTH --> LOGIN[Login]
+    AUTH --> REGISTER[Register]
+    AUTH --> FORGOT[Forgot Password]
+    AUTH --> RESET[Reset Password]
+
+    DASH --> OVERVIEW[Overview]
+    DASH --> NOTI[Notifications]
+
+    MASTER --> USER_MGT[User Management]
+    MASTER --> PRODUCT_MGT[Product Management]
+    MASTER --> ORDER_MGT[Order Management]
+
+    USER_MGT --> USER_LIST[User List]
+    USER_MGT --> USER_ADD[Add User]
+    USER_MGT --> USER_EDIT[Edit User]
+
+    REPORT --> RPT_SALES[Sales Report]
+    REPORT --> RPT_INV[Inventory Report]
+    REPORT --> RPT_USER[User Report]
+
+    SETTING --> PROFILE[Profile]
+    SETTING --> CHANGE_PWD[Change Password]
+    SETTING --> SYS_CONFIG[System Configuration]
 ```
 
 ### 9.2 Page Inventory
 
-| Page ID | ชื่อหน้า | URL | Access Level | Description |
-|---------|---------|-----|--------------|-------------|
-| P001 | หน้าแรก | / | Public | Landing page |
-| P002 | เข้าสู่ระบบ | /auth/login | Public | หน้า Login |
-| P003 | ลงทะเบียน | /auth/register | Public | หน้าลงทะเบียน |
-| P004 | Dashboard | /dashboard | User | หน้าหลักผู้ใช้ |
-| P005 | รายการผู้ใช้ | /admin/users | Admin | จัดการผู้ใช้ |
-| P006 | รายงานยอดขาย | /reports/sales | Manager | รายงาน |
+| Page ID | Page Name | URL | Access Level | Description |
+|---------|-----------|-----|--------------|-------------|
+| P001 | Home | / | Public | Landing page |
+| P002 | Login | /auth/login | Public | Login page |
+| P003 | Register | /auth/register | Public | Registration page |
+| P004 | Dashboard | /dashboard | User | Main user page |
+| P005 | User List | /admin/users | Admin | User management |
+| P006 | Sales Report | /reports/sales | Manager | Report |
 
 ### 9.3 Navigation Structure
 
 **Primary Navigation** (Header):
-- หน้าแรก
+- Home
 - Dashboard
 - Master Data
 - Reports
 
 **User Menu**:
-- โปรไฟล์
-- ตั้งค่า
-- ออกจากระบบ
+- Profile
+- Settings
+- Logout
 
 ---
 
@@ -524,11 +524,11 @@ flowchart TD
 
 | Role ID | Role Name | Description | Level |
 |---------|-----------|-------------|-------|
-| 1 | Super Admin | ผู้ดูแลระบบสูงสุด | 1 |
-| 2 | Admin | ผู้ดูแลระบบ | 2 |
-| 3 | Manager | ผู้จัดการ | 3 |
-| 4 | User | ผู้ใช้งานทั่วไป | 4 |
-| 5 | Guest | ผู้เยี่ยมชม | 5 |
+| 1 | Super Admin | Highest system administrator | 1 |
+| 2 | Admin | System administrator | 2 |
+| 3 | Manager | Manager | 3 |
+| 4 | User | General user | 4 |
+| 5 | Guest | Visitor | 5 |
 
 ### 10.2 Permission Matrix
 
@@ -558,17 +558,17 @@ flowchart TD
 ### 10.3 Access Control Rules
 
 #### Rule 1: Data Ownership
-- ผู้ใช้สามารถดูและแก้ไขข้อมูลของตัวเองเท่านั้น
-- Manager ขึ้นไปสามารถดูข้อมูลของทีมได้
-- Admin ขึ้นไปสามารถดูข้อมูลทั้งหมดได้
+- Users can only view and edit their own data
+- Manager and above can view team data
+- Admin and above can view all data
 
 #### Rule 2: Hierarchical Access
-- Role ที่มี Level ต่ำกว่า มีสิทธิ์มากกว่า
-- Super Admin (Level 1) มีสิทธิ์ทุกอย่าง
+- Lower level roles have more privileges
+- Super Admin (Level 1) has full access to everything
 
 #### Rule 3: Action Restrictions
-- การลบข้อมูลต้องเป็น Admin ขึ้นไป
-- การลบ User ต้องเป็น Super Admin เท่านั้น
+- Deleting data requires Admin level or above
+- Deleting users requires Super Admin only
 
 ---
 
@@ -578,12 +578,12 @@ flowchart TD
 
 | Term | Definition |
 |------|------------|
-| [คำศัพท์] | [คำจำกัดความ] |
+| [Term] | [Definition] |
 
 ### B. References
 
-- [เอกสารอ้างอิง 1]
-- [เอกสารอ้างอิง 2]
+- [Reference 1]
+- [Reference 2]
 
 ### C. Change Log
 

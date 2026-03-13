@@ -14,22 +14,22 @@
 **Type**: Initializer
 **Duration**: ~X minutes
 
-### สิ่งที่ทำ:
-- ✅ วิเคราะห์ requirements
-- ✅ สร้าง feature_list.json (X features)
-- ✅ สร้าง .agent/ configuration
+### What was done:
+- ✅ Analyzed requirements
+- ✅ Created feature_list.json (X features)
+- ✅ Created .agent/ configuration
 - ✅ Initial git commit
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: 0/X
 - Project: Not yet created
 
-### Feature ถัดไป:
+### Next feature:
 - **Feature #1**: FEATURE_DESCRIPTION
   - Priority: high
   - Category: setup
 
-### หมายเหตุ:
+### Notes:
 - NOTES
 
 ---
@@ -39,12 +39,12 @@
 **Type**: Coding
 **Duration**: ~X minutes
 
-### เริ่มต้น Session:
-- [x] อ่าน progress.md
-- [x] ดู git log
-- [x] ตรวจสอบ environment
+### Session start:
+- [x] Read progress.md
+- [x] View git log
+- [x] Verify environment
 
-### สิ่งที่ทำ:
+### What was done:
 - ✅ Feature #1: FEATURE_DESCRIPTION
   - Step 1
   - Step 2
@@ -54,12 +54,12 @@
 - Test 1: ✅ Passed
 - Test 2: ✅ Passed
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: 1/X (X%)
 - Build: ✅ Passing
 - Tests: ✅/N/A
 
-### Feature ถัดไป:
+### Next feature:
 - **Feature #2**: FEATURE_DESCRIPTION
   - Priority: high
   - Category: setup
@@ -68,7 +68,7 @@
 - Commit: `feat: Feature #1 - DESCRIPTION`
 - Hash: COMMIT_HASH
 
-### หมายเหตุ:
+### Notes:
 - NOTES
 
 ---
@@ -81,13 +81,13 @@
 **Type**: Coding
 **Duration**: ~X minutes
 
-### เริ่มต้น Session:
-- [ ] อ่าน progress.md
-- [ ] ดู git log
-- [ ] ตรวจสอบ environment
-- [ ] Build ผ่าน
+### Session start:
+- [ ] Read progress.md
+- [ ] View git log
+- [ ] Verify environment
+- [ ] Build passes
 
-### สิ่งที่ทำ:
+### What was done:
 - ✅/🔄/❌ Feature #X: DESCRIPTION
   - Step 1
   - Step 2
@@ -95,12 +95,12 @@
 ### Test Results:
 - Test: ✅/❌ Result
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: X/Y (Z%)
 - Build: ✅/❌
 - Tests: ✅/❌/N/A
 
-### Feature ถัดไป:
+### Next feature:
 - **Feature #X**: DESCRIPTION
   - Priority: high/medium/low
   - Category: CATEGORY
@@ -109,7 +109,7 @@
 - Commit: `feat/fix/chore: DESCRIPTION`
 - Hash: HASH
 
-### หมายเหตุ:
+### Notes:
 - Notes
 
 ---

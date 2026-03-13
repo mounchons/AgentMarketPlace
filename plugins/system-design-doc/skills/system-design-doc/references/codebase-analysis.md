@@ -1,11 +1,11 @@
 # Codebase Analysis Guide
 
-คู่มือการวิเคราะห์ codebase เพื่อสร้างเอกสารออกแบบระบบ (Reverse Engineering)
+Guide for analyzing a codebase to create system design documents (Reverse Engineering).
 
-## Quick Reference: ไฟล์ที่ต้องวิเคราะห์
+## Quick Reference: Files to Analyze
 
-| เป้าหมาย | .NET Core / ASP.NET | Node.js / Express | Python / Django | Laravel |
-|----------|---------------------|-------------------|-----------------|---------|
+| Target | .NET Core / ASP.NET | Node.js / Express | Python / Django | Laravel |
+|--------|---------------------|-------------------|-----------------|---------|
 | **ER Diagram** | `Models/*.cs`, `Entities/*.cs` | `models/*.js` | `models.py` | `app/Models/*.php` |
 | **Data Dictionary** | `DbContext.cs`, Migrations | Sequelize models | `models.py` | Migrations, Models |
 | **Flow Diagram** | `Services/*.cs` | `services/*.js` | `views.py` | `app/Services/*.php` |
@@ -13,33 +13,33 @@
 | **Sitemap** | `Controllers/`, `Views/` | `routes/`, `pages/` | `urls.py` | `routes/web.php` |
 | **Tech Stack** | `*.csproj`, `appsettings.json` | `package.json` | `requirements.txt` | `composer.json` |
 
-## Step-by-Step: วิเคราะห์ Codebase
+## Step-by-Step: Analyze Codebase
 
-### Step 1: สแกนโครงสร้าง Project
+### Step 1: Scan Project Structure
 
 ```bash
-# ดูโครงสร้างโฟลเดอร์
+# View folder structure
 view /path/to/project
 
-# ระบุ technology จาก config files
+# Identify technology from config files
 ```
 
-**ไฟล์ที่บอก Technology:**
+**Files that indicate Technology:**
 - `.csproj` → .NET
 - `package.json` → Node.js
 - `requirements.txt` / `pyproject.toml` → Python
 - `composer.json` → PHP/Laravel
 - `pom.xml` / `build.gradle` → Java
 
-### Step 2: วิเคราะห์ตาม Framework
+### Step 2: Analyze by Framework
 
 ---
 
 ## .NET Core / ASP.NET MVC
 
-### สำหรับ ER Diagram & Data Dictionary
+### For ER Diagram & Data Dictionary
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```
 Models/
 ├── User.cs
@@ -50,7 +50,7 @@ Data/
 └── AppDbContext.cs
 ```
 
-**สิ่งที่ต้องดู:**
+**What to look for:**
 ```csharp
 // Entity class → Table
 public class User
@@ -70,7 +70,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 }
 ```
 
-**แปลงเป็น:**
+**Convert to:**
 - Class → Entity (Table)
 - Property → Column
 - `[Key]` / `Id` → Primary Key
@@ -79,9 +79,9 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 - `virtual ICollection<T>` → One-to-Many
 - `virtual T` → Many-to-One / One-to-One
 
-### สำหรับ Flow Diagram & Sequence Diagram
+### For Flow Diagram & Sequence Diagram
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```
 Controllers/
 ├── UserController.cs
@@ -92,7 +92,7 @@ Services/
 ├── OrderService.cs
 ```
 
-**สิ่งที่ต้องดู:**
+**What to look for:**
 ```csharp
 // Controller → Entry points
 [HttpPost("api/orders")]
@@ -105,7 +105,7 @@ public async Task<IActionResult> CreateOrder(OrderDto dto)
 }
 ```
 
-**แปลงเป็น Sequence:**
+**Convert to Sequence:**
 ```mermaid
 sequenceDiagram
     Client->>OrderController: POST /api/orders
@@ -116,9 +116,9 @@ sequenceDiagram
     OrderController-->>Client: 200 OK
 ```
 
-### สำหรับ Sitemap
+### For Sitemap
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```
 Controllers/
 ├── HomeController.cs      → /
@@ -133,7 +133,7 @@ Views/
 │   └── Register.cshtml
 ```
 
-**แปลงเป็น Sitemap:**
+**Convert to Sitemap:**
 ```mermaid
 flowchart TD
     HOME[🏠 Home] --> ACCOUNT[👤 Account]
@@ -146,9 +146,9 @@ flowchart TD
 
 ## Node.js / Express
 
-### สำหรับ ER Diagram & Data Dictionary
+### For ER Diagram & Data Dictionary
 
-**วิเคราะห์ไฟล์ (Sequelize):**
+**Files to analyze (Sequelize):**
 ```javascript
 // models/User.js
 module.exports = (sequelize, DataTypes) => {
@@ -157,16 +157,16 @@ module.exports = (sequelize, DataTypes) => {
     username: { type: DataTypes.STRING(50), unique: true, allowNull: false },
     email: { type: DataTypes.STRING(100), unique: true, allowNull: false },
   });
-  
+
   User.associate = (models) => {
     User.hasMany(models.Order, { foreignKey: 'userId' });
   };
-  
+
   return User;
 };
 ```
 
-**วิเคราะห์ไฟล์ (Prisma):**
+**Files to analyze (Prisma):**
 ```prisma
 model User {
   id       Int      @id @default(autoincrement())
@@ -182,9 +182,9 @@ model Order {
 }
 ```
 
-### สำหรับ Flow & Sequence Diagram
+### For Flow & Sequence Diagram
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```javascript
 // routes/orders.js
 router.post('/', authenticate, async (req, res) => {
@@ -194,9 +194,9 @@ router.post('/', authenticate, async (req, res) => {
 });
 ```
 
-### สำหรับ Sitemap
+### For Sitemap
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```javascript
 // routes/index.js
 app.use('/', homeRoutes);
@@ -210,9 +210,9 @@ app.use('/admin', adminRoutes);
 
 ## Python / Django
 
-### สำหรับ ER Diagram & Data Dictionary
+### For ER Diagram & Data Dictionary
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```python
 # models.py
 class User(models.Model):
@@ -226,15 +226,15 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 ```
 
-**แปลงเป็น:**
+**Convert to:**
 - `CharField(max_length=50)` → VARCHAR(50)
 - `ForeignKey` → FK relationship
-- `related_name='orders'` → ชื่อ relationship
+- `related_name='orders'` → Relationship name
 - `on_delete=CASCADE` → Cascade delete rule
 
-### สำหรับ Sitemap
+### For Sitemap
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```python
 # urls.py
 urlpatterns = [
@@ -249,15 +249,15 @@ urlpatterns = [
 
 ## Laravel (PHP)
 
-### สำหรับ ER Diagram & Data Dictionary
+### For ER Diagram & Data Dictionary
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```php
 // app/Models/User.php
 class User extends Model
 {
     protected $fillable = ['username', 'email', 'password'];
-    
+
     public function orders()
     {
         return $this->hasMany(Order::class);
@@ -274,9 +274,9 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-### สำหรับ Sitemap
+### For Sitemap
 
-**วิเคราะห์ไฟล์:**
+**Files to analyze:**
 ```php
 // routes/web.php
 Route::get('/', [HomeController::class, 'index']);
@@ -295,11 +295,11 @@ Route::middleware('admin')->prefix('admin')->group(function () {
 
 ---
 
-## การวิเคราะห์ Legacy Code (WebForms, Classic ASP)
+## Analyzing Legacy Code (WebForms, Classic ASP)
 
 ### ASP.NET WebForms
 
-**ไฟล์ที่ต้องดู:**
+**Files to examine:**
 ```
 App_Code/
 ├── DAL/           → Data Access → ER Diagram
@@ -311,9 +311,9 @@ App_Code/
 Web.config         → Configuration → Tech Stack
 ```
 
-**วิเคราะห์ Data Access:**
+**Analyze Data Access:**
 ```csharp
-// ดู SQL queries เพื่อเข้าใจ schema
+// Look at SQL queries to understand the schema
 public DataTable GetUsers()
 {
     string sql = @"
@@ -327,7 +327,7 @@ public DataTable GetUsers()
 
 ### Classic ASP
 
-**ไฟล์ที่ต้องดู:**
+**Files to examine:**
 ```
 *.asp              → Pages + Logic
 includes/
@@ -339,10 +339,10 @@ includes/
 
 ## Output Mapping
 
-เมื่อวิเคราะห์เสร็จ ให้สร้างเอกสารตาม mapping นี้:
+Once analysis is complete, create the document according to this mapping:
 
-| ข้อมูลที่ได้จาก Code | Section ในเอกสาร |
-|---------------------|------------------|
+| Data obtained from Code | Document Section |
+|------------------------|------------------|
 | Project structure, config files | 1.5 High-Level Architecture, 1.6 Technology Stack |
 | Controllers, Routes | 3. Module Overview, 9. Sitemap |
 | Models/Entities | 4. Data Model, 7. ER Diagram |
@@ -353,18 +353,18 @@ includes/
 
 ---
 
-## Checklist: ก่อนเริ่มวิเคราะห์
+## Checklist: Before Starting Analysis
 
-- [ ] ระบุ Framework/Technology ได้
-- [ ] พบไฟล์ Models/Entities
-- [ ] พบไฟล์ Controllers/Routes
-- [ ] พบไฟล์ Config (database, settings)
-- [ ] เข้าใจโครงสร้างโฟลเดอร์
+- [ ] Framework/Technology identified
+- [ ] Models/Entities files found
+- [ ] Controllers/Routes files found
+- [ ] Config files found (database, settings)
+- [ ] Folder structure understood
 
 ## Tips
 
-1. **เริ่มจาก Models** - จะได้ภาพรวมของ data ก่อน
-2. **ดู Relationships** - `HasMany`, `BelongsTo`, `ForeignKey`
-3. **ตาม Flow ของ Request** - Route → Controller → Service → Repository → Database
-4. **สังเกต Patterns** - ชื่อ method บอก action (Create, Update, Delete, Get)
-5. **อ่าน Comments** - บาง codebase มี docs อยู่แล้ว
+1. **Start from Models** — get the data overview first
+2. **Look at Relationships** — `HasMany`, `BelongsTo`, `ForeignKey`
+3. **Follow the Request Flow** — Route → Controller → Service → Repository → Database
+4. **Observe Patterns** — method names indicate actions (Create, Update, Delete, Get)
+5. **Read Comments** — some codebases already have documentation

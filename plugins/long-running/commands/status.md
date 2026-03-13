@@ -1,15 +1,15 @@
 ---
-description: ดูสถานะความคืบหน้าของโปรเจค
+description: View project progress status
 allowed-tools: Bash(*), Read(*)
 ---
 
-# Agent Status - ดูความคืบหน้า
+# Agent Status - View Progress
 
-แสดงสถานะความคืบหน้าของโปรเจค
+Display project progress status.
 
-## ขั้นตอน
+## Steps
 
-### 1. ตรวจสอบว่ามี agent environment
+### 1. Check if agent environment exists
 
 ```bash
 if [ -f ".agent/config.json" ]; then
@@ -20,40 +20,40 @@ else
 fi
 ```
 
-### 2. แสดงข้อมูล Project
+### 2. Display Project Info
 
 ```bash
 cat .agent/config.json
 ```
 
-### 3. แสดง Feature Summary
+### 3. Display Feature Summary
 
 ```bash
 # Total features
 cat feature_list.json | jq '.summary'
 
-# Features ที่ pass แล้ว
+# Passed features
 echo "✅ Passed Features:"
 cat feature_list.json | jq '.features[] | select(.passes == true) | {id, description}'
 
-# Features ที่ยังไม่ pass
+# Remaining features
 echo "❌ Remaining Features:"
 cat feature_list.json | jq '.features[] | select(.passes == false) | {id, description, priority}'
 ```
 
 ### Model Assignment Overview (v2.1.0)
 
-**ถ้ามี `model_config` ใน feature_list.json:**
+**If `model_config` exists in feature_list.json:**
 
 ```bash
-# ดู model workload
+# View model workload
 cat feature_list.json | jq '.summary.model_workload'
 
-# ดู features แยกตาม model
+# View features grouped by model
 cat feature_list.json | jq '[.features[] | {id, description, assigned_model, status, is_reference_impl, review_result: .review.result}]'
 ```
 
-แสดงผล:
+Display:
 
 ```
 🤖 Model Workload:
@@ -67,10 +67,10 @@ cat feature_list.json | jq '[.features[] | {id, description, assigned_model, sta
 
 📋 Features by Model:
   opus:
-    ✅ #1 สร้าง project structure (reference)
+    ✅ #1 Create project structure (reference)
     🔄 #5 GET /api/resource
   sonnet:
-    ✅ #2 ตั้งค่า database (reviewed ✅ 85/100)
+    ✅ #2 Setup database (reviewed ✅ 85/100)
     ✅ #6 GET by ID (pending review ⏳)
   unassigned:
     🔲 #10 Input validation
@@ -83,16 +83,16 @@ cat feature_list.json | jq '[.features[] | {id, description, assigned_model, sta
 
 ### Review Status (v2.1.0)
 
-**ถ้ามี `review_status` ใน summary:**
+**If `review_status` exists in summary:**
 
 ```bash
 cat feature_list.json | jq '.summary.review_status'
 
-# Features ที่รอ review
+# Features awaiting review
 cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assigned_model != "opus" and .review == null) | {id, description}]'
 ```
 
-แสดงผล:
+Display:
 
 ```
 📝 Review Summary: 2 reviewed, 3 pending
@@ -102,17 +102,17 @@ cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assig
   → Run /review to review next feature
 
 ✅ Recently Reviewed:
-  #2 ตั้งค่า database — pass (85/100) by opus
-  #3 สร้าง Entity — pass_with_suggestions (72/100) by opus
+  #2 Setup database — pass (85/100) by opus
+  #3 Create Entity — pass_with_suggestions (72/100) by opus
 ```
 
 ---
 
 ### Flow Progress (v2.0.0)
 
-**ถ้ามี `flows[]` ใน feature_list.json:**
+**If `flows[]` exists in feature_list.json:**
 
-แสดง progress ของแต่ละ flow:
+Display progress of each flow:
 
 ```
 📊 Flow Progress:
@@ -130,11 +130,11 @@ cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assig
 - Step status: ✅ passed, 🔄 in_progress, 🔲 pending, ⛔ blocked
 
 **State Progress:**
-- แสดง state_contracts ที่เกี่ยวข้องกับ flow
-- ✅ = produced_by feature ที่ passes: true
-- ❌ = ยังไม่ถูก produce
+- Display state_contracts related to flow
+- ✅ = produced_by feature that has passes: true
+- ❌ = not yet produced
 
-**ถ้ามี `state_contracts`:**
+**If has `state_contracts`:**
 
 ```
 🔗 State Contracts:
@@ -144,7 +144,7 @@ cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assig
   ❌ PaymentResult (session) — not yet produced
 ```
 
-**ถ้ามี `requires_components` ที่ยังไม่พร้อม:**
+**If has `requires_components` that aren't ready:**
 
 ```
 ⚠️ Blocked Features:
@@ -152,14 +152,14 @@ cat feature_list.json | jq '[.features[] | select(.status == "passed" and .assig
   Feature #10 (User List) — requires: AuthGuard ❌
 ```
 
-### 4. แสดง Recent Progress
+### 4. Display Recent Progress
 
 ```bash
-# ดู 20 บรรทัดล่าสุดของ progress
+# View last 50 lines of progress
 tail -50 .agent/progress.md
 ```
 
-### 5. แสดง Git Status
+### 5. Display Git Status
 
 ```bash
 git log --oneline -5
@@ -168,7 +168,7 @@ git status --short
 
 ## Output Format
 
-แสดงผลในรูปแบบ:
+Display in this format:
 
 ```markdown
 # 📊 Project Status: PROJECT_NAME
@@ -195,3 +195,5 @@ git status --short
 ## 🚀 To Continue
 Run `/continue` to work on the next feature
 ```
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

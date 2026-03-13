@@ -1,6 +1,6 @@
 # /validate-coverage
 
-ตรวจสอบความครอบคลุมของ features ว่าครบถ้วนตาม mockups, design docs และ requirements หรือไม่
+Validate feature coverage to ensure completeness against mockups, design docs, and requirements.
 
 ---
 
@@ -14,11 +14,11 @@
 
 ## Purpose
 
-1. **Mockup Coverage** - ทุก mockup page มี feature implement หรือไม่
-2. **Design Coverage** - ทุก entity/flow ใน design doc มี feature หรือไม่
-3. **Component Coverage** - required_components ครบหรือไม่
-4. **Acceptance Criteria** - ทุก feature มี criteria หรือไม่
-5. **Reference Coverage** - UI features มี mockup reference หรือไม่
+1. **Mockup Coverage** — does every mockup page have a feature implementing it?
+2. **Design Coverage** — does every entity/flow in design doc have a feature?
+3. **Component Coverage** — are required_components complete?
+4. **Acceptance Criteria** — does every feature have criteria?
+5. **Reference Coverage** — do UI features have mockup references?
 
 ---
 
@@ -87,21 +87,21 @@ Coverage = (features with criteria / total features) * 100%
 
 ### Flow Coverage Validation (v2.0.0)
 
-**ตรวจสอบความครบถ้วนของ flows:**
+**Validate flow completeness:**
 
-1. **Orphan features**: features ที่มี `flow_id` แต่ไม่อยู่ใน `flows[].steps`
-2. **Missing steps**: flows ที่มี `steps[].feature_id` อ้างอิง feature ที่ไม่มีอยู่
+1. **Orphan features**: features with `flow_id` but not in `flows[].steps`
+2. **Missing steps**: flows with `steps[].feature_id` referencing non-existent features
 3. **State contract integrity**:
-   - state ที่ถูก consumed แต่ไม่มี feature ที่ produce → ❌ Error
-   - state ที่ถูก produced แต่ไม่มี feature ที่ consume → ⚠️ Warning (unused state)
-   - `produced_by` / `consumed_by` ตรงกับ features ที่ประกาศ `state_produces` / `state_consumes`
+   - State consumed but no feature produces it → ❌ Error
+   - State produced but no feature consumes it → ⚠️ Warning (unused state)
+   - `produced_by` / `consumed_by` match features that declare `state_produces` / `state_consumes`
 4. **Component requirements**:
-   - features ที่มี `requires_components` → ตรวจว่า component มี feature ที่สร้าง
-   - components ใน `shared_components` ที่ไม่มี feature ใดใช้ → ⚠️ Warning
+   - Features with `requires_components` → verify component has a feature that creates it
+   - Components in `shared_components` not used by any feature → ⚠️ Warning
 5. **Flow completeness**:
-   - wizard flows ต้องมี entry_conditions (อย่างน้อย description)
-   - wizard flows ที่มี > 2 steps ควรมี error_paths
-   - crud-group flows ควรมีทั้ง list + form features
+   - Wizard flows must have entry_conditions (at least description)
+   - Wizard flows with > 2 steps should have error_paths
+   - Crud-group flows should have both list + form features
 
 **Output format:**
 
@@ -260,9 +260,9 @@ Coverage = (features with criteria / total features) * 100%
       "description": "User validation",
       "category": "quality",
       "suggested_criteria": [
-        "validation rules ทำงานถูกต้อง",
-        "error messages ชัดเจน",
-        "invalid input ถูก reject"
+        "validation rules work correctly",
+        "error messages are clear",
+        "invalid input is rejected"
       ]
     }
   ]
@@ -305,7 +305,9 @@ Coverage = (features with criteria / total features) * 100%
 
 ## Notes
 
-- Read-only command - ไม่แก้ไขไฟล์ใดๆ
-- แสดง recommendations สำหรับการปรับปรุง
-- ควรรัน periodically ระหว่าง development
-- Score 91%+ ถือว่าพร้อม
+- Read-only command — does not modify any files
+- Displays recommendations for improvements
+- Should be run periodically during development
+- Score 91%+ is considered ready
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

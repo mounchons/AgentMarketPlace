@@ -1,7 +1,14 @@
 {
   "name": "system-design-doc",
-  "version": "1.3.0",
-  "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase, Import จาก implementation plan พร้อม Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD)",
+  "version": "1.4.0",
+  "description": "Create standardized system design documents — supports Reverse Engineering from codebase, Import from implementation plan, Interactive Brainstorming with Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD)",
+  "commands": [
+    {
+      "name": "brainstorm-design",
+      "description": "Interactive brainstorming and Q&A session for system design",
+      "file": "commands/brainstorm-design.md"
+    }
+  ],
   "author": {
     "name": "Mounchons"
   }

@@ -1,6 +1,6 @@
 # /sync-mockups
 
-ตรวจสอบและ synchronize ข้อมูลระหว่าง `feature_list.json` และ `.mockups/mockup_list.json`
+Validate and synchronize data between `feature_list.json` and `.mockups/mockup_list.json`.
 
 ---
 
@@ -14,22 +14,22 @@
 
 ## Purpose
 
-1. **Validate** ว่า mockup references ใน features ชี้ไปยังไฟล์ที่มีอยู่จริง
-2. **Update reverse links** ใน mockup_list.json
-3. **Sync status** ระหว่าง features และ mockups
-4. **Report** orphan mockups และ missing references
+1. **Validate** that mockup references in features point to files that actually exist
+2. **Update reverse links** in mockup_list.json
+3. **Sync status** between features and mockups
+4. **Report** orphan mockups and missing references
 
 ---
 
 ## Process
 
-### Step 1: อ่านไฟล์ทั้งสอง
+### Step 1: Read both files
 
 ```bash
-# อ่าน feature_list.json
+# Read feature_list.json
 cat feature_list.json
 
-# อ่าน mockup_list.json
+# Read mockup_list.json
 cat .mockups/mockup_list.json
 
 # List mockup files
@@ -38,7 +38,7 @@ ls -la .mockups/*.mockup.md
 
 ### Step 2: Validate Mockup References
 
-ตรวจสอบทุก feature ที่มี `references` ไปยัง `.mockups/`:
+Check every feature that has `references` pointing to `.mockups/`:
 
 ```
 For each feature with mockup reference:
@@ -97,7 +97,7 @@ For each page in mockup_list.json:
 
 ### Step 5: Report Orphan Mockups
 
-ค้นหา mockups ที่ไม่มี feature reference ถึง:
+Find mockups that have no feature referencing them:
 
 ```
 Orphan Mockups (no features implemented):
@@ -111,7 +111,7 @@ Recommendation:
 
 ### Step 6: Report Features Missing Mockups
 
-UI features ที่ไม่มี mockup reference:
+UI features that have no mockup reference:
 
 ```
 Features missing mockup references:
@@ -262,16 +262,18 @@ Recommendation:
 
 ## When to Run
 
-- หลังจาก `/generate-features-from-mockups`
-- หลังจากเพิ่ม/แก้ไข features ที่มี mockup reference
-- ก่อน `/continue` เพื่อ validate references
-- เมื่อต้องการดู coverage report
+- After `/generate-features-from-mockups`
+- After adding/editing features that have mockup references
+- Before `/continue` to validate references
+- When you want to see the coverage report
 
 ---
 
 ## Notes
 
-- Command นี้เป็น read-heavy, write-light (อ่านเยอะ เขียนน้อย)
-- ไม่สร้าง features ใหม่ - ใช้ `/generate-features-from-mockups` แทน
-- ไม่สร้าง mockups ใหม่ - ใช้ `/ui-mockup` แทน
+- This command is read-heavy, write-light
+- Does not create new features — use `/generate-features-from-mockups` instead
+- Does not create new mockups — use `/ui-mockup` instead
 - Safe to run multiple times
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

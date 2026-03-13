@@ -1,6 +1,6 @@
 # /validate-integration
 
-ตรวจสอบ cross-references และ consistency ระหว่าง 3 plugins: system-design-doc, ui-mockup, long-running
+Validate cross-references and consistency across 3 plugins: system-design-doc, ui-mockup, long-running
 
 ---
 
@@ -14,10 +14,10 @@
 
 ## Purpose
 
-1. **Validate Cross-References** - ตรวจสอบว่า references ถูกต้องและมีอยู่จริง
-2. **Check Consistency** - ตรวจสอบความสอดคล้องของข้อมูล
-3. **Detect Orphans** - ค้นหา orphan items ที่ไม่มี references
-4. **Generate Report** - สร้าง comprehensive integration report
+1. **Validate Cross-References** - Verify that references are correct and exist
+2. **Check Consistency** - Verify data consistency
+3. **Detect Orphans** - Find orphan items without references
+4. **Generate Report** - Create a comprehensive integration report
 
 ---
 
@@ -319,16 +319,18 @@ Rating:
 
 ## When to Run
 
-- ก่อน sprint planning
-- หลังจาก sync commands
-- เมื่อต้องการ overview ของ integration status
-- ก่อน release เพื่อ validate completeness
+- Before sprint planning
+- After sync commands
+- When you need an overview of integration status
+- Before release to validate completeness
 
 ---
 
 ## Notes
 
-- Read-only command - ไม่แก้ไขไฟล์
-- ใช้เวลานานกว่า sync commands (comprehensive check)
-- สร้าง recommendations โดยอัตโนมัติ
-- รองรับ partial integration (incomplete projects)
+- Read-only command — does not modify files
+- Takes longer than sync commands (comprehensive check)
+- Generates recommendations automatically
+- Supports partial integration (incomplete projects)
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

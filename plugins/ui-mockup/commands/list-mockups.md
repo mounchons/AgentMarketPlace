@@ -1,35 +1,35 @@
 ---
-description: ดูรายการ UI Mockups ทั้งหมดในโปรเจค
+description: View all UI Mockups in the project
 allowed-tools: Bash(*), Read(*), Glob(*)
 ---
 
 # List Mockups Command
 
-แสดงรายการ UI Mockups ทั้งหมดที่มีในโปรเจค
+Display all UI Mockups available in the project.
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: อ่าน mockup_list.json (ถ้ามี)
+### Step 1: Read mockup_list.json (if available)
 
 ```bash
-# ตรวจสอบ mockup_list.json
+# Check mockup_list.json
 cat .mockups/mockup_list.json 2>/dev/null
 ```
 
-**ถ้ามี mockup_list.json:** ใช้ข้อมูลจาก json เพื่อแสดงสถานะครบถ้วน
+**If mockup_list.json exists:** Use data from json to show complete status.
 
-**ถ้าไม่มี mockup_list.json:** ค้นหาไฟล์โดยตรง
+**If mockup_list.json does not exist:** Search for files directly.
 
-### Step 2: ค้นหา Mockup Files
+### Step 2: Find Mockup Files
 
 ```bash
-# ค้นหาไฟล์ mockup ทั้งหมด (format ใหม่: [NNN]-[name].mockup.md)
+# Find all mockup files (new format: [NNN]-[name].mockup.md)
 ls -la .mockups/[0-9][0-9][0-9]-*.mockup.md 2>/dev/null
 ```
 
-### Step 3: อ่าน Page Info จากแต่ละไฟล์
+### Step 3: Read Page Info from Each File
 
-สำหรับแต่ละไฟล์ ให้อ่านข้อมูล:
+For each file, read the following data:
 - Page ID (NNN)
 - Page Name
 - URL
@@ -39,7 +39,7 @@ ls -la .mockups/[0-9][0-9][0-9]-*.mockup.md 2>/dev/null
 - Status
 - Last Updated
 
-### Step 4: แสดงผล
+### Step 4: Display Results
 
 **Format:**
 
@@ -69,36 +69,36 @@ ls -la .mockups/[0-9][0-9][0-9]-*.mockup.md 2>/dev/null
    • Department (simple) - 1 page: list ✅ (modal pattern)
 
 💡 Commands:
-   • /create-mockup [page]               → สร้าง mockup ใหม่
-   • /create-mockups-parallel --entity X → สร้าง CRUD pages
-   • /edit-mockup [page] - [changes]     → แก้ไข mockup
-   • cat .mockups/[NNN]-[page].mockup.md → ดูรายละเอียด
+   • /create-mockup [page]               → Create new mockup
+   • /create-mockups-parallel --entity X → Create CRUD pages
+   • /edit-mockup [page] - [changes]     → Edit mockup
+   • cat .mockups/[NNN]-[page].mockup.md → View details
 ```
 
 ---
 
-## ถ้าไม่มี Mockups
+## If No Mockups Exist
 
 ```
 📁 UI Mockups in Project
 
-⚠️ ยังไม่มี mockup ในโปรเจคนี้
+⚠️ No mockups exist in this project yet
 
-💡 เริ่มต้นด้วย:
+💡 Get started with:
    • /create-mockup [page-name]
-   • /create-mockup จาก system-design-doc
+   • /create-mockup from system-design-doc
 
-📚 ถ้ามี system-design-doc ให้ใช้:
-   • /create-mockup จาก system-design.md
+📚 If you have a system-design-doc, use:
+   • /create-mockup from system-design.md
 
-   จะอ่าน Sitemap และ Screen Specs แล้วสร้าง mockups ให้อัตโนมัติ
+   This will read Sitemap and Screen Specs and create mockups automatically
 ```
 
 ---
 
 ## Output with Details
 
-ถ้าต้องการดูรายละเอียดเพิ่มเติม:
+For viewing additional details:
 
 ```
 📁 UI Mockups - Detailed View
@@ -150,3 +150,5 @@ ls -la .mockups/[0-9][0-9][0-9]-*.mockup.md 2>/dev/null
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

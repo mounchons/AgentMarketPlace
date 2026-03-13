@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-คู่มือแก้ไขปัญหาที่พบบ่อยในการสร้างเอกสารออกแบบระบบ
+Guide for troubleshooting common issues when creating system design documents
 
 ## Table of Contents
 
@@ -18,15 +18,15 @@
 
 #### Error: "Parse error on line X"
 
-**Cause:** Invalid syntax ใน entity definition
+**Cause:** Invalid syntax in entity definition
 
 **Wrong:**
 ```mermaid
 erDiagram
     USER {
         int id PK
-        string name,  // ❌ มี comma
-        email string  // ❌ สลับ type กับ name
+        string name,  // ❌ has comma
+        email string  // ❌ type and name swapped
     }
 ```
 
@@ -42,13 +42,13 @@ erDiagram
 
 #### Error: "Invalid relationship"
 
-**Cause:** Relationship syntax ไม่ถูกต้อง
+**Cause:** Incorrect relationship syntax
 
 **Wrong:**
 ```mermaid
 erDiagram
-    USER -- ORDER : places      // ❌ ขาด cardinality
-    USER 1-* ORDER : places     // ❌ syntax ผิด
+    USER -- ORDER : places      // ❌ missing cardinality
+    USER 1-* ORDER : places     // ❌ wrong syntax
 ```
 
 **Correct:**
@@ -67,13 +67,13 @@ erDiagram
 
 #### Error: "Entity name contains invalid characters"
 
-**Cause:** ชื่อ entity มีอักขระพิเศษ
+**Cause:** Entity name contains special characters
 
 **Wrong:**
 ```mermaid
 erDiagram
-    USER-PROFILE { }    // ❌ มี hyphen
-    Order Item { }      // ❌ มี space
+    USER-PROFILE { }    // ❌ has hyphen
+    Order Item { }      // ❌ has space
 ```
 
 **Correct:**
@@ -89,14 +89,14 @@ erDiagram
 
 #### Error: "Unclosed subgraph"
 
-**Cause:** ลืมปิด `end` ของ subgraph
+**Cause:** Forgot to close the `end` of a subgraph
 
 **Wrong:**
 ```mermaid
 flowchart TD
     subgraph Frontend
         A[UI] --> B[State]
-    // ❌ ลืม end
+    // ❌ missing end
 
     subgraph Backend
         C[API] --> D[DB]
@@ -117,14 +117,14 @@ flowchart TD
 
 #### Error: "Node not defined"
 
-**Cause:** ใช้ node ที่ยังไม่ได้ประกาศ
+**Cause:** Using a node that has not been declared
 
 **Wrong:**
 ```mermaid
 flowchart TD
     A --> B
     B --> C
-    D --> E  // ❌ D ยังไม่ได้ประกาศ shape
+    D --> E  // ❌ D has no shape declared
 ```
 
 **Correct:**
@@ -137,7 +137,7 @@ flowchart TD
 
 #### Error: "Invalid node shape"
 
-**Cause:** Bracket ไม่ match
+**Cause:** Brackets don't match
 
 | Shape | Syntax | Example |
 |-------|--------|---------|
@@ -154,12 +154,12 @@ flowchart TD
 
 #### Error: "Invalid participant"
 
-**Cause:** Participant name มี space หรืออักขระพิเศษ
+**Cause:** Participant name contains spaces or special characters
 
 **Wrong:**
 ```mermaid
 sequenceDiagram
-    participant User Account  // ❌ มี space
+    participant User Account  // ❌ has space
 ```
 
 **Correct:**
@@ -184,12 +184,12 @@ sequenceDiagram
 
 #### Error: "Invalid state name"
 
-**Cause:** State name มีอักขระพิเศษ
+**Cause:** State name contains special characters
 
 **Wrong:**
 ```mermaid
 stateDiagram-v2
-    [*] --> In-Progress  // ❌ มี hyphen
+    [*] --> In-Progress  // ❌ has hyphen
 ```
 
 **Correct:**
@@ -205,16 +205,16 @@ stateDiagram-v2
 
 ### 2.1 No Models Found
 
-**Symptoms:** ไม่พบ entity/model ในการวิเคราะห์ codebase
+**Symptoms:** No entity/model found when analyzing the codebase
 
 **Common Causes:**
 
 | Cause | Solution |
 |-------|----------|
-| Non-standard folder structure | ค้นหาด้วย pattern: `*.entity.*`, `*.model.*` |
-| Models in shared library | ค้นหาใน referenced projects |
-| Code-first without explicit models | ดู DbContext หรือ migrations |
-| Microservices architecture | วิเคราะห์ทีละ service |
+| Non-standard folder structure | Search using pattern: `*.entity.*`, `*.model.*` |
+| Models in shared library | Search in referenced projects |
+| Code-first without explicit models | Check DbContext or migrations |
+| Microservices architecture | Analyze one service at a time |
 
 **Search Commands:**
 ```bash
@@ -230,16 +230,16 @@ find . -name "*.py" | xargs grep -l "models.Model\|Base.*declarative"
 
 ### 2.2 Missing Relationships
 
-**Symptoms:** ER Diagram ไม่มี relationships ระหว่าง entities
+**Symptoms:** ER Diagram has no relationships between entities
 
 **Common Causes:**
 
 | Framework | Where to Look |
 |-----------|---------------|
-| EF Core | `OnModelCreating()` ใน DbContext |
-| Sequelize | `associate()` method ใน models |
-| Prisma | `@relation` ใน schema.prisma |
-| Django | `ForeignKey`, `ManyToManyField` ใน models |
+| EF Core | `OnModelCreating()` in DbContext |
+| Sequelize | `associate()` method in models |
+| Prisma | `@relation` in schema.prisma |
+| Django | `ForeignKey`, `ManyToManyField` in models |
 
 **Example - EF Core:**
 ```csharp
@@ -252,9 +252,9 @@ modelBuilder.Entity<Order>()
 
 ### 2.3 Incomplete Data Types
 
-**Symptoms:** Data Dictionary มี data types ไม่ครบถ้วน
+**Symptoms:** Data Dictionary has incomplete data types
 
-**Solution:** ดูจากหลายแหล่ง
+**Solution:** Check from multiple sources
 
 | Source | Information |
 |--------|-------------|
@@ -269,12 +269,12 @@ modelBuilder.Entity<Order>()
 
 ### 3.1 ER Diagram ↔ Data Dictionary Mismatch
 
-**Problem:** Entity ใน ER ไม่ตรงกับ tables ใน Data Dictionary
+**Problem:** Entities in ER do not match tables in Data Dictionary
 
 **Checklist:**
-- [ ] ชื่อ entity/table ตรงกัน (รวม naming convention)
-- [ ] จำนวน columns ตรงกัน
-- [ ] PK/FK ตรงกัน
+- [ ] Entity/table names match (including naming convention)
+- [ ] Column counts match
+- [ ] PK/FK match
 - [ ] Relationships match
 
 **Common Issues:**
@@ -286,12 +286,12 @@ modelBuilder.Entity<Order>()
 
 ### 3.2 DFD Level Inconsistency
 
-**Problem:** DFD Level 0 ไม่สอดคล้องกับ Level 1
+**Problem:** DFD Level 0 is inconsistent with Level 1
 
 **Rules:**
-1. จำนวน external entities ต้องเท่ากัน
-2. จำนวน data stores ใน Level 1 ต้องอธิบาย data flow ใน Level 0
-3. Inputs/Outputs ของ System ใน Level 0 = รวม I/O ของทุก process ใน Level 1
+1. The number of external entities must be the same
+2. Data stores in Level 1 must explain the data flow in Level 0
+3. System Inputs/Outputs in Level 0 = combined I/O of all processes in Level 1
 
 **Example Fix:**
 ```
@@ -306,12 +306,12 @@ Level 1: Customer → [1.0 Place Order] → [2.0 Process Payment] → Admin
 
 ### 3.3 Sitemap ↔ Roles Mismatch
 
-**Problem:** หน้าใน Sitemap ไม่มี access control ครบ
+**Problem:** Pages in Sitemap do not have complete access control
 
 **Checklist:**
-- [ ] ทุกหน้ามี Access level ระบุ
-- [ ] Public pages ชัดเจน
-- [ ] Protected pages มี required roles
+- [ ] Every page has an Access level specified
+- [ ] Public pages are clearly identified
+- [ ] Protected pages have required roles
 - [ ] Admin pages restricted properly
 
 ---
@@ -320,7 +320,7 @@ Level 1: Customer → [1.0 Place Order] → [2.0 Process Payment] → Admin
 
 ### 4.1 Diagram Too Large
 
-**Problem:** Diagram ไม่ render หรือแสดงผลผิด
+**Problem:** Diagram does not render or displays incorrectly
 
 **Solutions:**
 
@@ -342,14 +342,14 @@ flowchart TD  // Top Down for tall diagrams
 ```
 
 3. **Reduce complexity**
-- แยก complex processes เป็น sub-diagrams
-- ใช้ subgraphs เพื่อจัดกลุ่ม
+- Split complex processes into sub-diagrams
+- Use subgraphs to group elements
 
 ### 4.2 Overlapping Labels
 
-**Problem:** Labels ซ้อนกันใน ER Diagram
+**Problem:** Labels overlap in ER Diagram
 
-**Solution:** ใช้ shorter relationship labels หรือลด entities
+**Solution:** Use shorter relationship labels or reduce entities
 
 ```mermaid
 erDiagram
@@ -359,11 +359,11 @@ erDiagram
 
 ### 4.3 Markdown Preview Not Rendering
 
-**Problem:** Mermaid ไม่แสดงใน preview
+**Problem:** Mermaid does not display in preview
 
 **Common Causes:**
-- Editor ไม่รองรับ Mermaid
-- Code block syntax ผิด
+- Editor does not support Mermaid
+- Code block syntax is incorrect
 
 **Correct Syntax:**
 ```markdown
@@ -381,7 +381,7 @@ flowchart TD
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| Can't find entities | Using code-first migrations | ดู `Migrations/` folder |
+| Can't find entities | Using code-first migrations | Check `Migrations/` folder |
 | Relationships missing | Using Data Annotations only | Check `[ForeignKey]`, `[InverseProperty]` |
 | Complex types not shown | Owned types | Include owned types as separate or nested |
 
@@ -389,7 +389,7 @@ flowchart TD
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| No schema found | Using raw queries | ดู SQL ใน repository files |
+| No schema found | Using raw queries | Check SQL in repository files |
 | TypeScript types only | No runtime models | Use interface definitions |
 | Prisma schema outdated | Not synced with DB | Run `prisma db pull` |
 
@@ -405,7 +405,7 @@ flowchart TD
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| No types in models | Dynamic attributes | ดู migrations หรือ `$casts` |
+| No types in models | Dynamic attributes | Check migrations or `$casts` |
 | Relationships hidden | Protected `$with` | Check `with()` in queries |
 | Pivot tables | M2M relationships | Include pivot in DD |
 

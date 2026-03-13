@@ -1,58 +1,58 @@
 # Initializer Agent Guide
 
-คู่มือสำหรับ Initializer Agent - ใช้ครั้งแรกเมื่อเริ่มโปรเจคใหม่
+Guide for Initializer Agent - use the first time when starting a new project
 
-## 🎯 หน้าที่ของ Initializer Agent
+## 🎯 Initializer Agent Responsibilities
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    INITIALIZER AGENT                        │
-│                    (เรียกครั้งเดียวตอนเริ่มต้น)               │
+│                    (called once at the start)               │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Input:  "สร้าง Todo API ด้วย .NET Core"                    │
+│  Input:  "Create Todo API with .NET Core"                    │
 │                                                             │
 │  Output:                                                    │
-│  ├── feature_list.json    (รายการ features 10-20 รายการ)   │
-│  ├── .agent/config.json   (ตั้งค่า project)                │
-│  ├── .agent/progress.md   (บันทึก session แรก)             │
+│  ├── feature_list.json    (feature list, 10-20 items)      │
+│  ├── .agent/config.json   (project configuration)          │
+│  ├── .agent/progress.md   (first session log)              │
 │  └── Git initial commit                                    │
 │                                                             │
-│  ❌ ไม่ implement code!                                     │
+│  ❌ Do NOT implement code!                                  │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 📋 Checklist สำหรับ Initializer
+## 📋 Checklist for Initializer
 
-- [ ] วิเคราะห์ requirements จาก user input
-- [ ] กำหนด technology stack
-- [ ] แตก requirements เป็น features เล็กๆ (10-20 features)
-- [ ] เรียงลำดับตาม dependency
-- [ ] สร้าง feature_list.json
-- [ ] สร้าง .agent/ folder และ config
-- [ ] เขียน progress log สำหรับ session 1
-- [ ] Git init และ initial commit (ถ้ายังไม่มี)
+- [ ] Analyze requirements from user input
+- [ ] Define technology stack
+- [ ] Break requirements into small features (10-20 features)
+- [ ] Order by dependency
+- [ ] Create feature_list.json
+- [ ] Create .agent/ folder and config
+- [ ] Write progress log for session 1
+- [ ] Git init and initial commit (if not already done)
 
 ---
 
-## 🔨 ขั้นตอนการทำงาน
+## 🔨 Work Steps
 
-### Step 1: วิเคราะห์ Requirements
+### Step 1: Analyze Requirements
 
-**รับ input จาก user:**
+**Receive input from user:**
 ```
-"สร้าง Todo API ด้วย ASP.NET Core Web API, EF Core, PostgreSQL"
+"Create Todo API with ASP.NET Core Web API, EF Core, PostgreSQL"
 ```
 
-**สกัดข้อมูล:**
+**Extract information:**
 - Project type: Web API
 - Framework: ASP.NET Core
 - ORM: Entity Framework Core
 - Database: PostgreSQL
 - Features implied: CRUD operations, authentication (maybe)
 
-### Step 2: กำหนด Technology Stack
+### Step 2: Define Technology Stack
 
 ```json
 {
@@ -66,11 +66,11 @@
 }
 ```
 
-### Step 3: แตก Features
+### Step 3: Break Down Features
 
-**หลักการแตก Features:**
+**Principles for breaking down features:**
 
-1. **Setup features ก่อน**
+1. **Setup features first**
    - Project structure
    - Database setup
    - Basic configuration
@@ -99,7 +99,7 @@
    - Tests
    - Documentation
 
-**ตัวอย่างการแตก Todo API:**
+**Example breakdown for Todo API:**
 
 ```json
 {
@@ -107,94 +107,94 @@
     {
       "id": 1,
       "category": "setup",
-      "description": "สร้าง ASP.NET Core Web API project structure",
+      "description": "Create ASP.NET Core Web API project structure",
       "priority": "high",
       "steps": [
-        "สร้าง solution",
-        "สร้าง WebApi project",
-        "ตั้งค่า Program.cs",
-        "ทดสอบ run project"
+        "Create solution",
+        "Create WebApi project",
+        "Configure Program.cs",
+        "Test run the project"
       ]
     },
     {
       "id": 2,
       "category": "setup",
-      "description": "เพิ่ม EF Core และ PostgreSQL packages",
+      "description": "Add EF Core and PostgreSQL packages",
       "priority": "high",
       "steps": [
-        "เพิ่ม Npgsql.EntityFrameworkCore.PostgreSQL",
-        "เพิ่ม Microsoft.EntityFrameworkCore.Design",
-        "ตั้งค่า connection string",
-        "ทดสอบ connection"
+        "Add Npgsql.EntityFrameworkCore.PostgreSQL",
+        "Add Microsoft.EntityFrameworkCore.Design",
+        "Configure connection string",
+        "Test connection"
       ]
     },
     {
       "id": 3,
       "category": "domain",
-      "description": "สร้าง TodoItem entity",
+      "description": "Create TodoItem entity",
       "priority": "high",
       "steps": [
-        "สร้าง BaseEntity class",
-        "สร้าง TodoItem class",
-        "เพิ่ม properties: Title, Description, IsComplete, DueDate"
+        "Create BaseEntity class",
+        "Create TodoItem class",
+        "Add properties: Title, Description, IsComplete, DueDate"
       ]
     },
     {
       "id": 4,
       "category": "data",
-      "description": "สร้าง AppDbContext และ Migration",
+      "description": "Create AppDbContext and Migration",
       "priority": "high",
       "steps": [
-        "สร้าง AppDbContext",
+        "Create AppDbContext",
         "Configure TodoItem entity",
-        "รัน initial migration",
+        "Run initial migration",
         "Update database"
       ]
     },
     {
       "id": 5,
       "category": "api",
-      "description": "GET /api/todos - ดึงรายการ todos ทั้งหมด",
+      "description": "GET /api/todos - Retrieve all todos",
       "priority": "high",
       "steps": [
-        "สร้าง TodosController",
-        "implement GetAll endpoint",
-        "ทดสอบด้วย Swagger"
+        "Create TodosController",
+        "Implement GetAll endpoint",
+        "Test with Swagger"
       ]
     },
     {
       "id": 6,
       "category": "api",
-      "description": "GET /api/todos/{id} - ดึง todo ตาม id",
+      "description": "GET /api/todos/{id} - Retrieve todo by id",
       "priority": "high",
       "steps": [
-        "implement GetById endpoint",
-        "handle 404 Not Found",
-        "ทดสอบทั้ง success และ not found"
+        "Implement GetById endpoint",
+        "Handle 404 Not Found",
+        "Test both success and not found"
       ]
     },
     {
       "id": 7,
       "category": "api",
-      "description": "POST /api/todos - สร้าง todo ใหม่",
+      "description": "POST /api/todos - Create a new todo",
       "priority": "high",
       "steps": [
-        "สร้าง CreateTodoDto",
-        "implement Create endpoint",
-        "return 201 Created",
-        "ทดสอบการสร้าง"
+        "Create CreateTodoDto",
+        "Implement Create endpoint",
+        "Return 201 Created",
+        "Test creation"
       ]
     },
     {
       "id": 8,
       "category": "api",
-      "description": "PUT /api/todos/{id} - แก้ไข todo",
+      "description": "PUT /api/todos/{id} - Update todo",
       "priority": "medium",
       "steps": [
-        "สร้าง UpdateTodoDto",
-        "implement Update endpoint",
-        "handle 404 Not Found",
-        "ทดสอบการแก้ไข"
+        "Create UpdateTodoDto",
+        "Implement Update endpoint",
+        "Handle 404 Not Found",
+        "Test update"
       ]
     },
     {
@@ -203,20 +203,20 @@
       "description": "Soft delete Todo (set is_active = false)",
       "priority": "medium",
       "steps": [
-        "implement Soft Delete endpoint (set is_active = false)",
-        "return 204 No Content",
-        "ทดสอบการลบ (verify is_active = false, not hard deleted)"
+        "Implement Soft Delete endpoint (set is_active = false)",
+        "Return 204 No Content",
+        "Test deletion (verify is_active = false, not hard deleted)"
       ]
     },
     {
       "id": 10,
       "category": "quality",
-      "description": "Input validation และ error handling",
+      "description": "Input validation and error handling",
       "priority": "medium",
       "steps": [
-        "เพิ่ม FluentValidation",
-        "สร้าง validators",
-        "implement global exception handler"
+        "Add FluentValidation",
+        "Create validators",
+        "Implement global exception handler"
       ]
     },
     {
@@ -225,27 +225,27 @@
       "description": "Swagger documentation",
       "priority": "low",
       "steps": [
-        "ตั้งค่า Swashbuckle",
-        "เพิ่ม XML comments",
-        "ทดสอบ Swagger UI"
+        "Configure Swashbuckle",
+        "Add XML comments",
+        "Test Swagger UI"
       ]
     }
   ]
 }
 ```
 
-### Step 4: สร้างไฟล์
+### Step 4: Create Files
 
-**4.1 สร้าง .agent/ folder:**
+**4.1 Create .agent/ folder:**
 ```bash
 mkdir -p .agent
 ```
 
-**4.2 สร้าง .agent/config.json:**
+**4.2 Create .agent/config.json:**
 ```json
 {
   "project_name": "TodoApi",
-  "description": "Todo API ด้วย ASP.NET Core",
+  "description": "Todo API with ASP.NET Core",
   "technology": ".NET Core 8",
   "database": "PostgreSQL",
   "architecture": "Simple API",
@@ -259,7 +259,7 @@ mkdir -p .agent
 }
 ```
 
-**4.3 สร้าง .agent/progress.md:**
+**4.3 Create .agent/progress.md:**
 ```markdown
 # TodoApi - Progress Log
 
@@ -276,38 +276,38 @@ mkdir -p .agent
 **Type**: Initializer
 **Duration**: ~10 minutes
 
-### สิ่งที่ทำ:
-- ✅ วิเคราะห์ requirements
-- ✅ สร้าง feature_list.json (11 features)
-- ✅ สร้าง .agent/ configuration
+### What was done:
+- ✅ Analyzed requirements
+- ✅ Created feature_list.json (11 features)
+- ✅ Created .agent/ configuration
 - ✅ Initial git commit
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: 0/11
-- Project ยังไม่ได้สร้าง
+- Project not yet created
 
-### Feature ถัดไป:
-- **Feature #1**: สร้าง ASP.NET Core Web API project structure
+### Next Feature:
+- **Feature #1**: Create ASP.NET Core Web API project structure
   - Priority: High
   - Category: Setup
 
-### หมายเหตุ:
-- ใช้ .NET 8 LTS
-- PostgreSQL ต้อง setup ก่อน run
+### Notes:
+- Using .NET 8 LTS
+- PostgreSQL must be set up before running
 
 ---
 ```
 
-**4.4 สร้าง feature_list.json:** (ตามที่แตกไว้ใน Step 3)
+**4.4 Create feature_list.json:** (as broken down in Step 3)
 
 ### Step 5: Git Operations
 
 ```bash
-# ถ้ายังไม่มี git repo
+# If no git repo yet
 git init
 
-# สร้าง .gitignore (ถ้ายังไม่มี)
-# เพิ่ม entries สำหรับ .NET project
+# Create .gitignore (if not already present)
+# Add entries for the .NET project
 
 # Commit
 git add .
@@ -322,28 +322,28 @@ git commit -m "chore: Initialize long-running agent environment
 
 ## 📐 Feature Sizing Guidelines
 
-### Feature ที่ดี (ขนาดพอดี)
+### Good feature (right size)
 
 ```json
 {
   "id": 5,
-  "description": "GET /api/todos - ดึงรายการ todos ทั้งหมด",
+  "description": "GET /api/todos - Retrieve all todos",
   "steps": [
-    "สร้าง TodosController",
-    "implement GetAll endpoint",
-    "ทดสอบด้วย Swagger"
+    "Create TodosController",
+    "Implement GetAll endpoint",
+    "Test with Swagger"
   ]
 }
 ```
 - 3 steps
-- ทำเสร็จใน 15-20 นาที
-- Test ได้ง่าย
+- Completable in 15-20 minutes
+- Easy to test
 
-### Feature ที่ใหญ่เกินไป (ควรแบ่ง)
+### Feature that is too large (should be split)
 
 ```json
 {
-  "description": "สร้าง CRUD API ทั้งหมด",
+  "description": "Create entire CRUD API",
   "steps": [
     "GET all",
     "GET by id",
@@ -353,62 +353,62 @@ git commit -m "chore: Initialize long-running agent environment
   ]
 }
 ```
-→ ควรแบ่งเป็น features แยกกัน (เฉพาะ operations ที่ `enabled: true` ใน design_doc_list.json)
+→ Should be split into separate features (only for operations where `enabled: true` in design_doc_list.json)
 
 ### ⚠️ CRUD Feature Generation Rules
 
-**ก่อนสร้าง CRUD features ต้องตรวจสอบ `design_doc_list.json`:**
+**Before creating CRUD features, check `design_doc_list.json`:**
 
 ```json
-// ถ้า entity มี crud_operations แบบนี้:
+// If the entity has crud_operations like this:
 "crud_operations": {
   "create": { "enabled": true },
   "read":   { "enabled": true },
-  "update": { "enabled": false },  // ← ไม่สร้าง feature นี้
+  "update": { "enabled": false },  // ← do not create this feature
   "delete": { "enabled": true, "strategy": "soft" },
   "list":   { "enabled": true }
 }
 ```
 
-**กฎ:**
-- สร้าง feature เฉพาะ operations ที่ `enabled: true` เท่านั้น
-- Delete ต้องใช้ `strategy` จาก design doc (default: `"soft"`)
-  - **soft**: Set `is_active = false` (ไม่ลบจริง)
-  - **hard**: ลบออกจาก database จริง
-- Entity บางตัวอาจเป็น read-only (เช่น AuditLog: read + list เท่านั้น)
+**Rules:**
+- Only create features for operations where `enabled: true`
+- Delete must use the `strategy` from the design doc (default: `"soft"`)
+  - **soft**: Set `is_active = false` (do not actually delete)
+  - **hard**: Actually delete from database
+- Some entities may be read-only (e.g. AuditLog: read + list only)
 
-### Feature ที่เล็กเกินไป (ควรรวม)
+### Feature that is too small (should be merged)
 
 ```json
 {
-  "description": "เพิ่ม Id property ใน TodoItem"
+  "description": "Add Id property to TodoItem"
 }
 ```
-→ ควรรวมเป็นส่วนหนึ่งของ "สร้าง TodoItem entity"
+→ Should be merged as part of "Create TodoItem entity"
 
 ---
 
 ## 🎨 Feature Categories
 
-| Category | Description | ตัวอย่าง |
+| Category | Description | Example |
 |----------|-------------|----------|
-| `setup` | การตั้งค่า project เบื้องต้น | Project structure, packages |
-| `domain` | Business entities และ logic | Entities, Value Objects |
+| `setup` | Initial project configuration | Project structure, packages |
+| `domain` | Business entities and logic | Entities, Value Objects |
 | `data` | Data access layer | DbContext, Repositories |
 | `api` | API endpoints | Controllers, DTOs |
 | `auth` | Authentication/Authorization | JWT, Identity |
 | `integration` | External services | Email, Payment |
-| `quality` | Testing และ documentation | Unit tests, Swagger |
-| `devops` | Deployment และ CI/CD | Docker, pipelines |
+| `quality` | Testing and documentation | Unit tests, Swagger |
+| `devops` | Deployment and CI/CD | Docker, pipelines |
 
 ---
 
 ## ⚠️ Common Mistakes
 
-### ❌ สร้าง feature list ที่ไม่ครบ
+### ❌ Creating an incomplete feature list
 
 ```json
-// ไม่ดี - ลืม setup features
+// Bad - forgot setup features
 {
   "features": [
     { "description": "GET /api/todos" },
@@ -417,47 +417,47 @@ git commit -m "chore: Initialize long-running agent environment
 }
 ```
 
-### ❌ Features ไม่มี steps ที่ชัดเจน
+### ❌ Features without clear steps
 
 ```json
-// ไม่ดี
-{ "description": "สร้าง API", "steps": [] }
+// Bad
+{ "description": "Create API", "steps": [] }
 
-// ดี
+// Good
 {
   "description": "GET /api/todos",
   "steps": [
-    "สร้าง Controller",
-    "implement endpoint",
-    "ทดสอบ"
+    "Create Controller",
+    "Implement endpoint",
+    "Test"
   ]
 }
 ```
 
-### ❌ เริ่ม implement code ใน init phase
+### ❌ Starting to implement code in the init phase
 
 ```
-❌ ผิด: Initializer สร้าง Controller.cs
-✅ ถูก: Initializer สร้างแค่ feature_list.json
+❌ Wrong: Initializer creates Controller.cs
+✅ Correct: Initializer only creates feature_list.json
 ```
 
-### ❌ ลืม commit
+### ❌ Forgetting to commit
 
 ```
-❌ ผิด: สร้างไฟล์แล้วไม่ commit
-✅ ถูก: git commit -m "chore: Initialize agent environment"
+❌ Wrong: Create files but don't commit
+✅ Correct: git commit -m "chore: Initialize agent environment"
 ```
 
 ---
 
 ## 📝 Output Template
 
-เมื่อ Initializer ทำเสร็จ ควรแจ้ง user:
+When the Initializer finishes, notify the user:
 
 ```markdown
 ✅ Long-Running Agent Environment Initialized!
 
-📁 ไฟล์ที่สร้าง:
+📁 Files created:
 ├── feature_list.json (11 features)
 ├── .agent/config.json
 └── .agent/progress.md
@@ -471,9 +471,11 @@ git commit -m "chore: Initialize long-running agent environment
 - Quality: 2
 
 🚀 Next Steps:
-1. รัน `/continue` เพื่อเริ่มทำ Feature #1
-2. หรือดู feature list ด้วย `/status`
+1. Run `/continue` to start working on Feature #1
+2. Or view feature list with `/status`
 
-📝 Feature #1 (ถัดไป):
-สร้าง ASP.NET Core Web API project structure
+📝 Feature #1 (next):
+Create ASP.NET Core Web API project structure
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)
 ```

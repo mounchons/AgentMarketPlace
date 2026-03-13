@@ -1,6 +1,6 @@
 # /sync-with-features
 
-ตรวจสอบและ synchronize ข้อมูลระหว่าง `design_doc_list.json` และ `feature_list.json`
+Check and synchronize data between `design_doc_list.json` and `feature_list.json`
 
 ---
 
@@ -14,10 +14,10 @@
 
 ## Purpose
 
-1. **Sync API Endpoints** - เชื่อมโยง design doc APIs กับ features
-2. **Sync Entities** - map entities กับ domain features
-3. **Sync Diagrams** - link diagrams กับ related features
-4. **Update Cross-References** - bidirectional references
+1. **Sync API Endpoints** - Link design doc APIs with features
+2. **Sync Entities** - Map entities with domain features
+3. **Sync Diagrams** - Link diagrams with related features
+4. **Update Cross-References** - Bidirectional references
 
 ---
 
@@ -35,7 +35,7 @@ cat feature_list.json
 
 ### Step 2: Sync API Endpoints with Features
 
-Map API endpoints กับ features ที่ implement:
+Map API endpoints with the features that implement them:
 
 ```
 For each api_endpoint in design_doc_list:
@@ -61,7 +61,7 @@ Summary: 5/5 APIs mapped to features
 
 ### Step 3: Sync Entities with Domain Features
 
-Map entities กับ features ใน domain epic:
+Map entities with features in the domain epic:
 
 ```
 For each entity in design_doc_list:
@@ -75,8 +75,8 @@ For each entity in design_doc_list:
 Syncing entities with domain features...
 
 ✅ ENT-001 "User" ↔ Features [3, 4, 5, 6, 7, 8, 9]
-   - Feature #3: สร้าง User entity
-   - Feature #4: สร้าง DbContext
+   - Feature #3: Create User entity
+   - Feature #4: Create DbContext
    - Features #5-9: API endpoints
 
 Summary: 1/1 entities mapped
@@ -84,7 +84,7 @@ Summary: 1/1 entities mapped
 
 ### Step 4: Sync Diagrams with Features
 
-Link diagrams กับ related features:
+Link diagrams with related features:
 
 ```json
 {
@@ -253,16 +253,18 @@ Match by:
 
 ## When to Run
 
-- หลังจากสร้างหรือ update design document
-- หลังจาก /init หรือ /add-feature
-- ก่อน /continue เพื่อ validate references
-- เมื่อ design document มีการเปลี่ยนแปลง
+- After creating or updating a design document
+- After /init or /add-feature
+- Before /continue to validate references
+- When the design document has changes
 
 ---
 
 ## Notes
 
 - Safe to run multiple times
-- ใช้ fuzzy matching สำหรับ API paths
-- รองรับ partial sync
-- ไม่สร้าง features ใหม่ - ใช้ /generate-features-from-design แทน
+- Uses fuzzy matching for API paths
+- Supports partial sync
+- Does not create new features — use /generate-features-from-design instead
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

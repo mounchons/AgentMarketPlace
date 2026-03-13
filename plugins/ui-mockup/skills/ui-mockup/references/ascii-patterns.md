@@ -1,6 +1,6 @@
 # ASCII Wireframe Patterns
 
-รวม patterns สำหรับวาด ASCII wireframes
+Collection of patterns for drawing ASCII wireframes.
 
 ## Box Drawing Characters
 
@@ -559,7 +559,7 @@ G Google       f Facebook      in LinkedIn     🐦 Twitter
 ## Data Table with Action Column First
 
 ```
-Action column ด้านหน้า (ซ้ายสุด):
+Action column at the front (leftmost):
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  [Entity] List                                              [+ Add New]     │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -577,9 +577,9 @@ Action column ด้านหน้า (ซ้ายสุด):
 └─────────────────────────────────────────────────────────────────────────────┘
 
 Action Icons:
-👁 View    - ดูรายละเอียด (Modal หรือ Page ตาม complexity)
-✏️ Edit    - แก้ไข (Modal หรือ Page ตาม complexity)
-🗑 Delete  - ลบ (SweetAlert2 confirmation เสมอ)
+👁 View    - View details (Modal or Page depending on complexity)
+✏️ Edit    - Edit (Modal or Page depending on complexity)
+🗑 Delete  - Delete (always SweetAlert2 confirmation)
 ```
 
 ---
@@ -635,7 +635,7 @@ Action Icons:
 │      └────────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────────────┘
 
-Edit Modal (มีข้อมูลเดิม):
+Edit Modal (with existing data):
 ┌─────────────────────────────────────────────────────────────────┐
 │                         (overlay)                                │
 │      ┌────────────────────────────────────────────────────┐     │
@@ -775,7 +775,7 @@ Swal.fire({
 ## Simple Entity Pattern (Modal CRUD)
 
 ```
-Complete flow สำหรับ Simple Entity (Master Data):
+Complete flow for Simple Entity (Master Data):
 
 1. List Page:
 ┌─────────────────────────────────────────────────────────────────┐
@@ -801,7 +801,7 @@ Complete flow สำหรับ Simple Entity (Master Data):
 ## Complex Entity Pattern (Page CRUD)
 
 ```
-Complete flow สำหรับ Complex Entity:
+Complete flow for Complex Entity:
 
 1. List Page:
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -824,3 +824,5 @@ Complete flow สำหรับ Complex Entity:
 4. Click 🗑 → SweetAlert2 Delete Confirmation
 5. Click [+ Add New] → Navigate to Create Page
 ```
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

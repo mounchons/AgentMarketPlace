@@ -1,80 +1,80 @@
 ---
-description: สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams
+description: Create a standardized system design document. Supports Reverse Engineering from codebase with Mermaid diagrams
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # System Design Document Command
 
-สร้างเอกสารออกแบบระบบมาตรฐานครบวงจร รองรับทั้งการสร้างใหม่และ reverse engineering จาก codebase
+Create a comprehensive standardized system design document. Supports both creating new documents and reverse engineering from codebases.
 
-## Input ที่ได้รับ
+## Input Received
 
 ```
-/system-design-doc สร้างเอกสารสำหรับระบบ HR
-/system-design-doc จาก codebase นี้
-/system-design-doc สร้าง ER Diagram สำหรับระบบจองห้องประชุม
+/system-design-doc create document for HR system
+/system-design-doc from this codebase
+/system-design-doc create ER Diagram for meeting room booking system
 /system-design-doc $ARGUMENTS
 ```
 
-## วิเคราะห์ Mode
+## Analyze Mode
 
 | Pattern | Mode | Action |
 |---------|------|--------|
-| "สร้างเอกสาร", "System Design" | **Create New** | สร้างเอกสารจาก requirements |
-| "จาก codebase", "reverse engineer", "วิเคราะห์ code" | **Reverse Engineering** | วิเคราะห์ code แล้วสร้างเอกสาร |
-| "ER Diagram", "ERD" | **ER Diagram Only** | สร้าง ER Diagram เฉพาะ |
-| "Flow Diagram", "Flowchart" | **Flow Only** | สร้าง Flow Diagram เฉพาะ |
-| "Data Dictionary", "DD" | **DD Only** | สร้าง Data Dictionary เฉพาะ |
-| "DFD", "Data Flow" | **DFD Only** | สร้าง Data Flow Diagram เฉพาะ |
-| "Sitemap" | **Sitemap Only** | สร้าง Sitemap เฉพาะ |
-| "Sequence Diagram" | **Sequence Only** | สร้าง Sequence Diagram เฉพาะ |
+| "create document", "System Design" | **Create New** | Create document from requirements |
+| "from codebase", "reverse engineer", "analyze code" | **Reverse Engineering** | Analyze code then create document |
+| "ER Diagram", "ERD" | **ER Diagram Only** | Create ER Diagram only |
+| "Flow Diagram", "Flowchart" | **Flow Only** | Create Flow Diagram only |
+| "Data Dictionary", "DD" | **DD Only** | Create Data Dictionary only |
+| "DFD", "Data Flow" | **DFD Only** | Create Data Flow Diagram only |
+| "Sitemap" | **Sitemap Only** | Create Sitemap only |
+| "Sequence Diagram" | **Sequence Only** | Create Sequence Diagram only |
 
 ---
 
-## Mode 1: สร้างเอกสารใหม่จาก Requirements
+## Mode 1: Create New Document from Requirements
 
-### ขั้นตอน
+### Steps
 
-1. **รวบรวม Requirements**
-   - ถาม user เกี่ยวกับ scope, features, users
-   - ระบุ technology stack (ถ้ามี)
-   - กำหนด modules หลัก
+1. **Gather Requirements**
+   - Ask user about scope, features, users
+   - Identify technology stack (if available)
+   - Define main modules
 
-2. **สร้างโครงสร้างเอกสาร**
-   - ใช้ template จาก `templates/design-doc-template.md`
-   - เติมข้อมูลตาม sections ใน `references/document-sections.md`
+2. **Create Document Structure**
+   - Use template from `templates/design-doc-template.md`
+   - Fill in data per sections in `references/document-sections.md`
 
-3. **สร้าง Diagrams**
-   - ใช้ patterns จาก `references/mermaid-patterns.md`
+3. **Create Diagrams**
+   - Use patterns from `references/mermaid-patterns.md`
    - ER Diagram, Flow Diagram, DFD, Sitemap, Sequence Diagram
 
-4. **สร้าง Data Dictionary**
-   - ใช้ template จาก `references/data-dictionary-template.md`
+4. **Create Data Dictionary**
+   - Use template from `references/data-dictionary-template.md`
 
-5. **บันทึกไฟล์**
-   - สร้างไฟล์ `system-design-[project-name].md`
+5. **Save File**
+   - Create file `system-design-[project-name].md`
 
 ---
 
-## Mode 2: Reverse Engineering จาก Codebase
+## Mode 2: Reverse Engineering from Codebase
 
-### ขั้นตอน
+### Steps
 
-1. **Scan โครงสร้าง Project**
+1. **Scan Project Structure**
 
 ```bash
-# ดู directory structure
+# View directory structure
 ls -la
 find . -type f -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.java" -o -name "*.cs" | head -50
 
-# ระบุ framework
+# Identify framework
 cat package.json 2>/dev/null | head -20
 cat requirements.txt 2>/dev/null | head -20
 cat pom.xml 2>/dev/null | head -20
 cat *.csproj 2>/dev/null | head -20
 ```
 
-2. **ระบุ Technology Stack**
+2. **Identify Technology Stack**
 
 | File Pattern | Technology |
 |--------------|------------|
@@ -86,23 +86,23 @@ cat *.csproj 2>/dev/null | head -20
 | `go.mod` | Go |
 | `Cargo.toml` | Rust |
 
-3. **วิเคราะห์ไฟล์สำคัญ** (ดู `references/codebase-analysis.md`)
+3. **Analyze Key Files** (see `references/codebase-analysis.md`)
 
-| Component | ไฟล์ที่ต้องอ่าน | สร้าง Diagram |
-|-----------|----------------|---------------|
+| Component | Files to read | Diagram to create |
+|-----------|--------------|-------------------|
 | **Models/Entities** | `models/`, `entities/`, `*.entity.ts` | ER Diagram |
 | **Controllers/APIs** | `controllers/`, `routes/`, `api/` | Sequence Diagram |
 | **Services** | `services/`, `usecases/` | Flow Diagram |
 | **Routes/Pages** | `routes/`, `pages/`, `views/` | Sitemap |
 | **Database** | `migrations/`, `schema.prisma` | Data Dictionary |
 
-4. **สกัดข้อมูลและสร้างเอกสาร**
+4. **Extract Data and Create Document**
 
-5. **Validate กับ Code**
+5. **Validate Against Code**
 
 ---
 
-## Mode 3: สร้าง Diagram เฉพาะ
+## Mode 3: Create Specific Diagram
 
 ### ER Diagram
 
@@ -210,12 +210,12 @@ flowchart TD
 
 ## Document Structure
 
-เอกสารออกแบบระบบประกอบด้วย 10 ส่วนหลัก:
+The system design document consists of 10 main sections:
 
 ```
-1. บทนำและภาพรวมระบบ (Introduction & Overview)
-2. ความต้องการระบบ (System Requirements)
-3. โมดูลที่เกี่ยวข้อง (Module Overview)
+1. Introduction & Overview
+2. System Requirements
+3. Module Overview
 4. Data Model
 5. Data Flow Diagram
 6. Flow Diagrams
@@ -279,12 +279,14 @@ erDiagram
 
 ## Resources
 
-อ่านไฟล์เหล่านี้เพื่อรายละเอียดเพิ่มเติม:
+Read these files for additional details:
 
 | Resource | Description |
 |----------|-------------|
-| `references/codebase-analysis.md` | วิธีวิเคราะห์ code เพื่อสร้างเอกสาร |
-| `references/mermaid-patterns.md` | รูปแบบ diagrams ทั้งหมด |
-| `references/document-sections.md` | รายละเอียดแต่ละส่วนของเอกสาร |
-| `references/data-dictionary-template.md` | รูปแบบ Data Dictionary |
-| `templates/design-doc-template.md` | Template เอกสารฉบับเต็ม |
+| `references/codebase-analysis.md` | How to analyze code for document creation |
+| `references/mermaid-patterns.md` | All diagram patterns |
+| `references/document-sections.md` | Details for each document section |
+| `references/data-dictionary-template.md` | Data Dictionary format |
+| `templates/design-doc-template.md` | Full document template |
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

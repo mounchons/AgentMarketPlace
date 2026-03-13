@@ -1,13 +1,13 @@
 ---
-description: Initialize UI Mockup environment และสร้าง mockup_list.json จากเอกสารในโปรเจค
+description: Initialize UI Mockup environment and create mockup_list.json from project documents
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Init Mockup Command
 
-สร้าง mockup tracking system โดยวิเคราะห์เอกสารในโปรเจคและสร้าง `mockup_list.json`
+Create a mockup tracking system by analyzing project documents and generating `mockup_list.json`.
 
-## วัตถุประสงค์
+## Purpose
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -16,18 +16,18 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 │                                                                     │
 │  /init-mockup                                                      │
 │       │                                                            │
-│       ├── วิเคราะห์เอกสารในโปรเจค                                   │
+│       ├── Analyze project documents                                │
 │       │   ├── system-design-doc (Sitemap, Screen Specs, ER)       │
 │       │   ├── README.md                                           │
 │       │   ├── requirements.md                                     │
 │       │   └── API specs                                           │
 │       │                                                            │
-│       ├── ระบุ Entities สำหรับ CRUD                                │
-│       │   ├── Extract จาก ER Diagram                              │
-│       │   ├── Extract จาก API Endpoints                           │
-│       │   └── กำหนด complexity (simple/complex)                   │
+│       ├── Identify Entities for CRUD                               │
+│       │   ├── Extract from ER Diagram                              │
+│       │   ├── Extract from API Endpoints                           │
+│       │   └── Determine complexity (simple/complex)                │
 │       │                                                            │
-│       └── สร้าง .mockups/mockup_list.json                         │
+│       └── Create .mockups/mockup_list.json                         │
 │                     │                                              │
 │                     ▼                                              │
 │  ┌─────────────────────────────────────────────────────────────┐   │
@@ -43,41 +43,41 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Input ที่ได้รับ
+## Received Input
 
 ```
 /init-mockup
-/init-mockup จาก system-design.md
-/init-mockup จาก requirements/
+/init-mockup from system-design.md
+/init-mockup from requirements/
 /init-mockup --entities "User, Product, Order"
 /init-mockup --auto-crud
 ```
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: ค้นหาเอกสาร Source
+### Step 1: Search for Source Documents
 
 ```bash
-# ค้นหา system-design-doc
+# Search for system-design-doc
 ls -la *.md 2>/dev/null | head -20
 
-# ค้นหา Sitemap
+# Search for Sitemap
 grep -l -i "sitemap\|screen\|page" *.md 2>/dev/null
 
-# ค้นหาใน subdirectories
+# Search in subdirectories
 find . -name "*.md" -type f 2>/dev/null | head -30
 ```
 
-**Priority ในการค้นหา:**
-1. `system-design*.md` - เอกสารออกแบบระบบ
-2. `*sitemap*.md` - Sitemap เฉพาะ
+**Search priority:**
+1. `system-design*.md` - System design documents
+2. `*sitemap*.md` - Dedicated Sitemap
 3. `requirements*.md` - Requirements doc
 4. `README.md` - Project description
 5. `docs/*.md` - Documentation folder
 
-### Step 2: วิเคราะห์เอกสารเพื่อหา Pages
+### Step 2: Analyze Documents to Find Pages
 
-**สิ่งที่ต้องค้นหา:**
+**What to search for:**
 
 | Source | Pattern to Find |
 |--------|-----------------|
@@ -87,34 +87,34 @@ find . -name "*.md" -type f 2>/dev/null | head -30
 | **User Flows** | `Flow Diagram`, User journey steps |
 | **URLs** | `/path/to/page`, Route definitions |
 
-**ตัวอย่างการ extract pages จาก Sitemap:**
+**Example extracting pages from Sitemap:**
 
 ```markdown
 ## 9. Sitemap
 
 ### 9.2 Page Inventory
 
-| Page ID | ชื่อหน้า | URL | Access Level |
-|---------|---------|-----|--------------|
-| P001 | หน้าแรก | / | Public |
-| P002 | เข้าสู่ระบบ | /auth/login | Public |
+| Page ID | Page Name | URL | Access Level |
+|---------|-----------|-----|--------------|
+| P001 | Home | / | Public |
+| P002 | Login | /auth/login | Public |
 | P003 | Dashboard | /dashboard | User |
-| P004 | รายการผู้ใช้ | /admin/users | Admin |
+| P004 | User List | /admin/users | Admin |
 ```
 
-**Extract เป็น (format ใหม่):**
+**Extract as (new format):**
 ```json
 [
-  { "id": "001", "name": "หน้าแรก", "url": "/", "access": "Public" },
-  { "id": "002", "name": "เข้าสู่ระบบ", "url": "/auth/login", "access": "Public" },
+  { "id": "001", "name": "Home", "url": "/", "access": "Public" },
+  { "id": "002", "name": "Login", "url": "/auth/login", "access": "Public" },
   { "id": "003", "name": "Dashboard", "url": "/dashboard", "access": "User" },
-  { "id": "004", "name": "รายการผู้ใช้", "url": "/admin/users", "access": "Admin" }
+  { "id": "004", "name": "User List", "url": "/admin/users", "access": "Admin" }
 ]
 ```
 
-### Step 2.5: ค้นหา Entities สำหรับ CRUD Pages
+### Step 2.5: Find Entities for CRUD Pages
 
-**สิ่งที่ต้องค้นหา:**
+**What to search for:**
 
 | Source | Pattern to Find |
 |--------|-----------------|
@@ -123,7 +123,7 @@ find . -name "*.md" -type f 2>/dev/null | head -30
 | **API Endpoints** | CRUD endpoints (/users, /products) |
 | **Screen Specs** | List pages, Form pages, Detail pages |
 
-**ตัวอย่างการ extract entities จาก ER Diagram:**
+**Example extracting entities from ER Diagram:**
 
 ```markdown
 ## ER Diagram
@@ -146,9 +146,9 @@ User ─────── Order
 
 **Complexity Rules:**
 - **simple**: fields < 10, no complex relations → UI Pattern: **modal**
-- **complex**: fields >= 10 หรือ มี relations ซับซ้อน → UI Pattern: **page**
+- **complex**: fields >= 10 or has complex relations → UI Pattern: **page**
 
-### Step 3: สร้างโฟลเดอร์ .mockups
+### Step 3: Create .mockups folder
 
 ```bash
 mkdir -p .mockups
@@ -156,15 +156,15 @@ mkdir -p .mockups
 
 ### Step 3.5: Auto-generate CRUD Pages
 
-**⚠️ ตรวจสอบ `crud_actions` ก่อนสร้าง pages:**
-- สร้าง pages เฉพาะ operations ที่ `enabled: true` เท่านั้น
-- ถ้า `create.enabled == false && edit.enabled == false` → ไม่สร้างหน้า Form
-- ถ้า `view.enabled == false` → ไม่สร้างหน้า Detail
-- ถ้า `list.enabled == false` → ไม่สร้างหน้า List
-- ถ้า `delete.enabled == false` → ไม่ใส่ 🗑 icon ใน action column
-- ถ้า `delete.strategy == "soft"` → SweetAlert2 text: "This item will be deactivated."
+**Check `crud_actions` before creating pages:**
+- Only create pages for operations with `enabled: true`
+- If `create.enabled == false && edit.enabled == false` → Don't create Form page
+- If `view.enabled == false` → Don't create Detail page
+- If `list.enabled == false` → Don't create List page
+- If `delete.enabled == false` → Don't include 🗑 icon in action column
+- If `delete.strategy == "soft"` → SweetAlert2 text: "This item will be deactivated."
 
-**สำหรับแต่ละ Entity ให้สร้าง pages ตาม complexity (เฉพาะ enabled operations):**
+**For each Entity, create pages based on complexity (only for enabled operations):**
 
 #### Complex Entities (3 pages: List + Form + Detail)
 
@@ -174,7 +174,7 @@ mkdir -p .mockups
 | Product | Product List | Product Form | Product Detail |
 | Order | Order List | Order Form | Order Detail |
 
-**Template สำหรับ Complex Entity (3 pages):**
+**Template for Complex Entity (3 pages):**
 
 ```json
 // List Page
@@ -186,7 +186,7 @@ mkdir -p .mockups
   "access": "Admin",
   "category": "list",
   "priority": "medium",
-  "description": "หน้าแสดงรายการ[Entity_TH]ทั้งหมด",
+  "description": "Page displaying all [Entity] records",
   "components": ["Navbar", "Sidebar", "SearchBar", "Table", "Pagination", "ActionButtons"],
   "crud_group": "[Entity]",
   "crud_type": "list",
@@ -208,7 +208,7 @@ mkdir -p .mockups
   "access": "Admin",
   "category": "form",
   "priority": "medium",
-  "description": "หน้าสร้าง/แก้ไข[Entity_TH]",
+  "description": "Create/edit [Entity] page",
   "components": ["Navbar", "Card", "Input", "Select", "Button"],
   "crud_group": "[Entity]",
   "crud_type": "form",
@@ -230,7 +230,7 @@ mkdir -p .mockups
   "access": "Admin",
   "category": "detail",
   "priority": "medium",
-  "description": "หน้าแสดงรายละเอียด[Entity_TH]",
+  "description": "Page showing [Entity] details",
   "components": ["Navbar", "Card", "Avatar", "DataDisplay", "ActionButtons"],
   "crud_group": "[Entity]",
   "crud_type": "detail",
@@ -252,7 +252,7 @@ mkdir -p .mockups
 | Status | Status List | Modal | Modal | Modal | SweetAlert2 |
 | Category | Category List | Modal | Modal | Modal | SweetAlert2 |
 
-**Template สำหรับ Simple Entity (1 page with modals):**
+**Template for Simple Entity (1 page with modals):**
 
 ```json
 {
@@ -263,7 +263,7 @@ mkdir -p .mockups
   "access": "Admin",
   "category": "list",
   "priority": "low",
-  "description": "หน้าจัดการ[Entity_TH] (Master Data)",
+  "description": "Manage [Entity] page (Master Data)",
   "components": ["Navbar", "Sidebar", "SearchBar", "Table", "Pagination", "ActionButtons", "Modal", "SweetAlert2"],
   "crud_group": "[Entity]",
   "crud_type": "list",
@@ -278,22 +278,22 @@ mkdir -p .mockups
 }
 ```
 
-### Step 3.6: กำหนด Related Documents อัตโนมัติ
+### Step 3.6: Auto-assign Related Documents
 
-**สำหรับแต่ละ page ให้ค้นหา related documents:**
+**For each page, search for related documents:**
 
-1. **จาก System Design Doc:**
-   - ค้นหา section ที่มีชื่อ entity
-   - Link ไปยัง Sitemap, Screen Specs, ER Diagram
+1. **From System Design Doc:**
+   - Search for sections containing the entity name
+   - Link to Sitemap, Screen Specs, ER Diagram
 
-2. **จาก API Specs (ถ้ามี):**
-   - ค้นหา endpoints ที่เกี่ยวข้อง
+2. **From API Specs (if available):**
+   - Search for related endpoints
    - List page → GET /api/[entity]
    - Form page → POST/PUT /api/[entity]
    - Detail page → GET /api/[entity]/:id
 
-3. **จาก Requirements (ถ้ามี):**
-   - ค้นหา functional requirements ที่เกี่ยวข้อง
+3. **From Requirements (if available):**
+   - Search for related functional requirements
 
 **Auto-link pattern:**
 
@@ -307,14 +307,14 @@ mkdir -p .mockups
 }
 ```
 
-### Step 4: สร้าง mockup_list.json
+### Step 4: Create mockup_list.json
 
-**Format ใหม่ (พร้อม entities และ CRUD support):**
+**New format (with entities and CRUD support):**
 
 ```json
 {
-  "project": "ชื่อโปรเจค",
-  "description": "คำอธิบายโปรเจค",
+  "project": "Project Name",
+  "description": "Project Description",
   "source_documents": [
     "system-design.md",
     "requirements.md"
@@ -369,7 +369,7 @@ mkdir -p .mockups
       "access": "Public",
       "category": "auth",
       "priority": "high",
-      "description": "หน้า login สำหรับเข้าสู่ระบบ",
+      "description": "Login page for system access",
       "components": ["Logo", "Card", "Input", "Button"],
       "crud_group": null,
       "crud_type": null,
@@ -394,7 +394,7 @@ mkdir -p .mockups
       "access": "Admin",
       "category": "list",
       "priority": "medium",
-      "description": "หน้าแสดงรายการผู้ใช้ทั้งหมด",
+      "description": "Page displaying all user records",
       "components": ["Navbar", "Sidebar", "SearchBar", "Table", "Pagination", "ActionButtons"],
       "crud_group": "User",
       "crud_type": "list",
@@ -436,13 +436,13 @@ mkdir -p .mockups
 
   "ui_patterns": {
     "modal": {
-      "description": "ใช้สำหรับ simple entities (Master Data) - View/Create/Edit/Delete ผ่าน Modal",
-      "use_when": ["fields น้อยกว่า 10", "ไม่มี relations ซับซ้อน", "Master data"],
+      "description": "Used for simple entities (Master Data) - View/Create/Edit/Delete via Modal",
+      "use_when": ["Less than 10 fields", "No complex relations", "Master data"],
       "components": ["Modal", "Form", "SweetAlert2"]
     },
     "page": {
-      "description": "ใช้สำหรับ complex entities - View/Create/Edit ผ่านหน้าแยก",
-      "use_when": ["fields มากกว่า 10", "มี relations ซับซ้อน", "ต้องการ wizard/steps"],
+      "description": "Used for complex entities - View/Create/Edit via separate pages",
+      "use_when": ["More than 10 fields", "Has complex relations", "Needs wizard/steps"],
       "components": ["Form Page", "Detail Page", "SweetAlert2"]
     }
   },
@@ -497,7 +497,7 @@ mkdir -p .mockups
 }
 ```
 
-### Step 5: กำหนด Categories และ Priority
+### Step 5: Define Categories and Priority
 
 **Categories:**
 
@@ -515,14 +515,14 @@ mkdir -p .mockups
 
 | Priority | Description |
 |----------|-------------|
-| `high` | Core pages ที่ต้องมี (Login, Dashboard) |
-| `medium` | Feature pages หลัก (CRUD pages) |
+| `high` | Core pages that are essential (Login, Dashboard) |
+| `medium` | Main feature pages (CRUD pages) |
 | `low` | Secondary pages (Settings, Master Data) |
 
-### Step 6: บันทึก mockup_list.json
+### Step 6: Save mockup_list.json
 
 ```bash
-# สร้างไฟล์
+# Create file
 cat > .mockups/mockup_list.json << 'EOF'
 {
   "project": "...",
@@ -532,7 +532,7 @@ cat > .mockups/mockup_list.json << 'EOF'
 EOF
 ```
 
-### Step 7: สร้าง _design-tokens.json (Optional)
+### Step 7: Create _design-tokens.json (Optional)
 
 ```json
 {
@@ -586,7 +586,7 @@ EOF
 **Success:**
 
 ```
-✅ Initialize Mockup Environment สำเร็จ!
+✅ Mockup Environment Initialized Successfully!
 
 📁 Files created:
    • .mockups/mockup_list.json
@@ -627,47 +627,47 @@ EOF
    • Action column: First (leftmost) in all tables
 
 💡 Next steps:
-   • /create-mockup                        → สร้าง mockup ทีละหน้า
-   • /create-mockups-parallel --entity User → สร้าง CRUD pages ของ entity
-   • /create-mockups-parallel --all        → สร้างทุกหน้าที่ pending
+   • /create-mockup                        → Create mockup one page at a time
+   • /create-mockups-parallel --entity User → Create CRUD pages for entity
+   • /create-mockups-parallel --all        → Create all pending pages
 ```
 
 ---
 
-## ถ้าไม่พบเอกสาร Source
+## If No Source Documents Found
 
 ```
-⚠️ ไม่พบเอกสารที่สามารถ extract pages ได้
+⚠️ No documents found that can be used to extract pages
 
-📝 กรุณาระบุ pages manually:
+📝 Please specify pages manually:
 
 /init-mockup --pages "Login, Dashboard, User List, User Form"
 
-หรือระบุ entities:
+Or specify entities:
 
 /init-mockup --entities "User, Product, Department"
 
-หรือสร้าง system-design-doc ก่อน:
-/system-design-doc สร้างเอกสารสำหรับระบบ [ชื่อระบบ]
+Or create a system-design-doc first:
+/system-design-doc Create document for system [system-name]
 ```
 
 ---
 
 ## Manual Mode
 
-### ระบุ pages เอง:
+### Specify pages manually:
 
 ```
 /init-mockup --pages "Login, Dashboard, User List, User Form, Settings"
 ```
 
-### ระบุ entities เอง:
+### Specify entities manually:
 
 ```
 /init-mockup --entities "User, Product, Order" --complexity "complex, complex, complex"
 ```
 
-หรือ mixed:
+Or mixed:
 
 ```
 /init-mockup --entities "User, Department, Status" --complexity "complex, simple, simple"
@@ -679,13 +679,13 @@ EOF
 /init-mockup --auto-crud
 ```
 
-จะค้นหา entities จาก source documents และสร้าง CRUD pages อัตโนมัติ
+This will search for entities from source documents and auto-generate CRUD pages.
 
 ---
 
 ## Integration with Other Commands
 
-### /create-mockup จะอ่าน mockup_list.json
+### /create-mockup reads mockup_list.json
 
 ```
 /create-mockup
@@ -729,7 +729,7 @@ EOF
    Spawning 15 sub-agents in parallel...
 ```
 
-### เมื่อ mockup เสร็จ จะอัพเดท mockup_list.json
+### When a mockup is completed, mockup_list.json is updated
 
 ```json
 {
@@ -860,10 +860,10 @@ interface TableConfig {
 ```
 pending → in_progress → completed → approved
    │           │            │           │
-   │           │            │           └── ผ่านการ review
-   │           │            └── สร้าง mockup เสร็จแล้ว
-   │           └── กำลังสร้าง mockup
-   └── ยังไม่ได้เริ่ม
+   │           │            │           └── Passed review
+   │           │            └── Mockup creation completed
+   │           └── Mockup creation in progress
+   └── Not yet started
 ```
 
 ---
@@ -882,3 +882,5 @@ pending → in_progress → completed → approved
 | 004 | User List | 004-user-list.mockup.md |
 | 005 | User Form | 005-user-form.mockup.md |
 | 010 | Department List | 010-department-list.mockup.md |
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

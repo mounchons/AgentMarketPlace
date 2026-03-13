@@ -1,25 +1,25 @@
 ---
-description: สร้าง diagram เฉพาะประเภท (ER, Flow, DFD, Sequence, Sitemap, State, Class)
+description: Create a specific diagram type (ER, Flow, DFD, Sequence, Sitemap, State, Class)
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Create Diagram Command
 
-สร้าง diagram เฉพาะประเภทที่ต้องการ โดยไม่ต้องสร้างเอกสารทั้งฉบับ
+Create a specific diagram type without creating the entire document.
 
-## Input ที่ได้รับ
+## Input Received
 
 ```
-/create-diagram ER Diagram สำหรับระบบจองห้องประชุม
-/create-diagram Flow Diagram กระบวนการอนุมัติลา
-/create-diagram DFD Level 1 ระบบสั่งซื้อสินค้า
-/create-diagram Sequence Diagram สำหรับ Login process
-/create-diagram Sitemap เว็บ E-commerce
-/create-diagram State Diagram สำหรับ Order status
+/create-diagram ER Diagram for meeting room booking system
+/create-diagram Flow Diagram for leave approval process
+/create-diagram DFD Level 1 for product ordering system
+/create-diagram Sequence Diagram for Login process
+/create-diagram Sitemap for E-commerce website
+/create-diagram State Diagram for Order status
 /create-diagram $ARGUMENTS
 ```
 
-## วิเคราะห์ประเภท Diagram
+## Analyze Diagram Type
 
 | Keyword | Diagram Type |
 |---------|--------------|
@@ -37,9 +37,9 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ## ER Diagram
 
 ### Input Required
-- ชื่อระบบหรือ domain
-- Entities หลัก (ถ้าทราบ)
-- Relationships ที่สำคัญ
+- System or domain name
+- Main entities (if known)
+- Important relationships
 
 ### Pattern
 
@@ -90,32 +90,32 @@ erDiagram
 ## Flow Diagram
 
 ### Input Required
-- ชื่อ process
-- Steps หลัก
+- Process name
+- Main steps
 - Decision points
-- Actors (ถ้ามี)
+- Actors (if any)
 
 ### Patterns
 
 #### Basic Process Flow
 ```mermaid
 flowchart TD
-    A[เริ่มต้น] --> B{ตรวจสอบเงื่อนไข}
-    B -->|ใช่| C[ดำเนินการ A]
-    B -->|ไม่| D[ดำเนินการ B]
-    C --> E[บันทึกข้อมูล]
+    A[Start] --> B{Check Condition}
+    B -->|Yes| C[Process A]
+    B -->|No| D[Process B]
+    C --> E[Save Data]
     D --> E
-    E --> F[จบ]
+    E --> F[End]
 ```
 
 #### Approval Workflow
 ```mermaid
 flowchart TD
-    A[ส่งคำขอ] --> B{ผู้จัดการอนุมัติ?}
-    B -->|อนุมัติ| C{ผู้อำนวยการอนุมัติ?}
-    B -->|ปฏิเสธ| D[ส่งกลับแก้ไข]
-    C -->|อนุมัติ| E[ดำเนินการ]
-    C -->|ปฏิเสธ| D
+    A[Submit Request] --> B{Manager Approved?}
+    B -->|Approved| C{Director Approved?}
+    B -->|Rejected| D[Return for Revision]
+    C -->|Approved| E[Process]
+    C -->|Rejected| D
     D --> A
 ```
 
@@ -123,14 +123,14 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Customer
-        A[สั่งซื้อ]
+        A[Place Order]
     end
     subgraph System
-        B[ตรวจสอบสต็อก]
-        C[สร้าง Order]
+        B[Check Stock]
+        C[Create Order]
     end
     subgraph Warehouse
-        D[จัดส่งสินค้า]
+        D[Ship Goods]
     end
     A --> B
     B --> C
@@ -142,9 +142,9 @@ flowchart LR
 ## Data Flow Diagram (DFD)
 
 ### Input Required
-- ชื่อระบบ
+- System name
 - External entities
-- Processes หลัก
+- Main processes
 - Data stores
 
 ### Patterns
@@ -152,23 +152,23 @@ flowchart LR
 #### Level 0 (Context Diagram)
 ```mermaid
 flowchart LR
-    E1((ผู้ใช้งาน)) -->|คำขอ| S[ระบบหลัก]
-    S -->|ผลลัพธ์| E1
-    E2((ผู้ดูแลระบบ)) -->|การตั้งค่า| S
-    S -->|รายงาน| E2
-    S <-->|ข้อมูล| D1[(ฐานข้อมูล)]
+    E1((User)) -->|Request| S[Main System]
+    S -->|Result| E1
+    E2((Admin)) -->|Settings| S
+    S -->|Report| E2
+    S <-->|Data| D1[(Database)]
 ```
 
 #### Level 1 DFD
 ```mermaid
 flowchart TB
-    E1((ลูกค้า)) -->|1. ข้อมูลสั่งซื้อ| P1[1.0 รับคำสั่งซื้อ]
-    P1 -->|2. คำสั่งซื้อ| D1[(Orders)]
-    P1 -->|3. รายการสินค้า| P2[2.0 ตรวจสอบสต็อก]
-    P2 <-->|4. ข้อมูลสต็อก| D2[(Inventory)]
-    P2 -->|5. ยืนยันสต็อก| P3[3.0 ประมวลผลการชำระ]
-    P3 -->|6. ใบเสร็จ| E1
-    P3 -->|7. ข้อมูลชำระ| D3[(Payments)]
+    E1((Customer)) -->|1. Order Data| P1[1.0 Receive Order]
+    P1 -->|2. Order| D1[(Orders)]
+    P1 -->|3. Product List| P2[2.0 Check Stock]
+    P2 <-->|4. Stock Data| D2[(Inventory)]
+    P2 -->|5. Confirm Stock| P3[3.0 Process Payment]
+    P3 -->|6. Receipt| E1
+    P3 -->|7. Payment Data| D3[(Payments)]
 ```
 
 ---
@@ -176,7 +176,7 @@ flowchart TB
 ## Sequence Diagram
 
 ### Input Required
-- ชื่อ process/API
+- Process/API name
 - Participants (User, Frontend, API, Database, etc.)
 - Request/Response flow
 
@@ -191,14 +191,14 @@ sequenceDiagram
     participant S as Service
     participant D as Database
 
-    U->>F: กรอกข้อมูล Login
+    U->>F: Enter Login Credentials
     F->>A: POST /api/auth/login
     A->>S: validateCredentials()
     S->>D: SELECT user WHERE email=?
     D-->>S: User data
     S-->>A: JWT Token
     A-->>F: 200 OK + Token
-    F-->>U: แสดงหน้า Dashboard
+    F-->>U: Display Dashboard
 ```
 
 #### With Error Handling
@@ -211,12 +211,12 @@ sequenceDiagram
 
     C->>A: POST /orders
     A->>V: validate(orderData)
-    alt ข้อมูลถูกต้อง
+    alt Data Valid
         V-->>A: valid
         A->>DB: INSERT order
         DB-->>A: order_id
         A-->>C: 201 Created
-    else ข้อมูลไม่ถูกต้อง
+    else Data Invalid
         V-->>A: errors[]
         A-->>C: 400 Bad Request
     end
@@ -248,16 +248,16 @@ sequenceDiagram
 ## Sitemap
 
 ### Input Required
-- ชื่อเว็บไซต์/แอพ
-- หน้าหลัก
-- User roles และ access levels
+- Website/app name
+- Main pages
+- User roles and access levels
 
 ### Patterns
 
 #### Hierarchical Sitemap
 ```mermaid
 flowchart TD
-    HOME[หน้าแรก]
+    HOME[Home]
 
     HOME --> AUTH[Authentication]
     HOME --> DASH[Dashboard]
@@ -278,9 +278,9 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Public
-        P1[หน้าแรก]
-        P2[เกี่ยวกับเรา]
-        P3[ติดต่อเรา]
+        P1[Home]
+        P2[About Us]
+        P3[Contact Us]
     end
 
     subgraph User["User Area"]
@@ -301,24 +301,24 @@ flowchart LR
 ## State Diagram
 
 ### Input Required
-- Entity ที่มี state
-- States ทั้งหมด
-- Transitions และ triggers
+- Entity that has states
+- All states
+- Transitions and triggers
 
 ### Pattern
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Draft: สร้างใหม่
-    Draft --> PendingReview: ส่งตรวจสอบ
-    PendingReview --> Approved: อนุมัติ
-    PendingReview --> Rejected: ปฏิเสธ
-    Rejected --> Draft: แก้ไข
-    Approved --> Published: เผยแพร่
-    Published --> Archived: เก็บเข้าคลัง
+    [*] --> Draft: Create New
+    Draft --> PendingReview: Submit for Review
+    PendingReview --> Approved: Approved
+    PendingReview --> Rejected: Rejected
+    Rejected --> Draft: Edit
+    Approved --> Published: Published
+    Published --> Archived: Archive
     Archived --> [*]
 
-    note right of PendingReview: รอผู้มีอำนาจตรวจสอบ
+    note right of PendingReview: Awaiting authority review
 ```
 
 ---
@@ -327,8 +327,8 @@ stateDiagram-v2
 
 ### Input Required
 - Domain/System
-- Classes หลัก
-- Properties และ Methods
+- Main classes
+- Properties and Methods
 - Relationships
 
 ### Pattern
@@ -394,6 +394,8 @@ classDiagram
 
 | Resource | Description |
 |----------|-------------|
-| `references/mermaid-patterns.md` | รูปแบบ diagrams ทั้งหมด |
+| `references/mermaid-patterns.md` | All diagram patterns |
 | `references/architecture-patterns.md` | Architecture patterns |
-| `references/troubleshooting.md` | แก้ไข Mermaid syntax errors |
+| `references/troubleshooting.md` | Mermaid syntax error fixes |
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

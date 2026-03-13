@@ -1,7 +1,14 @@
 {
   "name": "ui-mockup",
-  "version": "1.1.0",
-  "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications และ design tokens เชื่อมต่อกับ system-design-doc และส่งต่อไปยัง frontend-design skill",
+  "version": "1.2.0",
+  "description": "Create and edit UI Mockup/Wireframe from System Design Document — supports ASCII wireframes, component specifications, design tokens, validation and quality checks, integrated with system-design-doc and frontend-design skills",
+  "commands": [
+    {
+      "name": "validate-mockup",
+      "description": "Validate UI Mockup files for completeness and compliance",
+      "file": "commands/validate-mockup.md"
+    }
+  ],
   "author": {
     "name": "Mounchons"
   }

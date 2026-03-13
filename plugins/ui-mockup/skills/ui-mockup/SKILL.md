@@ -1,14 +1,16 @@
 ---
 name: ui-mockup
-description: สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications, design tokens และ responsive design specs
+description: Create and edit UI Mockup/Wireframe from System Design Documents. Supports ASCII wireframes, component specifications, design tokens, and responsive design specs
 ---
 
 # UI Mockup Skill
 
-Skill สำหรับสร้างและแก้ไข UI Mockup/Wireframe โดยใช้ ASCII art และ structured specifications
-ออกแบบมาเพื่อเชื่อมต่อกับ system-design-doc และส่งต่อไปยัง frontend-design skill
+> **Response Language**: Always respond to users in Thai (ภาษาไทย)
 
-## 🎯 วัตถุประสงค์
+Skill for creating and editing UI Mockup/Wireframe using ASCII art and structured specifications.
+Designed to connect with system-design-doc and pass output to the frontend-design skill.
+
+## 🎯 Purpose
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -30,20 +32,20 @@ Skill สำหรับสร้างและแก้ไข UI Mockup/Wirefr
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## 💡 ตัวอย่างคำสั่งที่ใช้ได้
+## 💡 Available Commands
 
-| สิ่งที่ต้องการ | ตัวอย่างคำสั่ง |
-|---------------|---------------|
-| **สร้าง Mockup ใหม่** | `/create-mockup หน้า Login` |
-| **สร้างจาก Design Doc** | `/create-mockup จาก system-design-doc.md` |
-| **แก้ไข Mockup** | `/edit-mockup หน้า Login - เพิ่มปุ่ม Social Login` |
-| **เปลี่ยน Layout** | `/edit-mockup หน้า Dashboard - ปรับเป็น 3 columns` |
-| **เพิ่ม Component** | `/edit-mockup หน้า List - เพิ่ม pagination` |
-| **Responsive Design** | `/create-mockup หน้า Home - mobile first` |
+| What you need | Example command |
+|---------------|----------------|
+| **Create new Mockup** | `/create-mockup Login page` |
+| **Create from Design Doc** | `/create-mockup from system-design-doc.md` |
+| **Edit Mockup** | `/edit-mockup Login page - add Social Login button` |
+| **Change Layout** | `/edit-mockup Dashboard page - change to 3 columns` |
+| **Add Component** | `/edit-mockup List page - add pagination` |
+| **Responsive Design** | `/create-mockup Home page - mobile first` |
 
 ---
 
-## 🏗️ โครงสร้าง Output
+## 🏗️ Output Structure
 
 ### 1. Mockup Document Structure
 
@@ -546,63 +548,63 @@ layouts:
 
 ## 🔄 Workflow
 
-### สร้าง Mockup ใหม่
+### Creating a New Mockup
 
 ```
-1. รับ Input
-   ├── จาก system-design-doc (Sitemap, Screen Specs)
-   └── หรือจาก user requirements
+1. Receive Input
+   ├── From system-design-doc (Sitemap, Screen Specs)
+   └── Or from user requirements
 
-2. กำหนด Layout
-   ├── เลือก layout pattern ที่เหมาะสม
-   ├── กำหนด grid system
-   └── ระบุ responsive behavior
+2. Define Layout
+   ├── Choose appropriate layout pattern
+   ├── Define grid system
+   └── Specify responsive behavior
 
-3. สร้าง Wireframe
-   ├── วาด ASCII wireframe
-   ├── ระบุ component ที่ใช้
-   └── กำหนด spacing
+3. Create Wireframe
+   ├── Draw ASCII wireframe
+   ├── Specify components used
+   └── Define spacing
 
-4. สร้าง Component Specs
-   ├── List components ที่ใช้
-   ├── ระบุ states (default, hover, active, disabled)
-   └── กำหนด interactions
+4. Create Component Specs
+   ├── List components used
+   ├── Specify states (default, hover, active, disabled)
+   └── Define interactions
 
-5. กำหนด Design Tokens
+5. Define Design Tokens
    ├── Colors
    ├── Typography
    └── Spacing
 
-6. บันทึก Mockup
-   └── สร้างไฟล์ .mockup.md ในโฟลเดอร์ .mockups/
+6. Save Mockup
+   └── Create .mockup.md file in .mockups/ folder
 ```
 
-### แก้ไข Mockup
+### Editing a Mockup
 
 ```
-1. อ่าน Mockup ที่มีอยู่
-   └── จาก .mockups/[page-name].mockup.md
+1. Read Existing Mockup
+   └── From .mockups/[page-name].mockup.md
 
-2. รับ Change Request
-   ├── เพิ่ม/ลบ component
-   ├── เปลี่ยน layout
-   ├── ปรับ design tokens
-   └── เพิ่ม responsive breakpoint
+2. Receive Change Request
+   ├── Add/remove component
+   ├── Change layout
+   ├── Adjust design tokens
+   └── Add responsive breakpoint
 
-3. แก้ไข Mockup
-   ├── อัพเดท ASCII wireframe
-   ├── อัพเดท component specs
-   └── อัพเดท design tokens
+3. Edit Mockup
+   ├── Update ASCII wireframe
+   ├── Update component specs
+   └── Update design tokens
 
-4. บันทึก Version
-   └── อัพเดทไฟล์ + version history
+4. Save Version
+   └── Update file + version history
 ```
 
 ---
 
 ## 📁 Output Files
 
-เมื่อสร้าง mockup จะบันทึกไฟล์ที่:
+When creating a mockup, files are saved at:
 
 ```
 project-root/
@@ -621,10 +623,66 @@ project-root/
 
 | Command | Description |
 |---------|-------------|
-| `/create-mockup [page]` | สร้าง mockup หน้าใหม่ |
-| `/edit-mockup [page] - [changes]` | แก้ไข mockup ที่มีอยู่ |
-| `/list-mockups` | ดูรายการ mockups ทั้งหมด |
-| `/export-mockups` | Export mockups เป็น summary |
+| `/create-mockup [page]` | Create a new page mockup |
+| `/edit-mockup [page] - [changes]` | Edit an existing mockup |
+| `/list-mockups` | View all mockups |
+| `/export-mockups` | Export mockups as summary |
+
+---
+
+## ⚠️ CRITICAL RULES (MUST FOLLOW)
+
+### Wireframe Rules
+
+1. **ALL 3 breakpoint wireframes mandatory** — Desktop (12 columns), Tablet (8 columns), Mobile (4 columns)
+2. **No abbreviation** — every wireframe must have actual ASCII art content, not "[wireframe here]" placeholders
+3. **No placeholder text** — "[TBD]", "[TODO]", "will be added" is forbidden in wireframe content
+
+### Design Token Rules
+
+4. **Reference tokens from SKILL.md** — use the design tokens defined in this skill (colors, typography, spacing)
+5. **Include "Design Tokens Used" section** — every mockup must list which tokens it uses
+
+### Component Rules
+
+6. **Use Component Library symbols** — use the standard ASCII symbols defined in the Component Library section above
+7. **List all components** — every mockup must have a "Components Used" table listing all components
+
+### CRUD Rules
+
+8. **Match complexity** — simple entities (< 10 fields) use modal pattern, complex entities (>= 10 fields) use page pattern
+9. **Action column first** — in data tables, the action column (View/Edit/Delete) must be the leftmost column
+10. **SweetAlert2 for delete** — all delete operations use SweetAlert2 confirmation dialog
+11. **Enabled actions only** — only show action icons for CRUD operations that are enabled
+
+### 🔍 Self-Check Checklist (MANDATORY before submitting output)
+
+Before completing the mockup, verify EVERY item:
+
+- [ ] Desktop wireframe (12 columns) drawn with actual ASCII art?
+- [ ] Tablet wireframe (8 columns) drawn with actual ASCII art?
+- [ ] Mobile wireframe (4 columns) drawn with actual ASCII art?
+- [ ] Design tokens referenced in "Design Tokens Used" section?
+- [ ] All components listed in "Components Used" table?
+- [ ] Action column is first (leftmost) in data tables?
+- [ ] CRUD pattern matches entity complexity (modal vs page)?
+- [ ] All required sections present (Page Info, Description, Layout Grid, Wireframe, Components, Interactions, Design Tokens, Responsive, Version History)?
+
+If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
+
+### ❌ Output Rejection Criteria
+
+Your output will be REJECTED and you must REDO the entire mockup if:
+
+- Any breakpoint wireframe is missing or contains only placeholder text
+- "Design Tokens Used" section is missing
+- "Components Used" table is missing
+- Action column is not first in data tables
+- CRUD pattern doesn't match entity complexity
+
+### ⚠️ Penalty
+
+Violating these rules means the task is FAILED. Your output will be REJECTED and you must redo the ENTIRE mockup from scratch. There are no partial passes.
 
 ---
 
@@ -632,11 +690,11 @@ project-root/
 
 | File | Description |
 |------|-------------|
-| `references/ascii-patterns.md` | ASCII wireframe patterns เพิ่มเติม |
+| `references/ascii-patterns.md` | Additional ASCII wireframe patterns |
 | `references/component-library.md` | Full component library |
 | `references/responsive-patterns.md` | Responsive design patterns |
-| `templates/mockup-template.md` | Template สำหรับ mockup file |
-| `templates/mockup_list.json` | Template สำหรับ mockup tracking |
+| `templates/mockup-template.md` | Template for mockup files |
+| `templates/mockup_list.json` | Template for mockup tracking |
 
 ---
 
@@ -644,10 +702,10 @@ project-root/
 
 ### Simple vs Complex Entities
 
-| Complexity | ลักษณะข้อมูล | UI Pattern | ตัวอย่าง |
-|------------|-------------|------------|---------|
-| **simple** | Master data, fields < 10, ไม่มี relations ซับซ้อน | Modal popup | Department, Status, Category, Position |
-| **complex** | Fields >= 10, มี relations ซับซ้อน, ต้องการ wizard | Separate page | User, Order, Product, Employee |
+| Complexity | Data Characteristics | UI Pattern | Examples |
+|------------|---------------------|------------|---------|
+| **simple** | Master data, fields < 10, no complex relations | Modal popup | Department, Status, Category, Position |
+| **complex** | Fields >= 10, has complex relations, needs wizard | Separate page | User, Order, Product, Employee |
 
 ### UI Pattern Decision
 
@@ -677,21 +735,21 @@ Entity Analysis
 
 ### Complex Entity (3 pages)
 
-สำหรับ entity ที่ซับซ้อน จะสร้าง 3 pages:
+For complex entities, 3 pages will be created:
 
 | Page Type | Filename | Description |
 |-----------|----------|-------------|
-| List | `[NNN]-[entity]-list.mockup.md` | ตารางแสดงรายการ |
-| Form | `[NNN]-[entity]-form.mockup.md` | ฟอร์มสร้าง/แก้ไข |
-| Detail | `[NNN]-[entity]-detail.mockup.md` | แสดงรายละเอียด |
+| List | `[NNN]-[entity]-list.mockup.md` | Table showing all records |
+| Form | `[NNN]-[entity]-form.mockup.md` | Create/edit form |
+| Detail | `[NNN]-[entity]-detail.mockup.md` | Record detail view |
 
 ### Simple Entity (1 page with modals)
 
-สำหรับ entity ง่ายๆ (Master Data) จะสร้าง 1 page:
+For simple entities (Master Data), 1 page will be created:
 
 | Page Type | Filename | Description |
 |-----------|----------|-------------|
-| List | `[NNN]-[entity]-list.mockup.md` | ตาราง + Modal สำหรับ View/Create/Edit |
+| List | `[NNN]-[entity]-list.mockup.md` | Table + Modal for View/Create/Edit |
 
 ---
 
@@ -701,10 +759,10 @@ Entity Analysis
 
 | Component | Description | Example |
 |-----------|-------------|---------|
-| NNN | 3 หลักตัวเลขจาก page ID | 001, 004, 015 |
-| page-name | ชื่อหน้าแบบ kebab-case | login, user-list, department-list |
+| NNN | 3-digit number from page ID | 001, 004, 015 |
+| page-name | Page name in kebab-case | login, user-list, department-list |
 
-**ตัวอย่าง:**
+**Examples:**
 ```
 .mockups/
 ├── mockup_list.json
@@ -722,7 +780,7 @@ Entity Analysis
 
 ## 📋 Action Column Position
 
-**Action column ต้องอยู่ด้านหน้า (ซ้ายสุด) ของตาราง:**
+**The action column must be at the front (leftmost) of the table:**
 
 ```
 ┌────────┬─────┬────────────────────┬─────────────────┬──────────┐
@@ -745,7 +803,7 @@ Entity Analysis
 
 ## 🔔 SweetAlert2 Usage
 
-**Delete confirmation ใช้ SweetAlert2 เสมอ (ทั้ง simple และ complex entities):**
+**Delete confirmation always uses SweetAlert2 (for both simple and complex entities):**
 
 ```javascript
 // Delete Confirmation (default: soft delete)
@@ -782,7 +840,7 @@ Swal.fire({
 
 ## 🔗 Related Documents
 
-ทุก page ใน mockup_list.json สามารถมี related_documents:
+Every page in mockup_list.json can have related_documents:
 
 ```json
 {
@@ -794,7 +852,7 @@ Swal.fire({
 }
 ```
 
-**Document Types ที่รองรับ:**
+**Supported Document Types:**
 - `system-design` - System Design Document
 - `api` - API Specification
 - `requirements` - Requirements Document

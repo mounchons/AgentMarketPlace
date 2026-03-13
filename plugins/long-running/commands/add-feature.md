@@ -1,40 +1,40 @@
 ---
-description: เพิ่ม feature ใหม่เข้าไปใน feature_list.json
+description: Add a new feature to feature_list.json
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 ---
 
-# Add Feature - เพิ่ม Feature ใหม่
+# Add Feature - Add a New Feature
 
-คุณจะช่วย user เพิ่ม feature ใหม่เข้าไปในโปรเจค
+You will help the user add a new feature to the project.
 
-## Input ที่ได้รับ
+## Input Received
 
-Feature ที่ต้องการเพิ่ม: $ARGUMENTS
+Feature to add: $ARGUMENTS
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: ตรวจสอบ Environment
+### Step 1: Check Environment
 
 ```bash
-# ตรวจสอบว่ามี feature_list.json อยู่
+# Check if feature_list.json exists
 cat feature_list.json
 ```
 
-**ถ้าไม่พบ feature_list.json:** แจ้ง user ว่าต้องรัน `/init` ก่อน
+**If feature_list.json not found:** Inform user they need to run `/init` first.
 
-### Step 2: วิเคราะห์ Feature ใหม่
+### Step 2: Analyze New Feature
 
-จาก input ที่ user ให้มา:
-- ระบุ description ที่ชัดเจน
-- กำหนด category (setup, domain, functional, quality, enhancement, etc.)
-- กำหนด priority (high, medium, low)
-- แตก steps ที่ต้องทำ (3-5 steps)
+From user input:
+- Define a clear description
+- Determine category (setup, domain, functional, quality, enhancement, etc.)
+- Determine priority (high, medium, low)
+- Break into steps (3-5 steps)
 
-### Step 3: หา ID ถัดไป
+### Step 3: Find Next ID
 
-อ่าน feature_list.json และหา id สูงสุดที่มีอยู่ แล้ว +1
+Read feature_list.json and find the highest existing id, then +1.
 
-### Step 4: สร้าง Feature Entry ใหม่
+### Step 4: Create New Feature Entry
 
 ```json
 {
@@ -57,19 +57,19 @@ cat feature_list.json
 }
 ```
 
-**หมายเหตุ:**
-- `references`: array ของ paths ไปยังเอกสารที่เกี่ยวข้อง เช่น `.mockups/page.mockup.md`, `docs/logic.md`, `sql/create_table.sql`
+**Note:**
+- `references`: array of paths to related documents, e.g., `.mockups/page.mockup.md`, `docs/logic.md`, `sql/create_table.sql`
 
-### Step 5: เพิ่มเข้า feature_list.json
+### Step 5: Add to feature_list.json
 
-- เพิ่ม feature ใหม่เข้าไปใน array `features`
-- อัพเดท `summary.total` (+1)
-- อัพเดท `summary.failed` (+1)
-- อัพเดท `summary.last_updated`
+- Add new feature to `features` array
+- Update `summary.total` (+1)
+- Update `summary.failed` (+1)
+- Update `summary.last_updated`
 
 ### Step 6: Update Progress Log
 
-เพิ่มใน .agent/progress.md:
+Add to .agent/progress.md:
 ```markdown
 ### Feature Added
 - Feature #[ID]: [description]
@@ -78,52 +78,52 @@ cat feature_list.json
 - Added at: [timestamp]
 ```
 
-### Step 7: Git Commit (ถ้า user ต้องการ)
+### Step 7: Git Commit (if user wants)
 
 ```bash
 git add feature_list.json .agent/progress.md
 git commit -m "feat: Add feature #[ID] - [short description]"
 ```
 
-## กฎสำคัญ
+## Important Rules
 
-❌ **ห้าม:**
-- เปลี่ยน features ที่มีอยู่แล้ว
-- Mark feature ใหม่เป็น passes: true
-- Implement feature ทันที (แค่เพิ่มใน list เท่านั้น)
-- สร้าง feature ที่ใหญ่เกินไป (ควรทำเสร็จใน 1 session)
+❌ **Forbidden:**
+- Modify existing features
+- Mark new feature as passes: true
+- Implement feature immediately (only add to list)
+- Create features that are too large (should be completable in 1 session)
 
-✅ **ต้องทำ:**
-- ถาม user ถ้า input ไม่ชัดเจน
-- แตก feature ใหญ่เป็นหลายๆ features เล็ก
-- ระบุ steps ที่ชัดเจน
-- เก็บ timestamp ว่าเพิ่มเมื่อไหร่
+✅ **Must do:**
+- Ask user if input is unclear
+- Split large features into multiple small features
+- Specify clear steps
+- Record timestamp of when it was added
 
-## Output ที่คาดหวัง
+## Expected Output
 
-เมื่อเสร็จแล้ว แจ้ง user:
-1. Feature ID ที่สร้างใหม่
-2. รายละเอียด feature
-3. จำนวน features ทั้งหมดหลังเพิ่ม (X total, Y passed, Z pending)
-4. แนะนำให้ใช้ `/continue` เพื่อเริ่มทำ feature ใหม่
+When complete, inform user:
+1. Newly created Feature ID
+2. Feature details
+3. Total features after adding (X total, Y passed, Z pending)
+4. Recommend using `/continue` to start working on new feature
 
-## ตัวอย่าง
+## Examples
 
-**Input:** เพิ่ม feature สำหรับ search todos by title
+**Input:** Add a feature for searching todos by title
 
-**Output ที่ควรสร้าง:**
+**Output that should be created:**
 ```json
 {
   "id": 11,
   "category": "functional",
-  "description": "GET /api/todos/search - ค้นหา todos ตาม title",
+  "description": "GET /api/todos/search - search todos by title",
   "priority": "medium",
   "steps": [
-    "เพิ่ม endpoint ใหม่ใน TodosController",
-    "รับ query parameter 'q' หรือ 'title'",
-    "ใช้ LIKE query กับ SQLite",
-    "return empty array ถ้าไม่พบ",
-    "ทดสอบ search ด้วย keyword ต่างๆ"
+    "Add new endpoint in TodosController",
+    "Accept query parameter 'q' or 'title'",
+    "Use LIKE query with SQLite",
+    "Return empty array if not found",
+    "Test search with various keywords"
   ],
   "dependencies": [5],
   "references": ["docs/api-spec.md"],
@@ -135,22 +135,22 @@ git commit -m "feat: Add feature #[ID] - [short description]"
 }
 ```
 
-### ตัวอย่าง 2: Feature พร้อม references
+### Example 2: Feature with references
 
-**Input:** เพิ่ม feature สำหรับหน้า User Profile
+**Input:** Add a feature for User Profile page
 
-**Output ที่ควรสร้าง:**
+**Output that should be created:**
 ```json
 {
   "id": 12,
   "category": "feature",
-  "description": "สร้างหน้า User Profile",
+  "description": "Create User Profile page",
   "priority": "medium",
   "steps": [
-    "สร้าง ProfileController",
-    "สร้าง Profile view ตาม mockup",
-    "แสดงข้อมูล user จาก database",
-    "ทดสอบ UI และ data binding"
+    "Create ProfileController",
+    "Create Profile view per mockup",
+    "Display user data from database",
+    "Test UI and data binding"
   ],
   "dependencies": [3, 5],
   "references": [
@@ -164,3 +164,5 @@ git commit -m "feat: Add feature #[ID] - [short description]"
   "added_at": "2025-01-15T11:00:00Z"
 }
 ```
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

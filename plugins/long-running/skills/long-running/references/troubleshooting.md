@@ -1,226 +1,226 @@
 # Troubleshooting Guide
 
-แก้ไขปัญหาที่พบบ่อยเมื่อใช้ Long-Running Agent
+Solutions for common problems when using Long-Running Agent
 
 ## 🔴 Common Problems & Solutions
 
-### Problem 1: Context Lost - Agent ไม่รู้ว่าทำอะไรไปแล้ว
+### Problem 1: Context Lost - Agent doesn't know what was already done
 
-**อาการ:**
+**Symptoms:**
 ```
 Agent: "ผมไม่เห็นไฟล์ที่คุณพูดถึงครับ"
 Agent: "โปรเจคนี้ต้องทำอะไรบ้างครับ?"
 ```
 
-**สาเหตุ:**
-- ไม่ได้อ่าน progress.md ก่อนเริ่มงาน
-- Session ใหม่ไม่มี context
+**Cause:**
+- Did not read progress.md before starting work
+- New session has no context
 
-**วิธีแก้:**
+**Solution:**
 ```bash
-# 1. ให้ agent อ่าน progress ก่อน
+# 1. Have the agent read progress first
 cat .agent/progress.md
 
-# 2. ให้ดู git log
+# 2. Have it view git log
 git log --oneline -10
 
-# 3. ให้ดู feature list
+# 3. Have it view the feature list
 cat feature_list.json
 ```
 
 **Prevention:**
-- ใช้ `/continue` command ที่บังคับอ่าน context
+- Use the `/continue` command which forces reading context
 
 ---
 
-### Problem 2: Agent ทำหลาย Features ใน 1 Session
+### Problem 2: Agent works on multiple features in 1 session
 
-**อาการ:**
+**Symptoms:**
 ```
 Agent: "เสร็จแล้วครับ! ผมทำ Feature #1, #2, #3, #4 ให้เลย"
 ```
 
-**สาเหตุ:**
-- Prompt ไม่ชัดเจนพอ
-- Agent พยายาม one-shot
+**Cause:**
+- Prompt not clear enough
+- Agent tries to one-shot
 
-**วิธีแก้:**
+**Solution:**
 ```
-บอก agent ว่า:
-"ทำทีละ 1 feature เท่านั้น
-หลังจากทำเสร็จ ให้ commit และ update progress
-แล้วหยุดรอคำสั่งถัดไป"
+Tell the agent:
+"Work on only 1 feature at a time.
+After completing it, commit and update progress.
+Then stop and wait for the next instruction."
 ```
 
 **Prevention:**
-- ใช้ `/continue` command ที่มีกฎชัดเจน
-- ตั้ง config: `"max_features_per_session": 1`
+- Use the `/continue` command which has clear rules
+- Set config: `"max_features_per_session": 1`
 
 ---
 
-### Problem 3: Feature Mark Pass โดยไม่ได้ Test
+### Problem 3: Feature marked pass without testing
 
-**อาการ:**
+**Symptoms:**
 ```json
 {
   "id": 5,
   "passes": true,
-  "notes": ""  // ไม่มี test notes
+  "notes": ""  // no test notes
 }
 ```
 
-**วิธีตรวจสอบ:**
+**How to verify:**
 ```bash
-# 1. ดู feature ที่ pass แต่ไม่มี notes
+# 1. Find features that passed but have no notes
 cat feature_list.json | jq '.features[] | select(.passes == true and .notes == "")'
 
-# 2. ทดสอบ feature นั้นด้วยตัวเอง
+# 2. Test the feature yourself
 curl http://localhost:5000/api/todos
 ```
 
-**วิธีแก้:**
+**Solution:**
 ```
-บอก agent ว่า:
-"ก่อน mark pass ต้อง:
-1. Test จริง (curl, Postman, หรือ run tests)
-2. เขียน test result ใน notes
-3. ใส่ tested_at timestamp"
+Tell the agent:
+"Before marking pass you must:
+1. Actually test (curl, Postman, or run tests)
+2. Write test results in notes
+3. Include tested_at timestamp"
 ```
 
 **Prevention:**
-- เพิ่ม validation ใน feature_list.json schema
-- ตั้ง config: `"require_tests": true`
+- Add validation to the feature_list.json schema
+- Set config: `"require_tests": true`
 
 ---
 
-### Problem 4: Build Fail หลังจาก Session ก่อน
+### Problem 4: Build fails after previous session
 
-**อาการ:**
+**Symptoms:**
 ```bash
 $ dotnet build
 error CS1002: ; expected
 Build FAILED.
 ```
 
-**สาเหตุ:**
-- Session ก่อนทิ้งงานในสถานะ incomplete
+**Cause:**
+- Previous session left work in an incomplete state
 - Merge conflict
 - Missing dependencies
 
-**วิธีแก้:**
+**Solution:**
 ```bash
-# 1. ดู error
+# 1. View the error
 dotnet build 2>&1
 
-# 2. ถ้าแก้ไขได้
-# แก้ code → build → commit fix
+# 2. If fixable
+# Fix code → build → commit fix
 
-# 3. ถ้าแก้ไม่ได้
-git log --oneline -5  # ดู commit ก่อนหน้า
-git checkout HEAD~1   # กลับไป commit ก่อน
+# 3. If not fixable
+git log --oneline -5  # view previous commits
+git checkout HEAD~1   # go back to previous commit
 
-# 4. หรือ revert เฉพาะ commit ที่มีปัญหา
+# 4. Or revert only the problematic commit
 git revert abc1234
 ```
 
 ---
 
-### Problem 5: feature_list.json ถูกแก้ไขผิดพลาด
+### Problem 5: feature_list.json modified incorrectly
 
-**อาการ:**
+**Symptoms:**
 ```json
-// Features หายไป
-// หรือ description ถูกแก้
-// หรือ format ผิด
+// Features missing
+// or descriptions changed
+// or format is wrong
 ```
 
-**วิธีแก้:**
+**Solution:**
 ```bash
-# 1. ดู history ของไฟล์
+# 1. View file history
 git log --oneline feature_list.json
 
-# 2. ดูว่าเปลี่ยนอะไร
+# 2. See what changed
 git diff HEAD~1 feature_list.json
 
-# 3. Restore จาก commit ก่อน
+# 3. Restore from previous commit
 git checkout HEAD~1 -- feature_list.json
 
-# 4. แก้ไข passes status ใหม่
+# 4. Re-apply passes status
 ```
 
 **Prevention:**
-- เน้นย้ำกับ agent ว่าแก้ได้แค่ `passes` และ `notes`
-- ใช้ JSON schema validation
+- Emphasize to the agent that only `passes` and `notes` can be modified
+- Use JSON schema validation
 
 ---
 
-### Problem 6: Progress Log ไม่ถูก Update
+### Problem 6: Progress log not updated
 
-**อาการ:**
+**Symptoms:**
 ```markdown
 # .agent/progress.md
 ## Session 1 - INITIALIZER
 ...
-(ไม่มี session 2, 3, 4 ทั้งที่ทำไปแล้ว)
+(no session 2, 3, 4 even though work was done)
 ```
 
-**วิธีแก้:**
+**Solution:**
 ```bash
-# 1. ดู git log เพื่อ reconstruct history
+# 1. View git log to reconstruct history
 git log --oneline
 
-# 2. สร้าง progress entries ที่หายไป
-# ดูจาก commit messages และ feature_list.json changes
+# 2. Create the missing progress entries
+# Use commit messages and feature_list.json changes as reference
 ```
 
 **Prevention:**
-- ใส่ใน checklist ว่าต้อง update progress ก่อนจบ session
-- ตรวจสอบว่า progress ถูก update ก่อน commit
+- Include in checklist that progress must be updated before ending session
+- Verify progress is updated before committing
 
 ---
 
-### Problem 7: Agent ประกาศว่า "เสร็จแล้ว" ทั้งที่ยังไม่เสร็จ
+### Problem 7: Agent declares "done" when it's not finished
 
-**อาการ:**
+**Symptoms:**
 ```
 Agent: "โปรเจคเสร็จสมบูรณ์แล้วครับ!"
 
-แต่ feature_list.json:
+But feature_list.json:
 - passed: 5/15
 ```
 
-**วิธีแก้:**
+**Solution:**
 ```
-บอก agent ว่า:
-"ตรวจสอบ feature_list.json ก่อนประกาศว่าเสร็จ
-ต้อง passes == true ทุก feature
-ถ้ายังไม่ครบ ให้บอกว่ายังเหลืออีกกี่ feature"
+Tell the agent:
+"Check feature_list.json before declaring completion.
+All features must have passes == true.
+If not complete, state how many features remain."
 ```
 
 ---
 
 ### Problem 8: Duplicate Features
 
-**อาการ:**
+**Symptoms:**
 ```json
 {
   "features": [
     { "id": 5, "description": "GET /api/todos" },
-    { "id": 6, "description": "GET /api/todos" }  // ซ้ำ!
+    { "id": 6, "description": "GET /api/todos" }  // duplicate!
   ]
 }
 ```
 
-**วิธีแก้:**
+**Solution:**
 ```bash
-# 1. ลบ feature ที่ซ้ำ
-# 2. Re-number features ถ้าจำเป็น
+# 1. Remove the duplicate feature
+# 2. Re-number features if necessary
 # 3. Update references
 ```
 
 **Prevention:**
-- ตรวจสอบ uniqueness ตอน initialize
-- ใช้ description ที่ชัดเจนต่างกัน
+- Check for uniqueness during initialization
+- Use clearly distinct descriptions
 
 ---
 
@@ -242,7 +242,7 @@ git revert <commit-hash>
 ### Recreate Progress from Git
 
 ```bash
-# สร้าง progress log ใหม่จาก git history
+# Rebuild progress log from git history
 git log --format="## Session
 **Date**: %ci
 **Commit**: %h
@@ -269,26 +269,26 @@ cat feature_list.json | jq '.features[] | select(.passes == true) | .id'
 
 ## 📋 Diagnostic Checklist
 
-เมื่อพบปัญหา ให้ตรวจสอบ:
+When encountering problems, check the following:
 
 ### Environment
-- [ ] `pwd` - อยู่ใน project directory ถูกต้อง?
-- [ ] `git status` - มี uncommitted changes?
-- [ ] `dotnet build` (หรือ equivalent) - build ผ่าน?
+- [ ] `pwd` - In the correct project directory?
+- [ ] `git status` - Any uncommitted changes?
+- [ ] `dotnet build` (or equivalent) - Build passes?
 
 ### Files
-- [ ] `cat .agent/config.json` - config ถูกต้อง?
-- [ ] `cat .agent/progress.md` - progress updated?
-- [ ] `cat feature_list.json | jq '.summary'` - summary ถูกต้อง?
+- [ ] `cat .agent/config.json` - Config correct?
+- [ ] `cat .agent/progress.md` - Progress updated?
+- [ ] `cat feature_list.json | jq '.summary'` - Summary correct?
 
 ### Git
-- [ ] `git log --oneline -5` - commits ตรงกับ progress?
-- [ ] `git diff` - มี changes ที่ยังไม่ commit?
+- [ ] `git log --oneline -5` - Commits match progress?
+- [ ] `git diff` - Any uncommitted changes?
 
 ### Agent State
-- [ ] Agent รู้ว่าทำ feature ไหนอยู่?
-- [ ] Agent รู้ว่า feature ไหน pass แล้ว?
-- [ ] Agent รู้ว่าต้องทำอะไรต่อ?
+- [ ] Does the agent know which feature it's working on?
+- [ ] Does the agent know which features have passed?
+- [ ] Does the agent know what to do next?
 
 ---
 
@@ -297,40 +297,40 @@ cat feature_list.json | jq '.features[] | select(.passes == true) | .id'
 ### 1. Always Use Commands
 
 ```bash
-# ใช้ /init แทนการ initialize เอง
-# ใช้ /continue แทนการบอกให้ทำต่อ
-# ใช้ /status เพื่อตรวจสอบสถานะ
+# Use /init instead of initializing manually
+# Use /continue instead of telling the agent to continue
+# Use /status to check status
 ```
 
 ### 2. Commit Often
 
 ```bash
-# Commit ทุกครั้งที่ feature เสร็จ
-# อย่ารอ commit หลาย features พร้อมกัน
+# Commit every time a feature is complete
+# Do not wait to commit multiple features at once
 ```
 
-### 3. Update Progress Before End
+### 3. Update Progress Before Ending
 
 ```markdown
-ก่อนจบ session ทุกครั้ง:
+Before ending every session:
 1. ✅ Feature completed
 2. ✅ Tests passed
 3. ✅ Changes committed
-4. ✅ Progress updated  <-- อย่าลืม!
+4. ✅ Progress updated  <-- don't forget!
 ```
 
-### 4. Verify Build Before End
+### 4. Verify Build Before Ending
 
 ```bash
-# ก่อนจบ session
-dotnet build  # ต้องผ่าน
-dotnet run    # ต้องทำงานได้ (ถ้า applicable)
+# Before ending session
+dotnet build  # must pass
+dotnet run    # must work (if applicable)
 ```
 
 ### 5. Review Before Marking Pass
 
 ```
-ก่อน mark feature เป็น pass:
+Before marking a feature as pass:
 - ✅ Code compiles
 - ✅ Tests pass
 - ✅ Manual test works

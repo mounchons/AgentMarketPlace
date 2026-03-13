@@ -12,11 +12,11 @@
 | Property | Value |
 |----------|-------|
 | Page ID | [NNN] |
-| Page Name | [ชื่อหน้าภาษาไทย/อังกฤษ] |
+| Page Name | [Page name in Thai/English] |
 | URL | /path/to/page |
 | Access | [Public / User / Admin / etc.] |
-| Parent Page | [หน้าแม่ถ้ามี] |
-| CRUD Group | [Entity name หรือ N/A] |
+| Parent Page | [Parent page if applicable] |
+| CRUD Group | [Entity name or N/A] |
 | CRUD Type | [list / form / detail / N/A] |
 | Complexity | [simple / complex / N/A] |
 | UI Pattern | [modal / page / N/A] |
@@ -27,7 +27,7 @@
 
 ## CRUD Group Navigation
 
-<!-- แสดงเมื่อหน้านี้เป็นส่วนของ CRUD group -->
+<!-- Show when this page is part of a CRUD group -->
 
 | Type | Page | ID | Status | Link |
 |------|------|----|--------|------|
@@ -43,7 +43,7 @@
 
 ## Description
 
-[อธิบายสั้นๆ 1-2 ประโยคว่าหน้านี้ทำอะไร ใครใช้ และ use case หลัก]
+[Brief 1-2 sentence description of what this page does, who uses it, and the main use case]
 
 ---
 
@@ -150,7 +150,7 @@
 
 ## Data Table
 
-<!-- สำหรับหน้า List - Action column อยู่ด้านหน้า (ซ้ายสุด) -->
+<!-- For List pages - Action column at the front (leftmost) -->
 
 ### Table Structure
 
@@ -261,7 +261,7 @@ loading: false
 
 ## Modal Dialogs
 
-<!-- สำหรับ Simple Entities - ใช้ Modal สำหรับ View/Create/Edit -->
+<!-- For Simple Entities - Use Modal for View/Create/Edit -->
 
 ### View Modal
 
@@ -462,7 +462,7 @@ Swal.fire({
 
 ### Breakpoint Details
 
-**Desktop (≥1024px)**:
+**Desktop (>=1024px)**:
 - Full layout with sidebar
 - Table with all columns
 - Horizontal forms
@@ -508,7 +508,7 @@ Swal.fire({
 
 ## Notes & Decisions
 
-- [Note 1: Design decision และเหตุผล]
+- [Note 1: Design decision and rationale]
 - [Note 2: Known limitation]
 - [Note 3: Future enhancement]
 
@@ -546,3 +546,5 @@ Swal.fire({
 
 - Figma Design: [link if available]
 - Prototype: [link if available]
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

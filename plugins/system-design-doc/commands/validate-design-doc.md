@@ -1,13 +1,13 @@
 ---
-description: ตรวจสอบความครบถ้วนและความสอดคล้องของเอกสารออกแบบระบบ
+description: Validate completeness and consistency of the system design document
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Validate Design Document Command
 
-ตรวจสอบความครบถ้วน ความถูกต้อง และความสอดคล้องของเอกสารออกแบบระบบ
+Validate the completeness, correctness, and consistency of the system design document.
 
-## Input ที่ได้รับ
+## Input Received
 
 ```
 /validate-design-doc
@@ -16,18 +16,18 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 /validate-design-doc $ARGUMENTS
 ```
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: ระบุเอกสารที่ต้องตรวจสอบ
+### Step 1: Identify the Document to Validate
 
-**ถ้าไม่ได้ระบุไฟล์:**
+**If no file is specified:**
 
 ```bash
-# ค้นหาเอกสารออกแบบระบบ
+# Search for system design documents
 ls -la .design-docs/*.md 2>/dev/null
 ```
 
-**แสดงรายการให้เลือก:**
+**Display a list for selection:**
 ```
 📋 Available Design Documents:
 
@@ -41,7 +41,7 @@ ls -la .design-docs/*.md 2>/dev/null
    เลือกหมายเลข หรือ 'all' เพื่อตรวจทั้งหมด:
 ```
 
-### Step 2: อ่านเอกสาร
+### Step 2: Read the Document
 
 ```bash
 cat .design-docs/system-design-[name].md
@@ -55,7 +55,7 @@ cat .design-docs/system-design-[name].md
 
 ### 1. Section Completeness Check
 
-**ตรวจสอบว่ามีครบ 10 sections:**
+**Verify that all 10 sections are present:**
 
 | # | Section | Required? | Check |
 |---|---------|-----------|-------|
@@ -90,7 +90,7 @@ cat .design-docs/system-design-[name].md
 
 ### 2. Diagram Syntax Validation
 
-**ตรวจสอบ Mermaid syntax:**
+**Validate Mermaid syntax:**
 
 | Diagram Type | Common Errors |
 |--------------|---------------|
@@ -100,10 +100,10 @@ cat .design-docs/system-design-[name].md
 | State Diagram | Missing transitions, invalid state names |
 
 **Mermaid Syntax Checks:**
-- ทุก `erDiagram` block มี entity definitions
-- ทุก `flowchart` block มี valid node connections
-- ทุก `sequenceDiagram` block มี participant definitions
-- ไม่มี unclosed brackets หรือ quotes
+- Every `erDiagram` block has entity definitions
+- Every `flowchart` block has valid node connections
+- Every `sequenceDiagram` block has participant definitions
+- No unclosed brackets or quotes
 
 **Result:**
 ```
@@ -122,11 +122,11 @@ cat .design-docs/system-design-[name].md
 
 #### 3.1 ER Diagram ↔ Data Dictionary
 
-**ตรวจสอบ:**
-- [ ] ทุก entity ใน ER Diagram มีใน Data Dictionary
-- [ ] ทุก table ใน Data Dictionary มีใน ER Diagram
-- [ ] Columns ตรงกัน
-- [ ] FK relationships ตรงกัน
+**Verify:**
+- [ ] Every entity in ER Diagram exists in Data Dictionary
+- [ ] Every table in Data Dictionary exists in ER Diagram
+- [ ] Columns match
+- [ ] FK relationships match
 
 **Result:**
 ```
@@ -141,9 +141,9 @@ cat .design-docs/system-design-[name].md
 
 #### 3.2 Sitemap ↔ User Roles
 
-**ตรวจสอบ:**
-- [ ] ทุกหน้าใน Sitemap มี access rule
-- [ ] ไม่มีหน้าที่ไม่มี role เข้าถึง
+**Verify:**
+- [ ] Every page in Sitemap has an access rule
+- [ ] No pages exist without a role that can access them
 
 **Result:**
 ```
@@ -155,10 +155,10 @@ cat .design-docs/system-design-[name].md
 
 #### 3.3 DFD Level 0 ↔ Level 1
 
-**ตรวจสอบ:**
-- [ ] System ใน Level 0 มี processes ใน Level 1
-- [ ] External entities ตรงกัน
-- [ ] Data flows สอดคล้องกัน
+**Verify:**
+- [ ] System in Level 0 has processes in Level 1
+- [ ] External entities match
+- [ ] Data flows are consistent
 
 **Result:**
 ```
@@ -170,9 +170,9 @@ cat .design-docs/system-design-[name].md
 
 #### 3.4 Modules ↔ Other Sections
 
-**ตรวจสอบ:**
-- [ ] Modules ใน Overview ปรากฏใน Flow Diagrams
-- [ ] Modules มี entities ที่เกี่ยวข้อง
+**Verify:**
+- [ ] Modules in Overview appear in Flow Diagrams
+- [ ] Modules have associated entities
 
 **Result:**
 ```
@@ -188,10 +188,10 @@ cat .design-docs/system-design-[name].md
 
 #### 4.1 Requirements Quality
 
-**ตรวจสอบ FR/NFR:**
-- [ ] ทุก FR มี unique ID (FR-001, FR-002, ...)
-- [ ] ทุก FR มี priority (High, Medium, Low)
-- [ ] NFR ครอบคลุม: Performance, Security, Availability
+**Verify FR/NFR:**
+- [ ] Every FR has a unique ID (FR-001, FR-002, ...)
+- [ ] Every FR has a priority (High, Medium, Low)
+- [ ] NFR covers: Performance, Security, Availability
 
 **Result:**
 ```
@@ -204,11 +204,11 @@ cat .design-docs/system-design-[name].md
 
 #### 4.2 Data Dictionary Quality
 
-**ตรวจสอบ:**
-- [ ] ทุก table มี PK
-- [ ] ทุก FK มี reference
-- [ ] Data types ถูกต้องตาม convention
-- [ ] มี indexes สำหรับ FK และ search columns
+**Verify:**
+- [ ] Every table has a PK
+- [ ] Every FK has a reference
+- [ ] Data types follow convention
+- [ ] Indexes exist for FK and search columns
 
 **Result:**
 ```
@@ -224,10 +224,10 @@ cat .design-docs/system-design-[name].md
 
 #### 4.3 Diagram Complexity
 
-**ตรวจสอบ:**
-- [ ] ER Diagram ไม่มี entity เกิน 20 (แนะนำแยก domain)
-- [ ] Flow Diagram แต่ละอันไม่มีเกิน 15 nodes
-- [ ] Sequence Diagram ไม่มีเกิน 10 participants
+**Verify:**
+- [ ] ER Diagram does not exceed 20 entities (recommend splitting by domain)
+- [ ] Each Flow Diagram does not exceed 15 nodes
+- [ ] Sequence Diagram does not exceed 10 participants
 
 **Result:**
 ```
@@ -244,15 +244,15 @@ cat .design-docs/system-design-[name].md
 
 ### Standard Mode (Default)
 
-ตรวจสอบความครบถ้วนและความสอดคล้องพื้นฐาน
+Validates basic completeness and consistency.
 
 ### Strict Mode (`--strict`)
 
-ตรวจสอบเพิ่มเติม:
-- ทุก entity ต้องมี audit columns (created_at, updated_at)
-- ทุก table ต้องมี indexes ที่เหมาะสม
-- ทุก API endpoint ต้องมี Sequence Diagram
-- ทุก business rule ต้องปรากฏใน Flow Diagram
+Additional validations:
+- Every entity must have audit columns (created_at, updated_at)
+- Every table must have appropriate indexes
+- Every API endpoint must have a Sequence Diagram
+- Every business rule must appear in a Flow Diagram
 
 ---
 
@@ -359,6 +359,8 @@ cat .design-docs/system-design-[name].md
 
 | Resource | Description |
 |----------|-------------|
-| `references/document-sections.md` | รายละเอียด sections ที่ต้องมี |
-| `references/troubleshooting.md` | วิธีแก้ไขปัญหาที่พบบ่อย |
-| `references/mermaid-patterns.md` | Mermaid syntax ที่ถูกต้อง |
+| `references/document-sections.md` | Details of required sections |
+| `references/troubleshooting.md` | Common problem solutions |
+| `references/mermaid-patterns.md` | Correct Mermaid syntax |
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

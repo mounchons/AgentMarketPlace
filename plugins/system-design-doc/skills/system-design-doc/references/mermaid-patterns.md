@@ -1,18 +1,18 @@
 # Mermaid Diagram Patterns
 
-รวม patterns สำหรับสร้าง diagrams ด้วย Mermaid
+A collection of patterns for creating diagrams with Mermaid
 
 ## 1. Flow Diagram (Flowchart)
 
 ### Basic Process Flow
 ```mermaid
 flowchart TD
-    A[เริ่มต้น] --> B{ตรวจสอบเงื่อนไข}
-    B -->|ใช่| C[ดำเนินการ A]
-    B -->|ไม่| D[ดำเนินการ B]
-    C --> E[บันทึกข้อมูล]
+    A[Start] --> B{Check Condition}
+    B -->|Yes| C[Process A]
+    B -->|No| D[Process B]
+    C --> E[Save Data]
     D --> E
-    E --> F[จบ]
+    E --> F[End]
 ```
 
 ### Business Process Flow
@@ -31,11 +31,11 @@ flowchart LR
 ### Approval Workflow
 ```mermaid
 flowchart TD
-    A[ส่งคำขอ] --> B{ผู้จัดการอนุมัติ?}
-    B -->|อนุมัติ| C{ผู้อำนวยการอนุมัติ?}
-    B -->|ปฏิเสธ| D[ส่งกลับแก้ไข]
-    C -->|อนุมัติ| E[ดำเนินการ]
-    C -->|ปฏิเสธ| D
+    A[Submit Request] --> B{Manager Approved?}
+    B -->|Approved| C{Director Approved?}
+    B -->|Rejected| D[Return for Revision]
+    C -->|Approved| E[Process]
+    C -->|Rejected| D
     D --> A
 ```
 
@@ -44,23 +44,23 @@ flowchart TD
 ### Context Diagram (Level 0)
 ```mermaid
 flowchart LR
-    E1((ผู้ใช้งาน)) -->|คำขอ| S[ระบบหลัก]
-    S -->|ผลลัพธ์| E1
-    E2((ผู้ดูแลระบบ)) -->|การตั้งค่า| S
-    S -->|รายงาน| E2
-    S <-->|ข้อมูล| D1[(ฐานข้อมูล)]
+    E1((User)) -->|Request| S[Main System]
+    S -->|Result| E1
+    E2((Administrator)) -->|Configuration| S
+    S -->|Report| E2
+    S <-->|Data| D1[(Database)]
 ```
 
 ### Level 1 DFD
 ```mermaid
 flowchart TB
-    E1((ลูกค้า)) -->|1. ข้อมูลสั่งซื้อ| P1[1.0 รับคำสั่งซื้อ]
-    P1 -->|2. คำสั่งซื้อ| D1[(Orders)]
-    P1 -->|3. รายการสินค้า| P2[2.0 ตรวจสอบสต็อก]
-    P2 <-->|4. ข้อมูลสต็อก| D2[(Inventory)]
-    P2 -->|5. ยืนยันสต็อก| P3[3.0 ประมวลผลการชำระ]
-    P3 -->|6. ใบเสร็จ| E1
-    P3 -->|7. ข้อมูลชำระ| D3[(Payments)]
+    E1((Customer)) -->|1. Order data| P1[1.0 Receive Order]
+    P1 -->|2. Order| D1[(Orders)]
+    P1 -->|3. Item list| P2[2.0 Check Stock]
+    P2 <-->|4. Stock data| D2[(Inventory)]
+    P2 -->|5. Stock confirmed| P3[3.0 Process Payment]
+    P3 -->|6. Receipt| E1
+    P3 -->|7. Payment data| D3[(Payments)]
 ```
 
 ## 3. ER Diagram
@@ -160,14 +160,14 @@ sequenceDiagram
     participant S as Service
     participant D as Database
 
-    U->>F: กรอกข้อมูล Login
+    U->>F: Enter Login credentials
     F->>A: POST /api/auth/login
     A->>S: validateCredentials()
     S->>D: SELECT user WHERE email=?
     D-->>S: User data
     S-->>A: JWT Token
     A-->>F: 200 OK + Token
-    F-->>U: แสดงหน้า Dashboard
+    F-->>U: Display Dashboard page
 ```
 
 ### Error Handling Flow
@@ -180,12 +180,12 @@ sequenceDiagram
 
     C->>A: POST /orders
     A->>V: validate(orderData)
-    alt ข้อมูลถูกต้อง
+    alt Data is valid
         V-->>A: valid
         A->>DB: INSERT order
         DB-->>A: order_id
         A-->>C: 201 Created
-    else ข้อมูลไม่ถูกต้อง
+    else Data is invalid
         V-->>A: errors[]
         A-->>C: 400 Bad Request
     end
@@ -217,27 +217,27 @@ sequenceDiagram
 ### Hierarchical Sitemap
 ```mermaid
 flowchart TD
-    HOME[🏠 หน้าแรก]
-    
+    HOME[🏠 Home]
+
     HOME --> AUTH[🔐 Authentication]
     HOME --> DASH[📊 Dashboard]
     HOME --> MASTER[⚙️ Master Data]
     HOME --> REPORT[📈 Reports]
-    
-    AUTH --> LOGIN[เข้าสู่ระบบ]
-    AUTH --> REGISTER[ลงทะเบียน]
-    AUTH --> FORGOT[ลืมรหัสผ่าน]
-    
-    DASH --> OVERVIEW[ภาพรวม]
-    DASH --> TASKS[งานที่ต้องทำ]
-    DASH --> NOTI[การแจ้งเตือน]
-    
-    MASTER --> USER[จัดการผู้ใช้]
-    MASTER --> PRODUCT[จัดการสินค้า]
-    MASTER --> CUSTOMER[จัดการลูกค้า]
-    
-    REPORT --> SALES[รายงานยอดขาย]
-    REPORT --> INVENTORY[รายงานสต็อก]
+
+    AUTH --> LOGIN[Login]
+    AUTH --> REGISTER[Register]
+    AUTH --> FORGOT[Forgot Password]
+
+    DASH --> OVERVIEW[Overview]
+    DASH --> TASKS[Tasks]
+    DASH --> NOTI[Notifications]
+
+    MASTER --> USER[User Management]
+    MASTER --> PRODUCT[Product Management]
+    MASTER --> CUSTOMER[Customer Management]
+
+    REPORT --> SALES[Sales Report]
+    REPORT --> INVENTORY[Inventory Report]
     REPORT --> EXPORT[Export Data]
 ```
 
@@ -245,9 +245,9 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Public
-        P1[หน้าแรก]
-        P2[เกี่ยวกับเรา]
-        P3[ติดต่อเรา]
+        P1[Home]
+        P2[About Us]
+        P3[Contact Us]
     end
     
     subgraph User["User Area"]
@@ -291,7 +291,7 @@ flowchart TD
 ```
 
 ### Alternative: Text-based Structure
-สำหรับโครงสร้างที่ซับซ้อน ใช้ code block แบบนี้:
+For complex structures, use a code block like this:
 ```
 📁 src/
 ├── 📁 Controllers/
@@ -316,13 +316,13 @@ flowchart TD
 ### Document Status
 ```mermaid
 stateDiagram-v2
-    [*] --> Draft: สร้างใหม่
-    Draft --> PendingReview: ส่งตรวจสอบ
-    PendingReview --> Approved: อนุมัติ
-    PendingReview --> Rejected: ปฏิเสธ
-    Rejected --> Draft: แก้ไข
-    Approved --> Published: เผยแพร่
-    Published --> Archived: เก็บเข้าคลัง
+    [*] --> Draft: Create new
+    Draft --> PendingReview: Submit for review
+    PendingReview --> Approved: Approve
+    PendingReview --> Rejected: Reject
+    Rejected --> Draft: Revise
+    Approved --> Published: Publish
+    Published --> Archived: Archive
     Archived --> [*]
 ```
 
@@ -330,18 +330,18 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Pending
-    Pending --> Confirmed: ยืนยันคำสั่งซื้อ
-    Confirmed --> Processing: เริ่มดำเนินการ
-    Processing --> Shipped: จัดส่งแล้ว
-    Shipped --> Delivered: ส่งถึงแล้ว
+    Pending --> Confirmed: Confirm order
+    Confirmed --> Processing: Start processing
+    Processing --> Shipped: Shipped
+    Shipped --> Delivered: Delivered
     Delivered --> [*]
-    
-    Pending --> Cancelled: ยกเลิก
-    Confirmed --> Cancelled: ยกเลิก
+
+    Pending --> Cancelled: Cancel
+    Confirmed --> Cancelled: Cancel
     Cancelled --> [*]
-    
-    note right of Processing: ตรวจสอบสต็อก\nจัดเตรียมสินค้า
-    note right of Shipped: ส่งข้อมูลให้ขนส่ง
+
+    note right of Processing: Check stock\nPrepare items
+    note right of Shipped: Send info to carrier
 ```
 
 ## 8. Class Diagram (For Data Model)
@@ -394,8 +394,8 @@ classDiagram
 
 ## Tips for Better Diagrams
 
-1. **Keep it Simple**: อย่าใส่รายละเอียดมากเกินไปในหนึ่ง diagram
-2. **Use Subgraphs**: จัดกลุ่ม nodes ที่เกี่ยวข้องกัน
-3. **Consistent Naming**: ใช้ชื่อที่สอดคล้องกันทั้งเอกสาร
-4. **Direction Matters**: ใช้ TD (top-down) สำหรับ hierarchies, LR (left-right) สำหรับ processes
-5. **Color Coding**: ใช้ styles เพื่อแยกแยะประเภทของ elements
+1. **Keep it Simple**: Don't put too much detail in a single diagram
+2. **Use Subgraphs**: Group related nodes together
+3. **Consistent Naming**: Use consistent names throughout the document
+4. **Direction Matters**: Use TD (top-down) for hierarchies, LR (left-right) for processes
+5. **Color Coding**: Use styles to distinguish element types

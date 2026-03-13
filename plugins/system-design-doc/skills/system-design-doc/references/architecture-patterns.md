@@ -1,6 +1,6 @@
 # Architecture Patterns
 
-รวม patterns สำหรับสร้าง diagrams ที่เกี่ยวกับ architecture ระดับต่างๆ
+A collection of patterns for creating architecture diagrams at various levels
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@
 
 ### 1.1 Service Boundary Diagram
 
-แสดงขอบเขตของแต่ละ service และการสื่อสารระหว่างกัน
+Shows the boundary of each service and inter-service communication
 
 ```mermaid
 flowchart TB

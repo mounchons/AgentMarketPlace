@@ -1,6 +1,6 @@
 # Feature Patterns & Templates
 
-รวม patterns และ templates สำหรับการแตก features ตามประเภทโปรเจค
+Collection of patterns and templates for breaking down features by project type
 
 ## 🌐 Web API Project
 
@@ -13,53 +13,53 @@
     {
       "id": 1,
       "category": "setup",
-      "description": "สร้าง ASP.NET Core Web API project structure",
+      "description": "Create ASP.NET Core Web API project structure",
       "priority": "high",
       "steps": [
-        "สร้าง solution และ project",
-        "ตั้งค่า Program.cs",
-        "ทดสอบ run project"
+        "Create solution and project",
+        "Configure Program.cs",
+        "Test run the project"
       ]
     },
     {
       "id": 2,
       "category": "setup",
-      "description": "เพิ่ม packages และตั้งค่า database",
+      "description": "Add packages and configure database",
       "priority": "high",
       "steps": [
-        "เพิ่ม EF Core packages",
-        "ตั้งค่า connection string",
-        "ทดสอบ connection"
+        "Add EF Core packages",
+        "Configure connection string",
+        "Test connection"
       ]
     },
-    
+
     // === DOMAIN (3-5) ===
     {
       "id": 3,
       "category": "domain",
-      "description": "สร้าง [Entity] entity",
+      "description": "Create [Entity] entity",
       "priority": "high",
       "steps": [
-        "สร้าง BaseEntity class",
-        "สร้าง [Entity] class",
-        "เพิ่ม properties ที่จำเป็น"
+        "Create BaseEntity class",
+        "Create [Entity] class",
+        "Add required properties"
       ]
     },
-    
+
     // === DATA ACCESS (5-7) ===
     {
       "id": 5,
       "category": "data",
-      "description": "สร้าง DbContext และ Migration",
+      "description": "Create DbContext and Migration",
       "priority": "high",
       "steps": [
-        "สร้าง AppDbContext",
+        "Create AppDbContext",
         "Configure entities",
-        "รัน migration",
-        "ทดสอบ database"
+        "Run migration",
+        "Test database"
       ]
     },
-    
+
     // === API ENDPOINTS (7-15) ===
     {
       "id": 7,
@@ -67,9 +67,9 @@
       "description": "GET /api/[resource] - List all",
       "priority": "high",
       "steps": [
-        "สร้าง Controller",
-        "implement endpoint",
-        "ทดสอบ"
+        "Create Controller",
+        "Implement endpoint",
+        "Test"
       ]
     },
     {
@@ -78,9 +78,9 @@
       "description": "GET /api/[resource]/{id} - Get by ID",
       "priority": "high",
       "steps": [
-        "implement endpoint",
-        "handle 404",
-        "ทดสอบ"
+        "Implement endpoint",
+        "Handle 404",
+        "Test"
       ]
     },
     {
@@ -89,10 +89,10 @@
       "description": "POST /api/[resource] - Create",
       "priority": "high",
       "steps": [
-        "สร้าง DTO",
-        "implement endpoint",
-        "return 201 Created",
-        "ทดสอบ"
+        "Create DTO",
+        "Implement endpoint",
+        "Return 201 Created",
+        "Test"
       ]
     },
     {
@@ -101,9 +101,9 @@
       "description": "PUT /api/[resource]/{id} - Update",
       "priority": "medium",
       "steps": [
-        "สร้าง Update DTO",
-        "implement endpoint",
-        "ทดสอบ"
+        "Create Update DTO",
+        "Implement endpoint",
+        "Test"
       ]
     },
     {
@@ -112,12 +112,12 @@
       "description": "DELETE /api/[resource]/{id} - Delete",
       "priority": "medium",
       "steps": [
-        "implement endpoint",
-        "return 204",
-        "ทดสอบ"
+        "Implement endpoint",
+        "Return 204",
+        "Test"
       ]
     },
-    
+
     // === QUALITY (15+) ===
     {
       "id": 15,
@@ -125,9 +125,9 @@
       "description": "Input validation",
       "priority": "medium",
       "steps": [
-        "เพิ่ม FluentValidation",
-        "สร้าง validators",
-        "ทดสอบ validation"
+        "Add FluentValidation",
+        "Create validators",
+        "Test validation"
       ]
     },
     {
@@ -136,9 +136,9 @@
       "description": "Global error handling",
       "priority": "medium",
       "steps": [
-        "สร้าง exception handler middleware",
-        "implement ProblemDetails",
-        "ทดสอบ error responses"
+        "Create exception handler middleware",
+        "Implement ProblemDetails",
+        "Test error responses"
       ]
     },
     {
@@ -147,9 +147,9 @@
       "description": "Swagger documentation",
       "priority": "low",
       "steps": [
-        "ตั้งค่า Swashbuckle",
-        "เพิ่ม XML comments",
-        "ทดสอบ Swagger UI"
+        "Configure Swashbuckle",
+        "Add XML comments",
+        "Test Swagger UI"
       ]
     }
   ]
@@ -196,16 +196,16 @@
     {
       "id": 1,
       "category": "setup",
-      "description": "สร้าง ASP.NET MVC project",
-      "steps": ["สร้าง project", "ตั้งค่า layout", "ทดสอบ run"]
+      "description": "Create ASP.NET MVC project",
+      "steps": ["Create project", "Configure layout", "Test run"]
     },
     {
       "id": 2,
       "category": "setup",
-      "description": "ตั้งค่า Authentication",
+      "description": "Configure Authentication",
       "steps": ["install Identity", "configure services", "add login/register views"]
     },
-    
+
     // === FEATURES (per module) ===
     {
       "id": 5,
@@ -263,7 +263,7 @@
       "description": "User Registration - UI form",
       "steps": ["create form component", "connect to API", "error handling"]
     },
-    
+
     // === Feature: User Login ===
     {
       "id": 3,
@@ -303,7 +303,7 @@
       "description": "User Service - CRUD endpoints",
       "steps": ["create endpoints", "add DTOs", "test"]
     },
-    
+
     // === Service: Order Service ===
     {
       "id": 5,
@@ -311,7 +311,7 @@
       "description": "Order Service - Project setup",
       "steps": ["create project", "configure docker", "setup database"]
     },
-    
+
     // === Integration ===
     {
       "id": 10,
@@ -333,7 +333,7 @@
     {
       "id": 1,
       "category": "setup",
-      "description": "Setup project และ dependencies",
+      "description": "Setup project and dependencies",
       "steps": ["create project", "install packages", "configure logging"]
     },
     {
@@ -369,18 +369,18 @@
 ## 🎮 Priority Guidelines
 
 ### Priority: High
-- ทำก่อน, เป็น foundation
-- ถ้าไม่ทำ feature อื่นทำไม่ได้
+- Do first, serves as foundation
+- If not done, other features cannot proceed
 - Core functionality
 
 ### Priority: Medium
-- ทำหลัง high priority เสร็จ
-- Nice to have แต่ไม่ urgent
+- Do after high priority is complete
+- Nice to have but not urgent
 - Enhancement features
 
 ### Priority: Low
-- ทำเมื่อมีเวลา
-- Polish และ documentation
+- Do when there is time
+- Polish and documentation
 - Optional features
 
 ---
@@ -428,7 +428,7 @@
 
 ## 📎 References Field
 
-Feature สามารถมี references ไปยังเอกสารอื่นๆ ได้ เพื่อให้ Coding Agent ใช้เป็น reference ในการพัฒนา
+Features can have references to other documents so that the Coding Agent can use them as reference during development.
 
 ### Reference Types
 
@@ -447,7 +447,7 @@ Feature สามารถมี references ไปยังเอกสารอ
 {
   "id": 5,
   "category": "feature",
-  "description": "สร้างหน้า Login",
+  "description": "Create Login page",
   "references": [
     ".mockups/login.mockup.md",
     "docs/auth-flow.md"
@@ -460,7 +460,7 @@ Feature สามารถมี references ไปยังเอกสารอ
 {
   "id": 10,
   "category": "data",
-  "description": "สร้าง User table และ migration",
+  "description": "Create User table and migration",
   "references": [
     "sql/create_users_table.sql",
     "docs/system-design.md#er-diagram"
@@ -471,27 +471,27 @@ Feature สามารถมี references ไปยังเอกสารอ
 
 ### Using References in Development
 
-เมื่อ Coding Agent ทำ feature ที่มี references:
+When the Coding Agent works on a feature that has references:
 
-1. **ต้อง** อ่าน references ก่อนเริ่มงาน
-2. **ต้อง** ใช้ mockup เป็น design reference สำหรับ UI
-3. **ต้อง** ใช้ SQL/design doc เป็น schema reference
-4. **ต้อง** ใช้ logic doc เป็น business rules reference
-5. **ห้าม** สร้าง UI ที่แตกต่างจาก mockup
-6. **ห้าม** สร้าง schema ที่แตกต่างจาก design doc
+1. **Must** read references before starting work
+2. **Must** use mockup as design reference for UI
+3. **Must** use SQL/design doc as schema reference
+4. **Must** use logic doc as business rules reference
+5. **Must not** create UI that differs from the mockup
+6. **Must not** create schema that differs from the design doc
 
 ---
 
 ## 🔄 Feature Versioning (Edit Feature)
 
-เมื่อต้องการแก้ไข feature ที่ pass แล้ว ให้สร้าง feature ใหม่แทนการแก้ไข in-place
+When you need to modify a feature that has already passed, create a new feature instead of editing in-place.
 
 ### Related Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `related_features` | `number[]` | Feature IDs ที่เกี่ยวข้อง |
-| `supersedes` | `number` | Feature ID ที่ถูกแทนที่ |
+| `related_features` | `number[]` | Related Feature IDs |
+| `supersedes` | `number` | Feature ID that is being replaced |
 
 ### Example: Feature Evolution
 
@@ -500,7 +500,7 @@ Feature สามารถมี references ไปยังเอกสารอ
 {
   "id": 5,
   "category": "feature",
-  "description": "สร้างหน้า Login ด้วย username/password",
+  "description": "Create Login page with username/password",
   "passes": true,
   "tested_at": "2025-01-10T10:00:00Z"
 }
@@ -509,11 +509,11 @@ Feature สามารถมี references ไปยังเอกสารอ
 {
   "id": 13,
   "category": "enhancement",
-  "description": "ปรับปรุงหน้า Login - เพิ่ม OAuth login",
+  "description": "Improve Login page - add OAuth login",
   "related_features": [5],
   "supersedes": 5,
   "passes": false,
-  "notes": "Updated from Feature #5 - เพิ่ม OAuth support"
+  "notes": "Updated from Feature #5 - added OAuth support"
 }
 ```
 
@@ -535,54 +535,54 @@ Feature #5 (Login - Basic)
 
 ### Rules for Edit Feature
 
-1. **ห้ามแก้ไข feature ที่ pass แล้วโดยตรง**
-2. **ต้องสร้าง feature ใหม่เสมอ**
-3. **Feature เดิมยังคงอยู่เพื่อเก็บ history**
-4. **Feature ใหม่ต้อง reference feature เดิม**
-5. **ใช้ `/edit-feature` command**
+1. **Do not modify a feature that has already passed directly**
+2. **Always create a new feature**
+3. **The original feature remains for history tracking**
+4. **The new feature must reference the original feature**
+5. **Use the `/edit-feature` command**
 
 ### When to Use Edit Feature
 
 | Scenario | Use /edit-feature? |
 |----------|-------------------|
-| Feature pass แล้ว ต้องการเพิ่ม scope | ✅ ใช่ |
-| Feature pass แล้ว พบ bug | ✅ ใช่ (category: bugfix) |
-| Feature ยังไม่ pass | ❌ ใช้ /continue แทน |
-| ต้องการเพิ่ม feature ใหม่ | ❌ ใช้ /add-feature แทน |
+| Feature already passed, want to expand scope | Yes |
+| Feature already passed, found a bug | Yes (category: bugfix) |
+| Feature not yet passed | No, use /continue instead |
+| Want to add a new feature | No, use /add-feature instead |
 
 ---
 
 ## 💡 Tips for Feature Breakdown
 
-### 1. ใช้ User Story Format
+### 1. Use User Story Format
 ```
 "As a [user], I want to [action], so that [benefit]"
-→ แตกเป็น features ตาม action
+→ Break down into features by action
 ```
 
-### 2. ใช้ CRUD Pattern (ตาม crud_operations ที่กำหนด)
+### 2. Use CRUD Pattern (according to specified crud_operations)
 ```
-สำหรับทุก entity — ตรวจสอบ crud_operations จาก design_doc_list.json:
-- Create (1 feature)     ← เฉพาะ create.enabled == true
-- Read List (1 feature)  ← เฉพาะ list.enabled == true
-- Read Detail (1 feature)← เฉพาะ read.enabled == true
-- Update (1 feature)     ← เฉพาะ update.enabled == true
-- Delete (1 feature)     ← เฉพาะ delete.enabled == true
-  → ถ้า delete.strategy == "soft": set is_active = false (default)
-  → ถ้า delete.strategy == "hard": ลบจริง (กรณีพิเศษ)
+For every entity — check crud_operations from design_doc_list.json:
+- Create (1 feature)     ← only if create.enabled == true
+- Read List (1 feature)  ← only if list.enabled == true
+- Read Detail (1 feature)← only if read.enabled == true
+- Update (1 feature)     ← only if update.enabled == true
+- Delete (1 feature)     ← only if delete.enabled == true
+  → if delete.strategy == "soft": set is_active = false (default)
+  → if delete.strategy == "hard": actually delete (special case)
 
-หมายเหตุ: ไม่ใช่ทุก entity ต้องมี CRUD ครบ
-เช่น audit_logs = read-only (list + read เท่านั้น)
+Note: not every entity needs full CRUD
+e.g. audit_logs = read-only (list + read only)
 ```
 
-### 3. แยก Backend/Frontend
+### 3. Separate Backend/Frontend
 ```
 Feature X:
 - Feature X.1: Backend API
 - Feature X.2: Frontend UI
 ```
 
-### 4. แยก Happy Path / Error Handling
+### 4. Separate Happy Path / Error Handling
 ```
 Feature Y:
 - Feature Y.1: Basic implementation
@@ -596,7 +596,7 @@ Feature Y:
 
 ### Wizard Flow Pattern
 
-สำหรับ multi-step forms ที่ต้องทำตามลำดับ:
+For multi-step forms that must be completed in order:
 
 ```
 Flow: Checkout
@@ -606,14 +606,14 @@ Flow: Checkout
 └── Step 4: Confirmation → consumes PaymentResult, produces OrderState
 ```
 
-**Features ที่สร้าง:**
-- 1 feature ต่อ step + shared component features (StepIndicator, PriceDisplay)
-- แต่ละ feature มี `flow_id`, `state_produces`, `state_consumes`
-- Feature สำหรับ shared components ต้องทำก่อน (เป็น dependency)
+**Features created:**
+- 1 feature per step + shared component features (StepIndicator, PriceDisplay)
+- Each feature has `flow_id`, `state_produces`, `state_consumes`
+- Features for shared components must be done first (as dependencies)
 
 ### CRUD-Group Flow Pattern
 
-สำหรับ entity management ที่มี List + Form + Detail:
+For entity management with List + Form + Detail:
 
 ```
 Flow: User Management
@@ -622,14 +622,14 @@ Flow: User Management
 └── User Detail → consumes AuthState
 ```
 
-**Features ที่สร้าง:**
-- List, Form, Detail features ทั้งหมดอยู่ใน flow เดียว
-- ไม่ต้องทำตามลำดับ (type: crud-group)
-- แชร์ AuthState และ shared components (DataTable, FormModal)
+**Features created:**
+- List, Form, Detail features all belong to the same flow
+- No specific order required (type: crud-group)
+- Share AuthState and shared components (DataTable, FormModal)
 
 ### Parallel Flow Pattern
 
-สำหรับ dashboard หรือหน้าที่มีหลาย widgets ทำงานอิสระ:
+For dashboards or pages with multiple independent widgets:
 
 ```
 Flow: Dashboard
@@ -638,7 +638,7 @@ Flow: Dashboard
 └── Recent Activity → consumes AuthState
 ```
 
-**Features ที่สร้าง:**
-- แต่ละ widget เป็น feature อิสระ
-- ทำหน้าไหนก่อนก็ได้
-- แชร์ Layout component
+**Features created:**
+- Each widget is an independent feature
+- Any page can be done first
+- Share Layout component

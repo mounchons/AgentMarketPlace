@@ -1,93 +1,93 @@
 ---
-description: แก้ไข UI Mockup/Wireframe ที่มีอยู่
+description: Edit an existing UI Mockup/Wireframe
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Edit Mockup Command
 
-แก้ไข UI Mockup/Wireframe ที่มีอยู่แล้ว
+Edit an existing UI Mockup/Wireframe.
 
-## Input ที่ได้รับ
+## Received Input
 
-User ต้องการแก้ไข: $ARGUMENTS
+User wants to edit: $ARGUMENTS
 
-**รูปแบบ Input:**
+**Input format:**
 ```
 /edit-mockup [page-name] - [changes]
 ```
 
-**ตัวอย่าง:**
-- `/edit-mockup login - เพิ่มปุ่ม Social Login`
-- `/edit-mockup dashboard - ปรับเป็น 3 columns`
-- `/edit-mockup user-list - เพิ่ม pagination และ filters`
-- `/edit-mockup form - เปลี่ยน layout เป็น 2 columns`
+**Examples:**
+- `/edit-mockup login - add Social Login button`
+- `/edit-mockup dashboard - change to 3 columns`
+- `/edit-mockup user-list - add pagination and filters`
+- `/edit-mockup form - change layout to 2 columns`
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
 ### Step 1: Parse Input
 
-แยกส่วนของ input:
-1. **Page Name** - ชื่อหน้าที่ต้องแก้ไข
-2. **Changes** - สิ่งที่ต้องการเปลี่ยนแปลง
+Separate the input parts:
+1. **Page Name** - Which page to edit
+2. **Changes** - What needs to be changed
 
-### Step 2: ค้นหา Mockup File
+### Step 2: Find Mockup File
 
 ```bash
-# ค้นหา mockup file (format ใหม่: [NNN]-[page-name].mockup.md)
+# Find mockup file (new format: [NNN]-[page-name].mockup.md)
 ls .mockups/[0-9][0-9][0-9]-*.mockup.md 2>/dev/null
 
-# หรือค้นหาด้วยชื่อ
+# Or search by name
 ls .mockups/*[page-name]*.mockup.md 2>/dev/null
 
-# หรือค้นหาจาก mockup_list.json
+# Or search from mockup_list.json
 cat .mockups/mockup_list.json | jq '.pages[] | select(.name | contains("[page-name]"))'
 ```
 
-**ถ้าไม่พบ mockup file:**
+**If mockup file not found:**
 ```
-❌ ไม่พบ mockup สำหรับหน้า "[page-name]"
+❌ Mockup not found for page "[page-name]"
 
-📁 Mockups ที่มีอยู่:
+📁 Available mockups:
    • 001-login.mockup.md
    • 003-dashboard.mockup.md
    • 004-user-list.mockup.md
 
-💡 ต้องการสร้างใหม่หรือไม่?
+💡 Want to create a new one?
    → /create-mockup [page-name]
 ```
 
-### Step 3: อ่าน Mockup ปัจจุบัน
+### Step 3: Read Current Mockup
 
 ```bash
 cat .mockups/[NNN]-[page-name].mockup.md
 ```
 
-**วิเคราะห์:**
-- Layout ปัจจุบัน
-- Components ที่มีอยู่
+**Analyze:**
+- Current layout
+- Existing components
 - Wireframe structure
-- CRUD Group และ UI Pattern (ถ้ามี)
-- Action column position (ถ้าเป็น List page)
+- CRUD Group and UI Pattern (if applicable)
+- Action column position (if List page)
 
-### Step 4: วิเคราะห์ Change Request
+### Step 4: Analyze Change Request
 
-**ประเภทการแก้ไข:**
+**Edit types:**
 
 | Type | Examples | Action |
 |------|----------|--------|
-| **Add Component** | "เพิ่มปุ่ม", "เพิ่ม filter" | เพิ่ม component ใน wireframe + component list |
-| **Remove Component** | "ลบ sidebar", "เอา footer ออก" | ลบออกจาก wireframe + component list |
-| **Change Layout** | "ปรับเป็น 3 columns", "เปลี่ยนเป็น tabs" | วาด wireframe ใหม่ |
-| **Modify Component** | "เปลี่ยนปุ่มเป็นสีแดง", "ทำให้ input ใหญ่ขึ้น" | อัพเดท component specs |
-| **Add Interaction** | "เพิ่ม modal เมื่อกด delete" | เพิ่มใน interactions section |
-| **Change Responsive** | "ซ่อน sidebar บน mobile" | อัพเดท responsive behavior |
-| **Move Component** | "ย้าย search ไปขวา", "สลับ column" | ปรับ wireframe |
-| **Change to Modal** | "เปลี่ยนเป็น modal pattern" | อัพเดท UI pattern และเพิ่ม Modal sections |
-| **Add SweetAlert2** | "เพิ่ม confirm dialog" | เพิ่ม SweetAlert2 section |
+| **Add Component** | "add button", "add filter" | Add component to wireframe + component list |
+| **Remove Component** | "remove sidebar", "remove footer" | Remove from wireframe + component list |
+| **Change Layout** | "change to 3 columns", "switch to tabs" | Redraw wireframe |
+| **Modify Component** | "change button to red", "make input larger" | Update component specs |
+| **Add Interaction** | "add modal when clicking delete" | Add to interactions section |
+| **Change Responsive** | "hide sidebar on mobile" | Update responsive behavior |
+| **Move Component** | "move search to the right", "swap columns" | Adjust wireframe |
+| **Change to Modal** | "switch to modal pattern" | Update UI pattern and add Modal sections |
+| **Add SweetAlert2** | "add confirm dialog" | Add SweetAlert2 section |
 
-### Step 5: ดำเนินการแก้ไข
+### Step 5: Execute the Edit
 
-#### 5.1 สำหรับ Add Component
+#### 5.1 For Add Component
 
 ```markdown
 ## Before:
@@ -97,7 +97,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 │   └─────────────────┘              │
 └────────────────────────────────────┘
 
-## After (เพิ่ม Social Login):
+## After (add Social Login):
 ┌────────────────────────────────────┐
 │   ┌─────────────────┐              │
 │   │    [LOGIN]      │              │
@@ -109,7 +109,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 └────────────────────────────────────┘
 ```
 
-**อัพเดท Components Used:**
+**Update Components Used:**
 ```markdown
 | Component | Location | Props/Variants | Notes |
 |-----------|----------|----------------|-------|
@@ -117,7 +117,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 | Divider | Between login and social | text: "OR" | New |
 ```
 
-#### 5.2 สำหรับ Change Layout
+#### 5.2 For Change Layout
 
 ```markdown
 ## Before (2 columns):
@@ -135,7 +135,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 └──────────────────────────────────────────────────┘
 ```
 
-**อัพเดท Layout Grid:**
+**Update Layout Grid:**
 ```markdown
 ### Desktop (12 columns)
 - Card 1: 4 columns
@@ -143,9 +143,9 @@ cat .mockups/[NNN]-[page-name].mockup.md
 - Card 3: 4 columns
 ```
 
-#### 5.3 สำหรับ Add Interaction
+#### 5.3 For Add Interaction
 
-**เพิ่มใน Interactions section:**
+**Add to Interactions section:**
 ```markdown
 ## Interactions
 
@@ -156,7 +156,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 | Cancel delete | Close modal | - |
 ```
 
-**เพิ่ม Modal wireframe:**
+**Add Modal wireframe:**
 ```markdown
 ### Delete Confirmation Modal
 
@@ -179,7 +179,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 ```
 ```
 
-### Step 6: อัพเดท Version History
+### Step 6: Update Version History
 
 ```markdown
 ## Version History
@@ -187,12 +187,12 @@ cat .mockups/[NNN]-[page-name].mockup.md
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0.0 | 2025-01-15 | Claude | Initial mockup |
-| 1.1.0 | 2025-01-20 | Claude | เพิ่ม Social Login buttons |
+| 1.1.0 | 2025-01-20 | Claude | Added Social Login buttons |
 ```
 
-### Step 7: บันทึกไฟล์
+### Step 7: Save File
 
-ใช้ Edit tool เพื่ออัพเดทไฟล์ `.mockups/[page-name].mockup.md`
+Use Edit tool to update the file `.mockups/[page-name].mockup.md`
 
 ---
 
@@ -246,7 +246,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 
 ## Common Edit Patterns
 
-### Pattern 1: เพิ่ม Pagination
+### Pattern 1: Add Pagination
 
 ```
 Before: Simple list
@@ -258,7 +258,7 @@ After:
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-### Pattern 2: เพิ่ม Search & Filters
+### Pattern 2: Add Search & Filters
 
 ```
 Before: Table only
@@ -272,7 +272,7 @@ After:
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-### Pattern 3: เพิ่ม Tabs
+### Pattern 3: Add Tabs
 
 ```
 Before: Single content area
@@ -289,7 +289,7 @@ After:
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-### Pattern 4: เพิ่ม Sidebar
+### Pattern 4: Add Sidebar
 
 ```
 Before: Full width content
@@ -302,7 +302,7 @@ After:
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-### Pattern 5: เพิ่ม Modal (สำหรับ Simple Entity)
+### Pattern 5: Add Modal (for Simple Entity)
 
 ```
 View/Create/Edit Modal:
@@ -324,7 +324,7 @@ View/Create/Edit Modal:
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-### Pattern 6: เพิ่ม SweetAlert2 Delete Confirmation
+### Pattern 6: Add SweetAlert2 Delete Confirmation
 
 ```
 Trigger: Click 🗑 Delete button
@@ -358,15 +358,15 @@ Swal.fire({
 })
 ```
 
-### Pattern 7: ย้าย Action Column ไปด้านหน้า
+### Pattern 7: Move Action Column to Front
 
 ```
-Before (Action column ด้านหลัง):
+Before (Action column at back):
 ┌──────────┬──────────┬──────────┬──────────┐
 │ Column 1 │ Column 2 │ Column 3 │ Actions  │
 └──────────┴──────────┴──────────┴──────────┘
 
-After (Action column ด้านหน้า):
+After (Action column at front):
 ┌────────┬──────────┬──────────┬──────────┐
 │ Action │ Column 1 │ Column 2 │ Column 3 │
 ├────────┼──────────┼──────────┼──────────┤
@@ -380,29 +380,31 @@ After (Action column ด้านหน้า):
 
 **Mockup not found:**
 ```
-❌ ไม่พบ mockup สำหรับหน้า "xxx"
+❌ Mockup not found for page "xxx"
 
-📁 Mockups ที่มีอยู่:
+📁 Available mockups:
    • login.mockup.md
    • dashboard.mockup.md
    • user-list.mockup.md
 
-💡 ต้องการ:
-   • สร้างใหม่? → /create-mockup xxx
-   • ดูรายการทั้งหมด? → /list-mockups
+💡 Options:
+   • Create new? → /create-mockup xxx
+   • View all? → /list-mockups
 ```
 
 **Unclear change request:**
 ```
-⚠️ ไม่แน่ใจว่าต้องการแก้ไขอะไร
+⚠️ Unclear what changes are needed
 
-📝 ช่วยระบุเพิ่มเติม:
-   1. ต้องการเพิ่ม/ลบ/แก้ไข component อะไร?
-   2. ต้องการเปลี่ยน layout อย่างไร?
-   3. ต้องการเพิ่ม interaction อะไร?
+📝 Please specify more details:
+   1. Which component to add/remove/edit?
+   2. How should the layout change?
+   3. What interaction to add?
 
-💡 ตัวอย่าง:
-   • /edit-mockup login - เพิ่มปุ่ม Google Login
-   • /edit-mockup dashboard - ปรับเป็น 3 columns
-   • /edit-mockup form - เพิ่ม validation messages
+💡 Examples:
+   • /edit-mockup login - add Google Login button
+   • /edit-mockup dashboard - change to 3 columns
+   • /edit-mockup form - add validation messages
 ```
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

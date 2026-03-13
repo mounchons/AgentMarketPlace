@@ -1,6 +1,6 @@
 # Module Decomposition Guide
 
-คู่มือการแบ่ง Module และออกแบบระบบย่อยเพื่อให้ง่ายต่อการพัฒนา
+Guide for dividing modules and designing subsystems to make development easier
 
 ---
 
@@ -8,11 +8,11 @@
 
 ### 1.1 Bounded Context Identification
 
-Bounded Context คือขอบเขตของ domain ที่มี ubiquitous language เป็นของตัวเอง
+A Bounded Context is the boundary of a domain that has its own ubiquitous language.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  ตัวอย่าง E-Commerce System                                 │
+│  Example: E-Commerce System                                  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
@@ -36,7 +36,7 @@ Bounded Context คือขอบเขตของ domain ที่มี ubiq
 
 ### 1.2 Epic = Bounded Context
 
-ใน feature_list.json แต่ละ epic ควร map กับ bounded context:
+In feature_list.json, each epic should map to a bounded context:
 
 ```json
 {
@@ -59,7 +59,7 @@ Bounded Context คือขอบเขตของ domain ที่มี ubiq
 
 ### 1.3 Aggregate Mapping
 
-Aggregate คือกลุ่มของ entities ที่มี Aggregate Root เป็นตัวควบคุม:
+An Aggregate is a group of entities controlled by an Aggregate Root:
 
 ```
 Epic: Catalog
@@ -80,24 +80,24 @@ Epic: Orders
     └── PaymentTransaction (Entity)
 ```
 
-### 1.4 Feature Mapping จาก Aggregate
+### 1.4 Feature Mapping from Aggregate
 
-สำหรับแต่ละ Aggregate ควรมี features **ตาม `crud_operations` ที่กำหนดใน design_doc_list.json:**
+For each Aggregate, features should follow **the `crud_operations` defined in design_doc_list.json:**
 
 | Feature Type | Description | Example | Condition |
 |-------------|-------------|---------|-----------|
-| Entity Creation | สร้าง entity class | "สร้าง Product entity" | Always |
+| Entity Creation | Create entity class | "Create Product entity" | Always |
 | CRUD - List | GET all with pagination | "GET /api/products" | `list.enabled: true` |
 | CRUD - Get | GET by ID | "GET /api/products/{id}" | `read.enabled: true` |
 | CRUD - Create | POST create | "POST /api/products" | `create.enabled: true` |
 | CRUD - Update | PUT update | "PUT /api/products/{id}" | `update.enabled: true` |
 | CRUD - Delete | Soft delete (set is_active=false) | "Soft delete Product" | `delete.enabled: true` |
-| Validation | Input validation | "Product validation" | ถ้ามี create/update |
-| Business Logic | Domain logic | "Calculate product price" | ตามความต้องการ |
+| Validation | Input validation | "Product validation" | If create/update exists |
+| Business Logic | Domain logic | "Calculate product price" | As needed |
 
-> **⚠️ สำคัญ:** ไม่ใช่ทุก entity จะมี CRUD ครบ — ต้องตรวจสอบ `enabled` ก่อนสร้าง feature
+> **⚠️ Important:** Not every entity will have full CRUD — must check `enabled` before creating a feature
 > - Delete default strategy = `"soft"` (set is_active = false)
-> - Entity บางตัวอาจเป็น read-only เช่น AuditLog (read + list เท่านั้น)
+> - Some entities may be read-only, e.g. AuditLog (read + list only)
 
 ---
 
@@ -123,7 +123,7 @@ Epic: Orders
 
 ### 2.2 Vertical Slice Architecture
 
-แทนที่จะแบ่งตาม layer แนวนอน ให้แบ่งตาม feature แนวตั้ง:
+Instead of dividing by horizontal layers, divide by vertical features:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -138,32 +138,32 @@ Epic: Orders
 └──────────────┴──────────────┴──────────────┴───────────────┘
 ```
 
-**ข้อดี:**
-- Deploy ได้ทีละ feature
-- ลด coupling ระหว่าง features
-- ง่ายต่อการทำ microservices ในอนาคต
+**Advantages:**
+- Can deploy one feature at a time
+- Reduces coupling between features
+- Easier to convert to microservices in the future
 
 ### 2.3 Layer-by-Layer (Traditional)
 
 ```
-Phase 1: Domain Layer (ทุก entities พร้อมกัน)
+Phase 1: Domain Layer (all entities at once)
 ├── Feature: Create User entity
 ├── Feature: Create Product entity
 ├── Feature: Create Order entity
 └── Feature: Create Category entity
 
-Phase 2: Infrastructure Layer (ทุก repos พร้อมกัน)
+Phase 2: Infrastructure Layer (all repos at once)
 ├── Feature: Create DbContext
 ├── Feature: Create UserRepository
 ├── Feature: Create ProductRepository
 └── Feature: Create OrderRepository
 
-Phase 3: Application Layer (ทุก services พร้อมกัน)
+Phase 3: Application Layer (all services at once)
 ├── Feature: Create UserService
 ├── Feature: Create ProductService
 └── Feature: Create OrderService
 
-Phase 4: Presentation Layer (ทุก endpoints พร้อมกัน)
+Phase 4: Presentation Layer (all endpoints at once)
 ├── Feature: User API endpoints
 ├── Feature: Product API endpoints
 └── Feature: Order API endpoints
@@ -177,28 +177,28 @@ Phase 4: Presentation Layer (ทุก endpoints พร้อมกัน)
 
 | Aspect | Vertical Slice | Layer-by-Layer |
 |--------|----------------|----------------|
-| **Deployability** | ทีละ feature | ต้องรอครบ layer |
-| **Coupling** | ต่ำ (isolated features) | สูง (shared layers) |
-| **Testing** | ง่าย (test per slice) | ซับซ้อน (mock layers) |
-| **Onboarding** | เข้าใจง่าย | ต้องเข้าใจทุก layer |
-| **Reusability** | ต่ำ (duplicate code) | สูง (shared components) |
-| **Consistency** | ต้องดูแล | มี patterns ชัด |
+| **Deployability** | One feature at a time | Must wait for full layer |
+| **Coupling** | Low (isolated features) | High (shared layers) |
+| **Testing** | Easy (test per slice) | Complex (mock layers) |
+| **Onboarding** | Easy to understand | Must understand all layers |
+| **Reusability** | Low (duplicate code) | High (shared components) |
+| **Consistency** | Requires maintenance | Has clear patterns |
 
 ### 3.2 When to Use
 
-**Vertical Slice เหมาะกับ:**
+**Vertical Slice is suitable for:**
 - Microservices architecture
 - Agile/Scrum teams
-- Features ที่ต้อง deploy บ่อย
-- Teams ที่มีประสบการณ์
+- Features that need frequent deployment
+- Experienced teams
 
-**Layer-by-Layer เหมาะกับ:**
+**Layer-by-Layer is suitable for:**
 - Monolith applications
 - Waterfall/Traditional teams
-- Features ที่มี shared logic เยอะ
+- Features with lots of shared logic
 - Enterprise applications
 
-### 3.3 Hybrid Approach (แนะนำ)
+### 3.3 Hybrid Approach (Recommended)
 
 ```
 Epic Level: Vertical Slice
@@ -222,25 +222,25 @@ Epic Level: Vertical Slice
 
 ### 4.1 ER Diagram → Features
 
-สำหรับแต่ละ Entity ใน ER Diagram:
+For each Entity in the ER Diagram:
 
 ```
-Entity: User (ตรวจสอบ crud_operations จาก design_doc_list.json)
-├── Feature: สร้าง User entity (domain)           ← always
-├── Feature: สร้าง UserConfiguration (data)        ← always
-├── Feature: GET /api/users (api)                  ← ถ้า list.enabled: true
-├── Feature: GET /api/users/{id} (api)             ← ถ้า read.enabled: true
-├── Feature: POST /api/users (api)                 ← ถ้า create.enabled: true
-├── Feature: PUT /api/users/{id} (api)             ← ถ้า update.enabled: true
-├── Feature: Soft delete User (api)                ← ถ้า delete.enabled: true (strategy: soft)
-└── Feature: User validation (quality)             ← ถ้ามี create/update
+Entity: User (check crud_operations from design_doc_list.json)
+├── Feature: Create User entity (domain)           ← always
+├── Feature: Create UserConfiguration (data)        ← always
+├── Feature: GET /api/users (api)                  ← if list.enabled: true
+├── Feature: GET /api/users/{id} (api)             ← if read.enabled: true
+├── Feature: POST /api/users (api)                 ← if create.enabled: true
+├── Feature: PUT /api/users/{id} (api)             ← if update.enabled: true
+├── Feature: Soft delete User (api)                ← if delete.enabled: true (strategy: soft)
+└── Feature: User validation (quality)             ← if create/update exists
 
-Total: ขึ้นอยู่กับ enabled operations (ไม่จำเป็นต้องครบ 8)
+Total: depends on enabled operations (not necessarily all 8)
 ```
 
 ### 4.2 Flow Diagram → Features
 
-สำหรับแต่ละ Step ใน Flow:
+For each Step in a Flow:
 
 ```
 Flow: User Registration
@@ -258,16 +258,16 @@ Decision Points:
 
 ### 4.3 UI Mockup → Features
 
-สำหรับแต่ละ Page ใน mockup_list.json:
+For each Page in mockup_list.json:
 
 ```
 mockup_list.json:
-├── 001-login.mockup.md → Feature: สร้างหน้า Login
-├── 002-register.mockup.md → Feature: สร้างหน้า Register
-├── 003-dashboard.mockup.md → Feature: สร้างหน้า Dashboard
-├── 004-user-list.mockup.md → Feature: สร้างหน้า User List
-├── 005-user-form.mockup.md → Feature: สร้างหน้า User Form
-└── 006-user-detail.mockup.md → Feature: สร้างหน้า User Detail
+├── 001-login.mockup.md → Feature: Create Login page
+├── 002-register.mockup.md → Feature: Create Register page
+├── 003-dashboard.mockup.md → Feature: Create Dashboard page
+├── 004-user-list.mockup.md → Feature: Create User List page
+├── 005-user-form.mockup.md → Feature: Create User Form page
+└── 006-user-detail.mockup.md → Feature: Create User Detail page
 ```
 
 ---
@@ -345,7 +345,7 @@ mockup_list.json:
 
 ### 6.3 Splitting Complex Features
 
-ถ้า feature มี complexity = complex ควรพิจารณาแยก:
+If a feature has complexity = complex, consider splitting:
 
 ```
 Before (too complex):
@@ -389,22 +389,22 @@ After (split):
 
 ### 7.1 Feature Sizing
 
-- **3-5 subtasks** ต่อ feature
+- **3-5 subtasks** per feature
 - **15-45 minutes** estimated time
-- **Clear deliverable** ที่ทดสอบได้
+- **Clear deliverable** that can be tested
 
 ### 7.2 Acceptance Criteria
 
-ทุก feature ควรมี acceptance criteria ที่:
-- **Specific**: ชัดเจนว่าต้องทำอะไร
-- **Measurable**: วัดได้ว่าผ่านหรือไม่
-- **Achievable**: ทำได้จริง
-- **Relevant**: เกี่ยวข้องกับ feature
-- **Testable**: ทดสอบได้
+Every feature should have acceptance criteria that are:
+- **Specific**: Clear about what needs to be done
+- **Measurable**: Can determine pass/fail
+- **Achievable**: Realistically doable
+- **Relevant**: Related to the feature
+- **Testable**: Can be tested
 
 ### 7.3 References
 
-ทุก UI feature ควรมี:
+Every UI feature should have:
 - Mockup reference
 - Design tokens reference
 - Component specs reference
@@ -428,17 +428,17 @@ After (split):
 
 ## 8. Quick Reference Card
 
-### การแบ่ง Epic
+### Splitting Epics
 
 ```
 1 Epic = 1 Bounded Context = 5-10 Features
 ```
 
-### การแบ่ง Feature
+### Splitting Features
 
 ```
 1 Entity = 2-8 Features (entity + enabled CRUD + validation + test)
-         ← ตรวจสอบ crud_operations.enabled ก่อน — ไม่จำเป็นต้องครบ
+         ← check crud_operations.enabled first — not necessarily all
 1 UI Page = 1-2 Features (page + API integration)
 1 Business Logic = 1-3 Features (core + edge cases)
 ```

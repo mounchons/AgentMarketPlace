@@ -1,49 +1,49 @@
 # Coding Agent Guide
 
-คู่มือสำหรับ Coding Agent - ใช้ทุกครั้งหลังจาก Initialize แล้ว
+Guide for Coding Agent - use every time after Initialize is complete
 
-## 🎯 หน้าที่ของ Coding Agent
+## 🎯 Coding Agent Responsibilities
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      CODING AGENT                           │
-│                    (เรียกซ้ำหลายครั้ง)                        │
+│                    (called multiple times)                   │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  ทุก Session ต้องทำ:                                        │
+│  Every session must:                                        │
 │                                                             │
-│  1. 📖 อ่าน Context     ─── progress.md, git log            │
-│  2. ✅ Verify Env       ─── project ทำงานได้                │
-│  3. 📋 Select Feature   ─── เลือก 1 feature                 │
-│  4. 💻 Implement        ─── เขียน code                     │
-│  5. 🧪 Test             ─── ทดสอบจริง                      │
-│  6. ✔️  Mark Pass        ─── อัพเดท feature_list            │
-│  7. 📝 Commit           ─── git commit                     │
-│  8. 📊 Update Progress  ─── เขียน session log              │
+│  1. 📖 Read Context      ─── progress.md, git log          │
+│  2. ✅ Verify Env         ─── project works                │
+│  3. 📋 Select Feature     ─── pick 1 feature               │
+│  4. 💻 Implement          ─── write code                   │
+│  5. 🧪 Test               ─── test for real                │
+│  6. ✔️  Mark Pass          ─── update feature_list          │
+│  7. 📝 Commit             ─── git commit                   │
+│  8. 📊 Update Progress    ─── write session log            │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## 📋 Step-by-Step Workflow
 
-### Step 0: ตรวจสอบ Design References (สำคัญมาก!)
+### Step 0: Check Design References (Very Important!)
 
-**ก่อนเริ่มพัฒนา feature ใดๆ ต้องตรวจสอบเอกสารอ้างอิง:**
+**Before starting any feature development, check the reference documents:**
 
 ```bash
-# 1. ตรวจสอบ UI Mockups (จาก ui-mockup skill)
+# 1. Check UI Mockups (from ui-mockup skill)
 ls -la .mockups/ 2>/dev/null
 ls -la .mockups/*.mockup.md 2>/dev/null
 
-# 2. ตรวจสอบ System Design Document (จาก system-design-doc skill)
+# 2. Check System Design Document (from system-design-doc skill)
 find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -5
 
-# 3. ตรวจสอบ Technology Stack
+# 3. Check Technology Stack
 ls -la *.csproj *.sln 2>/dev/null  # .NET Core
 ls -la package.json 2>/dev/null    # Node.js
 ```
 
-**📁 แหล่งอ้างอิงหลัก:**
+**📁 Main Reference Sources:**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -53,7 +53,7 @@ ls -la package.json 2>/dev/null    # Node.js
 │  📐 UI Mockup (.mockups/)                                          │
 │  ├── *.mockup.md   → ASCII Wireframe + Component Specs            │
 │  ├── _design-tokens.yaml → Colors, Spacing, Typography            │
-│  └── mockup_list.json → รายการ mockups ทั้งหมด                    │
+│  └── mockup_list.json → List of all mockups                       │
 │                                                                     │
 │  📄 System Design Doc                                               │
 │  ├── ER Diagram    → Database Schema                               │
@@ -62,79 +62,79 @@ ls -la package.json 2>/dev/null    # Node.js
 │  └── API Specs     → Endpoint Definitions                          │
 │                                                                     │
 │  🔧 Technology Skills                                               │
-│  └── /dotnet-dev   → ใช้สำหรับ .NET Core projects                  │
+│  └── /dotnet-dev   → Use for .NET Core projects                    │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**🎯 วิธีใช้ References:**
+**🎯 How to Use References:**
 
-| Feature Type | ต้องอ่าน | ใช้ทำอะไร |
+| Feature Type | Must Read | Purpose |
 |--------------|---------|----------|
-| **UI/Frontend** | `.mockups/[page].mockup.md` | อ่าน component specs, data requirements (wireframe = structural ref, ไม่ใช่ visual blueprint) |
-| **Database** | Design Doc - ER Diagram | ดู schema, relationships |
-| **API** | Design Doc - Flow Diagram | ดู business logic, endpoints |
-| **.NET Code** | `/dotnet-dev` skill | ใช้ .NET best practices |
+| **UI/Frontend** | `.mockups/[page].mockup.md` | Read component specs, data requirements (wireframe = structural ref, not visual blueprint) |
+| **Database** | Design Doc - ER Diagram | View schema, relationships |
+| **API** | Design Doc - Flow Diagram | View business logic, endpoints |
+| **.NET Code** | `/dotnet-dev` skill | Use .NET best practices |
 
-**⚠️ กฎสำคัญ:**
-- ถ้าพบ `.mockups/` folder → **ต้อง**อ่าน structural spec (components, data) แต่ **อิสระ**ออกแบบ visual
-- ถ้าพบ Design Doc → **ต้อง**ใช้ ER Diagram สำหรับ database
-- ถ้าเป็น .NET project → **ต้อง**ใช้ `/dotnet-dev` skill
-- ถ้าพบ `design_doc_list.json` → **ต้อง**ตรวจสอบ `crud_operations` ของ entity ก่อน implement CRUD features
+**⚠️ Important Rules:**
+- If `.mockups/` folder exists → **must** read structural spec (components, data) but **free** to design visual
+- If Design Doc exists → **must** use ER Diagram for database
+- If .NET project → **must** use `/dotnet-dev` skill
+- If `design_doc_list.json` exists → **must** check `crud_operations` for the entity before implementing CRUD features
 
-**🔍 CRUD Operations Check (ก่อน implement CRUD):**
+**🔍 CRUD Operations Check (before implementing CRUD):**
 ```bash
-# ตรวจสอบว่า entity มี operations ไหน enabled
+# Check which operations are enabled for the entity
 cat design_doc_list.json | jq '.entities[] | select(.name == "EntityName") | .crud_operations'
 ```
-- สร้าง API เฉพาะ operations ที่ `enabled: true` เท่านั้น
-- Delete ต้องใช้ `strategy` ตามที่กำหนด (default: `"soft"` = set is_active = false)
-- ห้ามสร้าง CRUD ครบทุกตัวโดยไม่ตรวจสอบ — บาง entity อาจเป็น read-only
+- Only create APIs for operations where `enabled: true`
+- Delete must use the `strategy` as specified (default: `"soft"` = set is_active = false)
+- Do not create all CRUD operations without checking — some entities may be read-only
 
-- ถ้าพบ `flows[]` ใน feature_list.json → **ต้อง**อ่าน flow context ก่อนเริ่มงาน
+- If `flows[]` exists in feature_list.json → **must** read flow context before starting work
 
 **🔍 Flow Context Check (v2.0.0):**
 ```bash
-# ตรวจสอบว่า feature อยู่ใน flow ไหน
+# Check which flow the feature belongs to
 cat feature_list.json | jq --arg fid "FEATURE_ID" '.flows[] | select(.steps[].feature_id == ($fid | tonumber))'
 ```
-- ถ้า feature มี `flow_id` → อ่าน entry/exit conditions, error_paths ก่อน implement
-- ถ้า feature มี `state_consumes` → ตรวจว่า state ถูก produce แล้ว
-- ถ้า feature มี `state_produces` → implement state creation ตาม `persistence` type ใน state_contracts
-- ถ้า feature มี `requires_components` → ตรวจว่า components พร้อมใช้แล้ว
+- If a feature has `flow_id` → read entry/exit conditions, error_paths before implementing
+- If a feature has `state_consumes` → verify the state has already been produced
+- If a feature has `state_produces` → implement state creation according to `persistence` type in state_contracts
+- If a feature has `requires_components` → verify the components are ready to use
 
 ---
 
-### Step 1: Get Context (สำคัญมาก!)
+### Step 1: Get Context (Very Important!)
 
-**ต้องทำทุกครั้งก่อนเริ่มงาน:**
+**Must do every time before starting work:**
 
 ```bash
-# 1. ดูว่าอยู่ directory ไหน
+# 1. Check current directory
 pwd
 
-# 2. อ่าน progress log
+# 2. Read progress log
 cat .agent/progress.md
 
-# 3. ดู git history
+# 3. View git history
 git log --oneline -10
 
-# 4. ดู feature list
+# 4. View feature list
 cat feature_list.json | jq '.features[] | select(.passes == false) | {id, description, priority}'
 ```
 
-**ผลลัพธ์ที่ควรได้:**
+**Expected results:**
 ```
-จาก progress.md:
-- Session ก่อนทำ Feature #3 เสร็จ
-- Feature ถัดไปคือ #4
+From progress.md:
+- Previous session completed Feature #3
+- Next feature is #4
 
-จาก git log:
+From git log:
 - abc1234 feat: Feature #3 - Add TodoItem entity
 - def5678 feat: Feature #2 - Setup EF Core
 - ...
 
-จาก feature_list.json:
+From feature_list.json:
 - Feature #4: GET /api/todos (passes: false, priority: high)
 - Feature #5: GET /api/todos/{id} (passes: false, priority: high)
 - ...
@@ -142,123 +142,123 @@ cat feature_list.json | jq '.features[] | select(.passes == false) | {id, descri
 
 ### Step 2: Verify Environment
 
-**ตรวจสอบว่า project ทำงานได้:**
+**Verify the project builds and runs:**
 
 ```bash
-# สำหรับ .NET
+# For .NET
 dotnet build
-dotnet run &  # รัน background
+dotnet run &  # Run in background
 
-# ทดสอบ basic endpoint (ถ้ามี)
+# Test basic endpoint (if available)
 curl http://localhost:5000/health
 ```
 
-**ถ้า build fail:**
-1. ดู error message
-2. แก้ไข code
-3. อย่าทำ feature ใหม่จนกว่า build จะผ่าน
+**If build fails:**
+1. Read the error message
+2. Fix the code
+3. Do not start a new feature until the build passes
 
 ### Step 3: Select Feature
 
-**เลือก feature ที่จะทำ:**
+**Select the feature to work on:**
 
 ```json
 {
   "id": 4,
   "category": "api",
-  "description": "GET /api/todos - ดึงรายการ todos ทั้งหมด",
+  "description": "GET /api/todos - Retrieve all todos",
   "priority": "high",
   "steps": [
-    "สร้าง TodosController",
+    "Create TodosController",
     "implement GetAll endpoint",
-    "ทดสอบด้วย Swagger"
+    "Test with Swagger"
   ],
   "passes": false
 }
 ```
 
-**กฎการเลือก:**
-1. เลือก `passes: false`
-2. เลือก `priority: high` ก่อน
-3. ตรวจสอบ dependency (ถ้ามี)
-4. **ทำทีละ 1 feature เท่านั้น!**
+**Selection rules:**
+1. Choose `passes: false`
+2. Choose `priority: high` first
+3. Check dependencies (if any)
+4. **Work on only 1 feature at a time!**
 
 ### Step 4: Implement Feature
 
-**ทำตาม steps ที่ระบุไว้:**
+**Follow the specified steps:**
 
 ```
 🎯 Working on Feature #4: GET /api/todos
 
-Step 1: สร้าง TodosController
+Step 1: Create TodosController
 ─────────────────────────────
-[สร้างไฟล์ Controllers/TodosController.cs]
+[Create file Controllers/TodosController.cs]
 
 Step 2: implement GetAll endpoint
 ─────────────────────────────────
-[เขียน code สำหรับ GET endpoint]
+[Write code for GET endpoint]
 
-Step 3: ทดสอบด้วย Swagger
+Step 3: Test with Swagger
 ─────────────────────────
-[รัน project และทดสอบ]
+[Run project and test]
 ```
 
 **Best Practices:**
-- เขียน code ที่ clean และ readable
-- Follow coding standards ของ project
-- เขียน comments ถ้าจำเป็น
-- อย่าลืม error handling
+- Write clean and readable code
+- Follow the project's coding standards
+- Write comments if necessary
+- Do not forget error handling
 
 ### Step 5: Test Feature
 
-**⚠️ ห้าม mark pass โดยไม่ test!**
+**⚠️ Do not mark pass without testing!**
 
-**วิธีทดสอบ:**
+**How to test:**
 
 ```bash
-# 1. Unit tests (ถ้ามี)
+# 1. Unit tests (if available)
 dotnet test
 
-# 2. Manual test ด้วย curl/Postman
+# 2. Manual test with curl/Postman
 curl http://localhost:5000/api/todos
-# Expected: [] หรือ list ของ todos
+# Expected: [] or list of todos
 
 # 3. Test edge cases
 curl http://localhost:5000/api/todos/999
 # Expected: 404 Not Found
 
-# 4. Test ด้วย Swagger UI
+# 4. Test with Swagger UI
 # http://localhost:5000/swagger
 ```
 
 **Test Checklist:**
-- [ ] Happy path ผ่าน
-- [ ] Error cases handle ถูกต้อง
-- [ ] Response format ถูกต้อง
-- [ ] Build ผ่าน
-- [ ] ไม่มี warnings/errors ใน console
+- [ ] Happy path passes
+- [ ] Error cases handled correctly
+- [ ] Response format is correct
+- [ ] Build passes
+- [ ] No warnings/errors in console
 
 ### Step 6: Mark as Passed
 
-**แก้ไข feature_list.json:**
+**Edit feature_list.json:**
 
 ```json
 {
   "id": 4,
-  "description": "GET /api/todos - ดึงรายการ todos ทั้งหมด",
-  "passes": true,  // ← เปลี่ยนจาก false
+  "description": "GET /api/todos - Retrieve all todos",
+  "passes": true,  // ← changed from false
   "tested_at": "2025-01-01T14:30:00Z",
   "notes": "Tested with curl and Swagger, returns empty array initially"
 }
 ```
 
-**อัพเดท summary:**
+**Update summary:**
 ```json
 {
   "summary": {
     "total": 11,
-    "passed": 4,  // ← เพิ่ม
-    "failed": 7,  // ← ลด
+    "passed": 4,  // ← increment
+    "failed": 7,  // ← decrement
     "last_updated": "2025-01-01T14:30:00Z"
   }
 }
@@ -277,13 +277,13 @@ git commit -m "feat: Feature #4 - GET /api/todos endpoint
 ```
 
 **Commit message guidelines:**
-- ใช้ format: `feat: Feature #X - description`
-- บอกสิ่งที่ทำใน body
-- บอกวิธี test (ถ้ามี)
+- Use format: `feat: Feature #X - description`
+- Describe what was done in the body
+- Describe how it was tested (if applicable)
 
 ### Step 8: Update Progress Log
 
-**เพิ่มใน .agent/progress.md:**
+**Add to .agent/progress.md:**
 
 ```markdown
 ---
@@ -293,9 +293,9 @@ git commit -m "feat: Feature #4 - GET /api/todos endpoint
 **Type**: Coding
 **Duration**: ~25 minutes
 
-### สิ่งที่ทำ:
+### What was done:
 - ✅ Feature #4: GET /api/todos endpoint
-  - สร้าง TodosController
+  - Created TodosController
   - Implement GetAll endpoint
   - Tested with curl and Swagger
 
@@ -303,20 +303,20 @@ git commit -m "feat: Feature #4 - GET /api/todos endpoint
 - curl http://localhost:5000/api/todos → ✅ 200 OK, []
 - Swagger UI → ✅ Working
 
-### สถานะปัจจุบัน:
+### Current status:
 - Features passed: 4/11 (36%)
 - Build: ✅ Passing
 - Tests: N/A
 
-### Feature ถัดไป:
-- **Feature #5**: GET /api/todos/{id} - ดึง todo ตาม id
+### Next Feature:
+- **Feature #5**: GET /api/todos/{id} - Retrieve todo by id
   - Priority: High
   - Category: API
 
 ### Git:
 - Commit: `feat: Feature #4 - GET /api/todos endpoint`
 
-### หมายเหตุ:
+### Notes:
 - API returns empty array initially (no data seeded)
 - Ready for Feature #5
 
@@ -327,7 +327,7 @@ git commit -m "feat: Feature #4 - GET /api/todos endpoint
 
 ## 📊 Session Summary Template
 
-เมื่อจบ session ควรแจ้ง user:
+When finishing a session, notify the user:
 
 ```markdown
 ✅ Session Complete!
@@ -350,46 +350,48 @@ git commit -m "feat: Feature #4 - GET /api/todos endpoint
 - Feature #5: GET /api/todos/{id}
 
 💡 To continue:
-- รัน `/continue` ใน session ถัดไป
+- Run `/continue` in the next session
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)
 ```
 
 ---
 
 ## ⚠️ Common Mistakes & Solutions
 
-### ❌ ลืมอ่าน context ก่อนเริ่มงาน
+### ❌ Forgetting to read context before starting work
 
 ```
-ผิด: เริ่มเขียน code เลยโดยไม่ดู progress
-ถูก: อ่าน progress.md และ git log ก่อนเสมอ
+Wrong: Starting to write code without checking progress
+Correct: Always read progress.md and git log first
 ```
 
-### ❌ ทำหลาย features ใน 1 session
+### ❌ Working on multiple features in 1 session
 
 ```
-ผิด: "เอาล่ะ ทำ Feature #4, #5, #6 เลย"
-ถูก: ทำทีละ 1 feature, commit, แล้วค่อยทำต่อ
+Wrong: "OK, let's do Feature #4, #5, #6 all at once"
+Correct: Work on 1 feature at a time, commit, then continue
 ```
 
-### ❌ Mark pass โดยไม่ test
+### ❌ Marking pass without testing
 
 ```
-ผิด: เขียน code เสร็จ → mark pass ทันที
-ถูก: เขียน code → test จริง → ผ่าน → mark pass
+Wrong: Finish writing code → mark pass immediately
+Correct: Write code → test for real → pass → mark pass
 ```
 
-### ❌ ลืม commit
+### ❌ Forgetting to commit
 
 ```
-ผิด: ทำ feature เสร็จ แล้วจบ session เลย
-ถูก: ทำ feature เสร็จ → commit → update progress → จบ session
+Wrong: Finish feature then end session
+Correct: Finish feature → commit → update progress → end session
 ```
 
-### ❌ ทิ้งงานในสถานะ broken
+### ❌ Leaving work in a broken state
 
 ```
-ผิด: build fail แต่จบ session ไปเลย
-ถูก: แก้ให้ build ผ่านก่อน หรือ revert ถ้าแก้ไม่ได้
+Wrong: Build fails but end session anyway
+Correct: Fix the build first, or revert if unable to fix
 ```
 
 ---
@@ -399,47 +401,47 @@ git commit -m "feat: Feature #4 - GET /api/todos endpoint
 ### Scenario 1: Build Fail
 
 ```bash
-# 1. ดู error
+# 1. View the error
 dotnet build 2>&1 | head -50
 
-# 2. แก้ไข error
+# 2. Fix the error
 
-# 3. Build ใหม่
+# 3. Rebuild
 dotnet build
 
-# 4. ถ้าแก้ไม่ได้ใน session นี้
-git stash  # หรือ
+# 4. If unable to fix in this session
+git stash  # or
 git checkout .  # revert changes
 ```
 
-### Scenario 2: Feature ซับซ้อนกว่าที่คิด
+### Scenario 2: Feature more complex than expected
 
 ```markdown
 ## Session Notes
 
-### สิ่งที่ทำ:
+### What was done:
 - 🔄 Feature #7: Partially completed
   - ✅ Created validator class
   - ❌ Integration with controller (not done)
 
-### สถานะ:
+### Status:
 - Feature #7: NOT PASSED (incomplete)
 - Code committed but feature not working end-to-end
 
-### ให้ Session ถัดไป:
-- ทำ Feature #7 ต่อ
-- ยังขาด: integrate validator กับ controller
+### For the next session:
+- Continue Feature #7
+- Still missing: integrate validator with controller
 ```
 
-### Scenario 3: พบ Bug ใน Feature ก่อนหน้า
+### Scenario 3: Found a bug in a previous feature
 
 ```markdown
 ## Session Notes
 
-### สิ่งที่ทำ:
-- 🐛 พบ bug ใน Feature #4 (GET /api/todos)
-  - Bug: ไม่ filter soft-deleted items (is_active = false)
-  - Fix: เพิ่ม .Where(x => x.IsActive) (soft delete = filter by is_active)
+### What was done:
+- 🐛 Found bug in Feature #4 (GET /api/todos)
+  - Bug: Not filtering soft-deleted items (is_active = false)
+  - Fix: Added .Where(x => x.IsActive) (soft delete = filter by is_active)
 - ✅ Feature #5: GET /api/todos/{id}
 
 ### Git:
@@ -451,12 +453,12 @@ git checkout .  # revert changes
 
 ## 💡 Pro Tips
 
-### 1. ใช้ Checklist
+### 1. Use a Checklist
 
 ```markdown
 ## Feature #4 Checklist
-- [ ] อ่าน progress.md
-- [ ] ดู git log
+- [ ] Read progress.md
+- [ ] View git log
 - [ ] Build project
 - [ ] Implement feature
 - [ ] Test
@@ -465,7 +467,7 @@ git checkout .  # revert changes
 - [ ] Update progress
 ```
 
-### 2. เขียน Test Cases ก่อน Implement
+### 2. Write Test Cases Before Implementing
 
 ```markdown
 ## Test Plan for Feature #5
@@ -475,17 +477,17 @@ git checkout .  # revert changes
 3. GET /api/todos/abc (invalid id) → 400 Bad Request
 ```
 
-### 3. ใช้ Time Boxing
+### 3. Use Time Boxing
 
 ```
-- ตั้งเป้า: 30 นาทีต่อ feature
-- ถ้าเกิน: บันทึกสถานะ, ให้ session ถัดไปทำต่อ
+- Target: 30 minutes per feature
+- If exceeded: save state, let the next session continue
 ```
 
-### 4. Commit บ่อย
+### 4. Commit Often
 
 ```bash
-# Commit เมื่อมี progress ที่ meaningful
+# Commit when there is meaningful progress
 git commit -m "wip: Feature #5 - Add controller skeleton"
 git commit -m "wip: Feature #5 - Implement GetById logic"
 git commit -m "feat: Feature #5 - Complete GET /api/todos/{id}"
@@ -507,12 +509,12 @@ git commit -m "feat: Feature #5 - Complete GET /api/todos/{id}"
 │                                                             │
 │  🎯 Select Feature:                                         │
 │     passes: false + highest priority                        │
-│     ทำทีละ 1 เท่านั้น!                                       │
+│     Only 1 at a time!                                       │
 │                                                             │
 │  🧪 Test Before Mark Pass:                                  │
-│     - Build ผ่าน                                           │
-│     - Manual test ผ่าน                                     │
-│     - Edge cases ผ่าน                                      │
+│     - Build passes                                          │
+│     - Manual test passes                                    │
+│     - Edge cases pass                                       │
 │                                                             │
 │  📝 End Session:                                            │
 │     git commit -m "feat: Feature #X - ..."                  │

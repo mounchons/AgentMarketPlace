@@ -1,37 +1,37 @@
 ---
-description: แก้ไขส่วนใดส่วนหนึ่งของเอกสารออกแบบระบบ
+description: Edit a specific section of the system design document
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
 # Edit Section Command
 
-แก้ไขหรืออัพเดทส่วนใดส่วนหนึ่งของเอกสารออกแบบระบบที่มีอยู่
+Edit or update a specific section of an existing system design document.
 
-## Input ที่ได้รับ
+## Input Received
 
 ```
-/edit-section ER Diagram - เพิ่ม entity Payment
-/edit-section Data Dictionary - เพิ่มตาราง payments
-/edit-section Flow Diagram - อัพเดท approval process
-/edit-section system-design-hr.md - section 7 เพิ่ม relationship
+/edit-section ER Diagram - add Payment entity
+/edit-section Data Dictionary - add payments table
+/edit-section Flow Diagram - update approval process
+/edit-section system-design-hr.md - section 7 add relationship
 /edit-section $ARGUMENTS
 ```
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: ระบุเอกสารที่ต้องแก้ไข
+### Step 1: Identify the Document to Edit
 
-**ถ้าไม่ได้ระบุไฟล์:**
+**If no file is specified:**
 
 ```bash
-# ค้นหาเอกสารออกแบบระบบ
+# Search for system design documents
 ls -la .design-docs/*.md 2>/dev/null
 
-# หรือดู design_doc_list.json
+# Or check design_doc_list.json
 cat .design-docs/design_doc_list.json 2>/dev/null
 ```
 
-**แสดงรายการให้เลือก:**
+**Display a list for selection:**
 ```
 📋 Available Design Documents:
 
@@ -46,7 +46,7 @@ cat .design-docs/design_doc_list.json 2>/dev/null
    เลือกหมายเลข (1-3):
 ```
 
-### Step 2: ระบุ Section ที่ต้องแก้ไข
+### Step 2: Identify the Section to Edit
 
 **Document Sections:**
 
@@ -63,26 +63,26 @@ cat .design-docs/design_doc_list.json 2>/dev/null
 | 9 | Sitemap | sitemap, pages, navigation |
 | 10 | User Roles & Permissions | roles, permissions, access |
 
-### Step 3: อ่านเอกสารปัจจุบัน
+### Step 3: Read the Current Document
 
 ```bash
-# อ่านเอกสาร
+# Read the document
 cat .design-docs/system-design-[name].md
 
-# หรืออ่านเฉพาะ section
+# Or read only the specific section
 grep -A 100 "## 7. ER Diagram" .design-docs/system-design-[name].md
 ```
 
-### Step 4: ดำเนินการแก้ไข
+### Step 4: Perform the Edit
 
-**ประเภทการแก้ไข:**
+**Edit types:**
 
 | Action | Description |
 |--------|-------------|
-| `add` | เพิ่มข้อมูลใหม่ |
-| `update` | อัพเดทข้อมูลที่มีอยู่ |
-| `remove` | ลบข้อมูล |
-| `rewrite` | เขียนใหม่ทั้ง section |
+| `add` | Add new data |
+| `update` | Update existing data |
+| `remove` | Remove data |
+| `rewrite` | Rewrite the entire section |
 
 ---
 
@@ -90,7 +90,7 @@ grep -A 100 "## 7. ER Diagram" .design-docs/system-design-[name].md
 
 ### Section 7: ER Diagram
 
-**เพิ่ม Entity:**
+**Add Entity:**
 ```mermaid
 erDiagram
     %% Existing entities...
@@ -108,35 +108,35 @@ erDiagram
     ORDER ||--o{ PAYMENT : has
 ```
 
-**เพิ่ม Relationship:**
-- ระบุ cardinality ให้ถูกต้อง
-- ตรวจสอบ FK ใน entity ที่เกี่ยวข้อง
+**Add Relationship:**
+- Specify the correct cardinality
+- Verify the FK in the related entity
 
 **Checklist:**
-- [ ] Entity มี PK
-- [ ] FK ชี้ไปที่ entity ที่มีอยู่
-- [ ] Cardinality ถูกต้อง
-- [ ] Syntax Mermaid ถูกต้อง
+- [ ] Entity has a PK
+- [ ] FK points to an existing entity
+- [ ] Cardinality is correct
+- [ ] Mermaid syntax is valid
 
 ### Section 8: Data Dictionary
 
-**เพิ่มตาราง:**
+**Add Table:**
 ```markdown
 ### Table: payments
 
-**Description**: เก็บข้อมูลการชำระเงิน
+**Description**: Stores payment information
 
 **Module**: PAYMENT
 
 | Column | Data Type | Constraints | Default | Description |
 |--------|-----------|-------------|---------|-------------|
-| id | INT | PK, AI | - | รหัสการชำระเงิน |
-| order_id | INT | FK→orders.id, NN | - | รหัสคำสั่งซื้อ |
-| amount | DECIMAL(12,2) | NN | - | จำนวนเงิน |
-| method | VARCHAR(20) | NN | - | วิธีชำระ (card, bank, cash) |
-| status | ENUM | NN | 'pending' | สถานะ |
-| paid_at | DATETIME | | NULL | วันที่ชำระ |
-| created_at | DATETIME | NN | CURRENT_TIMESTAMP | วันที่สร้าง |
+| id | INT | PK, AI | - | Payment ID |
+| order_id | INT | FK→orders.id, NN | - | Order ID |
+| amount | DECIMAL(12,2) | NN | - | Amount |
+| method | VARCHAR(20) | NN | - | Payment method (card, bank, cash) |
+| status | ENUM | NN | 'pending' | Status |
+| paid_at | DATETIME | | NULL | Payment date |
+| created_at | DATETIME | NN | CURRENT_TIMESTAMP | Created date |
 
 **Indexes**:
 - PRIMARY KEY (id)
@@ -149,7 +149,7 @@ erDiagram
 
 ### Section 6: Flow Diagrams
 
-**เพิ่ม Flow ใหม่:**
+**Add New Flow:**
 ```mermaid
 flowchart TD
     subgraph PaymentProcess["Payment Process"]
@@ -165,14 +165,14 @@ flowchart TD
 
 ### Section 5: Data Flow Diagram
 
-**อัพเดท DFD:**
-- ตรวจสอบ consistency ระหว่าง Level 0 และ Level 1
-- Process numbers ต้องต่อเนื่อง
-- Data stores ต้องตรงกับ Data Dictionary
+**Update DFD:**
+- Verify consistency between Level 0 and Level 1
+- Process numbers must be sequential
+- Data stores must match Data Dictionary
 
 ### Section 9: Sitemap
 
-**เพิ่มหน้าใหม่:**
+**Add New Pages:**
 ```mermaid
 flowchart TD
     %% Existing...
@@ -186,7 +186,7 @@ flowchart TD
 
 ### Section 10: User Roles & Permissions
 
-**เพิ่ม Permission:**
+**Add Permission:**
 ```markdown
 | Permission | Super Admin | Admin | Manager | User |
 |------------|-------------|-------|---------|------|
@@ -199,7 +199,7 @@ flowchart TD
 
 ## Consistency Check
 
-**หลังแก้ไข ต้องตรวจสอบ:**
+**After editing, verify:**
 
 | Section Changed | Also Check |
 |-----------------|------------|
@@ -257,7 +257,9 @@ flowchart TD
 
 | Resource | Description |
 |----------|-------------|
-| `references/document-sections.md` | รายละเอียดแต่ละ section |
-| `references/mermaid-patterns.md` | รูปแบบ diagrams |
-| `references/data-dictionary-template.md` | รูปแบบ Data Dictionary |
-| `references/troubleshooting.md` | แก้ไขปัญหาที่พบ |
+| `references/document-sections.md` | Details for each section |
+| `references/mermaid-patterns.md` | Diagram patterns |
+| `references/data-dictionary-template.md` | Data Dictionary format |
+| `references/troubleshooting.md` | Problem solutions |
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

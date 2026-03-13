@@ -1,86 +1,86 @@
 ---
-description: สร้าง UI Mockups หลายหน้าพร้อมกันด้วย Sub Agents
+description: Create multiple UI Mockups simultaneously using Sub Agents
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Task(*)
 ---
 
 # Create Mockups Parallel Command
 
-สร้าง UI Mockups หลายหน้าพร้อมกันโดยใช้ Sub Agents
+Create multiple UI Mockups simultaneously using Sub Agents.
 
-## Input ที่ได้รับ
+## Received Input
 
-User ต้องการสร้าง mockups: $ARGUMENTS
+User wants to create mockups: $ARGUMENTS
 
-**รูปแบบ Input:**
+**Input formats:**
 ```
 /create-mockups-parallel [page1], [page2], [page3], ...
-/create-mockups-parallel --all                    # สร้างทุกหน้าที่ pending
-/create-mockups-parallel --priority high          # เฉพาะ high priority
-/create-mockups-parallel --category auth          # เฉพาะ category
-/create-mockups-parallel --entity User            # สร้าง CRUD pages ของ entity
-/create-mockups-parallel --entities User,Product  # สร้าง CRUD pages หลาย entities
-/create-mockups-parallel จาก system-design-doc.md
+/create-mockups-parallel --all                    # Create all pending pages
+/create-mockups-parallel --priority high          # Only high priority
+/create-mockups-parallel --category auth          # Only specific category
+/create-mockups-parallel --entity User            # Create CRUD pages for entity
+/create-mockups-parallel --entities User,Product  # Create CRUD pages for multiple entities
+/create-mockups-parallel from system-design-doc.md
 ```
 
-**ตัวอย่าง:**
+**Examples:**
 ```
 /create-mockups-parallel Login, Dashboard, User List, User Form
 /create-mockups-parallel --all
 /create-mockups-parallel --priority high
 /create-mockups-parallel --entity User
-/create-mockups-parallel จาก system-design.md
+/create-mockups-parallel from system-design.md
 ```
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 0: ตรวจสอบและอ่าน mockup_list.json (สำคัญมาก!)
+### Step 0: Check and Read mockup_list.json (Very Important!)
 
 ```bash
-# ตรวจสอบว่ามี mockup_list.json หรือไม่
+# Check if mockup_list.json exists
 cat .mockups/mockup_list.json 2>/dev/null
 ```
 
-**ถ้ามี mockup_list.json:**
+**If mockup_list.json exists:**
 
-1. **--all flag**: สร้างทุกหน้าที่ status = "pending"
+1. **--all flag**: Create all pages with status = "pending"
    ```json
    // filter pages where status == "pending"
    ```
 
-2. **--priority [level] flag**: สร้างเฉพาะ priority ที่ระบุ
+2. **--priority [level] flag**: Create only the specified priority
    ```json
    // filter pages where priority == "high" AND status == "pending"
    ```
 
-3. **--category [cat] flag**: สร้างเฉพาะ category ที่ระบุ
+3. **--category [cat] flag**: Create only the specified category
    ```json
    // filter pages where category == "auth" AND status == "pending"
    ```
 
-4. **--entity [name] flag**: สร้าง CRUD pages ของ entity
+4. **--entity [name] flag**: Create CRUD pages for the entity
    ```json
    // find entity in entities array, get all page IDs
-   // สำหรับ complex entity: List + Form + Detail (3 pages)
-   // สำหรับ simple entity: List only (1 page with modals)
+   // For complex entity: List + Form + Detail (3 pages)
+   // For simple entity: List only (1 page with modals)
    ```
 
-5. **ระบุชื่อหน้า**: ใช้ข้อมูลจาก json
+5. **Specified page names**: Use data from json
    ```json
    // find page by name, use url, access, components, crud_group, complexity, ui_pattern, etc.
    ```
 
-**ถ้าไม่มี mockup_list.json:**
+**If mockup_list.json does not exist:**
 ```
-⚠️ ยังไม่มี mockup_list.json
+⚠️ mockup_list.json not found
 
-💡 แนะนำ:
-   /init-mockup → สร้าง mockup list จากเอกสารในโปรเจค
+💡 Suggestion:
+   /init-mockup → Create mockup list from project documents
 
-   หรือระบุหน้าโดยตรง:
+   Or specify pages directly:
    /create-mockups-parallel Login, Dashboard, User List
 ```
 
-**ตัวอย่าง Output เมื่อมี mockup_list.json:**
+**Example output when mockup_list.json exists:**
 ```
 📋 Pages to create (from mockup_list.json):
 
@@ -96,7 +96,7 @@ cat .mockups/mockup_list.json 2>/dev/null
    🚀 Spawning 4 sub-agents in parallel...
 ```
 
-**ตัวอย่าง Output เมื่อใช้ --entity:**
+**Example output when using --entity:**
 ```
 📋 Creating CRUD pages for entity: User
 
@@ -115,24 +115,24 @@ cat .mockups/mockup_list.json 2>/dev/null
    🚀 Spawning 3 sub-agents in parallel...
 ```
 
-### Step 1: อ่าน UI Mockup Knowledge Base
+### Step 1: Read UI Mockup Knowledge Base
 
-**ต้องอ่านไฟล์เหล่านี้ก่อน spawn sub agents:**
+**Must read these files before spawning sub agents:**
 
 ```bash
-# 1. อ่าน SKILL.md
+# 1. Read SKILL.md
 cat plugins/ui-mockup/skills/ui-mockup/SKILL.md
 
-# 2. อ่าน template
+# 2. Read template
 cat plugins/ui-mockup/skills/ui-mockup/templates/mockup-template.md
 
-# 3. อ่าน ASCII patterns
+# 3. Read ASCII patterns
 cat plugins/ui-mockup/skills/ui-mockup/references/ascii-patterns.md
 ```
 
-### Step 2: เตรียม Mockup Knowledge สำหรับ Sub Agents
+### Step 2: Prepare Mockup Knowledge for Sub Agents
 
-**สร้าง knowledge block ที่จะส่งให้ทุก sub agent:**
+**Create a knowledge block to send to all sub agents:**
 
 ```markdown
 ## UI Mockup Knowledge
@@ -217,38 +217,38 @@ List/Table Layout:
 - Spacing: 4px, 8px, 16px, 24px, 32px
 ```
 
-### Step 3: สร้างโฟลเดอร์ .mockups
+### Step 3: Create .mockups folder
 
 ```bash
 mkdir -p .mockups
 ```
 
-### Step 4: Parse รายการหน้า
+### Step 4: Parse Page List
 
-**แยก pages จาก input:**
-- ถ้าเป็น list: `Login, Dashboard, User List` → `["Login", "Dashboard", "User List"]`
-- ถ้าจาก design doc: อ่าน Sitemap section แล้วแยก pages
+**Extract pages from input:**
+- If a list: `Login, Dashboard, User List` → `["Login", "Dashboard", "User List"]`
+- If from design doc: Read the Sitemap section and extract pages
 
-### Step 5: Spawn Sub Agents แบบ Parallel
+### Step 5: Spawn Sub Agents in Parallel
 
-**ใช้ Task tool หลายครั้งใน message เดียว:**
+**Use the Task tool multiple times in the same message:**
 
-สำหรับแต่ละ page ให้ spawn sub agent ด้วย prompt นี้:
+For each page, spawn a sub agent with this prompt:
 
 ```
-คุณเป็น UI Mockup Designer
+You are a UI Mockup Designer
 
 ## Task
-สร้าง UI Mockup สำหรับหน้า: [PAGE_NAME]
+Create a UI Mockup for the page: [PAGE_NAME]
 
 ## Page Requirements
-[ใส่ requirements ของหน้านั้นๆ]
+[Insert requirements for this page]
 
 ## UI Mockup Knowledge
-[ใส่ knowledge block จาก Step 2]
+[Insert knowledge block from Step 2]
 
 ## Output Format
-สร้างไฟล์ .mockups/[page-name].mockup.md ตาม format นี้:
+Create file .mockups/[page-name].mockup.md using this format:
 
 # [Page Name] - UI Mockup
 
@@ -260,7 +260,7 @@ mkdir -p .mockups
 | Property | Value |
 |----------|-------|
 | Page ID | SCR-XXX |
-| Page Name | [ชื่อหน้า] |
+| Page Name | [Page name] |
 | URL | /path |
 | Access | [Roles] |
 
@@ -284,16 +284,16 @@ mkdir -p .mockups
 | Trigger | Action | Result |
 |---------|--------|--------|
 
-## กฎสำคัญ
-1. ใช้ ASCII art สำหรับ wireframe
-2. ระบุ components และ interactions ให้ครบ
-3. ต้องมีทั้ง Desktop และ Mobile view
-4. บันทึกไฟล์ที่ .mockups/[page-name].mockup.md
+## Important Rules
+1. Use ASCII art for wireframes
+2. Specify all components and interactions
+3. Must include both Desktop and Mobile views
+4. Save file at .mockups/[page-name].mockup.md
 ```
 
-### Step 6: รอผลลัพธ์และรวบรวม
+### Step 6: Wait for Results and Aggregate
 
-**รอ sub agents ทำงานเสร็จ แล้วแสดงสรุป:**
+**Wait for sub agents to finish, then show summary:**
 
 ```
 ✅ สร้าง Mockups สำเร็จ! (4 หน้า)
@@ -319,41 +319,41 @@ mkdir -p .mockups
 
 ## Example: Spawn 4 Sub Agents
 
-เมื่อ user รัน:
+When user runs:
 ```
 /create-mockups-parallel Login, Dashboard, User List, User Form
 ```
 
-**Main session ต้อง:**
+**Main session must:**
 
-1. อ่าน SKILL.md และ templates
-2. สร้าง .mockups folder
-3. Spawn 4 sub agents พร้อมกันใน message เดียว:
+1. Read SKILL.md and templates
+2. Create .mockups folder
+3. Spawn 4 sub agents simultaneously in a single message:
 
 ```
 Task tool call 1:
   subagent_type: "general-purpose"
-  prompt: "สร้าง mockup หน้า Login... [knowledge block]"
+  prompt: "Create mockup for Login page... [knowledge block]"
   run_in_background: true
 
 Task tool call 2:
   subagent_type: "general-purpose"
-  prompt: "สร้าง mockup หน้า Dashboard... [knowledge block]"
+  prompt: "Create mockup for Dashboard page... [knowledge block]"
   run_in_background: true
 
 Task tool call 3:
   subagent_type: "general-purpose"
-  prompt: "สร้าง mockup หน้า User List... [knowledge block]"
+  prompt: "Create mockup for User List page... [knowledge block]"
   run_in_background: true
 
 Task tool call 4:
   subagent_type: "general-purpose"
-  prompt: "สร้าง mockup หน้า User Form... [knowledge block]"
+  prompt: "Create mockup for User Form page... [knowledge block]"
   run_in_background: true
 ```
 
-4. รอผลลัพธ์ด้วย TaskOutput
-5. รวบรวมและแสดงสรุป
+4. Wait for results with TaskOutput
+5. Aggregate and show summary
 
 ---
 
@@ -362,10 +362,37 @@ Task tool call 4:
 ```markdown
 # UI Mockup Designer Agent
 
-คุณเป็น UI Mockup Designer ที่เชี่ยวชาญในการสร้าง ASCII wireframes
+You are a UI Mockup Designer specializing in creating ASCII wireframes.
+
+## ⚠️ CRITICAL RULES (MUST FOLLOW)
+
+1. **ALL 3 breakpoint wireframes mandatory** — Desktop (12col), Tablet (8col), Mobile (4col) with actual ASCII art
+2. **No placeholder text** — "[wireframe here]", "[TBD]", "to be added" is FORBIDDEN
+3. **Action column first** — in data tables, action column (👁 ✏️ 🗑) must be the leftmost column
+4. **Include Design Tokens Used section** — must list colors, typography, spacing tokens
+5. **Include Components Used table** — must list all components with location and props
+6. **Match CRUD complexity** — simple entities use modal, complex entities use separate pages
+7. **SweetAlert2 for delete** — always use SweetAlert2 for delete confirmation
+
+### 🔍 Self-Check (MANDATORY before finishing)
+
+- [ ] Desktop wireframe has actual ASCII art (not placeholder)?
+- [ ] Tablet wireframe has actual ASCII art (not placeholder)?
+- [ ] Mobile wireframe has actual ASCII art (not placeholder)?
+- [ ] Design Tokens Used section present?
+- [ ] Components Used table present?
+- [ ] Action column is first in data tables?
+
+If ANY breakpoint wireframe is missing, your output will be REJECTED.
+
+### ⚠️ Penalty
+
+Violating these rules means your output is INVALID and will be REJECTED entirely. You must redo from scratch.
+
+---
 
 ## Task
-สร้าง UI Mockup สำหรับหน้า: **{{PAGE_NAME}}**
+Create a UI Mockup for the page: **{{PAGE_NAME}}**
 
 ## Page Description
 {{PAGE_DESCRIPTION}}
@@ -472,11 +499,11 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 
 ## Output Instructions
 
-1. สร้างโฟลเดอร์ .mockups (ถ้ายังไม่มี)
-2. สร้างไฟล์ .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 หลักจาก page ID)
-3. ใช้ template ด้านล่าง
-4. สำหรับ List pages: Action column ต้องอยู่ด้านหน้า (ซ้ายสุด)
-5. ใช้ SweetAlert2 สำหรับ delete confirmation
+1. Create .mockups folder (if it doesn't exist)
+2. Create file .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 digits from page ID)
+3. Use the template below
+4. For List pages: Action column must be at the front (leftmost)
+5. Use SweetAlert2 for delete confirmation
 
 ### File Content Template
 
@@ -497,7 +524,7 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 | Page Name | {{PAGE_NAME}} |
 | URL | {{URL}} |
 | Access | {{ACCESS_ROLES}} |
-| CRUD Group | [Entity หรือ N/A] |
+| CRUD Group | [Entity or N/A] |
 | CRUD Type | [list / form / detail / N/A] |
 | Complexity | [simple / complex / N/A] |
 | UI Pattern | [modal / page / N/A] |
@@ -560,62 +587,62 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 | 1.0.0 | {{DATE}} | Claude | Initial mockup |
 ```
 
-## สำคัญ
-- ต้องสร้างไฟล์จริงที่ .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 หลักจาก page ID)
-- ใช้ Write tool สร้างไฟล์
-- ASCII wireframe ต้องครบทั้ง Desktop และ Mobile
-- ระบุ components และ interactions ให้ครบถ้วน
-- **สำหรับ List pages**: Action column (👁 ✏️ 🗑) ต้องอยู่ด้านหน้า (ซ้ายสุด)
-- **สำหรับ Simple entities**: View/Create/Edit ใช้ Modal, Delete ใช้ SweetAlert2
-- **สำหรับ Complex entities**: View/Create/Edit ใช้หน้าแยก, Delete ใช้ SweetAlert2
+## Important
+- Must create the actual file at .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 digits from page ID)
+- Use Write tool to create the file
+- ASCII wireframe must include both Desktop and Mobile
+- Specify all components and interactions completely
+- **For List pages**: Action column (👁 ✏️ 🗑) must be at the front (leftmost)
+- **For Simple entities**: View/Create/Edit use Modal, Delete uses SweetAlert2
+- **For Complex entities**: View/Create/Edit use separate pages, Delete uses SweetAlert2
 ```
 
 ---
 
 ## Error Handling
 
-**ถ้า sub agent fail:**
+**If a sub agent fails:**
 ```
-⚠️ บาง mockups สร้างไม่สำเร็จ
+⚠️ Some mockups failed to create
 
-✅ สำเร็จ:
+✅ Succeeded:
    • login.mockup.md
    • dashboard.mockup.md
 
-❌ ไม่สำเร็จ:
+❌ Failed:
    • user-list.mockup.md - [error message]
    • user-form.mockup.md - [error message]
 
-💡 ลองใหม่ด้วย:
+💡 Retry with:
    /create-mockup user-list
    /create-mockup user-form
 ```
 
 ---
 
-## Step 7: อัพเดท mockup_list.json (หลัง sub agents เสร็จ)
+## Step 7: Update mockup_list.json (after sub agents complete)
 
-**หลังจาก sub agents ทำงานเสร็จ ต้องอัพเดท mockup_list.json:**
+**After sub agents finish, update mockup_list.json:**
 
 ```bash
-# อ่าน mockup_list.json
+# Read mockup_list.json
 cat .mockups/mockup_list.json
 ```
 
-**อัพเดท status ของทุก page ที่สร้างสำเร็จ:**
+**Update status for all successfully created pages:**
 
 ```json
-// สำหรับแต่ละ page ที่สร้างสำเร็จ
+// For each successfully created page
 {
   "id": "001",
   "name": "Login",
-  "status": "completed",           // เปลี่ยนจาก pending
+  "status": "completed",           // changed from pending
   "mockup_file": "001-login.mockup.md",
   "created_at": "2025-01-20T14:30:00Z",
   "notes": "Created by parallel agent"
 }
 
-// สำหรับ List page ของ simple entity
+// For List page of a simple entity
 {
   "id": "010",
   "name": "Department List",
@@ -626,21 +653,21 @@ cat .mockups/mockup_list.json
 }
 ```
 
-**อัพเดท summary:**
+**Update summary:**
 ```json
 {
   "summary": {
     "total": 10,
-    "pending": 6,       // ลดลงตามจำนวนที่สร้างสำเร็จ
+    "pending": 6,       // decreased by number of successfully created
     "in_progress": 0,
-    "completed": 4,     // เพิ่มขึ้นตามจำนวนที่สร้างสำเร็จ
+    "completed": 4,     // increased by number of successfully created
     "approved": 0
   },
   "last_updated": "2025-01-20T14:35:00Z"
 }
 ```
 
-**ตัวอย่าง Final Output:**
+**Example Final Output:**
 ```
 ✅ สร้าง Mockups สำเร็จ! (4/4 หน้า)
 
@@ -661,3 +688,5 @@ cat .mockups/mockup_list.json
    • /edit-mockup [page] - [changes] → แก้ไข
    • /list-mockups                   → ดูสถานะทั้งหมด
 ```
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

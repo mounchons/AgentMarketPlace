@@ -1,13 +1,13 @@
 ---
-description: สร้าง CLAUDE.md และ project configuration เริ่มต้น
+description: Create CLAUDE.md and initial project configuration
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 ---
 
 # Init Project Command
 
-สร้าง CLAUDE.md และ configuration เริ่มต้นสำหรับโปรเจค
+Create CLAUDE.md and initial configuration for the project.
 
-## วัตถุประสงค์
+## Purpose
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -16,9 +16,9 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 │                                                                              │
 │  /init-project                                                              │
 │       │                                                                      │
-│       ├── สร้าง CLAUDE.md (Project Rules)                                   │
-│       ├── สร้าง .claude/settings.json (Optional)                            │
-│       └── Git init (ถ้ายังไม่มี)                                            │
+│       ├── Create CLAUDE.md (Project Rules)                                  │
+│       ├── Create .claude/settings.json (Optional)                           │
+│       └── Git init (if not already initialized)                             │
 │                                                                              │
 │  Output:                                                                     │
 │  ┌────────────────────────────────────────────────────────────────────┐     │
@@ -26,49 +26,48 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 │  │ ├── Project Description                                            │     │
 │  │ ├── Technology Stack                                               │     │
 │  │ ├── Coding Conventions                                             │     │
-│  │ ├── Commands & Scripts                                             │     │
 │  │ └── Rules for Claude                                               │     │
 │  └────────────────────────────────────────────────────────────────────┘     │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Input ที่ได้รับ
+## Input Received
 
 ```
 /init-project
-/init-project สร้างระบบ HR ด้วย .NET Core
+/init-project Create HR system with .NET Core
 $ARGUMENTS
 ```
 
-## ขั้นตอนที่ต้องทำ
+## Steps to Follow
 
-### Step 1: รวบรวมข้อมูลโปรเจค
+### Step 1: Gather Project Information
 
-ถาม user เกี่ยวกับ:
-1. **ชื่อโปรเจค** - ชื่อที่ใช้เรียก
-2. **คำอธิบาย** - โปรเจคนี้ทำอะไร
-3. **Technology Stack** - ใช้ technology อะไร
-4. **Coding Conventions** - มี conventions พิเศษหรือไม่
+Ask user about:
+1. **Project name** — name to use
+2. **Description** — what this project does
+3. **Technology Stack** — what technology is used
+4. **Coding Conventions** — any special conventions
 
-หรือวิเคราะห์จาก $ARGUMENTS ถ้ามี
+Or analyze from $ARGUMENTS if provided.
 
-### Step 2: ตรวจสอบโปรเจคที่มีอยู่
+### Step 2: Check Existing Project
 
 ```bash
-# ตรวจสอบว่ามีไฟล์อะไรบ้าง
+# Check what files exist
 ls -la
 
-# ตรวจสอบ git
+# Check git
 git status 2>/dev/null || echo "Not a git repo"
 
-# ตรวจสอบ technology
+# Check technology
 ls *.csproj 2>/dev/null && echo "=== .NET Project ==="
 ls package.json 2>/dev/null && echo "=== Node.js Project ==="
 ls requirements.txt 2>/dev/null && echo "=== Python Project ==="
 ```
 
-### Step 3: สร้าง CLAUDE.md
+### Step 3: Create CLAUDE.md
 
 **Template:**
 
@@ -160,13 +159,13 @@ ls requirements.txt 2>/dev/null && echo "=== Python Project ==="
 - [Progress Log](./.agent/progress.md)
 ```
 
-### Step 4: สร้างโฟลเดอร์ .claude (Optional)
+### Step 4: Create .claude Folder (Optional)
 
 ```bash
 mkdir -p .claude
 ```
 
-**สร้าง .claude/settings.json:**
+**Create .claude/settings.json:**
 
 ```json
 {
@@ -177,7 +176,7 @@ mkdir -p .claude
 }
 ```
 
-### Step 5: Git Init (ถ้ายังไม่มี)
+### Step 5: Git Init (if not already initialized)
 
 ```bash
 git init 2>/dev/null || echo "Git already initialized"
@@ -219,21 +218,23 @@ git commit -m "chore: Add CLAUDE.md project configuration"
 │                         WHY CLAUDE.md?                                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  CLAUDE.md เป็นไฟล์ที่ Claude Code จะอ่านโดยอัตโนมัติเมื่อเริ่ม session      │
+│  CLAUDE.md is a file that Claude Code reads automatically at session start  │
 │                                                                              │
-│  ประโยชน์:                                                                   │
+│  Benefits:                                                                   │
 │  ┌────────────────────────────────────────────────────────────────────┐     │
-│  │ 1. Context - Claude รู้ว่าโปรเจคนี้เกี่ยวกับอะไร                    │     │
-│  │ 2. Conventions - Claude ใช้ coding style ที่ถูกต้อง                │     │
-│  │ 3. Commands - Claude รู้ว่าต้องใช้ commands อะไร                    │     │
-│  │ 4. Rules - Claude ทำตามกฎที่กำหนด                                   │     │
-│  │ 5. Consistency - ทุก session ใช้กฎเดียวกัน                         │     │
+│  │ 1. Context - Claude knows what this project is about              │     │
+│  │ 2. Conventions - Claude uses the correct coding style             │     │
+│  │ 3. Commands - Claude knows what commands to use                   │     │
+│  │ 4. Rules - Claude follows the specified rules                     │     │
+│  │ 5. Consistency - every session uses the same rules                │     │
 │  └────────────────────────────────────────────────────────────────────┘     │
 │                                                                              │
-│  Claude จะอ่าน CLAUDE.md:                                                    │
-│  • เมื่อเริ่ม session ใหม่                                                   │
-│  • เมื่อใช้ /init หรือ /init-existing                          │
-│  • เมื่อใช้ /continue                                                       │
+│  Claude reads CLAUDE.md:                                                     │
+│  • When starting a new session                                               │
+│  • When using /init or /init-existing                                        │
+│  • When using /continue                                                      │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+> 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

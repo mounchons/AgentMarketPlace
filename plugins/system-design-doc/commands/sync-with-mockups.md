@@ -1,6 +1,6 @@
 # /sync-with-mockups
 
-ตรวจสอบและ synchronize ข้อมูลระหว่าง `design_doc_list.json` และ `.mockups/mockup_list.json`
+Check and synchronize data between `design_doc_list.json` and `.mockups/mockup_list.json`
 
 ---
 
@@ -14,10 +14,10 @@
 
 ## Purpose
 
-1. **Sync Entities** - เชื่อมโยง design doc entities กับ mockup entities
-2. **Sync Pages** - map pages กับ design sections
-3. **Validate References** - ตรวจสอบ cross-references
-4. **Update Timestamps** - update sync timestamps
+1. **Sync Entities** - Link design doc entities with mockup entities
+2. **Sync Pages** - Map pages with design sections
+3. **Validate References** - Verify cross-references
+4. **Update Timestamps** - Update sync timestamps
 
 ---
 
@@ -35,7 +35,7 @@ cat .mockups/mockup_list.json
 
 ### Step 2: Sync Entities
 
-Map entities ระหว่าง design doc และ mockups:
+Map entities between design doc and mockups:
 
 ```
 For each entity in design_doc_list:
@@ -191,16 +191,18 @@ Update mockup pages with design_doc_section:
 
 ## When to Run
 
-- หลังจากสร้างหรือ update design document
-- หลังจาก /init-mockup หรือ /create-mockup
-- ก่อน /generate-features-from-design
-- เมื่อ design document มีการเปลี่ยนแปลง
+- After creating or updating a design document
+- After /init-mockup or /create-mockup
+- Before /generate-features-from-design
+- When the design document has changes
 
 ---
 
 ## Notes
 
 - Safe to run multiple times
-- ไม่ลบข้อมูลที่มีอยู่ - เพียงแค่ update
-- ใช้ entity name matching (case-insensitive)
+- Does not delete existing data — only updates
+- Uses entity name matching (case-insensitive)
 - Supports partial sync (unmapped items won't block sync)
+
+> 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)
