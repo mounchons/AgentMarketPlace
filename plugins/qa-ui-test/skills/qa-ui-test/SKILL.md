@@ -1,6 +1,6 @@
 ---
 name: qa-ui-test
-version: 1.0.0
+version: 1.2.0
 description: |
   QA UI Testing plugin ด้วย Playwright — long-running agent style tracking, brainstorming,
   model assignment, parallel subagents, master data CRUD testing, master-detail grid testing, opus review
@@ -155,14 +155,63 @@ await expect(page.locator('.master-total')).toHaveText('1,000');
 
 - Data loading, empty state, filter, date range, export
 
+## Playwright MCP Integration (v1.2.0)
+
+Plugin รองรับ `plugin:playwright:playwright` MCP server สำหรับวิเคราะห์หน้าเว็บแบบ real-time
+
+### ตรวจสอบก่อนใช้งาน
+
+ก่อนวิเคราะห์หน้าเว็บ ต้องตรวจสอบว่า Playwright MCP พร้อมใช้งาน:
+- ลองเรียก `mcp__plugin_playwright_playwright__browser_snapshot`
+- **ถ้าใช้งานได้** → ใช้ MCP tools (แม่นยำกว่า)
+- **ถ้าไม่พบ** → แจ้งผู้ใช้ให้ติดตั้งก่อน
+
+### เมื่อไม่พบ Playwright MCP ต้องแจ้ง:
+
+```
+⚠️ ไม่พบ Playwright MCP Plugin (plugin:playwright:playwright)
+กรุณาติดตั้ง:
+  1. พิมพ์ /mcp → Add MCP Server → plugin:playwright:playwright
+  2. หรือ: claude mcp add playwright -- npx @anthropic-ai/mcp-playwright
+```
+
+### MCP Tools ที่ใช้
+
+| Tool | ใช้ตอนไหน |
+|------|----------|
+| `browser_navigate` | เปิดหน้าเว็บเป้าหมาย |
+| `browser_snapshot` | ดู DOM tree + accessibility tree + element refs |
+| `browser_take_screenshot` | จับภาพหน้าเว็บ |
+| `browser_click` | คลิกปุ่ม Add/Edit/Expand เพื่อสำรวจ |
+| `browser_fill_form` | ทดสอบกรอก form |
+| `browser_press_key` | กด Escape/Enter |
+| `browser_console_messages` | ตรวจ console errors |
+| `browser_run_code` | รัน custom Playwright code |
+
+### ข้อดีของ MCP vs CLI
+
+```
+MCP (แนะนำ):
+  ✅ เห็น DOM tree + element refs ทันที
+  ✅ คลิกสำรวจ form/dialog ได้ real-time
+  ✅ รู้ field names, types, labels แม่นยำ
+  ✅ ตรวจ detail grid ได้โดย expand row
+
+CLI (fallback):
+  ⚠️ ได้แค่ screenshot
+  ⚠️ ต้องเขียน script ชั่วคราว
+  ⚠️ ไม่เห็น DOM structure
+```
+
 ## Core Workflow
 
-1. **Brainstorm** → ถามผู้ใช้เกี่ยวกับ business rules, edge cases, user roles
-2. **Analyze** → Navigate, screenshot, identify elements, detect page type
-3. **Create Scenarios** → IEEE 829 format, test data, Playwright scripts
-4. **Run Tests** → Sequential or parallel with subagents
-5. **Report** → Per-run report, comparison report, summary
-6. **Review** → Opus reviews test quality and coverage
+1. **ตรวจ MCP** → ตรวจสอบ Playwright MCP พร้อมใช้งาน (แจ้งถ้าไม่พบ)
+2. **Brainstorm** → ถามผู้ใช้เกี่ยวกับ business rules, edge cases, user roles
+3. **Analyze (MCP)** → Navigate, snapshot, click สำรวจ, detect page type
+4. **Create Scenarios** → IEEE 829 format, test data, Playwright scripts
+5. **Run Tests** → Sequential or parallel with subagents
+6. **Report** → Per-run report, comparison report, summary
+7. **Review** → Opus reviews test quality and coverage
 
 ## Long-running Agent Features
 

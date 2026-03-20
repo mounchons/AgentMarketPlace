@@ -1,6 +1,6 @@
 ---
 description: สร้าง test scenarios พร้อมระดมสมอง — วิเคราะห์หน้าเว็บ, brainstorm test cases, สร้าง Playwright scripts ตามมาตรฐาน IEEE 829
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), mcp__plugin_playwright_playwright__*
 ---
 
 # QA Create Scenario — Brainstorm + Generate
@@ -14,6 +14,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 3. **IEEE 829 format เท่านั้น** — ทุก scenario ต้องตาม template
 4. **ต้อง commit เมื่อเสร็จ** — scenario(TS-XXX): create scenarios for [module]
 5. **Update qa-tracker.json** — เพิ่ม scenarios ที่สร้างทุกตัว
+6. **ใช้ Playwright MCP วิเคราะห์หน้าเว็บ** — ถ้ามี plugin:playwright:playwright ติดตั้ง
 
 ### Self-Check Checklist (MANDATORY)
 
@@ -139,10 +140,187 @@ cat "$(dirname "$0")/../skills/qa-ui-test/templates/qa-tracker.json"
 
 ---
 
-### Step 2: Detect Page Type & Navigate
+### Step 1.5: ตรวจสอบ Playwright MCP Plugin
+
+**ก่อนวิเคราะห์หน้าเว็บ ต้องตรวจสอบว่า Playwright MCP พร้อมใช้งาน:**
+
+ลองเรียก `mcp__plugin_playwright_playwright__browser_snapshot` หรือ tool ใดๆ ของ Playwright MCP
+
+**ถ้า Playwright MCP ใช้งานได้ → ใช้ MCP (Step 2A)**
+**ถ้า Playwright MCP ไม่พบ → แจ้งผู้ใช้:**
+
+```
+⚠️ ไม่พบ Playwright MCP Plugin (plugin:playwright:playwright)
+
+ระบบต้องการ Playwright MCP เพื่อวิเคราะห์หน้าเว็บแบบ real-time
+กรุณาติดตั้งก่อน:
+
+   1. เปิด Claude Code
+   2. พิมพ์ /mcp
+   3. เลือก "Add MCP Server"
+   4. เลือก plugin:playwright:playwright
+
+หรือรันคำสั่ง:
+   claude mcp add playwright -- npx @anthropic-ai/mcp-playwright
+
+หลังติดตั้งแล้ว ลองรัน /qa-create-scenario อีกครั้ง
+```
+
+**ห้ามข้ามขั้นตอนนี้** — ถ้าไม่มี Playwright MCP ต้องแจ้งผู้ใช้ให้ติดตั้งก่อน
+
+---
+
+### Step 2A: วิเคราะห์หน้าเว็บด้วย Playwright MCP (แนะนำ)
+
+**ใช้ Playwright MCP tools วิเคราะห์หน้าเว็บ:**
+
+```
+ขั้นตอน:
+
+① Navigate ไปหน้าเว็บ
+   → mcp__plugin_playwright_playwright__browser_navigate
+     url: "[URL]"
+
+② จับ Snapshot เพื่อดู DOM tree + elements ทั้งหมด
+   → mcp__plugin_playwright_playwright__browser_snapshot
+   ← ได้: accessibility tree + element refs
+
+③ จับ Screenshot เพื่อดูหน้าตาจริง
+   → mcp__plugin_playwright_playwright__browser_take_screenshot
+
+④ วิเคราะห์จาก snapshot:
+   - มี table (role: table) → อาจเป็น Master Data
+   - มี form (role: form) → อาจเป็น Form
+   - มี expandable rows → อาจเป็น Master-Detail
+   - มี stepper/tabs → อาจเป็น Wizard
+   - มี charts → อาจเป็น Dashboard
+
+⑤ สำรวจ elements เพิ่มเติม (ถ้าต้องการ):
+   → mcp__plugin_playwright_playwright__browser_click
+     (คลิกปุ่ม Add/Edit เพื่อดู form)
+   → mcp__plugin_playwright_playwright__browser_snapshot
+     (จับ snapshot ของ form/dialog ที่เปิด)
+
+⑥ ตรวจสอบ detail grid (ถ้าเป็น Master-Detail):
+   → mcp__plugin_playwright_playwright__browser_click
+     (คลิก row เพื่อ expand)
+   → mcp__plugin_playwright_playwright__browser_snapshot
+     (จับ snapshot ของ detail grid)
+```
+
+**ข้อดีของ MCP เทียบกับ CLI:**
+
+| ความสามารถ | MCP | CLI |
+|-----------|-----|-----|
+| ดู DOM tree + refs | ✅ snapshot ได้ทันที | ❌ ต้องเขียน script |
+| คลิกสำรวจ interactive | ✅ คลิก/กรอกได้เลย | ❌ ต้อง run script |
+| จับ screenshot | ✅ real-time | ⚠️ ต้อง run test |
+| ดู form fields | ✅ เห็น labels, types, refs | ❌ ต้อง parse HTML |
+| ตรวจ detail grid | ✅ expand แล้ว snapshot | ❌ ต้องเขียน script |
+
+**วิเคราะห์จาก Snapshot เพื่อตรวจจับ page type:**
+
+```
+จาก Accessibility Tree:
+
+ถ้าพบ:
+  role: table + role: button[name~=Add|Create|New|เพิ่ม]
+  + role: button[name~=Edit|แก้ไข]
+  + role: button[name~=Delete|ลบ]
+  → ประเภท: Master Data CRUD
+
+ถ้าพบ:
+  role: table + rows ที่มี expand icon
+  + ซ้อน table/grid ข้างใน
+  → ประเภท: Master-Detail Grid
+
+ถ้าพบ:
+  role: form + role: textbox + role: button[name~=Submit|ส่ง|บันทึก]
+  ไม่มี table
+  → ประเภท: Form
+
+ถ้าพบ:
+  role: tablist หรือ stepper/wizard indicators
+  → ประเภท: Multi-step Wizard
+
+ถ้าพบ:
+  charts, metrics, graphs
+  → ประเภท: Dashboard
+```
+
+**แสดงผลวิเคราะห์ให้ผู้ใช้เห็น:**
+
+```
+🔍 วิเคราะห์หน้าเว็บ: [URL]
+
+📷 Screenshot: [แสดง screenshot]
+
+📋 Elements ที่พบ:
+   • Table: 1 (15 rows, 5 columns)
+   • Buttons: [Add Product] [Export] [Filter]
+   • Each row: [Edit] [Delete] icons
+   • Pagination: Page 1 of 3
+   • Search: 1 search box
+
+🏷️ ตรวจจับประเภท: Master Data CRUD
+   Confidence: สูง (มีตาราง + CRUD buttons)
+
+⏩ ดำเนินการ brainstorm ต่อ...
+```
+
+---
+
+### Step 2A-Extra: สำรวจ Form/Dialog ด้วย MCP
+
+**ถ้าหน้ามีปุ่ม Add/Create → คลิกเปิดเพื่อดู form fields:**
+
+```
+① คลิกปุ่ม Add/Create
+   → mcp__plugin_playwright_playwright__browser_click
+     element: "Add Product button"
+     ref: "[ref from snapshot]"
+
+② จับ snapshot ของ form/dialog
+   → mcp__plugin_playwright_playwright__browser_snapshot
+
+③ วิเคราะห์ form fields:
+   ← ได้: field names, types, labels, required markers
+   เช่น:
+   • textbox "Product Name" (required)
+   • textbox "SKU"
+   • number "Price" (required)
+   • combobox "Category"
+   • file "Image"
+
+④ จับ screenshot ของ form
+   → mcp__plugin_playwright_playwright__browser_take_screenshot
+
+⑤ ปิด form/dialog กลับ
+   → mcp__plugin_playwright_playwright__browser_press_key
+     key: "Escape"
+```
+
+**ข้อมูลจาก form fields → สร้าง test scenarios ที่แม่นยำ:**
+
+```
+จาก form analysis:
+  • Product Name (required, text) → test empty, max length, special chars, duplicate
+  • SKU (text) → test format, unique constraint
+  • Price (required, number) → test 0, negative, max, decimal
+  • Category (combobox) → test each option, empty
+  • Image (file) → test valid image, too large, wrong format
+
+→ สร้าง scenarios ที่ตรงกับ fields จริง ไม่ใช่เดา
+```
+
+---
+
+### Step 2B: Fallback — วิเคราะห์ด้วย CLI (ถ้าไม่มี MCP)
+
+**ใช้เฉพาะเมื่อ Playwright MCP ไม่พร้อม:**
 
 ```bash
-# Navigate and screenshot using Playwright
+# Navigate and screenshot using Playwright CLI
 npx playwright test --headed --timeout 10000 -c - <<'EOF'
 import { test } from '@playwright/test';
 test('analyze', async ({ page }) => {
@@ -152,7 +330,7 @@ test('analyze', async ({ page }) => {
 EOF
 ```
 
-**ตรวจจับประเภทหน้า:**
+**ตรวจจับประเภทหน้า (จาก screenshot เท่านั้น — แม่นยำน้อยกว่า MCP):**
 
 | Indicator | Page Type |
 |-----------|-----------|

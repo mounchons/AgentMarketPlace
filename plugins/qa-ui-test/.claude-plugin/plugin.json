@@ -1,6 +1,6 @@
 {
   "name": "qa-ui-test",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "QA UI Testing plugin ด้วย Playwright — สร้าง/แก้ไข test scenarios (IEEE 829, brainstorming), รัน tests แบบ parallel ด้วย subagents, รีเทสและรายงานผล, ดูสถานะ, อธิบาย test plan ด้วย flowchart พร้อม long-running-agent style tracking, model assignment, opus review รองรับ master data CRUD และ master-detail grid",
   "author": {
     "name": "Mounchons"
