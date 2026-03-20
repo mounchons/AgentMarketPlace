@@ -148,6 +148,32 @@
       "author": {
         "name": "Mounchons"
       }
+    },
+    {
+      "name": "qa-ui-test",
+      "source": "./plugins/qa-ui-test",
+      "description": "QA UI Testing ด้วย Playwright — สร้าง test scenarios (IEEE 829) พร้อม brainstorming, รัน tests แบบ parallel ด้วย subagents, รีเทสและรายงานผล, แก้ไขเคสเมื่อ logic เปลี่ยน, ดูสถานะ, อธิบาย test plan ด้วย flowchart พร้อม long-running-agent style tracking, model assignment, opus review รองรับ Master Data CRUD และ Master-Detail Grid",
+      "version": "1.1.0",
+      "category": "testing",
+      "tags": [
+        "qa",
+        "ui-testing",
+        "playwright",
+        "e2e",
+        "ieee-829",
+        "test-automation",
+        "master-data",
+        "master-detail",
+        "crud-testing",
+        "brainstorming",
+        "parallel-agents",
+        "opus-review",
+        "long-running",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
     }
   ]
 }

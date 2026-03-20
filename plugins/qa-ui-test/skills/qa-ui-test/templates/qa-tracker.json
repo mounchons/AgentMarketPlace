@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.1.0",
+  "project": "",
+  "base_url": "http://localhost:3000",
+  "technology": "",
+  "model_config": {
+    "scenario_creator": "sonnet",
+    "test_runner": "sonnet",
+    "reviewer": "opus",
+    "assignment_strategy": {
+      "auto_assign_rules": [
+        { "condition": "priority == 'critical'", "assign": "opus" },
+        { "condition": "type == 'cross-browser'", "assign": "opus" },
+        { "condition": "page_type == 'wizard' && priority == 'high'", "assign": "opus" },
+        { "condition": "page_type == 'master-detail' && priority == 'critical'", "assign": "opus" },
+        { "condition": "default", "assign": "sonnet" }
+      ]
+    }
+  },
+  "summary": {
+    "total_scenarios": 0,
+    "passed": 0,
+    "failed": 0,
+    "pending": 0,
+    "running": 0,
+    "deprecated": 0,
+    "last_run": null,
+    "pass_rate": "0%"
+  },
+  "modules": [],
+  "page_types": ["form", "master-data", "master-detail", "wizard", "dashboard", "search"],
+  "scenarios": []
+}

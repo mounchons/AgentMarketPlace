@@ -1,0 +1,68 @@
+name: QA UI Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Target URL to test'
+        required: false
+        default: 'http://localhost:3000'
+      scenarios:
+        description: 'Specific scenarios to run (e.g., TS-LOGIN or leave empty for all)'
+        required: false
+        default: ''
+
+jobs:
+  ui-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run UI tests
+        run: |
+          FILTER="${{ github.event.inputs.scenarios }}"
+          if [ -n "$FILTER" ]; then
+            npx playwright test "$FILTER" --reporter=html,json,list
+          else
+            npx playwright test --reporter=html,json,list
+          fi
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'http://localhost:3000' }}
+
+      - name: Generate summary report
+        if: always()
+        run: node scripts/generate-summary.js || true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-test-results-${{ github.run_number }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ github.run_number }}
+          path: playwright-report/
+          retention-days: 14
