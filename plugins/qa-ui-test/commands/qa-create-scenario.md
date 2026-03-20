@@ -52,6 +52,10 @@ $ARGUMENTS
 
 **ใช้ subagent สแกน codebase → สร้าง scenarios ทุกหน้าทีเดียว**
 
+**มี 2 แบบ:**
+- `--auto` → subagent วิเคราะห์ code อย่างเดียว (เร็ว)
+- `--auto --brainstorm-agents` → dispatch ทีม QA agents ช่วยคิด scenarios (ครบถ้วนกว่า)
+
 ### Auto Step 1: Dispatch Code Analysis Subagent
 
 ```
@@ -119,6 +123,269 @@ Return ผลเป็น JSON format"
 สำหรับแต่ละ cascade relationship:
   สร้าง cascade-test scenarios (แก้/ลบ master → ตรวจ detail)
 ```
+
+### Auto Step 2.5: Multi-Agent Brainstorm (ถ้า --brainstorm-agents)
+
+**เมื่อใช้ `--auto --brainstorm-agents` → dispatch ทีม QA agents ช่วยคิด scenarios**
+
+ทำงานแบบ **ประชุม QA team** — แต่ละ agent สวมบทบาทต่างกัน คิดมุมมองคนละด้าน
+แล้ว main agent รวมผลทุก agent สร้างเป็น scenarios สุดท้าย
+
+**Dispatch ทั้งหมด parallel (พร้อมกัน) ด้วย Agent tool:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              QA MULTI-AGENT BRAINSTORM                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Main Agent (Facilitator / รวมผล)                                │
+│  │                                                               │
+│  ├── Dispatch parallel:                                          │
+│  │                                                               │
+│  │  ┌──────────────────────────────────────┐                    │
+│  │  │ 🧑‍💼 Agent 1: End User                │                    │
+│  │  │ "ฉันคือ user ทั่วไป                    │                    │
+│  │  │  ฉันจะใช้งานหน้านี้ยังไง?              │                    │
+│  │  │  อะไรที่ฉันคาดหวังว่าจะทำงาน?         │                    │
+│  │  │  อะไรที่จะทำให้ฉันสับสน?"              │                    │
+│  │  └──────────────────────────────────────┘                    │
+│  │                                                               │
+│  │  ┌──────────────────────────────────────┐                    │
+│  │  │ 🔒 Agent 2: Security Tester          │                    │
+│  │  │ "ฉันจะพยายามเจาะระบบ                  │                    │
+│  │  │  SQL injection, XSS, CSRF             │                    │
+│  │  │  bypass authorization, access control │                    │
+│  │  │  session hijacking, brute force"      │                    │
+│  │  └──────────────────────────────────────┘                    │
+│  │                                                               │
+│  │  ┌──────────────────────────────────────┐                    │
+│  │  │ 🐛 Agent 3: Bug Hunter               │                    │
+│  │  │ "ฉันจะหา edge cases                   │                    │
+│  │  │  ค่า null, empty, max length           │                    │
+│  │  │  concurrent updates, race conditions   │                    │
+│  │  │  ภาษาไทย, emoji, special chars"        │                    │
+│  │  └──────────────────────────────────────┘                    │
+│  │                                                               │
+│  │  ┌──────────────────────────────────────┐                    │
+│  │  │ 👔 Agent 4: Business Analyst          │                    │
+│  │  │ "ฉันดู business rules                  │                    │
+│  │  │  อ่าน code → หา validation rules       │                    │
+│  │  │  หา business logic ที่ซ่อนอยู่           │                    │
+│  │  │  ตรวจ workflow / state transitions"     │                    │
+│  │  └──────────────────────────────────────┘                    │
+│  │                                                               │
+│  │  ┌──────────────────────────────────────┐                    │
+│  │  │ ♿ Agent 5: Accessibility Tester      │                    │
+│  │  │ "ฉันทดสอบ accessibility                │                    │
+│  │  │  keyboard navigation, screen reader    │                    │
+│  │  │  color contrast, focus management      │                    │
+│  │  │  ARIA labels, tab order"               │                    │
+│  │  └──────────────────────────────────────┘                    │
+│  │                                                               │
+│  ├── รอผลทุก agent (run_in_background)                           │
+│  │                                                               │
+│  └── รวมผล → deduplicate → จัดลำดับ priority → สร้าง scenarios   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Subagent Prompts:**
+
+#### Agent 1: End User Perspective
+
+```
+Dispatch Agent (subagent_type: "general-purpose", run_in_background: true):
+
+"คุณคือ End User ที่ใช้งานระบบนี้ อ่าน code/pages ต่อไปนี้แล้วตอบ:
+
+Pages: [list of pages from Auto Step 1]
+Codebase: [project path]
+
+ให้คิดในมุมมองของผู้ใช้ทั่วไป:
+1. ฉันจะใช้งานหน้านี้ยังไง? (user journey)
+2. อะไรที่ฉันคาดหวังว่าจะทำงานได้? (happy path expectations)
+3. อะไรที่จะทำให้ฉันสับสนหรือหงุดหงิด? (UX issues)
+4. ถ้าฉันทำผิดพลาด ระบบจะช่วยฉันยังไง? (error recovery)
+5. ฉันจะพยายามใช้ shortcut อะไร? (unexpected usage)
+
+สำหรับแต่ละหน้า ให้ระบุ test scenarios ในรูปแบบ:
+{
+  'page': '/admin/products',
+  'scenarios': [
+    { 'title': '...', 'type': 'happy-path|negative|ux', 'priority': 'high|medium|low', 'steps': '...' }
+  ]
+}
+"
+```
+
+#### Agent 2: Security Tester Perspective
+
+```
+Dispatch Agent (subagent_type: "general-purpose", run_in_background: true):
+
+"คุณคือ Security Tester / Penetration Tester อ่าน code ต่อไปนี้:
+
+Pages: [list of pages]
+Auth config: [from Auto Step 1 analysis]
+Codebase: [project path]
+
+ทดสอบด้าน security:
+1. SQL Injection: input fields ที่ไม่ sanitize?
+2. XSS: fields ที่ render HTML unescaped?
+3. CSRF: forms ที่ไม่มี antiforgery token?
+4. Authorization bypass: URL ที่เข้าได้โดยไม่ login?
+5. IDOR: เปลี่ยน ID ใน URL เพื่อเข้าถึงข้อมูลคนอื่น?
+6. Brute force: login ที่ไม่มี rate limit?
+7. File upload: อัพโหลดไฟล์อันตราย?
+8. Session: cookie settings ปลอดภัย?
+
+สำหรับแต่ละหน้า ให้ระบุ security test scenarios:
+{
+  'page': '/admin/products',
+  'scenarios': [
+    { 'title': '...', 'type': 'security', 'attack': 'sql-injection|xss|csrf|idor|...', 'priority': '...', 'payload': '...' }
+  ]
+}
+"
+```
+
+#### Agent 3: Bug Hunter / Edge Case Specialist
+
+```
+Dispatch Agent (subagent_type: "general-purpose", run_in_background: true):
+
+"คุณคือ QA ที่เชี่ยวชาญหา edge cases และ bugs อ่าน code ต่อไปนี้:
+
+Pages: [list of pages]
+Fields/Validations: [from Auto Step 1]
+Codebase: [project path]
+
+หา edge cases:
+1. Boundary: min/max values ของทุก field
+2. Null/Empty: ส่ง null, empty string, whitespace only
+3. Type mismatch: ส่ง string ใน number field, ส่ง date format ผิด
+4. Unicode: ภาษาไทย, emoji 🎉, RTL text, CJK characters
+5. Special chars: <script>, ' OR 1=1, ../../etc/passwd
+6. Concurrency: กด submit 2 ครั้ง, แก้ไขข้อมูลเดียวกัน 2 คนพร้อมกัน
+7. State: back button หลัง submit, refresh หน้า form ที่กรอกครึ่งหนึ่ง
+8. Large data: paste text 10,000 chars, upload ไฟล์ 100MB
+9. Network: slow connection, request timeout
+10. Master data ที่ถูกลบ: dropdown reference ที่ถูกลบไปแล้ว
+
+สำหรับแต่ละหน้า:
+{
+  'page': '/admin/products',
+  'scenarios': [
+    { 'title': '...', 'type': 'boundary|edge-case|concurrency', 'priority': '...', 'input': '...' }
+  ]
+}
+"
+```
+
+#### Agent 4: Business Analyst Perspective
+
+```
+Dispatch Agent (subagent_type: "general-purpose", run_in_background: true):
+
+"คุณคือ Business Analyst อ่าน code เพื่อเข้าใจ business logic:
+
+Codebase: [project path]
+Services/Controllers: [from Auto Step 1]
+
+วิเคราะห์:
+1. Business rules: validation ที่ซ่อนอยู่ใน service layer (ไม่ใช่แค่ field validation)
+2. State transitions: order status flow, approval workflow
+3. Calculations: ราคา, ส่วนลด, tax, totals — สูตรถูกต้อง?
+4. Triggers: เมื่อ save แล้วมี side effects อะไร? (ส่ง email, update stock, log)
+5. Constraints: unique, composite keys, business-level uniqueness
+6. Time-based: สิ่งที่ขึ้นกับเวลา (expiry, scheduling, timezone)
+7. Cross-page: สร้างข้อมูลหน้า A → ต้องแสดงที่หน้า B
+
+สำหรับแต่ละ business rule:
+{
+  'rule': 'Order total must include 7% VAT',
+  'source_file': 'Services/OrderService.cs:45',
+  'scenarios': [
+    { 'title': '...', 'type': 'business-rule', 'priority': '...', 'validation': '...' }
+  ]
+}
+"
+```
+
+#### Agent 5: Accessibility Tester
+
+```
+Dispatch Agent (subagent_type: "general-purpose", run_in_background: true):
+
+"คุณคือ Accessibility Tester (WCAG 2.1) อ่าน code/views:
+
+Pages: [list of pages]
+Views/Templates: [from Auto Step 1]
+
+ทดสอบ:
+1. Keyboard: ทุก interactive element เข้าถึงด้วย Tab ได้?
+2. Screen reader: ARIA labels ครบ? role ถูกต้อง?
+3. Focus: focus visible? focus trap ใน modal?
+4. Color contrast: text/background ratio ≥ 4.5:1?
+5. Form labels: ทุก input มี label?
+6. Error messages: เชื่อมกับ field ที่ผิด?
+7. Images: มี alt text?
+8. Responsive: ใช้งานได้บน mobile?
+
+สำหรับแต่ละหน้า:
+{
+  'page': '/admin/products',
+  'scenarios': [
+    { 'title': '...', 'type': 'accessibility', 'wcag': '2.1-AA', 'criterion': '1.3.1|4.1.2|...', 'priority': '...' }
+  ]
+}
+"
+```
+
+**รวมผลจากทุก agent:**
+
+```
+Main Agent:
+  1. รับผลจากทุก 5 agents
+  2. Deduplicate: ถ้า scenario ซ้ำกัน → เก็บตัวที่ detail สุด
+  3. Merge: รวมเป็น scenarios list เดียว
+  4. Prioritize: จัดลำดับ critical → high → medium → low
+  5. Tag source: บันทึกว่า scenario มาจาก agent ไหน
+  6. แสดงสรุปให้ผู้ใช้ confirm
+```
+
+**ผลลัพธ์:**
+
+```
+📊 Multi-Agent Brainstorm Results:
+
+│ Agent                │ Scenarios │ Highlight                        │
+│ 🧑‍💼 End User          │    24     │ UX confusion on multi-step form  │
+│ 🔒 Security Tester   │    18     │ Missing CSRF token on 3 forms    │
+│ 🐛 Bug Hunter        │    31     │ Thai text breaks SKU validation  │
+│ 👔 Business Analyst  │    15     │ VAT calculation off by rounding  │
+│ ♿ Accessibility     │    12     │ 5 forms missing labels           │
+
+Total (before dedup): 100
+After dedup: 82 unique scenarios
+After prioritize: 82 scenarios (12 critical, 25 high, 30 medium, 15 low)
+
+ต้องการเพิ่ม/ลบ scenarios ก่อน confirm?
+```
+
+**Scenario entry with source tag:**
+```json
+{
+  "id": "TS-PRODUCT-014",
+  "title": "XSS attempt in product name field",
+  "type": "security",
+  "source_agent": "security-tester",
+  "priority": "critical",
+  "attack_payload": "<script>alert('xss')</script>"
+}
+```
+
+---
 
 ### Auto Step 3: Build qa-tracker.json
 

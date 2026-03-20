@@ -79,6 +79,20 @@ AI-powered QA testing skill ที่สร้าง, รัน, และจั
 | `/qa-status` | ดูสถานะภาพรวม | เมื่อต้องการเช็คสถานะ scenarios ทั้งหมด |
 | `/qa-explain` | อธิบาย test plan + flowchart | เมื่อต้องการเข้าใจว่าจะทดสอบอะไรบ้าง |
 
+## Multi-Agent Brainstorm (v2.0.0)
+
+ใช้ `--auto --brainstorm-agents` เพื่อ dispatch 5 subagents ช่วยคิด scenarios:
+
+| Agent | บทบาท | มุมมอง |
+|-------|--------|--------|
+| End User | ผู้ใช้งานจริง | UX, user journey, error recovery |
+| Security Tester | ผู้ทดสอบความปลอดภัย | SQLi, XSS, CSRF, IDOR, auth bypass |
+| Bug Hunter | นักล่า edge cases | boundary, null, unicode, concurrency |
+| Business Analyst | วิเคราะห์ business logic | hidden rules, calculations, workflows |
+| Accessibility | ทดสอบ a11y | keyboard, screen reader, WCAG |
+
+ทุก agent ทำงาน **parallel** → รวมผล → deduplicate → สร้าง scenarios
+
 ## Quick Reference
 
 - **Test scenario template**: Read `references/scenario-template.md`
