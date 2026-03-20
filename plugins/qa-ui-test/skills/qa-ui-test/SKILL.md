@@ -1,6 +1,6 @@
 ---
 name: qa-ui-test
-version: 1.2.0
+version: 1.3.0
 description: |
   QA UI Testing plugin ด้วย Playwright — long-running agent style tracking, brainstorming,
   model assignment, parallel subagents, master data CRUD testing, master-detail grid testing, opus review
@@ -154,6 +154,176 @@ await expect(page.locator('.master-total')).toHaveText('1,000');
 ### Dashboards
 
 - Data loading, empty state, filter, date range, export
+
+## Role-based Testing (v1.3.0)
+
+รองรับทดสอบแต่ละ user role — แต่ละ role เข้าถึงหน้าจอและ actions ได้ไม่เหมือนกัน
+
+### แนวคิด
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ROLE-BASED TESTING                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  qa-tracker.json เก็บ:                                           │
+│                                                                  │
+│  roles[] — รายชื่อ roles + credentials สำหรับ login              │
+│  role_page_access{} — แต่ละ role เข้าหน้าไหนได้ + ทำอะไรได้      │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────┐        │
+│  │  Role: admin                                        │        │
+│  │  Pages: /products ✅ /orders ✅ /users ✅ /settings ✅│        │
+│  │  Actions: view ✅ create ✅ edit ✅ delete ✅          │        │
+│  └─────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────┐        │
+│  │  Role: manager                                      │        │
+│  │  Pages: /products ✅ /orders ✅ /users ❌ /settings ❌│        │
+│  │  Actions: view ✅ create ✅ edit ✅ delete ❌          │        │
+│  └─────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────┐        │
+│  │  Role: viewer                                       │        │
+│  │  Pages: /products ✅ /orders ✅ /users ❌ /settings ❌│        │
+│  │  Actions: view ✅ create ❌ edit ❌ delete ❌          │        │
+│  └─────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  Scenarios ที่สร้างอัตโนมัติ:                                     │
+│                                                                  │
+│  TS-ROLE-001: admin เข้า /products → ✅ เห็นทั้ง CRUD             │
+│  TS-ROLE-002: manager เข้า /products → ✅ เห็น view/create/edit   │
+│  TS-ROLE-003: viewer เข้า /products → ✅ เห็นเฉพาะ view           │
+│  TS-ROLE-004: viewer เข้า /products กด Add → ❌ ไม่เห็นปุ่ม/denied│
+│  TS-ROLE-005: manager เข้า /users → ❌ redirect/403               │
+│  TS-ROLE-006: viewer เข้า /settings → ❌ redirect/403             │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### qa-tracker.json — roles config
+
+```json
+{
+  "roles": [
+    {
+      "name": "admin",
+      "display_name": "ผู้ดูแลระบบ",
+      "credentials": {
+        "username": "admin@test.com",
+        "password": "TestAdmin@123"
+      },
+      "description": "เข้าถึงได้ทุกหน้า ทำได้ทุก action"
+    },
+    {
+      "name": "manager",
+      "display_name": "ผู้จัดการ",
+      "credentials": {
+        "username": "manager@test.com",
+        "password": "TestManager@123"
+      },
+      "description": "เข้าถึง products, orders ได้ แต่ไม่สามารถลบได้"
+    },
+    {
+      "name": "viewer",
+      "display_name": "ผู้ดูข้อมูล",
+      "credentials": {
+        "username": "viewer@test.com",
+        "password": "TestViewer@123"
+      },
+      "description": "ดูข้อมูลได้อย่างเดียว ไม่สามารถแก้ไข"
+    }
+  ],
+  "role_page_access": {
+    "/admin/products": {
+      "admin":   { "view": true, "create": true, "edit": true, "delete": true },
+      "manager": { "view": true, "create": true, "edit": true, "delete": false },
+      "viewer":  { "view": true, "create": false, "edit": false, "delete": false }
+    },
+    "/admin/orders": {
+      "admin":   { "view": true, "create": true, "edit": true, "delete": true },
+      "manager": { "view": true, "create": true, "edit": true, "delete": false },
+      "viewer":  { "view": true, "create": false, "edit": false, "delete": false }
+    },
+    "/admin/users": {
+      "admin":   { "view": true, "create": true, "edit": true, "delete": true },
+      "manager": { "view": false, "create": false, "edit": false, "delete": false },
+      "viewer":  { "view": false, "create": false, "edit": false, "delete": false }
+    },
+    "/admin/settings": {
+      "admin":   { "view": true, "create": true, "edit": true, "delete": true },
+      "manager": { "view": false, "create": false, "edit": false, "delete": false },
+      "viewer":  { "view": false, "create": false, "edit": false, "delete": false }
+    }
+  }
+}
+```
+
+### Scenario types ที่สร้าง
+
+| Type | ID Pattern | ทดสอบอะไร |
+|------|-----------|-----------|
+| role-access-granted | TS-ROLE-{MODULE}-{ROLE}-ACCESS | role นี้เข้าหน้านี้ได้ |
+| role-access-denied | TS-ROLE-{MODULE}-{ROLE}-DENIED | role นี้เข้าหน้านี้ไม่ได้ (redirect/403) |
+| role-action-allowed | TS-ROLE-{MODULE}-{ROLE}-{ACTION} | role นี้ทำ action นี้ได้ |
+| role-action-hidden | TS-ROLE-{MODULE}-{ROLE}-NO{ACTION} | role นี้ไม่เห็นปุ่ม/menu ของ action นี้ |
+| role-action-denied | TS-ROLE-{MODULE}-{ROLE}-DENY{ACTION} | role นี้กดปุ่มได้แต่ server reject |
+
+### Login flow per role
+
+```
+ก่อนรัน scenario ที่ต้อง login:
+
+1. Navigate ไป login_url
+2. กรอก credentials ของ role นั้น
+3. Submit login
+4. Verify login สำเร็จ
+5. Navigate ไปหน้าเป้าหมาย
+6. ทดสอบ scenario
+7. Logout (cleanup)
+```
+
+### Playwright POM สำหรับ login
+
+```typescript
+// tests/helpers/auth.helper.ts
+export async function loginAs(page: Page, role: Role) {
+  await page.goto(loginUrl);
+  await page.getByRole('textbox', { name: /email|username/i }).fill(role.credentials.username);
+  await page.getByRole('textbox', { name: /password/i }).fill(role.credentials.password);
+  await page.getByRole('button', { name: /login|เข้าสู่ระบบ/i }).click();
+  await page.waitForURL('**/dashboard**');
+}
+
+export async function logout(page: Page) {
+  await page.getByRole('button', { name: /logout|ออกจากระบบ/i }).click();
+  await page.waitForURL('**/login**');
+}
+```
+
+### MCP วิเคราะห์ role permissions
+
+```
+ใช้ Playwright MCP ตรวจสอบว่า role เห็นอะไรบ้าง:
+
+① Login ด้วย role
+   → browser_navigate → login page
+   → browser_fill_form → credentials
+   → browser_click → submit
+
+② Navigate ไปหน้าเป้าหมาย
+   → browser_navigate → target page
+
+③ Snapshot เพื่อดูว่าเห็นอะไร
+   → browser_snapshot
+   ← ตรวจ: มีปุ่ม Add? Edit? Delete? เห็น menu?
+
+④ เปรียบเทียบระหว่าง roles
+   admin snapshot: เห็น [Add] [Edit] [Delete]
+   viewer snapshot: เห็นเฉพาะ table ไม่มีปุ่ม
+
+⑤ สร้าง scenarios จากผลวิเคราะห์
+```
 
 ## Playwright MCP Integration (v1.2.0)
 
