@@ -152,8 +152,8 @@
     {
       "name": "qa-ui-test",
       "source": "./plugins/qa-ui-test",
-      "description": "QA UI Testing ด้วย Playwright MCP + CLI — สร้าง test scenarios (IEEE 829) พร้อม brainstorming, วิเคราะห์หน้าเว็บด้วย Playwright MCP real-time, รัน tests แบบ parallel ด้วย subagents, รีเทสและรายงานผล, แก้ไขเคสเมื่อ logic เปลี่ยน, ดูสถานะ, อธิบาย test plan ด้วย flowchart พร้อม long-running-agent style tracking, model assignment, opus review, role-based permission testing รองรับ Master Data CRUD, Master-Detail Grid และทดสอบสิทธิ์แต่ละ role",
-      "version": "1.3.0",
+      "description": "QA UI Testing ด้วย Playwright MCP — auto-scan codebase สร้าง scenarios ทีเดียว, /qa-continue ทำทีละ module เหมือน long-running, cascade testing ตรวจผลกระทบข้ามหน้า, role-based testing, parallel subagents, opus review รองรับ Master Data CRUD, Master-Detail Grid",
+      "version": "2.0.0",
       "category": "testing",
       "tags": [
         "qa",

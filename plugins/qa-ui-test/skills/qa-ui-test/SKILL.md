@@ -1,6 +1,6 @@
 ---
 name: qa-ui-test
-version: 1.3.0
+version: 2.0.0
 description: |
   QA UI Testing plugin ด้วย Playwright — long-running agent style tracking, brainstorming,
   model assignment, parallel subagents, master data CRUD testing, master-detail grid testing, opus review
@@ -70,9 +70,11 @@ AI-powered QA testing skill ที่สร้าง, รัน, และจั
 
 | Command | Description | When to use |
 |---------|-------------|-------------|
-| `/qa-create-scenario` | ระดมสมอง + สร้าง scenarios | เมื่อต้องการสร้าง test cases ใหม่สำหรับหน้าเว็บ |
-| `/qa-run` | รัน tests (single/module/all/parallel) | เมื่อต้องการรัน tests ที่สร้างไว้ |
-| `/qa-retest` | รีเทส + เปรียบเทียบผล + review | เมื่อแก้ bug แล้วต้องการรีเทส |
+| `/qa-create-scenario --auto` | สแกน codebase → สร้าง scenarios ทั้งหมดเป็น JSON | **เริ่มต้นใช้คำสั่งนี้** |
+| `/qa-create-scenario [URL]` | brainstorm + สร้างทีละหน้า | ต้องการ brainstorm หน้าเฉพาะ |
+| `/qa-continue` | เลือก module → สร้าง scripts → รัน test | **ใช้หลัง create — ทำทีละ module** |
+| `/qa-run` | รัน tests (single/module/all/parallel) | รัน tests ที่สร้างไว้แล้ว |
+| `/qa-retest` | รีเทส + เปรียบเทียบผล + review | แก้ bug แล้วรีเทส |
 | `/qa-edit-scenario` | แก้ไข scenarios เมื่อ logic เปลี่ยน | เมื่อ business logic เปลี่ยนแล้วกระทบเคสเดิม |
 | `/qa-status` | ดูสถานะภาพรวม | เมื่อต้องการเช็คสถานะ scenarios ทั้งหมด |
 | `/qa-explain` | อธิบาย test plan + flowchart | เมื่อต้องการเข้าใจว่าจะทดสอบอะไรบ้าง |
@@ -324,6 +326,139 @@ export async function logout(page: Page) {
 
 ⑤ สร้าง scenarios จากผลวิเคราะห์
 ```
+
+## Cascade Testing (v1.3.0)
+
+ทดสอบผลกระทบเมื่อแก้ไข/ลบ master data → หน้าที่ใช้ข้อมูลนั้นยังทำงานถูกต้อง
+
+### แนวคิด
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CASCADE TESTING                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ① แก้ข้อมูล Master:                                             │
+│     Category "Electronics" → "Consumer Electronics"              │
+│                                                                  │
+│  ② ตรวจหน้าที่ใช้ข้อมูลนี้:                                       │
+│     ├── Products: Category column อัพเดท?                        │
+│     ├── Products: Category dropdown อัพเดท?                      │
+│     ├── Orders: Product.Category อัพเดท?                         │
+│     └── Reports: Category breakdown ถูกต้อง?                     │
+│                                                                  │
+│  ③ ทดสอบ Cascade Delete:                                         │
+│     ├── ลบ Category ที่มี Products → Restrict: error msg         │
+│     ├── ลบ Category ที่ว่าง → ลบสำเร็จ                            │
+│     └── ลบ Product ที่มี OrderItems → Restrict/SetNull           │
+│                                                                  │
+│  ④ ทดสอบ Cascade Update:                                         │
+│     ├── แก้ Category.Name → Products แสดงชื่อใหม่                 │
+│     ├── แก้ Product.Price → OrderItem.UnitPrice ไม่เปลี่ยน?       │
+│     └── Disable Category → Products ใน Category นี้ยังแสดง?       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### qa-tracker.json — cascade_dependencies
+
+```json
+{
+  "cascade_dependencies": [
+    {
+      "master_module": "CATEGORY",
+      "master_page": "/admin/categories",
+      "dependent_modules": [
+        {
+          "module": "PRODUCT",
+          "page": "/admin/products",
+          "relationship": "Product.CategoryId → Category.Id",
+          "on_delete": "Restrict",
+          "affected_elements": [
+            "Category column ใน Product list",
+            "Category dropdown ใน Product form",
+            "Category filter ใน Product list"
+          ]
+        }
+      ]
+    },
+    {
+      "master_module": "PRODUCT",
+      "master_page": "/admin/products",
+      "dependent_modules": [
+        {
+          "module": "ORDER",
+          "page": "/admin/orders",
+          "relationship": "OrderItem.ProductId → Product.Id",
+          "on_delete": "Restrict",
+          "affected_elements": [
+            "Product name ใน order detail",
+            "Product dropdown ใน add order item",
+            "Product price reference"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Cascade scenario types
+
+| Type | ทดสอบอะไร |
+|------|-----------|
+| CASCADE-UPDATE | แก้ master → dependent แสดงข้อมูลใหม่ |
+| CASCADE-DELETE-RESTRICT | ลบ master ที่มี dependents → error |
+| CASCADE-DELETE-EMPTY | ลบ master ที่ไม่มี dependents → สำเร็จ |
+| CASCADE-DELETE-SETNULL | ลบ master → dependent field เป็น null |
+| CASCADE-DISABLE | disable/inactive master → dependent ยังทำงาน? |
+| CASCADE-DROPDOWN | เพิ่ม/แก้/ลบ master → dropdown ใน dependent อัพเดท |
+| CASCADE-INDIRECT | A → B → C: แก้ A → C ยังถูกต้อง? |
+
+### Workflow: `/qa-continue --cascade CATEGORY`
+
+```
+1. Navigate ไปหน้า CATEGORY
+2. แก้ชื่อ category "Electronics" → "Consumer Electronics"
+3. Save → verify สำเร็จ
+4. Navigate ไปหน้า PRODUCT
+5. ตรวจ:
+   - Category column แสดง "Consumer Electronics"
+   - Category dropdown มี "Consumer Electronics"
+   - Product filter ทำงานกับชื่อใหม่
+6. Navigate ไปหน้า ORDER
+7. ตรวจ:
+   - Order detail ที่มี product ใน category นี้ แสดงถูกต้อง
+8. กลับไปหน้า CATEGORY
+9. ลบ category ที่มี products → ตรวจ error message
+10. ลบ category ที่ว่าง → ตรวจลบสำเร็จ
+```
+
+## Recommended Workflow
+
+```
+/qa-create-scenario --auto     ← สร้าง scenarios ทั้งหมดจาก code (ครั้งเดียว)
+       │
+       ▼
+/qa-continue                   ← เลือก module → สร้าง scripts → test (ทีละ module)
+/qa-continue --module LOGIN
+/qa-continue --module PRODUCT
+/qa-continue --module ORDER
+       │
+       ▼
+/qa-continue --cascade CATEGORY ← ทดสอบ cascade (หลังทำ modules เสร็จ)
+       │
+       ▼
+/qa-retest                     ← แก้ bug → รีเทส failed
+/qa-retest --review            ← opus review
+       │
+       ▼
+/qa-edit-scenario              ← เพิ่ม/แก้ scenarios ด้วย brainstorm (เมื่อต้องการ)
+/qa-status                     ← ดูภาพรวม
+/qa-explain                    ← ดู flowchart
+```
+
+---
 
 ## Playwright MCP Integration (v1.2.0)
 

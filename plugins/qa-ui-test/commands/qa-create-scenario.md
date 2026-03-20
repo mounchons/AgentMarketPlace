@@ -1,46 +1,45 @@
 ---
-description: สร้าง test scenarios พร้อมระดมสมอง — วิเคราะห์หน้าเว็บ, brainstorm test cases, สร้าง Playwright scripts ตามมาตรฐาน IEEE 829
+description: สร้าง test scenarios — auto-scan codebase สร้างทีเดียว หรือ brainstorm ทีละหน้า
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), mcp__plugin_playwright_playwright__*
 ---
 
-# QA Create Scenario — Brainstorm + Generate
+# QA Create Scenario — Auto-generate + Brainstorm
 
-คุณคือ **QA Scenario Agent** ที่สร้าง test scenarios ด้วยการระดมสมองร่วมกับผู้ใช้ก่อน แล้วค่อยสร้าง Playwright test scripts ตามมาตรฐาน IEEE 829
+คุณคือ **QA Scenario Agent** ที่สร้าง test scenarios มี 2 โหมด:
+- **`--auto`** (แนะนำ): ใช้ subagent สแกน codebase → สร้าง scenarios ทุกหน้าทีเดียว → output เป็น JSON list
+- **`[URL]`** (manual): brainstorm + สร้างทีละหน้า
 
 ## CRITICAL RULES
 
-1. **ต้อง Brainstorm ก่อนเสมอ** — ถามผู้ใช้ทีละคำถามก่อนสร้าง scenarios
-2. **Read qa-tracker.json ก่อน** — ถ้ามีให้อ่าน ถ้าไม่มีให้ init ใหม่
-3. **IEEE 829 format เท่านั้น** — ทุก scenario ต้องตาม template
-4. **ต้อง commit เมื่อเสร็จ** — scenario(TS-XXX): create scenarios for [module]
-5. **Update qa-tracker.json** — เพิ่ม scenarios ที่สร้างทุกตัว
-6. **ใช้ Playwright MCP วิเคราะห์หน้าเว็บ** — ถ้ามี plugin:playwright:playwright ติดตั้ง
+1. **`--auto` ไม่ถาม brainstorm** — subagent อ่าน code แล้วสร้าง scenarios เลย (เร็ว)
+2. **Manual mode ถาม brainstorm** — ทีละคำถามก่อนสร้าง
+3. **Output เป็น qa-tracker.json** — scenarios list เป็น JSON (สถานะ pending)
+4. **ยังไม่สร้าง Playwright scripts** — สร้างตอน `/qa-continue` เลือกเคสไปทำ
+5. **ต้อง commit เมื่อเสร็จ** — scenario(TS-XXX): create scenarios
+6. **หา credentials จาก code** — ใช้ subagent ค้น seed data, appsettings, migrations
 
 ### Self-Check Checklist (MANDATORY)
 
-- [ ] Brainstorm completed with user?
 - [ ] qa-tracker.json read/initialized?
-- [ ] All scenarios follow IEEE 829 format?
-- [ ] Test data JSON created for each scenario?
-- [ ] Playwright scripts generated?
-- [ ] Page Object Model created (if 3+ elements)?
-- [ ] qa-tracker.json updated with new scenarios?
-- [ ] Model auto-assigned per rules?
-- [ ] Committed with proper prefix?
+- [ ] All scenarios in qa-tracker.json as JSON?
+- [ ] Roles + credentials found from codebase?
+- [ ] Cascade dependencies mapped?
+- [ ] qa-tracker.json committed?
 
 ### Output Rejection Criteria
 
-- Scenarios created without brainstorming → REJECT
-- Missing test data files → REJECT
-- No Playwright scripts generated → REJECT
-- qa-tracker.json not updated → REJECT
+- Auto mode ถาม brainstorm ทุกหน้า → REJECT (ช้าเกินไป)
+- ไม่ค้นหา credentials จาก code → REJECT
+- ไม่มี cascade dependencies → REJECT
 
 ---
 
 ## Input ที่ได้รับ
 
 ```
-/qa-create-scenario [URL]
+/qa-create-scenario --auto                    # สแกน codebase สร้างทุกหน้าทีเดียว (แนะนำ)
+/qa-create-scenario --auto --tech dotnet      # ระบุ technology
+/qa-create-scenario [URL]                     # manual: brainstorm ทีละหน้า
 /qa-create-scenario --module [MODULE] --url [URL]
 /qa-create-scenario --master-data --url [URL]
 /qa-create-scenario --from-design-doc
@@ -49,7 +48,197 @@ $ARGUMENTS
 
 ---
 
-## ขั้นตอนที่ต้องทำ
+## Mode A: Auto-generate (--auto) — แนะนำ
+
+**ใช้ subagent สแกน codebase → สร้าง scenarios ทุกหน้าทีเดียว**
+
+### Auto Step 1: Dispatch Code Analysis Subagent
+
+```
+Dispatch Agent tool (subagent_type: "Explore") เพื่อวิเคราะห์ codebase:
+
+Prompt:
+"วิเคราะห์ codebase นี้เพื่อสร้าง QA test scenarios:
+
+1. หาทุกหน้า/routes ที่เป็น UI:
+   - ASP.NET MVC: Controllers + Views (*.cshtml)
+   - ASP.NET Razor Pages: Pages/*.cshtml
+   - Next.js: app/**/page.tsx, pages/*.tsx
+   - Angular: *.component.ts + routing
+   - Vue: views/*.vue + router
+
+2. จำแนกแต่ละหน้าเป็นประเภท:
+   - master-data: มี table + CRUD actions
+   - master-detail: มี parent-child relationship
+   - form: มี form + submit
+   - wizard: มี multi-step
+   - dashboard: มี charts/metrics
+   - login: authentication page
+
+3. หา roles + credentials:
+   - Seed data files (SeedData.cs, seed.sql, seeds/)
+   - Migration files ที่มี INSERT users
+   - appsettings.json / .env ที่มี default credentials
+   - Identity/Auth configuration (roles, claims)
+   - Authorization attributes ([Authorize(Roles='Admin')])
+
+4. หา data relationships (cascade):
+   - Entity Framework: navigation properties, OnDelete behavior
+   - Database: foreign keys, cascade rules
+   - Which master tables are referenced by detail tables?
+   - Which dropdowns/lookups reference which master data?
+
+5. สำหรับแต่ละหน้า ให้ระบุ:
+   - URL/route
+   - Page type (master-data/form/wizard/etc.)
+   - Fields/columns ที่มี
+   - Validation rules (Required, MaxLength, etc.)
+   - Which roles can access
+   - Data dependencies (uses data from which master?)
+
+Return ผลเป็น JSON format"
+```
+
+### Auto Step 2: Parse Results + Build Scenarios
+
+**จาก subagent results → สร้าง scenarios อัตโนมัติ:**
+
+```
+สำหรับแต่ละหน้าที่พบ:
+
+  ถ้า master-data → สร้าง 13 standard scenarios (CRUD template)
+  ถ้า master-detail → สร้าง 15 scenarios (expand/inline edit/sync)
+  ถ้า form → สร้าง 8-10 scenarios (happy/negative/boundary)
+  ถ้า login → สร้าง 5-8 scenarios (valid/invalid/lockout)
+  ถ้า dashboard → สร้าง 3-5 scenarios (load/filter/empty)
+
+สำหรับแต่ละ role:
+  สร้าง role-access scenarios (access/denied per page)
+  สร้าง role-action scenarios (button hidden/disabled per action)
+
+สำหรับแต่ละ cascade relationship:
+  สร้าง cascade-test scenarios (แก้/ลบ master → ตรวจ detail)
+```
+
+### Auto Step 3: Build qa-tracker.json
+
+**สร้าง qa-tracker.json พร้อม scenarios ทั้งหมดเป็น JSON:**
+
+```json
+{
+  "schema_version": "1.3.0",
+  "project": "[auto-detected]",
+  "base_url": "[from launchSettings/appsettings/env]",
+  "technology": "[auto-detected]",
+  "login_url": "[auto-detected]",
+
+  "roles": [
+    {
+      "name": "admin",
+      "credentials": { "username": "[from seed data]", "password": "[from seed data]" }
+    }
+  ],
+
+  "role_page_access": {
+    "[auto-from Authorize attributes]": {}
+  },
+
+  "cascade_dependencies": [
+    {
+      "master_module": "CATEGORY",
+      "master_page": "/admin/categories",
+      "dependent_modules": [
+        {
+          "module": "PRODUCT",
+          "page": "/admin/products",
+          "relationship": "Product.CategoryId → Category.Id",
+          "on_delete": "Restrict",
+          "affected_elements": ["Category dropdown", "Product list filter"]
+        }
+      ]
+    }
+  ],
+
+  "scenarios": [
+    {
+      "id": "TS-PRODUCT-001",
+      "title": "Product list view",
+      "module": "PRODUCT",
+      "priority": "high",
+      "type": "happy-path",
+      "page_type": "master-data",
+      "status": "pending",
+      "url": "/admin/products",
+      "fields": ["Name", "SKU", "Price", "Category"],
+      "validations": ["Name: Required, MaxLength(200)", "Price: Required, Range(0, 999999)"],
+      "cascade_from": ["CATEGORY"],
+      "test_script": null,
+      "runs": []
+    }
+  ]
+}
+```
+
+**สำคัญ: scenarios สถานะ `pending` + `test_script: null`**
+→ ยังไม่สร้าง Playwright scripts
+→ สร้างตอน `/qa-continue` เลือกเคสไปทำ
+
+### Auto Step 4: Show Summary + Confirm
+
+```
+✅ Auto-generate สำเร็จ!
+
+📊 สแกนพบ:
+   Pages: 12 หน้า
+   Roles: 3 (admin, manager, viewer)
+   Cascade: 5 relationships
+
+📋 Scenarios ที่สร้าง: 156 total
+   ├── Functional: 98 scenarios (13 modules)
+   │   ├── PRODUCT (master-data): 13 scenarios
+   │   ├── CATEGORY (master-data): 13 scenarios
+   │   ├── ORDER (master-detail): 15 scenarios
+   │   ├── USER (master-data): 13 scenarios
+   │   ├── LOGIN (form): 8 scenarios
+   │   └── ...
+   ├── Role-based: 36 scenarios
+   │   ├── admin: 12 (access all)
+   │   ├── manager: 12 (limited)
+   │   └── viewer: 12 (read-only)
+   └── Cascade: 22 scenarios
+       ├── CATEGORY → PRODUCT: 5 scenarios
+       ├── PRODUCT → ORDER-DETAIL: 5 scenarios
+       └── ...
+
+🔐 Credentials (from seed data):
+   admin: admin@test.com / Admin@123
+   manager: manager@test.com / Manager@123
+   viewer: viewer@test.com / Viewer@123
+
+📁 Output: qa-tracker.json (156 scenarios, all pending)
+
+🔜 Next:
+   /qa-continue              — เลือก scenarios ไปสร้าง scripts + test
+   /qa-edit-scenario          — เพิ่ม/แก้ scenarios ด้วย brainstorm
+   /qa-explain --module XXX   — ดู flowchart ของ module
+```
+
+### Auto Step 5: Commit
+
+```bash
+git add qa-tracker.json .agent/qa-progress.md
+git commit -m "scenario: auto-generate 156 scenarios from codebase analysis"
+```
+
+---
+
+## Mode B: Manual (URL) — Brainstorm ทีละหน้า
+
+**ใช้เมื่อต้องการ brainstorm เฉพาะหน้าเดียว:**
+
+---
+
+## ขั้นตอนที่ต้องทำ (Mode B)
 
 ### Step 0: Read Context
 
