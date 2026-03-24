@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1.0",
+  "schema_version": "2.3.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -241,6 +241,17 @@
       "version_history": [],
       "sync_status": "pending",
       "passes": false,
+      "verification_results": {
+        "build_check": null,
+        "design_doc_compliance": null,
+        "crud_completeness": null,
+        "api_integration": null,
+        "test_coverage": { "unit": 0, "integration": 0, "e2e": 0 },
+        "tech_stack_audit": null,
+        "config_flags": null,
+        "pipeline_result": null,
+        "verified_at": null
+      },
       "steps_legacy": [
         "สร้าง project ใหม่",
         "ตั้งค่า configuration",
@@ -963,7 +974,7 @@
   },
 
   "metadata": {
-    "schema_version": "2.1.0",
+    "schema_version": "2.3.0",
     "plugin_version": "2.1.0",
     "compatible_with": {
       "design_doc_list_schema": ">=2.1.0",

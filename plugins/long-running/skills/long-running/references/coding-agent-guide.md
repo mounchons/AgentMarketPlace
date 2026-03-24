@@ -238,6 +238,26 @@ curl http://localhost:5000/api/todos/999
 - [ ] Build passes
 - [ ] No warnings/errors in console
 
+### Step 5.5: Run Verification Pipeline (v2.3.0 — MANDATORY)
+
+**Before marking passed, run the full Verification Pipeline from SKILL.md:**
+
+```
+□ Step 1 — Build: 0 errors
+□ Step 2 — Design Doc: entities match DD? (if DD exists)
+□ Step 3 — CRUD: C+R+U+D all present? (if CRUD feature)
+□ Step 4 — API: frontend uses real API, not mock data? (if UI feature)
+□ Step 5 — Tests: minimum tests met? (not just "build passes")
+□ Step 6 — Tech Stack: CLAUDE.md libraries used? (per phase)
+□ Step 7 — Config Flags: .agent/config.json rules enforced?
+```
+
+**⚠️ "Build: ✅ 0 errors" alone is NOT sufficient to mark passed.**
+**⚠️ Mock data in frontend → mark "partial", not "passed".**
+**⚠️ Missing CRUD operations → mark "incomplete", not "passed".**
+
+See SKILL.md "Verification Pipeline" section for full details.
+
 ### Step 6: Mark as Passed
 
 **Edit feature_list.json:**

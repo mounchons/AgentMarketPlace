@@ -37,8 +37,11 @@ Your output will be REJECTED and you must REDO the entire task if:
 
 - Any source code was implemented
 - feature_list.json is incomplete or missing features from design docs/mockups
+- Design Doc entities not fully covered by features (if DD exists) (v2.3.0)
+- CRUD features don't match crud_operations from design_doc_list.json (v2.3.0)
 - Features not ordered by dependency
 - .agent/ folder not created
+- Config flags (require_tests, use_design_doc_for_db, etc.) not set in config.json (v2.3.0)
 
 ### ⚠️ Penalty
 

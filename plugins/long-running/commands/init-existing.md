@@ -194,10 +194,34 @@ Find from:
 - Missing tests
 - Missing documentation
 
+### Step 4.5: Audit Existing Features (v2.3.0 — MANDATORY)
+
+**Before marking any existing feature as "passed", run a mini Verification Pipeline:**
+
+```
+For each feature that appears complete:
+  □ Build: does the project build? (basic check)
+  □ Design Doc: if DD exists, do entities match?
+  □ CRUD: are all C/R/U/D operations present? (or intentionally missing?)
+  □ Mock Data: does frontend call real API? (not hardcoded data)
+  □ Tests: are there actual tests for this feature?
+
+Status assignment:
+  ALL checks pass → "passed"
+  Uses mock data  → "partial" (create follow-up feature for API integration)
+  Missing CRUD    → "incomplete" (create follow-up feature for missing operations)
+  No tests        → "passed" with note: "needs tests" (create test feature)
+```
+
+**⚠️ Do NOT mark features as "passed" just because they exist in code.**
+Features with mock data, incomplete CRUD, or missing entities should be marked appropriately.
+
 ### Step 5: Create Feature List
 
-**Completed features:** `"passes": true`
-**Incomplete features:** `"passes": false`
+**Completed features (all checks pass):** `"status": "passed", "passes": true`
+**Partial features (mock data/no API):** `"status": "partial", "passes": false`
+**Incomplete features (missing CRUD):** `"status": "incomplete", "passes": false`
+**Not started:** `"status": "pending", "passes": false`
 
 ### Step 6: Create Agent Files
 

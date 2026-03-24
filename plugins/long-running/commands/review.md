@@ -161,6 +161,14 @@ Review against 6 main criteria:
 - [ ] No dead code?
 - [ ] Appropriate comments?
 
+#### 5.7 Config Flag Compliance (bonus check — not weighted, but flags issues) (v2.3.0)
+- [ ] Was max_features_per_session respected? (check session history)
+- [ ] Was require_tests honored? (actual tests, not just build)
+- [ ] If tdd_approach=true, were tests written before code? (check git log order)
+- [ ] If use_design_doc_for_db=true, were entities cross-referenced with DD?
+
+**If config flags violated → add as Medium severity issue (`config-compliance` category)**
+
 ### Step 6: Calculate Score and Classify Issues
 
 **Scoring (v2.3.0 — updated weights):**
@@ -544,5 +552,6 @@ Display in this format:
 | `crud-completeness` | Missing CRUD operations (e.g., no PUT endpoint) (v2.3.0) |
 | `mock-data` | Frontend uses hardcoded/mock data instead of real API (v2.3.0) |
 | `test-coverage` | Insufficient or missing tests (v2.3.0) |
+| `config-compliance` | Config flags (.agent/config.json) violated (v2.3.0) |
 
 > 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย
