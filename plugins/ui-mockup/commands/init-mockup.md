@@ -162,7 +162,7 @@ mkdir -p .mockups
 - If `view.enabled == false` → Don't create Detail page
 - If `list.enabled == false` → Don't create List page
 - If `delete.enabled == false` → Don't include 🗑 icon in action column
-- If `delete.strategy == "soft"` → SweetAlert2 text: "This item will be deactivated."
+- If `delete.strategy == "soft"` → Confirmation text: "This item will be deactivated."
 
 **For each Entity, create pages based on complexity (only for enabled operations):**
 
@@ -623,7 +623,7 @@ EOF
 ⚙️ UI Patterns:
    • Complex entities (User, Product): View/Create/Edit via separate pages
    • Simple entities (Department): View/Create/Edit via modal popups
-   • Delete confirmation: SweetAlert2 for all entities
+   • Delete confirmation: SweetAlert2 for all entities (or CLAUDE.md override)
    • Action column: First (leftmost) in all tables
 
 💡 Next steps:

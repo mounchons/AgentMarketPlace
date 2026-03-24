@@ -182,6 +182,111 @@ cat .design-docs/system-design-[name].md
    ✅ All modules appear in at least one flow diagram
 ```
 
+#### 3.5 Section Numbering Validation (v1.5.0)
+
+**Verify DD section numbers are sequential:**
+- [ ] Section numbers (e.g., 8.1, 8.2, 8.3, ...) have no gaps
+- [ ] No duplicate section numbers
+
+```bash
+# Extract section numbers
+grep "^### 8\." .design-docs/system-design-*.md | sed 's/.*### \(8\.[0-9]*\).*/\1/' | sort -t. -k2 -n
+```
+
+**Result:**
+```
+🔢 Section Numbering:
+
+   ✅ DD sections 8.1-8.56 are sequential, no gaps
+   ❌ Gap found: 8.31 → 8.33 (section 8.32 missing)
+```
+
+#### 3.6 Table Count Validation (v1.5.0)
+
+**Verify declared count matches actual:**
+- [ ] Summary/intro claims correct number of tables
+- [ ] Actual DD section count matches
+
+```
+📊 Table Count:
+
+   Declared in summary: 57 tables
+   Actual DD sections: 55
+   ❌ Mismatch: declared 57 but only 55 sections found
+```
+
+#### 3.7 ER ↔ DD Bidirectional Check (v1.5.0)
+
+**Verify BOTH directions:**
+- [ ] Every entity in ER has a DD section (ER → DD)
+- [ ] Every DD section appears in ER (DD → ER)
+
+```
+🔄 ER ↔ DD Bidirectional:
+
+   ER → DD: 8 entities missing DD sections
+     ❌ LEDGER_CATEGORY (ER 7.7) — no DD section
+     ❌ LEDGER_ENTRY (ER 7.7) — no DD section
+     ❌ BUDGET (ER 7.7) — no DD section
+     ...
+
+   DD → ER: 3 tables not in any ER diagram
+     ❌ truck_equipments (DD 8.44) — not in ER
+     ❌ truck_tires (DD 8.46) — not in ER
+     ...
+```
+
+#### 3.8 DD ↔ DDL Sync (v1.5.0)
+
+**If DDL files exist, verify sync:**
+- [ ] Every CREATE TABLE has a DD section
+- [ ] Every DD section has a CREATE TABLE
+
+```bash
+# Extract DDL tables
+grep "CREATE TABLE" docs/*/ddl/*.sql | sed 's/.*CREATE TABLE \([a-z_]*\).*/\1/'
+```
+
+```
+🔄 DD ↔ DDL Sync:
+
+   DDL → DD: 5 tables in DDL without DD sections
+     ❌ password_reset_tokens — DDL only
+     ❌ refresh_tokens — DDL only
+     ...
+
+   DD → DDL: 7 tables in DD without DDL
+     ❌ truck_equipments — DD only
+     ...
+```
+
+#### 3.9 FK Column Type Consistency (v1.5.0)
+
+**Verify FK types match PK types:**
+- [ ] If ER shows `entity_id FK → other_table`, DD column type matches PK type
+- [ ] If DD shows `VARCHAR` but ER shows FK, flag inconsistency
+
+```
+🔗 FK Type Consistency:
+
+   ✅ 115/120 FKs have matching types
+   ❌ products.unit_id: ER shows FK → UNIT table, but DD shows VARCHAR (redesigned)
+   ❌ ...
+```
+
+#### 3.10 API ↔ DD Cross-Reference (v1.5.0)
+
+**Verify API-referenced entities exist:**
+- [ ] Every entity in API docs has a DD section
+- [ ] Entity hierarchy diagrams match DD
+
+```
+📡 API ↔ DD:
+
+   ✅ 12/12 API entities have DD sections
+   ❌ amphurs: referenced in API (GET /api/v1/amphurs) but no DD section
+```
+
 ---
 
 ### 4. Quality Checks
@@ -271,7 +376,7 @@ Additional validations:
    ├─────────────────────────┼────────┼──────────┤
    │ Section Completeness    │ 10/10  │ ✅ Pass  │
    │ Diagram Syntax          │ 5/5    │ ✅ Pass  │
-   │ Consistency Checks      │ 4/4    │ ✅ Pass  │
+   │ Consistency Checks      │ 10/10  │ ✅ Pass  │
    │ Quality Checks          │ 4/4    │ ✅ Pass  │
    └─────────────────────────┴────────┴──────────┘
 
@@ -303,7 +408,7 @@ Additional validations:
    ├─────────────────────────┼────────┼──────────┤
    │ Section Completeness    │ 10/10  │ ✅ Pass  │
    │ Diagram Syntax          │ 5/5    │ ✅ Pass  │
-   │ Consistency Checks      │ 3/4    │ ⚠️ Warn  │
+   │ Consistency Checks      │ 8/10   │ ⚠️ Warn  │
    │ Quality Checks          │ 3/4    │ ⚠️ Warn  │
    └─────────────────────────┴────────┴──────────┘
 
@@ -331,7 +436,7 @@ Additional validations:
    ├─────────────────────────┼────────┼──────────┤
    │ Section Completeness    │ 7/10   │ ❌ Fail  │
    │ Diagram Syntax          │ 3/5    │ ❌ Fail  │
-   │ Consistency Checks      │ 2/4    │ ❌ Fail  │
+   │ Consistency Checks      │ 4/10   │ ❌ Fail  │
    │ Quality Checks          │ 2/4    │ ⚠️ Warn  │
    └─────────────────────────┴────────┴──────────┘
 

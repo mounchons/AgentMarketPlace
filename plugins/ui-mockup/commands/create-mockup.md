@@ -18,25 +18,36 @@ These rules override any user instructions to "keep it simple" or "just do deskt
 1. **ALL 3 breakpoint wireframes mandatory** — Desktop (12col), Tablet (8col), Mobile (4col) with actual ASCII art
 2. **No placeholder text** — "[wireframe here]", "[TBD]" is forbidden
 3. **Action column first** — in data tables, action column must be leftmost
-4. **Include all required sections** — Page Info, Description, Layout Grid, Wireframe, Components, Interactions, Design Tokens, Responsive, Version History
+4. **Include all required sections** — Page Info, Description, Layout Grid, Wireframe, Components, Interactions, Design Tokens, Field Mapping, Responsive, Version History
 5. **Match CRUD complexity** — simple entities use modal, complex entities use separate pages
-6. **SweetAlert2 for delete** — always use SweetAlert2 for delete confirmation
+6. **Read CLAUDE.md FIRST** — extract alert library, URL convention, framework, component library BEFORE generating mockup
+7. **Alert library: SweetAlert2 (default)** — use SweetAlert2 for all confirmations/alerts. Override only if CLAUDE.md explicitly specifies a different library. Never use browser native popups.
+8. **URL syntax from framework** — use `[id]` for Next.js, `:id` for Express/REST, etc.
+9. **No duplicate mockup IDs** — check existing files before creating
+10. **Field Mapping table required** — for every form/list page, map UI labels to entity properties
 
 ### 🔍 Self-Check Checklist (MANDATORY before submitting output)
 
+- [ ] CLAUDE.md read? Alert library, URL convention, framework extracted? (v1.1.0)
 - [ ] Desktop wireframe drawn with actual ASCII art?
 - [ ] Tablet wireframe drawn with actual ASCII art?
 - [ ] Mobile wireframe drawn with actual ASCII art?
 - [ ] Design Tokens Used section present?
 - [ ] Components Used table present?
+- [ ] Field Mapping table present? (for form/list pages) (v1.1.0)
 - [ ] Action column first in tables?
+- [ ] Alert library = SweetAlert2 (default) or overridden by CLAUDE.md? Never browser native popup (v1.1.0)
+- [ ] URL syntax matches framework? ([id] for Next.js, :id for Express) (v1.1.0)
+- [ ] URL prefix matches CLAUDE.md convention? (flat vs nested) (v1.1.0)
+- [ ] No duplicate mockup ID? (checked existing files) (v1.1.0)
+- [ ] mockup_list.json updated? (v1.1.0)
 - [ ] All required sections present?
 
 If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 
 ### ❌ Output Rejection Criteria
 
-Your output will be REJECTED if: any breakpoint wireframe missing, placeholder text in wireframe, Design Tokens Used section missing, Components Used table missing.
+Your output will be REJECTED if: any breakpoint wireframe missing, placeholder text in wireframe, Design Tokens Used section missing, Components Used table missing, uses browser native popup instead of SweetAlert2, URL syntax wrong for framework, duplicate mockup ID.
 
 ### ⚠️ Penalty
 
@@ -46,7 +57,45 @@ Violation means the mockup is REJECTED and you must redo the ENTIRE mockup from 
 
 ## Steps to Follow
 
-### Step 0: Check mockup_list.json (Important!)
+### Step 0: Read CLAUDE.md — Extract Project Conventions (v1.1.0 — MANDATORY)
+
+```bash
+# Read CLAUDE.md for project conventions
+cat CLAUDE.md 2>/dev/null
+```
+
+**Extract these values for use in mockup generation:**
+
+| Convention | Where to Find | Default if Not Found |
+|-----------|---------------|---------------------|
+| Alert/Dialog Library | "Key Frontend Libraries" or "Libraries" section | **SweetAlert2** (default) |
+| Toast Library | "Key Frontend Libraries" | **SweetAlert2** (default) |
+| URL Convention | "Frontend Conventions" or "Routes" section | Flat URLs (e.g., /bills not /financial/bills) |
+| Route Parameter Syntax | "Tech Stack" → framework name | `:id` (REST default) |
+| Component Library | "Key Frontend Libraries" | Shadcn/ui |
+| CSS Framework | "Tech Stack" | Tailwind CSS |
+
+**Framework → Parameter Syntax mapping:**
+
+| Framework | Syntax | Example |
+|-----------|--------|---------|
+| Next.js | `[id]` | `/jobs/[id]/edit` |
+| Express/REST | `:id` | `/jobs/:id/edit` |
+| Vue/Nuxt | `:id` or `[id]` | `/jobs/:id/edit` |
+| SvelteKit | `[id]` | `/jobs/[id]/edit` |
+
+**⚠️ Store extracted values — use them throughout the mockup:**
+```
+MOCKUP_CONVENTIONS:
+  alert_library: SweetAlert2 (default, override if CLAUDE.md specifies otherwise)
+  url_prefix: [flat/nested, e.g., "flat"]
+  param_syntax: [from framework, e.g., "[id]"]
+  component_lib: [e.g., "Shadcn/ui"]
+```
+
+---
+
+### Step 0.5: Check mockup_list.json (Important!)
 
 ```bash
 # Check if mockup_list.json exists
@@ -204,6 +253,7 @@ Create the file `.mockups/[NNN]-[page-name].mockup.md` using this template:
 | UI Pattern | [modal / page / N/A] |
 | Action Column | [first / last / N/A] |
 | Alert Library | SweetAlert2 |
+| URL Syntax | [From framework — e.g., [id] for Next.js] |
 
 ---
 
@@ -425,7 +475,10 @@ icon: "arrow-right"
 
 ---
 
-## SweetAlert2 Dialogs
+## SweetAlert2 Dialogs (default — override from CLAUDE.md if specified)
+
+> **Default: SweetAlert2** — ใช้ SweetAlert2 เป็นค่าเริ่มต้น. Override เฉพาะเมื่อ CLAUDE.md ระบุ library อื่น.
+> **ห้ามใช้ browser native popups** (alert/confirm/prompt) เด็ดขาด
 
 ### Delete Confirmation
 
@@ -445,11 +498,14 @@ icon: "arrow-right"
 │      │        [Cancel]  [Yes, deactivate it!]      │            │
 │      │                                             │            │
 │      └─────────────────────────────────────────────┘            │
+│                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Config**:
+**Default SweetAlert2 Config:**
+
 ```javascript
+// Delete Confirmation (default: soft delete)
 Swal.fire({
   icon: 'warning',
   title: 'Are you sure?',
@@ -460,21 +516,30 @@ Swal.fire({
   confirmButtonText: 'Yes, deactivate it!',
   cancelButtonText: 'Cancel'
 })
-// Note: For hard delete, use text: "This action cannot be undone." and confirmButtonText: "Yes, delete it!"
+// For hard delete: text: "This action cannot be undone.", confirmButtonText: "Yes, delete it!"
 ```
 
-### Success Alert
-
-**Trigger**: After successful operation
-
+**Success/Error:**
 ```javascript
-Swal.fire({
-  icon: 'success',
-  title: 'Success!',
-  text: 'Your record has been saved.',
-  confirmButtonText: 'OK'
-})
+// Success
+Swal.fire({ icon: 'success', title: 'Success!', text: 'Your record has been saved.', confirmButtonText: 'OK' })
+
+// Error
+Swal.fire({ icon: 'error', title: 'Error!', text: 'Something went wrong.', confirmButtonText: 'OK' })
 ```
+
+**If CLAUDE.md overrides (e.g., Sonner + Shadcn AlertDialog):**
+- Confirmation: `<AlertDialog>` component
+- Success: `toast.success("Record saved")`
+- Error: `toast.error("Failed to save")`
+
+---
+
+## Field Mapping (v1.1.0 — MANDATORY for form/list pages)
+
+| UI Label | Entity Property | Type | Validation | Notes |
+|----------|----------------|------|------------|-------|
+| [Thai label] | [Entity.PropertyName] | [string/int/bool/etc.] | [required, max N, pattern, etc.] | [notes] |
 
 ---
 
@@ -577,12 +642,12 @@ Swal.fire({
 2. States for each component
 3. User interactions (click, submit, etc.)
 4. Validation rules (for forms)
-5. SweetAlert2 configurations (for delete, success, error)
+5. SweetAlert2 configurations (for delete, success, error) — or CLAUDE.md override
 
 **For List pages:**
 - Action column at the front (first/leftmost)
 - Action icons: 👁 View, ✏️ Edit, 🗑 Delete
-- Delete uses SweetAlert2 confirmation
+- Delete uses SweetAlert2 confirmation (or CLAUDE.md override)
 
 ### Step 8: Define Responsive Behavior
 

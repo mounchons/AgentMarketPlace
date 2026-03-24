@@ -282,6 +282,116 @@ Coverage = (features with criteria / total features) * 100%
 
 ---
 
+## 6. Implementation Quality Audit (v2.3.0 — from audit findings)
+
+> **Background**: Audit found 59 features marked "passed" with build-only verification.
+> This section validates that completed features are ACTUALLY complete.
+
+### Step 6.1: Entity Count vs Design Document
+
+```
+IF Design Document exists:
+  Count entities in code: find src/ -name "*.cs" -path "*/Entities/*" | wc -l
+  Count tables in DD: grep "### 8\." .design-docs/*.md | wc -l
+
+  Entity Count:
+  ├── Code entities: 48
+  ├── DD tables: 55
+  └── ❌ Missing 7 entities: [list]
+```
+
+### Step 6.2: API Endpoint Completeness
+
+```
+For each entity with CRUD features:
+  Check: POST, GET, PUT/PATCH, DELETE endpoints exist?
+
+  CRUD Completeness:
+  ├── ✅ Customers: C+R+U+D all present
+  ├── ❌ Jobs: C+R+D present, missing UPDATE (PUT)
+  ├── ❌ Credits: C+R present, missing U+D
+  └── Coverage: 8/12 entities fully CRUD
+```
+
+### Step 6.3: Mock Data Detection
+
+```
+For each UI feature marked "passed":
+  Check: uses real API hooks or hardcoded data?
+
+  Mock Data Detection:
+  ├── ✅ /customers — uses useCustomers() hook
+  ├── ❌ /reports/dashboard — hardcoded mock KPIs
+  ├── ❌ /reports/profit-loss — hardcoded mock data
+  └── Real API: 15/22 pages, Mock: 7/22 pages
+```
+
+### Step 6.4: Test Count per Module
+
+```
+For each module:
+  Count: unit tests, integration tests, E2E tests
+
+  Test Coverage by Module:
+  ├── Auth: 12 unit, 3 integration ✅
+  ├── Customers: 8 unit, 2 integration ✅
+  ├── Bills: 0 unit, 0 integration ❌
+  ├── Receipts: 0 unit, 0 integration ❌
+  ├── Inventory: 0 unit, 0 integration ❌
+  └── Financial modules: 0 tests total ❌ CRITICAL
+```
+
+### Step 6.5: Library Audit (CLAUDE.md vs Actual)
+
+```
+IF CLAUDE.md lists "Key Libraries":
+  For each library:
+    Check: actually imported/used in code?
+
+  Library Audit:
+  ├── ✅ MediatR: used (123 references)
+  ├── ✅ FluentValidation: used (45 references)
+  ├── ❌ QuestPDF: listed but NOT installed/used
+  ├── ❌ ClosedXML: listed but NOT installed/used
+  └── Used: 8/10 libraries
+```
+
+### Step 6.6: Config Flag Compliance
+
+```
+Read .agent/config.json:
+  max_features_per_session: 1 → Check: any sessions violated?
+  require_tests: true → Check: all passed features have tests?
+  tdd_approach: true → Check: test commits before code commits?
+
+  Config Compliance:
+  ├── max_features_per_session: ❌ Sessions 62-70 did 2-3 features/session
+  ├── require_tests: ❌ 34 features have build-only verification
+  └── tdd_approach: ❌ No TDD detected — code-first in all sessions
+```
+
+### Output for Implementation Quality Audit
+
+```
+6. IMPLEMENTATION QUALITY AUDIT                  [62%]
+   ─────────────────────────────────────────────────────────
+   Entity Coverage: 48/55 (87%) — 7 missing from DD
+   CRUD Completeness: 8/12 entities (67%) — 4 incomplete
+   Real API Usage: 15/22 pages (68%) — 7 use mock data
+   Test Coverage: 253 tests but 8 modules have 0 tests
+   Library Usage: 8/10 libraries (80%) — 2 missing
+   Config Compliance: 1/3 flags (33%) — 2 ignored
+
+   ❌ CRITICAL: Financial modules have 0 tests
+   ❌ CRITICAL: 7 report pages use mock data
+   ❌ HIGH: 4 entities missing CRUD operations
+   ⚠️ MEDIUM: 2 CLAUDE.md libraries not implemented
+
+   → Create features for: missing entities, CRUD gaps, API integration, tests
+```
+
+---
+
 ## Workflow
 
 ```
@@ -294,11 +404,13 @@ Coverage = (features with criteria / total features) * 100%
    - /generate-features-from-design
    - Manual additions
    ↓
-4. /validate-coverage (re-check)
+4. /validate-coverage (re-check — includes Implementation Quality Audit)
    ↓
 5. /sync-mockups
    ↓
 6. /continue (start development)
+   ↓
+7. /validate-coverage (periodic — check for mock data, test gaps, CRUD gaps)
 ```
 
 ---
@@ -307,7 +419,8 @@ Coverage = (features with criteria / total features) * 100%
 
 - Read-only command — does not modify any files
 - Displays recommendations for improvements
-- Should be run periodically during development
+- Should be run periodically during development (not just at start)
+- Implementation Quality Audit (v2.3.0) should be run after every phase completion
 - Score 91%+ is considered ready
 
 > 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย

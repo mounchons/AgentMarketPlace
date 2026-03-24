@@ -255,13 +255,46 @@ The system design document consists of 10 main sections:
 12. **FK valid** — every Foreign Key must reference an existing table and column
 13. **Permission matrix complete** — every role must have permissions defined for every module/page
 
+### Cross-Validation Rules (v1.5.0 — from audit findings)
+
+> **Background**: Audit found 8 types of inconsistencies: ER tables not in DD, DD tables not in DDL,
+> section numbering gaps, FK type mismatches, and stale ER diagrams after schema changes.
+
+14. **Section numbering continuous** — DD section numbers (e.g., 8.1, 8.2, ...) must be sequential with no gaps
+15. **Table count declared = actual** — if summary claims "N tables", verify actual DD section count matches
+16. **ER ↔ DD bidirectional** — every table in ER must have a DD section AND every DD section must appear in ER
+17. **DD ↔ DDL sync** — if DDL files exist, every CREATE TABLE must have a DD section and vice versa
+18. **FK column type consistency** — if DD says `column_id FK → other_table`, verify:
+    - The FK column type matches the PK type of the referenced table
+    - If ER shows FK relationship but DD shows VARCHAR, flag as inconsistency
+19. **API ↔ DD cross-reference** — entities referenced in API docs must have DD sections
+20. **ER auto-update rule** — when DD is edited (add/remove/rename table), ER diagram MUST be updated in the same edit session
+
+### Living Document Rules (v1.5.0)
+
+21. **ER diagrams are living documents** — NOT one-time creations. When DD changes, ER must update.
+22. **Schema redesign tracking** — when a table is redesigned (e.g., FK → VARCHAR, 4 tables → 2 tables consolidated), the ER diagram must reflect the current design, not the original design
+23. **Post-edit consistency report** — after any edit to DD or ER, generate a brief consistency check:
+    ```
+    Tables Summary:
+    - DD sections: N
+    - ER unique tables: M
+    - DDL CREATE TABLE: P (if DDL exists)
+    - Mismatches: [list or "none"]
+    ```
+
 ### 🔍 Self-Check Checklist (MANDATORY before submitting output)
 
 Before completing the design document, verify EVERY item:
 
 - [ ] All 10 sections present with full content?
 - [ ] All Mermaid diagrams render without errors?
-- [ ] ER Diagram entities match Data Dictionary tables?
+- [ ] ER Diagram entities match Data Dictionary tables? (bidirectional check)
+- [ ] DD section numbers are sequential with no gaps? (v1.5.0)
+- [ ] Declared table count matches actual DD section count? (v1.5.0)
+- [ ] Every FK column type matches referenced table's PK type? (v1.5.0)
+- [ ] DDL tables match DD tables? (if DDL exists) (v1.5.0)
+- [ ] API-referenced entities have DD sections? (v1.5.0)
 - [ ] DFD Level 0 processes match Level 1 decomposition?
 - [ ] Sitemap pages match User Roles access rules?
 - [ ] All Functional Requirements have unique IDs?
@@ -277,7 +310,11 @@ If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 Your output will be REJECTED and you must REDO the entire task if:
 
 - Any of the 10 sections is missing or contains only placeholder text
-- ER Diagram entities don't match Data Dictionary tables (mismatch)
+- ER Diagram entities don't match Data Dictionary tables (mismatch in either direction)
+- DD section numbers have gaps (e.g., 8.31 jumps to 8.33)
+- Declared table count doesn't match actual count
+- FK column types don't match referenced PK types
+- ER diagram shows tables that were redesigned/consolidated but not updated
 - Mermaid diagrams have syntax errors
 - Placeholder text remains in any section
 - Permission matrix is incomplete
@@ -292,12 +329,30 @@ Violating these rules means the document is INVALID. You must redo the ENTIRE do
 
 | Changed Section | Also Verify |
 |-----------------|-------------|
-| ER Diagram | Data Dictionary, Data Model |
-| Data Dictionary | ER Diagram |
+| ER Diagram | Data Dictionary (bidirectional), Data Model, DDL files |
+| Data Dictionary | ER Diagram (bidirectional), DDL files, section numbering, table count |
 | Flow Diagrams | DFD, Sequence Diagrams |
 | Sitemap | User Roles (access) |
 | User Roles | Sitemap (access rules) |
 | Modules | Flow Diagrams, ER Diagram |
+| API Docs | Data Dictionary (entity existence), ER Diagram |
+| DDL Files | Data Dictionary (sync), ER Diagram |
+
+### Post-Edit Consistency Report (v1.5.0 — MANDATORY)
+
+After editing any section, generate this report:
+
+```
+Consistency Report:
+───────────────────────────────────
+DD sections: N
+ER unique tables: M
+DDL CREATE TABLE: P (if exists)
+Section numbering: sequential / gap at [X]
+FK type mismatches: N
+Mismatches: [list or "none"]
+───────────────────────────────────
+```
 
 ---
 
@@ -439,6 +494,7 @@ Data passed:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.5.0 | 2026-03-24 | Added cross-validation rules from audit: section numbering validation, ER↔DD bidirectional check, DD↔DDL sync, FK column type consistency, API↔DD cross-reference, table count validation, ER auto-update rule, living document enforcement, post-edit consistency report |
 | 1.4.0 | | - Added CRITICAL RULES with self-check checklist, output rejection criteria, and penalty<br>- Added `/brainstorm-design` command (8-phase interactive brainstorming)<br>- Added hybrid brainstorm auto-detect in `/create-design-doc`<br>- Translated all content to English for AI comprehension |
 | 1.3.0 | 2025-01-25 | Added /import-plan command, cross-plugin integration (/sync-with-mockups, /sync-with-features, /validate-integration), schema v2.1.0 with CRUD enabled/disabled + soft delete strategy |
 | 1.2.0 | 2025-01-20 | Added 5 granular commands, architecture patterns, troubleshooting, tracking file |

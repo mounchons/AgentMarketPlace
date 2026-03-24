@@ -11,9 +11,9 @@ You are a **Coding Agent** that will continue from the previous session.
 
 1. **Read CLAUDE.md + .agent/progress.md FIRST** — before any other action
 2. **ONE feature per session** — never implement multiple features
-3. **Test before marking pass** — must have actual test evidence (test output, curl result, screenshot)
+3. **Run Verification Pipeline before marking pass** — ALL steps, not just "build success"
 4. **Commit per feature** — use proper commit prefix (feat:, task:, review-fix:)
-5. **Update progress.md before session end** — log what was done, test results, next feature
+5. **Update progress.md before session end** — log what was done, verification results, next feature
 6. **Leave code buildable** — project must compile/build when you finish
 
 ### 🔍 Self-Check Checklist (MANDATORY before submitting output)
@@ -23,8 +23,15 @@ Before completing your session, verify EVERY item:
 - [ ] CLAUDE.md read at start?
 - [ ] progress.md read at start?
 - [ ] Only 1 feature implemented?
-- [ ] Feature tested with evidence?
-- [ ] progress.md updated?
+- [ ] **Verification Pipeline completed?** (v2.3.0)
+  - [ ] Build: 0 errors?
+  - [ ] Design Doc compliance: entities match DD? (if DD exists)
+  - [ ] CRUD completeness: all C/R/U/D operations? (if CRUD feature)
+  - [ ] API integration: no mock/hardcoded data? (if frontend feature)
+  - [ ] Test coverage: minimum tests met? (not just build passes)
+  - [ ] Tech stack: CLAUDE.md libraries used? (per phase)
+  - [ ] Config flags enforced?
+- [ ] progress.md updated with verification results?
 - [ ] Code builds successfully?
 
 If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
@@ -34,9 +41,13 @@ If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 Your output will be REJECTED and you must REDO from scratch if:
 
 - Multiple features implemented in one session
-- Feature marked pass without test evidence
+- Feature marked `passed` with only "build success" (no Verification Pipeline)
+- Feature marked `passed` while using mock/hardcoded data
+- Feature marked `passed` with incomplete CRUD
+- Entities don't match Design Document (if DD exists)
 - progress.md not updated
 - Code left in non-buildable state
+- Config flags (max_features_per_session, require_tests) ignored
 
 ### ⚠️ Penalty
 
@@ -676,6 +687,60 @@ git commit -m "feat: Feature #1 - create project structure"
 - [ ] Edge cases handled
 - [ ] UI implements all components and data requirements from mockup (visual does not need to match wireframe)
 
+### Step 5.5: Run Verification Pipeline (NEW v2.3.0 — MANDATORY)
+
+**After acceptance criteria, run the full Verification Pipeline before marking passed.**
+
+```
+Verification Pipeline Results:
+─────────────────────────────────────────────────
+□ Step 1 — Build Check
+  Backend: dotnet build → ✅ 0 errors
+  Frontend: npm run build → ✅ 0 errors
+
+□ Step 2 — Design Doc Compliance (if .design-docs/ exists)
+  Entity count in code: N
+  Entity count in DD: M
+  Match: ✅ / ❌ Missing: [list]
+
+□ Step 3 — CRUD Completeness (if CRUD feature)
+  Create: ✅ POST endpoint + frontend hook
+  Read:   ✅ GET endpoint + frontend hook
+  Update: ✅ / ❌ PUT endpoint + frontend hook
+  Delete: ✅ / ❌ DELETE endpoint + frontend hook
+  Note: [if intentionally missing, explain why]
+
+□ Step 4 — API Integration (if frontend feature)
+  Uses real API: ✅ / ❌ (still mock data)
+  Loading states: ✅ / ❌
+  Error states: ✅ / ❌
+
+□ Step 5 — Test Coverage
+  Tests found: N (type: unit/integration/e2e)
+  Minimum required: M
+  Met: ✅ / ❌
+
+□ Step 6 — Tech Stack Audit (per phase)
+  Libraries from CLAUDE.md: [list]
+  Actually used: [list]
+  Missing: [list or "none"]
+
+□ Step 7 — Config Flags
+  max_features_per_session: enforced ✅
+  require_tests: enforced ✅
+  tdd_approach: N/A / enforced ✅
+─────────────────────────────────────────────────
+Pipeline Result: ALL GREEN → proceed to mark passed
+                 ANY RED → mark "partial" or "incomplete"
+```
+
+**⚠️ CRITICAL**: Do NOT skip this step. "Build: ✅ 0 errors" alone is NOT sufficient.
+
+**If pipeline has failures:**
+- Mark feature as `"partial"` (mock data) or `"incomplete"` (missing CRUD/entities)
+- Create follow-up features for missing items
+- Document what's missing in feature notes
+
 ### Step 6: Mark as Passed (Schema v1.5.0)
 
 Edit feature_list.json:
@@ -746,8 +811,15 @@ Add new session to .agent/progress.md:
 ### What was done:
 - ✅ Feature #X: description
 
-### Test Results:
-- Test: ✅ Result
+### Verification Pipeline Results (v2.3.0):
+- Build: ✅ 0 errors
+- Design Doc Compliance: ✅ N/N entities match (or N/A)
+- CRUD Completeness: ✅ C+R+U+D all present (or N/A)
+- API Integration: ✅ real API, no mock data (or N/A)
+- Test Coverage: ✅ N tests (unit: X, integration: Y)
+- Tech Stack: ✅ all libraries used (or N/A)
+- Config Flags: ✅ enforced
+- **Pipeline Result: PASSED** (or PARTIAL/INCOMPLETE + reason)
 
 ### Current status:
 - Features passed: X/Y

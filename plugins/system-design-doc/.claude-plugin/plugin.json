@@ -1,64 +1,7 @@
 {
   "name": "system-design-doc",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Create standardized system design documents — supports Reverse Engineering from codebase, Import from implementation plan, Interactive Brainstorming with Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD)",
-  "commands": [
-    {
-      "name": "system-design-doc",
-      "description": "Create a standardized system design document. Supports Reverse Engineering from codebase with Mermaid diagrams",
-      "file": "commands/system-design-doc.md"
-    },
-    {
-      "name": "create-design-doc",
-      "description": "Create a new system design document from requirements",
-      "file": "commands/create-design-doc.md"
-    },
-    {
-      "name": "reverse-engineer",
-      "description": "Create a system design document from an existing codebase (Reverse Engineering)",
-      "file": "commands/reverse-engineer.md"
-    },
-    {
-      "name": "create-diagram",
-      "description": "Create a specific diagram type (ER, Flow, DFD, Sequence, Sitemap, State, Class)",
-      "file": "commands/create-diagram.md"
-    },
-    {
-      "name": "edit-section",
-      "description": "Edit a specific section of the system design document",
-      "file": "commands/edit-section.md"
-    },
-    {
-      "name": "validate-design-doc",
-      "description": "Validate completeness and consistency of the system design document",
-      "file": "commands/validate-design-doc.md"
-    },
-    {
-      "name": "import-plan",
-      "description": "Import an implementation plan or free-form design doc into a standardized system design document",
-      "file": "commands/import-plan.md"
-    },
-    {
-      "name": "brainstorm-design",
-      "description": "Interactive brainstorming and Q&A session for system design",
-      "file": "commands/brainstorm-design.md"
-    },
-    {
-      "name": "sync-with-mockups",
-      "description": "Synchronize data between design_doc_list.json and mockup_list.json",
-      "file": "commands/sync-with-mockups.md"
-    },
-    {
-      "name": "sync-with-features",
-      "description": "Synchronize data between design_doc_list.json and feature_list.json",
-      "file": "commands/sync-with-features.md"
-    },
-    {
-      "name": "validate-integration",
-      "description": "Validate cross-references across system-design-doc, ui-mockup, and long-running plugins",
-      "file": "commands/validate-integration.md"
-    }
-  ],
   "author": {
     "name": "Mounchons"
   }

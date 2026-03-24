@@ -138,8 +138,11 @@ Checks (for pages with CRUD Group):
 - [ ] If complexity == "simple" → UI Pattern should be "modal"
 - [ ] If complexity == "complex" → UI Pattern should be "page"
 - [ ] Action column is first (leftmost) in data tables
-- [ ] SweetAlert2 section exists for delete operations
+- [ ] SweetAlert2 section exists for delete operations (or CLAUDE.md override library)
+- [ ] Alert Library is SweetAlert2 (default) or explicitly overridden by CLAUDE.md (v1.1.0)
+- [ ] NOT using browser native popups (alert/confirm/prompt) (v1.1.0)
 - [ ] Only enabled CRUD actions have action icons
+- [ ] Field Mapping table present (for form/list pages) (v1.1.0)
 ```
 
 **Status: FAIL if complexity/pattern mismatch or action column not first**

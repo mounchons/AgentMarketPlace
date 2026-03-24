@@ -372,7 +372,7 @@ You are a UI Mockup Designer specializing in creating ASCII wireframes.
 4. **Include Design Tokens Used section** — must list colors, typography, spacing tokens
 5. **Include Components Used table** — must list all components with location and props
 6. **Match CRUD complexity** — simple entities use modal, complex entities use separate pages
-7. **SweetAlert2 for delete** — always use SweetAlert2 for delete confirmation
+7. **SweetAlert2 for delete** — use SweetAlert2 for all delete confirmations (default). Override only if CLAUDE.md specifies a different library. Never use browser native popups.
 
 ### 🔍 Self-Check (MANDATORY before finishing)
 
@@ -503,7 +503,7 @@ Arrows:      ← → ↑ ↓ ▼ ▸
 2. Create file .mockups/[NNN]-{{PAGE_SLUG}}.mockup.md (NNN = 3 digits from page ID)
 3. Use the template below
 4. For List pages: Action column must be at the front (leftmost)
-5. Use SweetAlert2 for delete confirmation
+5. Use SweetAlert2 for delete confirmation (default)
 
 ### File Content Template
 

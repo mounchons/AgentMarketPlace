@@ -315,6 +315,7 @@
 
   "alert_config": {
     "library": "sweetalert2",
+    "_comment": "Default: SweetAlert2. Override from CLAUDE.md if project specifies a different library.",
     "templates": {
       "delete": {
         "icon": "warning",

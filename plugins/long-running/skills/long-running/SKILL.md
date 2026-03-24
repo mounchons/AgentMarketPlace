@@ -1,12 +1,12 @@
 ---
 name: long-running
-version: 2.2.0
-description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, and integration with ui-mockup, system-design-doc, dotnet-dev skills
+version: 2.3.0
+description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, Verification Pipeline, and integration with ui-mockup, system-design-doc, dotnet-dev skills
 ---
 
 # Long-Running Agent Skill
 
-> **Version 2.2.0** - Added CRITICAL RULES with self-check checklist, output rejection criteria, penalty enforcement for all agent types
+> **Version 2.3.0** - Added Verification Pipeline (6 checks beyond build success), Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement
 
 > **Response Language**: Always respond to users in Thai (ภาษาไทย)
 
@@ -392,13 +392,144 @@ Define shared state between pages — agent can create interfaces directly
 
 ---
 
+## ✅ Verification Pipeline (v2.3.0 — MANDATORY before mark passed)
+
+> **Background**: Audit of 78 sessions found that "build success = passed" missed 7 categories of defects.
+> Build success only proves code compiles — it does NOT prove correctness.
+
+### Pipeline Steps
+
+Every feature MUST pass ALL applicable steps before being marked `passed`:
+
+```
+Feature Implementation
+    → Step 1: Build Check (existing — 0 errors)
+    → Step 2: Design Doc Compliance Check (NEW)
+    → Step 3: CRUD Completeness Check (NEW)
+    → Step 4: API Integration Check — no mock data (NEW)
+    → Step 5: Test Coverage Check (NEW)
+    → Step 6: Tech Stack Audit (NEW, per phase)
+    → Step 7: Config Flags Enforcement (NEW)
+    → ALL GREEN → Mark Passed
+    → ANY FAILED → Mark "partial" or "incomplete"
+```
+
+### Step 1: Build Check
+```
+□ Backend build: 0 errors
+□ Frontend build: 0 errors (if applicable)
+```
+
+### Step 2: Design Doc Compliance Check
+```
+IF Design Document exists (.design-docs/):
+  □ Entity count in code matches Data Dictionary table count
+  □ New entities created in this feature exist in DD
+  □ Field types/names match DD specifications
+  □ FK relationships match ER Diagram
+
+  HOW TO CHECK:
+  1. Count entities: find src/ -name "*.cs" -path "*/Entities/*" | wc -l (or equivalent)
+  2. Count DD tables: grep "### 8\." .design-docs/*.md | wc -l
+  3. If mismatch → list missing entities → create backlog features
+  4. DO NOT mark passed if entities are missing from DD
+```
+
+### Step 3: CRUD Completeness Check
+```
+IF feature implements CRUD for an entity:
+  □ Create: POST endpoint + frontend form/hook exists
+  □ Read: GET endpoint + frontend list/detail exists
+  □ Update: PUT/PATCH endpoint + frontend edit form exists
+  □ Delete: DELETE endpoint + frontend action exists
+
+  HOW TO CHECK:
+  1. Verify backend: CreateCommand ✓, GetQuery ✓, UpdateCommand ✓, DeleteCommand ✓
+  2. Verify frontend: useCreate ✓, useGet ✓, useUpdate ✓, useDelete ✓
+  3. If intentionally missing (immutable records) → document reason in notes
+  4. If unintentionally missing → mark feature as INCOMPLETE, not passed
+```
+
+### Step 4: API Integration Check (No Mock Data)
+```
+IF feature has frontend pages that display data:
+  □ Frontend calls real API endpoints (not hardcoded/mock data)
+  □ API hooks exist and are connected (useQuery, useMutation, etc.)
+  □ Loading states implemented for async data
+  □ Error states implemented for API failures
+
+  RULE: Frontend feature with API dependency CANNOT be marked passed if:
+  - Still uses mock/hardcoded data
+  - No API hook that calls backend
+  - No loading/error states for async data
+
+  ACTION: If mock data only → mark status as "partial" + create follow-up feature
+```
+
+### Step 5: Test Coverage Check
+```
+Per feature category, MINIMUM test requirements:
+  □ Domain entities: ≥ 3 unit tests (validation, relationships, business rules)
+  □ API endpoints: ≥ 1 integration test per CRUD operation
+  □ Financial/critical modules: ≥ 5 integration tests (CRUD + workflow)
+  □ Frontend pages: ≥ 1 E2E test per module (if E2E framework available)
+
+  RULE: Feature CANNOT pass without meeting minimum test count
+  "Build passes" or "manual curl test" alone is NOT sufficient test evidence
+
+  ACCEPTABLE test evidence:
+  - Automated test output (dotnet test, npm test, pytest)
+  - curl/Postman results with response body shown
+  - Screenshot of working UI with data from real API
+  - E2E test report (Playwright, Cypress)
+
+  NOT acceptable:
+  - "Build: ✅ 0 errors" alone
+  - "Manual test: looks good"
+```
+
+### Step 6: Tech Stack Audit (per phase)
+```
+IF CLAUDE.md specifies "Key Libraries" or tech requirements:
+  □ Every listed library is actually imported/used in code
+  □ No library listed but missing from package/NuGet references
+
+  HOW TO CHECK:
+  1. Parse CLAUDE.md "Key Backend Libraries" / "Key Frontend Libraries"
+  2. For each library: grep for import/using in source code
+  3. If library listed but not used → create feature task to implement
+  4. Run this check before marking a phase as "complete"
+```
+
+### Step 7: Config Flags Enforcement
+```
+Read .agent/config.json and ENFORCE these flags:
+  □ max_features_per_session: REJECT if attempting more than N features
+  □ require_tests: REJECT if no actual test count (build-only ≠ test)
+  □ tdd_approach: If true, tests must exist BEFORE implementation code
+  □ use_design_doc_for_db: MUST cross-reference entity count vs DD
+  □ use_mockups_for_ui: MUST read mockup before building UI
+```
+
+### Feature Status Values (v2.3.0)
+
+| Status | Meaning | When to Use |
+|--------|---------|-------------|
+| `passed` | All verification checks GREEN | Feature fully complete |
+| `partial` | Build passes but uses mock data or missing tests | Frontend with mock data, API not connected |
+| `incomplete` | CRUD not complete or entities missing | Missing PUT endpoint, missing entities |
+| `in_progress` | Currently being worked on | During session |
+| `pending` | Not started | Waiting in queue |
+
+---
+
 ## ⚠️ CRITICAL RULES (MUST FOLLOW)
 
 ### Coding Agent Rules
 
 1. **Read CLAUDE.md + .agent/progress.md FIRST** — before any other action in every session
 2. **ONE feature per session** — never implement multiple features in a single session
-3. **Test before marking pass** — must have actual test evidence (test output, curl result, manual verification)
+3. **Run Verification Pipeline before marking pass** — ALL 7 steps must be checked (not just build success)
 4. **Commit per feature** — each feature gets its own commit with proper prefix
 5. **Update progress.md** — before ending every session, log what was done and what's next
 6. **Leave code in buildable state** — project must compile/build successfully when session ends
@@ -424,10 +555,16 @@ Before completing your task, verify EVERY item:
 - [ ] CLAUDE.md read? (if exists)
 - [ ] .agent/progress.md read?
 - [ ] Only 1 feature worked on this session?
-- [ ] Feature tested with actual evidence?
+- [ ] **Verification Pipeline completed?** (v2.3.0)
+  - [ ] Build: 0 errors?
+  - [ ] Design Doc compliance: entity count matches DD? (if DD exists)
+  - [ ] CRUD completeness: all operations implemented? (if CRUD feature)
+  - [ ] API integration: no mock/hardcoded data in frontend? (if UI feature)
+  - [ ] Test coverage: minimum tests met? (not just "build passes")
+  - [ ] Tech stack: CLAUDE.md libraries actually used? (per phase)
+  - [ ] Config flags: .agent/config.json rules enforced?
 - [ ] progress.md updated with session log?
-- [ ] Code builds/compiles successfully?
-- [ ] feature_list.json status updated correctly?
+- [ ] feature_list.json status updated correctly? (passed/partial/incomplete)
 - [ ] Git commit created with proper prefix?
 
 If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
@@ -437,11 +574,16 @@ If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 Your output will be REJECTED and you must REDO the entire task if:
 
 - Multiple features were implemented in a single session
-- A feature was marked as passed without test evidence
+- A feature was marked as `passed` without running the Verification Pipeline
+- A feature was marked as `passed` with only "build success" as evidence (no real tests)
+- A feature was marked as `passed` while using mock/hardcoded data in frontend
+- A feature was marked as `passed` with incomplete CRUD (missing endpoints)
+- Entities implemented don't match Design Document (if DD exists)
 - progress.md was not updated before session end
 - CLAUDE.md or progress.md was not read at session start
 - Code left in non-buildable state
 - Features were deleted or descriptions modified
+- Config flags (max_features_per_session, require_tests, tdd_approach) were ignored
 
 ### ⚠️ Penalty
 
@@ -641,9 +783,12 @@ Recommended workflow:
    - If testing is complex
 
 3. **How to know a feature is truly done?**
-   - Code compiles/builds successfully
-   - All tests pass
-   - Can be demoed
+   - ALL Verification Pipeline steps pass (not just build)
+   - Entities match Design Document (if exists)
+   - CRUD operations complete (if CRUD feature)
+   - Frontend calls real API (no mock data)
+   - Minimum tests met per category
+   - Can be demoed with real data
 
 4. **If a feature can't be completed in 1 session?**
    - Record progress in notes
@@ -656,6 +801,7 @@ Recommended workflow:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.3.0 | 2026-03-24 | Added Verification Pipeline (7 steps beyond build success): Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement. Added `partial`/`incomplete` status values. Fixed audit issues: build-only=passed, mock data=done, CRUD gaps, missing entities, ignored config flags |
 | 2.2.0 | 2026-03-13 | Added CRITICAL RULES with self-check checklist, output rejection criteria, and penalty enforcement to SKILL.md, /continue, /init, /review commands |
 | 2.1.0 | 2026-03-11 | Added model_config{}, assigned_model/is_reference_impl/review feature fields, /review command with hybrid auto-fix (Critical/High → opus fix, Medium/Low → send back), model workload & review status in /status, auto-assign in /continue, v2.0.0→v2.1.0 migration |
 | 2.0.0 | 2026-03-08 | Added flows[], state_contracts{}, flow_id/state_produces/state_consumes feature fields, requires_components enforcement, flow-aware /continue + /init + /status + /validate-coverage |

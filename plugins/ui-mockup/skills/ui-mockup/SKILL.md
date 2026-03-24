@@ -546,11 +546,70 @@ layouts:
 
 ---
 
+## 📋 Pre-Generation Validation (v1.1.0 — MANDATORY)
+
+> **Background**: Audit found mockups used nested URLs (/financial/bills) when project uses flat URLs (/bills),
+> and used `:id` instead of `[id]`. Alert library was not synced with CLAUDE.md when project switched libraries.
+> These all happened because mockups were generated without reading CLAUDE.md first.
+
+### Before creating ANY mockup, read these sources:
+
+```
+Step 0: Read Project Conventions (MANDATORY)
+─────────────────────────────────────────────────
+1. Read CLAUDE.md → extract:
+   □ Frontend framework (Next.js → [id] syntax, Express → :id syntax)
+   □ URL convention (flat vs nested modules)
+   □ Alert/Dialog library (default: SweetAlert2, override if CLAUDE.md specifies otherwise)
+   □ Toast library (for success/error notifications)
+   □ Component library (Shadcn/ui, MUI, Ant Design, etc.)
+   □ CSS framework (Tailwind, styled-components, etc.)
+
+2. Read Design Doc (if exists) → extract:
+   □ Entity properties for Field Mapping table
+   □ Enums for select/dropdown options
+   □ FK relationships for linked fields
+
+3. Apply to mockup template:
+   □ Alert Library = SweetAlert2 (default) OR override from CLAUDE.md if specified
+   □ URL syntax = framework-specific ([id] for Next.js, :id for Express)
+   □ URL prefix = from CLAUDE.md conventions (flat vs nested)
+   □ Design tokens = from Tailwind/CSS framework config (NOT custom tokens file)
+─────────────────────────────────────────────────
+```
+
+### Post-Generation Validation
+
+```
+After creating mockup, verify:
+─────────────────────────────────────────────────
+□ URLs match CLAUDE.md convention (flat vs nested)
+□ Alert/Dialog library matches CLAUDE.md (not outdated library)
+□ Route parameter syntax matches framework ([id] vs :id)
+□ Field names map to entity properties (Field Mapping table present)
+□ mockup_list.json updated with new mockup entry
+□ No duplicate mockup IDs (check existing files first)
+─────────────────────────────────────────────────
+```
+
+### Change Propagation Rule
+
+```
+When CLAUDE.md changes (library replacement, URL convention change):
+1. Scan all mockups for references to the old library/convention
+2. Report: "N mockups reference [old library/convention]"
+3. Offer bulk update via /edit-mockup
+```
+
+---
+
 ## 🔄 Workflow
 
 ### Creating a New Mockup
 
 ```
+0. Read CLAUDE.md (MANDATORY — extract conventions, libraries, URL syntax)
+
 1. Receive Input
    ├── From system-design-doc (Sitemap, Screen Specs)
    └── Or from user requirements
@@ -571,12 +630,19 @@ layouts:
    └── Define interactions
 
 5. Define Design Tokens
-   ├── Colors
-   ├── Typography
-   └── Spacing
+   ├── Reference from Tailwind/CSS framework config
+   ├── Do NOT create separate _design-tokens.json unless project requires it
+   └── Use Tailwind classes as source of truth (if Tailwind project)
 
-6. Save Mockup
-   └── Create .mockup.md file in .mockups/ folder
+6. Create Field Mapping Table (NEW v1.1.0)
+   ├── Map UI labels (Thai/English) to entity property names
+   ├── Include type and validation rules
+   └── Reference Design Doc Data Dictionary
+
+7. Save Mockup
+   ├── Create .mockup.md file in .mockups/ folder
+   ├── Update mockup_list.json
+   └── Check for duplicate IDs before saving
 ```
 
 ### Editing a Mockup
@@ -652,21 +718,26 @@ project-root/
 
 8. **Match complexity** — simple entities (< 10 fields) use modal pattern, complex entities (>= 10 fields) use page pattern
 9. **Action column first** — in data tables, the action column (View/Edit/Delete) must be the leftmost column
-10. **SweetAlert2 for delete** — all delete operations use SweetAlert2 confirmation dialog
+10. **Alert/Dialog library: SweetAlert2 (default), override from CLAUDE.md** — default to SweetAlert2 for all confirmations and alerts. If CLAUDE.md explicitly specifies a different library (e.g., Sonner + Shadcn AlertDialog), use that instead. Never use browser native popups (alert/confirm/prompt).
 11. **Enabled actions only** — only show action icons for CRUD operations that are enabled
 
 ### 🔍 Self-Check Checklist (MANDATORY before submitting output)
 
 Before completing the mockup, verify EVERY item:
 
+- [ ] CLAUDE.md read? Alert library, URL convention, framework extracted? (v1.1.0)
 - [ ] Desktop wireframe (12 columns) drawn with actual ASCII art?
 - [ ] Tablet wireframe (8 columns) drawn with actual ASCII art?
 - [ ] Mobile wireframe (4 columns) drawn with actual ASCII art?
 - [ ] Design tokens referenced in "Design Tokens Used" section?
 - [ ] All components listed in "Components Used" table?
+- [ ] Field Mapping table present? (for form/list pages) (v1.1.0)
 - [ ] Action column is first (leftmost) in data tables?
+- [ ] Alert library = SweetAlert2 (default) OR overridden by CLAUDE.md? Never browser native popup (v1.1.0)
+- [ ] URL syntax matches framework? ([id] for Next.js) (v1.1.0)
+- [ ] No duplicate mockup ID? (v1.1.0)
 - [ ] CRUD pattern matches entity complexity (modal vs page)?
-- [ ] All required sections present (Page Info, Description, Layout Grid, Wireframe, Components, Interactions, Design Tokens, Responsive, Version History)?
+- [ ] All required sections present (Page Info, Description, Layout Grid, Wireframe, Components, Interactions, Field Mapping, Design Tokens, Responsive, Version History)?
 
 If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 
@@ -677,8 +748,12 @@ Your output will be REJECTED and you must REDO the entire mockup if:
 - Any breakpoint wireframe is missing or contains only placeholder text
 - "Design Tokens Used" section is missing
 - "Components Used" table is missing
+- "Field Mapping" table is missing (for form/list pages)
 - Action column is not first in data tables
 - CRUD pattern doesn't match entity complexity
+- Uses browser native popup (alert/confirm/prompt) instead of SweetAlert2 or CLAUDE.md library (v1.1.0)
+- URL syntax wrong for framework (e.g., `:id` in Next.js project) (v1.1.0)
+- Duplicate mockup ID exists (v1.1.0)
 
 ### ⚠️ Penalty
 
@@ -718,7 +793,7 @@ Entity Analysis
       │           • View → Modal
       │           • Create → Modal
       │           • Edit → Modal
-      │           • Delete → SweetAlert2
+      │           • Delete → SweetAlert2 (default) or CLAUDE.md override
       │
       └── Fields >= 10 || Complex relations
           └── complexity: "complex"
@@ -726,7 +801,7 @@ Entity Analysis
                   • View → Detail Page
                   • Create → Form Page
                   • Edit → Form Page
-                  • Delete → SweetAlert2
+                  • Delete → SweetAlert2 (default) or CLAUDE.md override
 ```
 
 ---
@@ -797,13 +872,26 @@ For simple entities (Master Data), 1 page will be created:
 |------|--------|---------------|----------------|
 | 👁 | View | Open View Modal | Navigate to Detail Page |
 | ✏️ | Edit | Open Edit Modal | Navigate to Edit Page |
-| 🗑 | Delete | SweetAlert2 | SweetAlert2 |
+| 🗑 | Delete | SweetAlert2 (default) | SweetAlert2 (default) |
 
 ---
 
-## 🔔 SweetAlert2 Usage
+## 🔔 Alert/Dialog Library (v1.1.0)
 
-**Delete confirmation always uses SweetAlert2 (for both simple and complex entities):**
+> **Default: SweetAlert2** — ใช้ SweetAlert2 เป็นค่าเริ่มต้นสำหรับทุก mockup
+> **Override**: ถ้า CLAUDE.md ระบุ library อื่นอย่างชัดเจน (เช่น Sonner + Shadcn AlertDialog) ให้ใช้ตาม CLAUDE.md
+> **ห้ามใช้ browser native popups** (alert/confirm/prompt) เด็ดขาด
+
+### How to determine the alert library:
+
+```
+1. Read CLAUDE.md → look for "Alert", "Dialog", "Toast", "Notification" in libraries section
+2. If CLAUDE.md explicitly specifies a replacement → use that library
+3. If CLAUDE.md does NOT specify or SweetAlert2 is listed → use SweetAlert2 (default)
+4. NEVER use browser native popups (window.alert, window.confirm, window.prompt)
+```
+
+### Default: SweetAlert2
 
 ```javascript
 // Delete Confirmation (default: soft delete)
@@ -834,6 +922,65 @@ Swal.fire({
   text: 'Something went wrong.',
   confirmButtonText: 'OK'
 })
+```
+
+### Override: When CLAUDE.md specifies a different library
+
+| If CLAUDE.md says | Use instead | Confirmation | Success/Error |
+|-------------------|-------------|-------------|---------------|
+| Sonner + Shadcn AlertDialog | Shadcn AlertDialog + Sonner toast | `<AlertDialog>` | `toast.success()` / `toast.error()` |
+| React Hot Toast | React Hot Toast + custom dialog | Custom `<ConfirmDialog>` | `toast.success()` / `toast.error()` |
+| MUI | MUI Dialog + Snackbar | `<Dialog>` | `<Snackbar>` |
+| _(not specified)_ | **SweetAlert2 (default)** | `Swal.fire()` | `Swal.fire()` |
+
+### In mockup Page Info table:
+
+```
+| Alert Library | SweetAlert2 |                    ← default
+| Alert Library | Sonner + Shadcn AlertDialog |     ← if CLAUDE.md overrides
+```
+
+---
+
+## 📋 Field Mapping Table (v1.1.0 — MANDATORY for form/list pages)
+
+> **Background**: Audit found developers had to guess the mapping between Thai UI labels
+> and English entity property names. This table eliminates ambiguity.
+
+Every mockup with form fields or table columns MUST include a Field Mapping table:
+
+```markdown
+## Field Mapping
+
+| UI Label | Entity Property | Type | Validation | Notes |
+|----------|----------------|------|------------|-------|
+| ชื่อบริษัท | Customer.CompanyName | string | required, max 200 | |
+| เลขภาษี | Customer.TaxId | string | pattern: \d{13} | |
+| ที่อยู่ | Customer.Address | string | required | |
+| สถานะ | Customer.IsActive | boolean | | default: true |
+```
+
+**How to create:**
+1. Read Design Doc Data Dictionary for the entity
+2. Map each form field / table column to entity property
+3. Include type and validation from DD
+4. Use entity's English property name (not Thai)
+
+---
+
+## 🔄 Versioning & Conflict Detection (v1.1.0)
+
+### Rules:
+1. **1 mockup ID = 1 file** — no duplicate IDs (e.g., 005-job-form.mockup.md and 005-job-form_gemini.mockup.md)
+2. **Before creating a new mockup**, check if a file with the same ID already exists
+3. **If duplicate found**: replace the old version or increment the version number
+4. **Use `version` field** in the mockup header, not filename suffixes (_v2, _gemini, etc.)
+
+```
+Before creating mockup:
+  ls .mockups/[NNN]-*.mockup.md
+  If exists → ask user: replace or skip?
+  If not exists → create normally
 ```
 
 ---

@@ -122,27 +122,40 @@ cat feature_list.json | jq '.features[] | select(.id == REFERENCE_ID) | .subtask
 
 ### Step 5: Review Checklist
 
-Review against 4 main criteria:
+Review against 6 main criteria:
 
-#### 5.1 Pattern Adherence (weight: 30%)
+#### 5.1 Pattern Adherence (weight: 25%)
 - [ ] File structure matches reference?
 - [ ] Naming conventions match?
 - [ ] Same error handling pattern?
 - [ ] Same code organization?
 - [ ] Design patterns used correctly?
 
-#### 5.2 Acceptance Criteria (weight: 30%)
+#### 5.2 Acceptance Criteria (weight: 25%)
 - [ ] All acceptance criteria met?
 - [ ] Edge cases handled?
 - [ ] Error responses correct?
 
-#### 5.3 Code Correctness (weight: 25%)
+#### 5.3 Code Correctness (weight: 20%)
 - [ ] No security vulnerabilities?
 - [ ] Logic correct?
 - [ ] Edge cases handled?
 - [ ] Resource cleanup correct?
 
-#### 5.4 Coding Standards (weight: 15%)
+#### 5.4 Design Doc Compliance (weight: 15% — NEW v2.3.0)
+- [ ] Entities match Data Dictionary? (field names, types, constraints)
+- [ ] FK relationships match ER Diagram?
+- [ ] CRUD operations complete? (C+R+U+D — if CRUD feature)
+- [ ] Frontend calls real API? (not mock/hardcoded data)
+- [ ] API endpoints match expected count from design?
+
+#### 5.5 Test Coverage (weight: 10% — NEW v2.3.0)
+- [ ] Minimum tests met per category?
+- [ ] Test evidence is actual test output? (not just "build passes")
+- [ ] Integration tests for API endpoints? (if applicable)
+- [ ] E2E tests for UI pages? (if applicable)
+
+#### 5.6 Coding Standards (weight: 5%)
 - [ ] Follows project conventions?
 - [ ] Consistent indentation & formatting?
 - [ ] No dead code?
@@ -150,9 +163,9 @@ Review against 4 main criteria:
 
 ### Step 6: Calculate Score and Classify Issues
 
-**Scoring:**
+**Scoring (v2.3.0 — updated weights):**
 ```
-Score = (pattern_adherence * 0.3) + (acceptance_criteria * 0.3) + (code_correctness * 0.25) + (coding_standards * 0.15)
+Score = (pattern_adherence * 0.25) + (acceptance_criteria * 0.25) + (code_correctness * 0.20) + (design_doc_compliance * 0.15) + (test_coverage * 0.10) + (coding_standards * 0.05)
 ```
 
 **Result mapping:**
@@ -527,5 +540,9 @@ Display in this format:
 | `performance` | Performance issues |
 | `coding-standards` | Doesn't follow conventions |
 | `error-handling` | Inappropriate error handling |
+| `design-doc-compliance` | Entities/fields don't match Design Document (v2.3.0) |
+| `crud-completeness` | Missing CRUD operations (e.g., no PUT endpoint) (v2.3.0) |
+| `mock-data` | Frontend uses hardcoded/mock data instead of real API (v2.3.0) |
+| `test-coverage` | Insufficient or missing tests (v2.3.0) |
 
 > 💬 **หมายเหตุ**: คำสั่งนี้จะตอบกลับเป็นภาษาไทย
