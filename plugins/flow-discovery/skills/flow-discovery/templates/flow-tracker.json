@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "project": "",
+  "lastScan": "",
+  "techStack": "",
+  "scope": "",
+  "summary": {
+    "totalFindings": 0,
+    "critical": 0,
+    "important": 0,
+    "niceToHave": 0
+  },
+  "findings": [
+    {
+      "id": "F001",
+      "title": "",
+      "description": "",
+      "severity": "critical|important|nice-to-have",
+      "source": "full-scan|deep-dive|quick-think|ideate|persona-simulation|research",
+      "persona": "",
+      "module": "",
+      "codeRef": "",
+      "rootCause": "",
+      "impact": "",
+      "solutions": [],
+      "effort": "S|M|L",
+      "status": "open|in-progress|resolved|wont-fix",
+      "handoffTo": "qa-ui-test|system-design-doc|ui-mockup|long-running|null",
+      "handoffCommand": ""
+    }
+  ],
+  "researchResults": [
+    {
+      "topic": "",
+      "date": "",
+      "file": "",
+      "layers": ["problems", "compliance", "competitive"]
+    }
+  ],
+  "personas": [
+    {
+      "name": "",
+      "feature": "",
+      "file": "",
+      "gapsFound": 0
+    }
+  ]
+}
