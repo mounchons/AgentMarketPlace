@@ -1,0 +1,8 @@
+{
+  "name": "flow-discovery",
+  "version": "1.0.0",
+  "description": "วิเคราะห์ระบบ (brownfield + greenfield) เพื่อค้นหา workflow, scenario, edge case ที่ถูกมองข้าม — ใช้ Multi-Agent Brainstorming (7 personas), Virtual User Simulation, Internet Research (problems, compliance, competitive), Adversarial Review จาก BMAD Method รองรับ auto-detect tech stack และ manual handoff ไปยัง qa-ui-test, system-design-doc, ui-mockup, long-running",
+  "author": {
+    "name": "Mounchons"
+  }
+}
