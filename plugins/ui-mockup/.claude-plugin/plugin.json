@@ -1,14 +1,7 @@
 {
   "name": "ui-mockup",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Create and edit UI Mockup/Wireframe from System Design Document — supports ASCII wireframes, component specifications, design tokens, CLAUDE.md-aware alert library (SweetAlert2 default), field mapping, framework-aware URL syntax, validation and quality checks, integrated with system-design-doc and frontend-design skills",
-  "commands": [
-    {
-      "name": "validate-mockup",
-      "description": "Validate UI Mockup files for completeness and compliance",
-      "file": "commands/validate-mockup.md"
-    }
-  ],
   "author": {
     "name": "Mounchons"
   }
