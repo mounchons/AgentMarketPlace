@@ -104,6 +104,78 @@ git log --since="{last_scan_date}" --diff-filter=DR --name-only
 - If a scanned page was deleted → mark the brain note as `[DELETED]` or remove
 - If a file was renamed → update note references
 
+## Activity Logging
+
+Every brain-scan MUST write activity logs to `.brain/activity-log.json` at project root.
+
+### Log file setup
+- If `.brain/` directory doesn't exist → create it
+- If `.brain/activity-log.json` doesn't exist → create with empty array `[]`
+- Add `.brain/` to `.gitignore` if not already there
+
+### Log entries to write
+
+**On scan START** (after Phase 1 pre-flight):
+```json
+{
+  "timestamp": "<ISO 8601 UTC>",
+  "session_id": "<use $CLAUDE_SESSION_ID or generate date-based ID>",
+  "command": "brain-scan",
+  "args": "<raw args: --full, --docs, folder-path, etc.>",
+  "project": "<project-name from cwd>",
+  "status": "started",
+  "details": {
+    "scan_mode": "smart|full|incremental|folder|docs|deps|auth|force",
+    "phases_planned": [1,2,3],
+    "existing_notes": "<N notes found in pre-flight>",
+    "files_changed": "<N files from git diff, or null if first scan>"
+  }
+}
+```
+
+**On scan COMPLETE** (after Phase 10 report):
+```json
+{
+  "timestamp": "<ISO 8601 UTC>",
+  "session_id": "<same session_id>",
+  "command": "brain-scan",
+  "args": "<same args>",
+  "project": "<project-name>",
+  "status": "completed",
+  "details": {
+    "scan_mode": "smart|full|incremental|folder|docs|deps|auth|force",
+    "phases_run": [1,2,3,4,5,6,7,8,9,10],
+    "notes_created": "<N>",
+    "notes_updated": "<M>",
+    "notes_skipped": "<K identical>",
+    "elapsed": "<human readable e.g. 4m 32s>"
+  }
+}
+```
+
+**On scan FAILED/CANCELLED**:
+```json
+{
+  "timestamp": "<ISO 8601 UTC>",
+  "session_id": "<same>",
+  "command": "brain-scan",
+  "project": "<project-name>",
+  "status": "failed|cancelled",
+  "details": {
+    "reason": "<error message or 'user cancelled'>",
+    "phase_reached": "<last completed phase number>"
+  }
+}
+```
+
+### How to write log entries
+Use Bash to append to the JSON array:
+```bash
+# Read existing log, append new entry, write back
+# If file is empty or missing, start with []
+```
+Or use the Write/Edit tool to append the entry to the array.
+
 ## Execution Phases
 
 ### Phase 1: Pre-flight Check
@@ -251,6 +323,11 @@ Output notes:
    /brain-explain billing             ← อธิบายแบบละเอียด
    /brain-search JobAssignment        ← ค้นหา dependency map
 ```
+
+### IMPORTANT: Write activity log
+After Phase 10 report, ALWAYS write the "completed" log entry to `.brain/activity-log.json`.
+If scan was cancelled or failed at any point, write the "failed/cancelled" entry instead.
+Never skip logging — this is how users track what was scanned across sessions.
 
 ## Deduplicate Strategy
 Before saving each note:

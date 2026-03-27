@@ -1,7 +1,7 @@
 {
   "name": "brain",
-  "description": "Graph Brain knowledge management — Brain First strategy: search brain before codebase, auto-save new findings",
-  "version": "2.0.0",
+  "description": "Graph Brain knowledge management — Brain First strategy: search brain before codebase, auto-save new findings, activity logging across sessions",
+  "version": "2.1.0",
   "author": {
     "name": "Mounchons"
   }

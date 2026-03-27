@@ -28,3 +28,25 @@ ALL responses MUST be in Thai language.
 
 5. **Report changes (Thai)**
    - List what changed, what was added, what was removed
+
+6. **Write activity log**
+   - Append entry to `.brain/activity-log.json` at project root
+   - Create `.brain/` directory and file if they don't exist (start with `[]`)
+   - Log entry format:
+   ```json
+   {
+     "timestamp": "<ISO 8601 UTC>",
+     "session_id": "<$CLAUDE_SESSION_ID or date-based>",
+     "command": "brain-update",
+     "args": "<note-title or keyword>",
+     "project": "<project-name from cwd>",
+     "status": "completed",
+     "details": {
+       "note_title": "<updated note title>",
+       "note_id": "<noteId>",
+       "changes": "added|removed|modified sections summary"
+     }
+   }
+   ```
+   - If update failed, log with `"status": "failed"`
+   - NEVER skip this step

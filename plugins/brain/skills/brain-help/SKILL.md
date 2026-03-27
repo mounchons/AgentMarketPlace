@@ -53,6 +53,11 @@ Display this command reference to the user:
 
 /brain-status           ตรวจ connection + สถิติจำนวนความรู้ + tags
 
+/brain-log [filter]     ดูประวัติการใช้งาน brain ข้ามทุก session
+                        ตัวอย่าง: /brain-log today
+                        ตัวอย่าง: /brain-log --command scan
+                        ตัวอย่าง: /brain-log week --command save
+
 /brain-howto [command]  สอนวิธีใช้งานทีละขั้นตอน (ภาษาไทย)
                         ไม่มี argument = สอนทั้งหมด
                         ตัวอย่าง: /brain-howto save
@@ -71,4 +76,31 @@ Also display the Brain First data flow:
    มี brain แล้ว?     → /brain <คำถาม>
    code เปลี่ยน?      → /brain-scan (auto incremental)
    ไม่แน่ใจ?          → /brain-howto
+```
+
+Also display the brain-log usage reference:
+```
+📋 /brain-log — ดูประวัติการใช้งาน brain ข้ามทุก session
+
+ตัวกรองเวลา:
+  /brain-log                  20 entries ล่าสุด (default)
+  /brain-log today            เฉพาะวันนี้
+  /brain-log week             7 วันย้อนหลัง
+  /brain-log --last 5         5 entries ล่าสุด
+  /brain-log --all            ทั้งหมด
+
+ตัวกรองคำสั่ง:
+  /brain-log --command scan   เฉพาะ brain-scan
+  /brain-log --command save   เฉพาะ brain-save
+  /brain-log --command update เฉพาะ brain-update
+  /brain-log --command load   เฉพาะ brain-load
+
+ตัวกรอง session:
+  /brain-log --session <id>   เฉพาะ session ที่ระบุ
+
+รวมกันได้:
+  /brain-log today --command scan   scan ของวันนี้
+  /brain-log week --command save    save ใน 7 วัน
+
+📁 Log file: .brain/activity-log.json (สร้างอัตโนมัติ ไม่เข้า git)
 ```

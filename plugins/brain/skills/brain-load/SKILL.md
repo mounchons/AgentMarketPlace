@@ -32,3 +32,23 @@ ALL responses MUST be in Thai language.
 
 5. **Keep in context**
    - Retain loaded knowledge for use throughout the session
+
+6. **Write activity log**
+   - Append entry to `.brain/activity-log.json` at project root
+   - Create `.brain/` directory and file if they don't exist (start with `[]`)
+   - Log entry format:
+   ```json
+   {
+     "timestamp": "<ISO 8601 UTC>",
+     "session_id": "<$CLAUDE_SESSION_ID or date-based>",
+     "command": "brain-load",
+     "args": "<project-name or keyword>",
+     "project": "<project-name from cwd>",
+     "status": "completed",
+     "details": {
+       "notes_loaded": "<N>",
+       "brain_connected": true/false
+     }
+   }
+   ```
+   - Never block session for logging failures
