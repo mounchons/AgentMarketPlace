@@ -201,6 +201,28 @@
       "author": {
         "name": "Mounchons"
       }
+    },
+    {
+      "name": "brain",
+      "source": "./plugins/brain",
+      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge",
+      "version": "2.0.0",
+      "category": "knowledge",
+      "tags": [
+        "graph-brain",
+        "knowledge-management",
+        "brain-first",
+        "dependency-tracing",
+        "permission-matrix",
+        "codebase-scanner",
+        "mcp",
+        "cross-session",
+        "wiki-links",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
     }
   ]
 }

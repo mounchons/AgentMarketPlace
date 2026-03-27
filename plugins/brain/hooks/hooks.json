@@ -1,0 +1,13 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "startup|resume",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "Graph Brain plugin is active. On session start:\n\n1. Call mcp__graph-brain__brain-stats to check connection\n2. If connected: call mcp__graph-brain__search-knowledge with the current working directory name as query (limit=5) to preload project context. Keep results in conversation context.\n3. If NOT connected: display '⚠️ Graph Brain ไม่สามารถเชื่อมต่อได้ — พิมพ์ /brain-status เพื่อตรวจสอบ หรือทำงานต่อได้เลย' and continue normally.\n4. NEVER block the session. If connection fails, allow user to work from codebase directly.\n\nALL responses from brain skills MUST be in Thai language."
+        }
+      ]
+    }
+  ]
+}
