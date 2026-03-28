@@ -475,6 +475,52 @@ Next steps:
 
 ---
 
+
+---
+
+### Nav Template Verification Checklist (from Brain)
+
+> Source: Brain knowledge "Nav Template — Common Issues, Fixes & Verification Checklist"
+> These issues occur EVERY TIME the nav template is used in a new project. CHECK ALL.
+
+**Issue 1: Submenu ไม่มี Indent**
+- Submenu items ต้องมี left offset มากกว่า parent item เสมอ
+- ใช้ pl-4 หรือ pl-6 ที่ ul wrapper ของ expanded submenu
+- ตรวจ: submenu items ต้อง indent ชัดเจนจาก parent
+
+**Issue 2: จุด (Dots) ใน Collapsed Sidebar**
+- li element ที่ไม่อยู่ใน ul → browser render default bullet
+- ใช้ list-none กับ li เสมอ หรือใช้ div แทน li ใน flyout
+- ตรวจ: collapsed mode ต้องไม่มีจุด/bullet ข้างไอคอน
+
+**Issue 3: Active State ซ้อน 2 Items**
+- ห้ามใช้ simple prefix match สำหรับ active state
+- ต้องตรวจ "better match" (longer href) เมื่อมี nested routes
+- ตรวจ: /parent/child → เฉพาะ child active, ไม่ใช่ parent
+
+**Visual Checklist:**
+- [ ] Submenu มี indent มากกว่า parent อย่างชัดเจน
+- [ ] Collapsed mode: ไม่มีจุด/bullet ปรากฏข้างไอคอน
+- [ ] Flyout submenu แสดงถูกตำแหน่ง ไม่ล้นจอ
+- [ ] Active state highlight เพียง 1 item เท่านั้น
+- [ ] Mobile overlay ปิดได้ด้วย click backdrop
+
+**Active State Checklist:**
+- [ ] Exact match: /items → เฉพาะ item นั้น active
+- [ ] Nested route: /parent/child → เฉพาะ child active (ไม่ใช่ parent)
+- [ ] Deep route: /parent/child/123 → เฉพาะ child active
+- [ ] Root: /dashboard → เฉพาะ dashboard active
+
+**Semantic HTML Checklist:**
+- [ ] li อยู่ใน ul เท่านั้น (expanded submenu)
+- [ ] Flyout submenu ใช้ div หรือ li with list-none
+- [ ] ไม่มี orphan li นอก list context
+
+**Collapsed Mode Checklist:**
+- [ ] Icon-only แสดงถูกต้อง ไม่มี text leak
+- [ ] Hover → flyout ปรากฏทางขวาถูกตำแหน่ง
+- [ ] Section labels ซ่อนเมื่อ collapsed
+
 ## Self-Check Checklist (MANDATORY before submitting output)
 
 Before completing, verify ALL items:
