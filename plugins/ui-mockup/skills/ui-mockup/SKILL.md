@@ -42,6 +42,9 @@ Designed to connect with system-design-doc and pass output to the frontend-desig
 | **Change Layout** | `/edit-mockup Dashboard page - change to 3 columns` |
 | **Add Component** | `/edit-mockup List page - add pagination` |
 | **Responsive Design** | `/create-mockup Home page - mobile first` |
+| **Create HTML Mockup** | `/create-html-mockup Dashboard page` |
+| **Create HTML from list** | `/create-html-mockup` (shows pending pages) |
+| **Regenerate Master Page** | `/create-html-mockup --regenerate-master` |
 
 ---
 
