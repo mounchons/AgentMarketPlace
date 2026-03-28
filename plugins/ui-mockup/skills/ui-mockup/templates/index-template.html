@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="{{LANG|th}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{PROJECT_NAME}} - HTML Mockup Index</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="master-page.css">
+</head>
+<body class="bg-[var(--mp-bg-page)] min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b px-8 py-6">
+    <h1 class="text-2xl font-bold text-gray-900">{{PROJECT_NAME}}</h1>
+    <p class="text-sm text-gray-500">HTML Mockup Directory</p>
+    <p class="text-xs text-gray-400">Generated: {{DATE}} | Total Pages: {{TOTAL_PAGES}}</p>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-5xl mx-auto px-8 py-8">
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-2xl font-bold text-gray-900">{{TOTAL_PAGES}}</div>
+        <div class="text-xs text-gray-500">Total</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-2xl font-bold text-green-600">{{COMPLETED_PAGES}}</div>
+        <div class="text-xs text-gray-500">Completed</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-2xl font-bold text-yellow-600">{{PENDING_PAGES}}</div>
+        <div class="text-xs text-gray-500">Pending</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-2xl font-bold text-indigo-600">{{ENTITY_COUNT}}</div>
+        <div class="text-xs text-gray-500">Entities</div>
+      </div>
+    </div>
+
+    <!-- Pages Table -->
+    <div class="bg-white rounded-xl border overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">ID</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Page Name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">URL</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">CRUD</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{PAGE_ROWS}}
+          <!-- Row format reference:
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-500">NNN</td>
+            <td class="px-4 py-3 font-medium text-gray-900">Page Name</td>
+            <td class="px-4 py-3 text-gray-500 font-mono text-xs">/url/path</td>
+            <td class="px-4 py-3 text-gray-500">Entity (type)</td>
+            <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">completed</span></td>
+            <td class="px-4 py-3"><a href="NNN-page-name.html" class="text-indigo-600 hover:underline">Open</a></td>
+          </tr>
+          -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+</body>
+</html>

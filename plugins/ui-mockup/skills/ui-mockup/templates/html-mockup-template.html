@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="{{LANG|th}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{PAGE_NAME}} - HTML Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="master-page.css">
+  <script src="master-page.js" defer></script>
+</head>
+<body class="bg-[var(--mp-bg-page)]">
+  <master-page active-menu="{{ACTIVE_MENU}}" page-title="{{PAGE_TITLE}}">
+
+    <!-- ============================================ -->
+    <!-- PAGE CONTENT: {{PAGE_NAME}}                  -->
+    <!-- URL: {{PAGE_URL}}                            -->
+    <!-- CRUD Group: {{CRUD_GROUP}}                   -->
+    <!-- CRUD Type: {{CRUD_TYPE}}                     -->
+    <!-- Generated: {{DATE}}                          -->
+    <!-- ============================================ -->
+
+    {{PAGE_CONTENT}}
+
+  </master-page>
+</body>
+</html>
