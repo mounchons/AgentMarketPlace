@@ -1,0 +1,61 @@
+/*
+ * master-page-template.css
+ *
+ * Shared CSS design tokens for the master page Web Component.
+ * This is a TEMPLATE file — all {{TOKEN|default}} placeholders are replaced
+ * at generation time by the /create-html-mockup command, which reads values
+ * from brain/CLAUDE.md and writes the final output to .mockups/html/master-page.css.
+ *
+ * Do NOT hand-edit the generated output; edit this template instead.
+ */
+
+:root {
+  /* ── Primary Colors ───────────────────────────────────────────────────── */
+  --mp-primary:       {{PRIMARY_COLOR|#6366f1}};
+  --mp-primary-light: {{PRIMARY_LIGHT|#818cf8}};
+  --mp-primary-dark:  {{PRIMARY_DARK|#4f46e5}};
+  --mp-primary-50:    {{PRIMARY_50|#eef2ff}};
+
+  /* ── Feedback Colors ──────────────────────────────────────────────────── */
+  --mp-success: {{SUCCESS|#10b981}};
+  --mp-error:   {{ERROR|#ef4444}};
+  --mp-warning: {{WARNING|#f59e0b}};
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --mp-bg-page:       {{BG_PAGE|#f8fafc}};
+  --mp-bg-card:       {{BG_CARD|#ffffff}};
+  --mp-sidebar-bg:    {{SIDEBAR_BG|#1e1b4b}};
+  --mp-sidebar-hover: {{SIDEBAR_HOVER|#312e81}};
+  --mp-sidebar-active:{{SIDEBAR_ACTIVE|#4338ca}};
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --mp-text-primary:   {{TEXT_PRIMARY|#1e293b}};
+  --mp-text-secondary: {{TEXT_SECONDARY|#64748b}};
+  --mp-text-muted:     {{TEXT_MUTED|#94a3b8}};
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --mp-border:       {{BORDER|#e2e8f0}};
+  --mp-border-light: {{BORDER_LIGHT|#f1f5f9}};
+
+  /* ── Layout ───────────────────────────────────────────────────────────── */
+  --mp-sidebar-w:           260px;
+  --mp-sidebar-collapsed-w: 68px;
+  --mp-topbar-h:            56px;
+
+  /* ── Border Radius ────────────────────────────────────────────────────── */
+  --mp-radius-sm: 6px;
+  --mp-radius-md: 8px;
+  --mp-radius-lg: 12px;
+
+  /* ── Typography ───────────────────────────────────────────────────────── */
+  --mp-font: 'Inter', 'Noto Sans Thai', system-ui, sans-serif;
+}
+
+/* ── Body Reset ───────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: var(--mp-font);
+  background: var(--mp-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
