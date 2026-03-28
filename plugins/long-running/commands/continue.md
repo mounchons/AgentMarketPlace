@@ -187,6 +187,25 @@ cat .mockups/mockup_list.json 2>/dev/null
    └── Content (children)
    ```
 
+6. **Nav Template Verification Checklist (from Brain):**
+
+   > Source: Brain "Nav Template — Common Issues, Fixes & Verification Checklist"
+   > These bugs occur EVERY TIME. Must verify after implementation.
+
+   **Known Issues to Prevent:**
+   - **Submenu indent**: submenu items MUST have more left offset than parent. Add `pl-4` to submenu `<ul>` wrapper
+   - **Dots in collapsed mode**: `<li>` outside `<ul>` shows bullets. Use `list-none` on `<li>` or use `<div>` in flyout
+   - **Active state overlap**: Do NOT use simple prefix match. Must check for "better match" (longer href) when nested routes exist
+
+   **Must-Pass Checks:**
+   - [ ] Submenu indent > parent indent
+   - [ ] Collapsed sidebar: no dots/bullets next to icons
+   - [ ] Active state: `/parent/child` highlights only child, not parent
+   - [ ] Flyout position correct, no overflow
+   - [ ] Mobile overlay closes on backdrop click
+   - [ ] `<li>` only inside `<ul>`, flyout uses `<div>`
+   - [ ] Section labels hidden when collapsed
+
 **⚠️ If Design Document found:**
 1. **Must** read ER Diagram before creating database
 2. **Must** use Data Dictionary for field types
