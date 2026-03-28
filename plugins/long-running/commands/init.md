@@ -403,12 +403,46 @@ mkdir -p .agent
 
 2. **Common shared components:**
    - `AuthGuard` — if pages require login
-   - `Layout` (Navbar + Sidebar) — if admin pages exist
+   - `DashboardShell` (Navbar + Sidebar + ProfileDropdown) — if admin/dashboard pages exist
    - `DataTable` — if multiple list pages exist
    - `FormModal` — if modal CRUD (simple entities)
    - `StepIndicator` — if wizard flows exist
 
-3. **For each shared component:**
+3. **DashboardShell — Brain Integration (IMPORTANT):**
+
+   When admin/dashboard pages are detected, create a `DashboardShell` feature:
+
+   **a) Query Brain for navigation data:**
+   ```
+   Search brain for: "nav template", "navigation", "sidebar menu"
+   Search brain for: "topbar", "navbar"
+   Search brain for: "profile dropdown", "user menu"
+   Search brain for: "design tokens", "color theme"
+   ```
+
+   **b) Extract from brain:**
+   - Navigation structure (sections > items > children with labels, hrefs, icons, roles)
+   - Profile config (displayName, email, initials, roleLabel, menuItems)
+   - Design token values (primary color, sidebar-bg, etc.)
+
+   **c) Store in feature notes:**
+   - If brain has nav data → store JSON structure in feature `notes` field as reference
+   - If brain has no nav data → generate navigation from mockup_list.json pages grouped by category
+
+   **d) Reference implementation:**
+   - `docs/example/html/nav/src/frontend/src/components/` (React/Next.js pattern)
+   - If `.mockups/html/master-page.js` exists → use as Web Component reference
+
+   **e) Feature configuration:**
+   ```json
+   {
+     "category": "component",
+     "required_components": ["DashboardShell", "Navbar", "Sidebar", "ProfileDropdown", "Breadcrumb"],
+     "notes": "Brain nav data: [JSON from brain query]. Reference: docs/example/html/nav/"
+   }
+   ```
+
+4. **For each shared component:**
    - Create separate feature (category: "component")
    - Add to `component_usage.shared_components`
    - Add `requires_components` to features that use it

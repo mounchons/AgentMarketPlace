@@ -150,15 +150,18 @@
       "id": "Navbar",
       "name": "Navbar",
       "category": "navigation",
-      "description": "Navigation bar component",
-      "variants": ["default", "transparent", "fixed"],
+      "description": "Topbar navigation bar with sidebar toggle, breadcrumb, project name, and profile dropdown",
+      "variants": ["default", "with-profile-dropdown", "with-breadcrumb", "transparent", "fixed"],
       "sizes": [],
       "props": [
-        { "name": "logo", "type": "ReactNode", "required": false },
-        { "name": "items", "type": "array", "required": false },
-        { "name": "actions", "type": "ReactNode", "required": false }
+        { "name": "onToggleSidebar", "type": "function", "required": true },
+        { "name": "breadcrumb", "type": "array", "required": false },
+        { "name": "projectName", "type": "string", "required": false },
+        { "name": "user", "type": "object", "required": false },
+        { "name": "profileMenuItems", "type": "array", "required": false },
+        { "name": "onLogout", "type": "function", "required": false }
       ],
-      "design_tokens": ["bg-white", "shadow-sm", "border-bottom-200"],
+      "design_tokens": ["bg-card", "border-bottom", "shadow-sm", "topbar-h-56px", "text-primary", "text-secondary", "text-muted"],
       "accessibility": { "role": "navigation", "aria_required": ["aria-label"] },
       "status": "available",
       "used_in_features": []
@@ -167,14 +170,73 @@
       "id": "Sidebar",
       "name": "Sidebar",
       "category": "navigation",
-      "description": "Side navigation component",
-      "variants": ["default", "collapsed", "overlay"],
-      "sizes": ["sm", "md", "lg"],
+      "description": "Side navigation with nested menu, collapsible state, role-based filtering, and mobile overlay",
+      "variants": ["default", "collapsed", "overlay", "mobile-open"],
+      "sizes": [],
+      "props": [
+        { "name": "navigationData", "type": "array", "required": true },
+        { "name": "collapsed", "type": "boolean", "required": false, "default": false },
+        { "name": "mobileOpen", "type": "boolean", "required": false, "default": false },
+        { "name": "onCloseMobile", "type": "function", "required": false },
+        { "name": "userRole", "type": "string", "required": false },
+        { "name": "projectName", "type": "string", "required": false },
+        { "name": "projectInitials", "type": "string", "required": false }
+      ],
+      "design_tokens": ["sidebar-bg-1e1b4b", "sidebar-hover-312e81", "sidebar-active-4338ca", "sidebar-w-260px", "sidebar-collapsed-w-68px", "text-c7d2fe", "text-a5b4fc"],
+      "accessibility": { "role": "navigation", "aria_required": ["aria-label"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "ProfileDropdown",
+      "name": "ProfileDropdown",
+      "category": "navigation",
+      "description": "User profile dropdown with avatar, name, role, menu items, and logout",
+      "variants": ["default", "mobile"],
+      "sizes": [],
+      "props": [
+        { "name": "displayName", "type": "string", "required": true },
+        { "name": "email", "type": "string", "required": false },
+        { "name": "initials", "type": "string", "required": true },
+        { "name": "roleLabel", "type": "string", "required": false },
+        { "name": "menuItems", "type": "array", "required": false, "default": [] },
+        { "name": "logoutLabel", "type": "string", "required": false, "default": "Logout" },
+        { "name": "onLogout", "type": "function", "required": false }
+      ],
+      "design_tokens": ["bg-card", "shadow-lg", "border", "radius-lg", "primary-gradient"],
+      "accessibility": { "role": "menu", "aria_required": ["aria-label", "aria-expanded"] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "DashboardShell",
+      "name": "DashboardShell",
+      "category": "layout",
+      "description": "Master layout wrapper combining Sidebar + Navbar + content area with responsive behavior. Primary layout for admin/dashboard pages.",
+      "variants": ["default"],
+      "sizes": [],
+      "props": [
+        { "name": "children", "type": "ReactNode", "required": true },
+        { "name": "sidebarProps", "type": "object", "required": false },
+        { "name": "navbarProps", "type": "object", "required": false }
+      ],
+      "design_tokens": ["bg-page", "sidebar-w-260px", "sidebar-collapsed-w-68px", "topbar-h-56px"],
+      "accessibility": { "role": "main", "aria_required": [] },
+      "status": "available",
+      "used_in_features": []
+    },
+    {
+      "id": "Breadcrumb",
+      "name": "Breadcrumb",
+      "category": "navigation",
+      "description": "Breadcrumb navigation auto-built from navigation data and current pathname",
+      "variants": ["default"],
+      "sizes": [],
       "props": [
         { "name": "items", "type": "array", "required": true },
-        { "name": "collapsed", "type": "boolean", "required": false, "default": false }
+        { "name": "separator", "type": "string", "required": false, "default": "/" }
       ],
-      "design_tokens": ["bg-gray-900", "text-white", "border-right-700"],
+      "design_tokens": ["text-secondary", "text-primary"],
       "accessibility": { "role": "navigation", "aria_required": ["aria-label"] },
       "status": "available",
       "used_in_features": []
@@ -212,10 +274,10 @@
   },
 
   "summary": {
-    "total_components": 10,
+    "total_components": 13,
     "by_category": {
-      "layout": 0,
-      "navigation": 2,
+      "layout": 1,
+      "navigation": 4,
       "form": 3,
       "data-display": 2,
       "feedback": 2,
