@@ -150,6 +150,43 @@ cat .mockups/mockup_list.json 2>/dev/null
 5. **Free** to design visual, layout, animation, UX — does not need to match ASCII wireframe
 6. If using `/frontend-design` skill → let the skill design visuals freely
 
+**⚠️ If feature is DashboardShell / Navbar / Sidebar / Layout / ProfileDropdown:**
+
+> These navigation/layout components MUST query brain for real project data before implementation.
+
+1. **MUST** query brain BEFORE implementation:
+   ```
+   Search brain: "nav template", "navigation data", "sidebar menu"
+   Search brain: "topbar", "navbar"
+   Search brain: "profile dropdown", "user menu"
+   Search brain: "design tokens", "color theme"
+   ```
+
+2. **Extract from brain:**
+   - Navigation structure (sections > items > children with labels, hrefs, icons, roles)
+   - Profile config (displayName, email, initials, roleLabel, menuItems, logoutLabel)
+   - Icon set (SVG icons used in menu items)
+   - Design token values (primary color, sidebar-bg, sidebar-active, etc.)
+
+3. **Reference implementations:**
+   - `docs/example/html/nav/src/frontend/src/components/` — React/Next.js components (sidebar.tsx, navbar.tsx, dashboard-shell.tsx, navigation-data.ts)
+   - `.mockups/html/master-page.js` — Web Component pattern (if exists, from ui-mockup plugin)
+
+4. **If brain has no nav data:**
+   - Generate navigation from mockup_list.json pages grouped by category
+   - Use default design tokens from component_library.json
+   - Store generated nav structure in brain for future use
+
+5. **Component hierarchy:**
+   ```
+   DashboardShell
+   ├── Sidebar (navigationData, collapsed, mobileOpen, userRole, projectName)
+   ├── Navbar (onToggleSidebar, breadcrumb, projectName, user, profileMenuItems)
+   │   ├── Breadcrumb (items from pathname + navigationData)
+   │   └── ProfileDropdown (displayName, initials, roleLabel, menuItems)
+   └── Content (children)
+   ```
+
 **⚠️ If Design Document found:**
 1. **Must** read ER Diagram before creating database
 2. **Must** use Data Dictionary for field types
