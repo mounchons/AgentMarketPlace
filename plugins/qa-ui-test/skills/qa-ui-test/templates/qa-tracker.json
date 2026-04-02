@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "project": "",
   "base_url": "http://localhost:3000",
   "technology": "",
@@ -10,6 +10,8 @@
     "reviewer": "opus",
     "assignment_strategy": {
       "auto_assign_rules": [
+        { "condition": "type == 'state-machine'", "assign": "opus" },
+        { "condition": "type == 'network-mock' && priority == 'critical'", "assign": "opus" },
         { "condition": "priority == 'critical'", "assign": "opus" },
         { "condition": "type == 'cross-browser'", "assign": "opus" },
         { "condition": "type == 'role-access'", "assign": "opus" },
@@ -32,6 +34,6 @@
     "pass_rate": "0%"
   },
   "modules": [],
-  "page_types": ["form", "master-data", "master-detail", "wizard", "dashboard", "search"],
+  "page_types": ["form", "master-data", "master-detail", "wizard", "dashboard", "search", "state-machine", "data-driven", "network-mock"],
   "scenarios": []
 }
