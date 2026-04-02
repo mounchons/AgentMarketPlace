@@ -9,6 +9,8 @@ args: "[folder-path | --docs | --deps | --full] — scan specific folder, docs o
 
 ALL responses MUST be in Thai language.
 
+**Graph Protocol:** Follow rules in `GRAPH_PROTOCOL.md` for all save operations.
+
 ## Scan Modes
 
 | Argument | Mode | What it does |
@@ -148,6 +150,7 @@ Every brain-scan MUST write activity logs to `.brain/activity-log.json` at proje
     "notes_created": "<N>",
     "notes_updated": "<M>",
     "notes_skipped": "<K identical>",
+    "changelogs_created": "<C>",
     "elapsed": "<human readable e.g. 4m 32s>"
   }
 }
@@ -177,6 +180,12 @@ Use Bash to append to the JSON array:
 Or use the Write/Edit tool to append the entry to the array.
 
 ## Execution Phases
+
+### Phase 0: Project Awareness (NEW)
+- Call `mcp__graph-brain__get-project` name="{project-name}"
+- If project exists → display: "🏗️ Project {name} พบใน Brain — tech: [{tech stack}], notes: {N}"
+- If project not found → note: "🆕 Project ใหม่ — จะสร้างเมื่อ save notes"
+- This informs subsequent phases about existing project context
 
 ### Phase 1: Pre-flight Check
 - Call `mcp__graph-brain__brain-stats` to verify connection
@@ -298,6 +307,20 @@ Output notes:
 - Build master index
 - Add `[[wiki links]]` between related notes
 - Create `{Project} - Knowledge Map (Auto-generated)` summary
+- Verify links with `mcp__graph-brain__explore-graph`:
+  - For each saved note, call `explore-graph` nodeId="{note-id}" depth=1
+  - Check that `[[wiki links]]` point to existing notes
+  - Remove broken links, add missing links to newly created notes
+
+### Phase 10.5: Versioning (NEW — runs before Report)
+
+For each note that was **updated** (not created new):
+1. Follow Versioning Protocol from `GRAPH_PROTOCOL.md`:
+   - Snapshot was already taken in Phase 3d (update existing notes)
+   - Determine changelog number for each updated note
+   - Create changelog note with diff summary
+   - Update original note with Version History section
+2. Track: `changelogs_created` count for report
 
 ### Phase 10: Report Results (Thai)
 ```
@@ -307,6 +330,7 @@ Output notes:
 📊 สรุป:
    สร้างใหม่: {N} ชิ้น
    อัพเดท:    {M} ชิ้น
+   Changelogs: {C} ชิ้น
    เอกสาร:   {D} ไฟล์ indexed
 
 📦 ความรู้ที่เก็บ:
@@ -316,6 +340,7 @@ Output notes:
 ├── 🔒 permissions/ — Role Matrix, Page Auth, API Auth ⭐
 ├── 🔄 workflow/ — States, Business Rules
 ├── 🌐 integration/ — APIs, Notifications, File Storage
+├── 📝 changelog/ — Version changelogs
 └── 📄 documents/ — .md, .docx, .txt indexed
 
 💡 ถัดไป:
@@ -334,6 +359,9 @@ Before saving each note:
 - Search brain for existing note with same title
 - If found → compare content, update if changed, skip if identical
 - If not found → create new
+- All saves must follow Graph Protocol Save Rules:
+  - projectName, tags (min 2), folderPath per convention
+  - Add [[wiki links]] to related notes found during scan
 
 ## Folder Categories for Saved Notes
 ```
