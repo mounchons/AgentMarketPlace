@@ -26,6 +26,10 @@ Display this command reference to the user:
                         ตัวอย่าง: /brain-explain billing system
                         ตัวอย่าง: /brain-explain checker workflow
 
+/brain-explore <หัวข้อ>   เดินตาม graph — ดู connections ทีละ node
+                        ตัวอย่าง: /brain-explore authentication
+                        ตัวอย่าง: /brain-explore --links UserService
+
 ━━━ จัดการความรู้ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /brain-save [หัวข้อ]     บันทึกความรู้ใหม่ (จากบทสนทนา หรือระบุหัวข้อ)
                         ไม่มี argument = auto-detect จากบทสนทนาล่าสุด
@@ -46,12 +50,21 @@ Display this command reference to the user:
                         ตัวอย่าง: /brain-update entity models
                         ตัวอย่าง: /brain-update permission matrix
 
+/brain-history <หัวข้อ>   ดูประวัติเปลี่ยนแปลงของ note (changelogs)
+                        ตัวอย่าง: /brain-history Auth Flow
+                        ตัวอย่าง: /brain-history entity models
+
 ━━━ ระบบ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /brain-load [project]   โหลดความรู้ก่อนเริ่มงาน (auto ตอน session start)
                         ไม่มี argument = ใช้ชื่อ folder ปัจจุบัน
                         ตัวอย่าง: /brain-load my-project
 
-/brain-status           ตรวจ connection + สถิติจำนวนความรู้ + tags
+/brain-status           ตรวจ connection + สถิติจำนวนความรู้ + tags + projects
+
+/brain-projects [name]  ดู projects ทั้งหมด, tech stacks, เปรียบเทียบ
+                        ตัวอย่าง: /brain-projects
+                        ตัวอย่าง: /brain-projects --tech
+                        ตัวอย่าง: /brain-projects --compare
 
 /brain-log [filter]     ดูประวัติการใช้งาน brain ข้ามทุก session
                         ตัวอย่าง: /brain-log today
@@ -68,6 +81,12 @@ Display this command reference to the user:
 
 Also display the Brain First data flow:
 ```
+📐 Graph Protocol (v3.0.0):
+   Save    → ต้องมี projectName, tags ≥2, folderPath, wiki links
+   Update  → สร้าง changelog อัตโนมัติ (Versioning Protocol)
+   Search  → 4 ขั้น: text → tags → graph traversal → similar
+   Links   → [[wiki links]] สร้าง relationships อัตโนมัติ
+
 📊 Brain First Strategy:
    Brain (เร็ว) → Codebase (ถ้าไม่ครบ) → Save กลับ (ถ้ามีข้อมูลใหม่)
 
@@ -93,6 +112,9 @@ Also display the brain-log usage reference:
   /brain-log --command scan   เฉพาะ brain-scan
   /brain-log --command save   เฉพาะ brain-save
   /brain-log --command update เฉพาะ brain-update
+  /brain-log --command history  เฉพาะ brain-history
+  /brain-log --command explore  เฉพาะ brain-explore
+  /brain-log --command projects เฉพาะ brain-projects
   /brain-log --command load   เฉพาะ brain-load
 
 ตัวกรอง session:

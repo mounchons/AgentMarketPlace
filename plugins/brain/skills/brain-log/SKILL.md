@@ -36,6 +36,9 @@ ALL responses MUST be in Thai language.
    | `--command scan` | Only brain-scan entries |
    | `--command save` | Only brain-save entries |
    | `--command update` | Only brain-update entries |
+   | `--command history` | Only brain-history entries |
+   | `--command explore` | Only brain-explore entries |
+   | `--command projects` | Only brain-projects entries |
    | `--session <id>` | Only entries from specific session |
    | `--last N` | Show last N entries |
    | `--all` | Show everything (no limit) |
@@ -56,6 +59,10 @@ ALL responses MUST be in Thai language.
    🕐 2026-03-27 15:10 UTC │ Session: abc123
       💾 brain-save "Permission Matrix" │ ✅ completed
       └─ /projects/myapp/permissions/ │ tags: [myapp, permission, role]
+
+   🕐 2026-04-02 10:00 UTC │ Session: abc123
+      📝 brain-update "Auth Flow" │ ✅ completed
+      └─ Changelog #3 created │ relationships verified: 5, added: 1
 
    🕐 2026-03-26 09:00 UTC │ Session: def456
       📡 brain-scan │ ✅ completed

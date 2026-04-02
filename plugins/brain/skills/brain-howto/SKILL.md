@@ -45,6 +45,9 @@ Commands to cover:
 - `/brain-update <topic>` — update existing
 - `/brain-load` — manual reload
 - `/brain-status` — check connection
+- `/brain-explore <topic>` — navigate graph interactively
+- `/brain-history <topic>` — view version history
+- `/brain-projects [name]` — cross-project management
 
 ### Section 5: Tips & Tricks
 - Use `/brain` for quick questions, `/brain-explain` for deep analysis
@@ -56,6 +59,26 @@ Commands to cover:
 - Brain not connected → `/brain-status` to diagnose
 - Knowledge seems wrong → `/brain-update` to refresh from current code
 - Too many results → use more specific keywords
+
+### Section 7: Graph Features (v3.0.0)
+Step-by-step Thai guide:
+
+**Exploring the Knowledge Graph:**
+1. `/brain-explore authentication` — เริ่มจาก node authentication
+2. เลือกเลขเพื่อเดินตาม connection → ดู related knowledge
+3. กด [B] กลับ, [S] search ใหม่, [Q] หยุด
+
+**Version History:**
+1. Update note ด้วย `/brain-update auth flow`
+2. ระบบสร้าง changelog อัตโนมัติ
+3. ดูประวัติ: `/brain-history auth flow`
+4. เปรียบเทียบ versions หรือ restore version เก่าได้
+
+**Cross-Project Intelligence:**
+1. `/brain-projects` — ดู projects ทั้งหมด
+2. เลือก project ดู tech stack, notes, connections
+3. `/brain-projects --compare` — เปรียบเทียบ 2 projects
+4. `/brain-projects --tech` — ดู technologies ทั้งหมด
 
 ## If argument provided (e.g., `/brain-howto save`):
 Show only the relevant section for that specific command with detailed Thai examples.
