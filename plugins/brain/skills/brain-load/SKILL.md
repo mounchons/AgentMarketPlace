@@ -17,6 +17,11 @@ ALL responses MUST be in Thai language.
      - [1] Retry connection
      - [2] Skip — work from codebase directly
 
+1.5. **Get project context** (NEW)
+   - Call `mcp__graph-brain__get-project` name="{project-name}"
+   - If project found → store: tech stack, note count, related projects
+   - If not found → continue (project may not exist in brain yet)
+
 2. **Search for project knowledge**
    - query = argument or basename of current working directory
    - Call `mcp__graph-brain__search-knowledge` query="{project}" limit=10
@@ -28,6 +33,9 @@ ALL responses MUST be in Thai language.
 
 4. **Report to user (Thai)**
    - If found: list loaded notes with descriptions
+   - If project context available (from Step 1.5):
+     - Show: "🏗️ Tech Stack: [{technologies}]"
+     - Show: "🔗 Connected Projects: [{related project names}]"
    - If empty: suggest `/brain-scan` to populate
 
 5. **Keep in context**
@@ -47,7 +55,9 @@ ALL responses MUST be in Thai language.
      "status": "completed",
      "details": {
        "notes_loaded": "<N>",
-       "brain_connected": true/false
+       "brain_connected": true/false,
+       "project_found_in_brain": true/false,
+       "tech_stack": ["<technologies>"]
      }
    }
    ```
