@@ -16,6 +16,7 @@ ALL responses MUST be in Thai language regardless of input language.
 - Call `mcp__graph-brain__search-by-tags` with extracted keywords as tags
 - For top 3-5 results, call `mcp__graph-brain__get-knowledge` to load full content
 - Follow `[[wiki links]]` in loaded notes — load linked notes for complete context (max 3 hops)
+- If results < 3 and at least 1 result exists → use `mcp__graph-brain__explore-graph` nodeId="{best-result-id}" depth=2 to find connected knowledge through relationships
 
 ### Step 2: Evaluate Completeness
 Rate the brain results against the user's question:
@@ -38,6 +39,7 @@ Present the answer with:
 - Clear structure (headers, tables, flow diagrams as appropriate)
 - Source labels: `[Brain]` for brain-sourced info, `[Code]` for codebase-sourced info
 - Relevant file paths if referencing specific code
+- Relationship context: if explore-graph was used, show key connections found (e.g., "เชื่อมกับ: [[Note A]], [[Note B]]")
 
 ### Step 5: Offer to Save (only if Step 3 was executed)
 If new information was found from codebase:
