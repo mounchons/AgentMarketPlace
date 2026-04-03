@@ -1,6 +1,6 @@
 ---
 description: เลือก scenarios จาก qa-tracker.json ไปสร้าง Playwright scripts แล้วรัน test — ทำทีละ module เหมือน long-running /continue
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), mcp__plugin_playwright_playwright__*
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 ---
 
 # QA Continue — Pick Scenarios + Generate Scripts + Test
@@ -13,7 +13,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), 
 1. **Read qa-tracker.json ก่อนเสมอ** — ดู scenarios ที่ยังเป็น pending
 2. **ทำทีละ module** — เหมือน long-running: 1 feature per session → 1 module per session
 3. **สร้าง script ก่อน → รัน test → update status** — ไม่ข้ามขั้นตอน
-4. **ใช้ Playwright MCP สำรวจหน้าจริง** — ก่อนสร้าง script ต้องดูหน้าจริงด้วย
+4. **ห้ามใช้ Chrome MCP / browser automation tools** — หา selectors จาก code เท่านั้น
 5. **Update qa-tracker.json** — ทุกครั้งหลังรัน
 6. **Commit per module** — `qa(TS-{MODULE}): generate scripts + test`
 
@@ -128,33 +128,34 @@ URL: /admin/products
 
 ---
 
-### Step 3: Analyze Page with MCP
+### Step 3: Analyze Selectors (Code-Based — ไม่ใช้ browser)
 
-**ก่อนสร้าง scripts → ใช้ MCP ดูหน้าจริง:**
+**หา selectors จาก code ตามลำดับ priority:**
 
 ```
-① Login (ถ้าต้อง auth)
-   → mcp__plugin_playwright_playwright__browser_navigate → login URL
-   → mcp__plugin_playwright_playwright__browser_fill_form → admin credentials
-   → mcp__plugin_playwright_playwright__browser_click → submit
+① อ่าน existing spec files ใน e2e/ → ดู selector patterns ที่ project ใช้
+   - คัดลอก login helper, API setup patterns
+   - ดู selector conventions: getByRole, getByText, locator("#id")
 
-② Navigate ไปหน้า module
-   → mcp__plugin_playwright_playwright__browser_navigate → module URL
+② อ่าน frontend components → src/app/(app)/{module}/
+   - หา data-testid, role, aria-label, className ใน JSX
+   - ดู button labels, form field names, table structure
 
-③ Snapshot เพื่อดู elements จริง
-   → mcp__plugin_playwright_playwright__browser_snapshot
-   ← ได้: field names, button labels, table columns, selectors
+③ อ่าน Zod schemas / validation → ชื่อ fields ใน schema = ชื่อ fields ใน form
 
-④ คลิก Add → ดู form fields จริง
-   → mcp__plugin_playwright_playwright__browser_click → Add button
-   → mcp__plugin_playwright_playwright__browser_snapshot
-   ← ได้: actual field types, labels, required markers
+④ อ่าน API hooks → src/hooks/use-{module}.ts
+   - ดู endpoint URLs, payload structure
 
-⑤ จับ screenshot เก็บ reference
-   → mcp__plugin_playwright_playwright__browser_take_screenshot
+⑤ ดู POM (Page Object Model) files ถ้ามี → reuse selectors
+
+⑥ ถ้าหาจาก code ไม่ได้ → แนะนำ user รัน:
+   npx playwright codegen http://localhost:3000/{page}
+   แล้วส่ง selectors กลับมา
 ```
 
-**ข้อมูลจาก MCP + codebase → สร้าง script ที่แม่นยำ**
+**Reuse existing helpers:**
+- ก่อนเขียนใหม่ ตรวจ existing helpers (login, API setup) ก่อนเสมอ
+- ห้ามเขียน login flow ใหม่ทุกไฟล์ → import จาก shared fixture
 
 ---
 
@@ -165,7 +166,7 @@ URL: /admin/products
 1. **Scenario doc** → `test-scenarios/TS-{MODULE}-{NNN}.md` (IEEE 829)
 2. **Test data** → `test-data/TS-{MODULE}-{NNN}.json`
 3. **Playwright script** → `tests/TS-{MODULE}-{NNN}.spec.ts`
-4. **POM** → `tests/pages/{module}.page.ts` (from MCP snapshot data)
+4. **POM** → `tests/pages/{module}.page.ts` (from code analysis)
 5. **Auth helper** → `tests/helpers/auth.helper.ts` (ถ้ายังไม่มี)
 6. **Screenshot/Report helpers** → ถ้ายังไม่มี
 

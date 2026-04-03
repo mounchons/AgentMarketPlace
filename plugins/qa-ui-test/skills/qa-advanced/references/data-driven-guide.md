@@ -2,17 +2,47 @@
 
 วิธีสร้าง parameterized tests จาก variants ใน test-data JSON
 
+## Standard Schema
+
+ทุก variants file ต้องใช้ schema `qa-variants-v1`:
+- Schema definition: `references/qa-variants-schema.json`
+- เพิ่ม `"$schema": "qa-variants-v1"` ที่ต้น JSON file เสมอ
+
+### Schema Validation Rules
+
+| Field | Required | Format | Description |
+|-------|----------|--------|-------------|
+| `$schema` | yes | `"qa-variants-v1"` | Schema reference |
+| `description` | yes | string | อธิบายว่า file นี้ test อะไร |
+| `setup.login` | no | boolean | ต้อง login ก่อนไหม |
+| `setup.navigateTo` | no | URL path | หน้าที่จะไป |
+| `setup.apiSetup[]` | no | array | API calls สำหรับ seed data |
+| `variants[].name` | yes | kebab-case | unique slug (ใช้ใน test title + screenshot) |
+| `variants[].input` | yes | object | key-value ตรง form fields |
+| `variants[].expected.result` | yes | `success` \| `error` \| `success_or_error` | ผลที่คาดหวัง |
+| `variants[].expected.errorField` | no | string | field ที่แสดง error (ถ้า result=error) |
+| `variants[].expected.errorMessage` | no | string | error message (partial match) |
+| `variants[].expected.mustNotContain` | no | string | ห้ามมีใน page (security) |
+| `variants[].expected.verifyValues` | no | object | ค่าที่ต้อง verify หลัง submit สำเร็จ |
+
 ## Variants JSON Format
 
 ใช้ `variants[]` array ใน test-data JSON file เดิม (backward compatible):
 
 ```json
 {
+  "$schema": "qa-variants-v1",
+  "description": "Product create form — validation testing (required, boundary, security)",
   "fixtures": {
     "validUser": { "email": "admin@test.com", "password": "Admin@123" }
   },
   "environment": {
     "baseUrl": "http://localhost:3000"
+  },
+  "setup": {
+    "login": true,
+    "navigateTo": "/admin/products/new",
+    "apiSetup": []
   },
   "variants": [
     {
@@ -145,8 +175,12 @@
 | `input` | yes | Key-value pairs matching form field names |
 | `expected.result` | yes | `"success"` \| `"error"` \| `"success_or_error"` |
 | `expected.message` | no | Error message to check (for `"error"` result) |
-| `expected.field` | no | Which field shows the error |
-| `expected.must_not` | no | Content that must NOT appear (for security tests) |
+| `expected.field` | no | Which field shows the error (alias for `errorField`) |
+| `expected.errorField` | no | Which field shows the error |
+| `expected.errorMessage` | no | Error message on specific field (partial match) |
+| `expected.must_not` | no | Content that must NOT appear (alias for `mustNotContain`) |
+| `expected.mustNotContain` | no | Content that must NOT appear (for security tests) |
+| `expected.verifyValues` | no | Field-value pairs to verify after success |
 | `expected.computed` | no | Computed values to verify (calculations) |
 
 ### Assertion Modes

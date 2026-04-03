@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qa-variants-v1",
+  "title": "QA Test Variants",
+  "description": "Standard schema for data-driven test variants used by qa-ui-test plugin",
+  "type": "object",
+  "required": ["variants"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Schema reference — use 'qa-variants-v1'"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what this variants file tests"
+    },
+    "fixtures": {
+      "type": "object",
+      "description": "Shared test data (users, tokens, etc.) reusable across variants",
+      "additionalProperties": true
+    },
+    "environment": {
+      "type": "object",
+      "description": "Environment configuration",
+      "properties": {
+        "baseUrl": { "type": "string" }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "description": "Pre-test setup configuration",
+      "properties": {
+        "login": {
+          "type": "boolean",
+          "description": "Whether login is required before test"
+        },
+        "navigateTo": {
+          "type": "string",
+          "description": "URL path to navigate to before test"
+        },
+        "apiSetup": {
+          "type": "array",
+          "description": "API calls to execute before test (create seed data, etc.)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+              "url": { "type": "string" },
+              "body": { "type": "object" },
+              "saveAs": { "type": "string", "description": "Variable name to save response for later use" }
+            },
+            "required": ["method", "url"]
+          }
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "description": "List of test variants — each variant = 1 test case",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "input", "expected"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique slug used in test title + screenshot folder (kebab-case)",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of what this variant tests"
+          },
+          "tags": {
+            "type": "array",
+            "description": "Tags for filtering (e.g., 'security', 'boundary', 'happy-path')",
+            "items": { "type": "string" }
+          },
+          "input": {
+            "type": "object",
+            "description": "Key-value pairs matching form field names",
+            "additionalProperties": true
+          },
+          "expected": {
+            "type": "object",
+            "required": ["result"],
+            "properties": {
+              "result": {
+                "type": "string",
+                "enum": ["success", "error", "success_or_error"],
+                "description": "success = form submits OK; error = validation error shown; success_or_error = either OK but dangerous behavior must NOT happen"
+              },
+              "message": {
+                "type": "string",
+                "description": "Expected message (success message or error message, partial match)"
+              },
+              "errorField": {
+                "type": "string",
+                "description": "Which field shows the error (for 'error' result)"
+              },
+              "errorMessage": {
+                "type": "string",
+                "description": "Error message on the specific field (partial match)"
+              },
+              "mustNotContain": {
+                "type": "string",
+                "description": "Content that must NOT appear in page (for security tests like XSS)"
+              },
+              "verifyValues": {
+                "type": "object",
+                "description": "Field-value pairs to verify after successful submission",
+                "additionalProperties": { "type": ["string", "number", "boolean"] }
+              },
+              "computed": {
+                "type": "object",
+                "description": "Computed/calculated values to verify (e.g., totals, VAT)",
+                "additionalProperties": { "type": ["string", "number"] }
+              },
+              "redirectTo": {
+                "type": "string",
+                "description": "Expected URL redirect after action"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

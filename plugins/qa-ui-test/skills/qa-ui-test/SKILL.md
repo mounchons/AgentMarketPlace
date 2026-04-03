@@ -317,28 +317,24 @@ export async function logout(page: Page) {
 }
 ```
 
-### MCP วิเคราะห์ role permissions
+### วิเคราะห์ role permissions จาก code
 
 ```
-ใช้ Playwright MCP ตรวจสอบว่า role เห็นอะไรบ้าง:
+ตรวจสอบว่า role เห็นอะไรบ้าง (จาก code analysis):
 
-① Login ด้วย role
-   → browser_navigate → login page
-   → browser_fill_form → credentials
-   → browser_click → submit
+① อ่าน authorization config:
+   - [Authorize(Roles = "admin,manager")] attributes
+   - middleware / route guards / useAuth hook
 
-② Navigate ไปหน้าเป้าหมาย
-   → browser_navigate → target page
+② อ่าน frontend component ที่ตรวจ role:
+   - {user.role === 'admin' && <DeleteButton />}
+   - v-if="hasPermission('delete')"
 
-③ Snapshot เพื่อดูว่าเห็นอะไร
-   → browser_snapshot
-   ← ตรวจ: มีปุ่ม Add? Edit? Delete? เห็น menu?
+③ Map role → permissions:
+   admin: เห็น [Add] [Edit] [Delete]
+   viewer: เห็นเฉพาะ table ไม่มีปุ่ม
 
-④ เปรียบเทียบระหว่าง roles
-   admin snapshot: เห็น [Add] [Edit] [Delete]
-   viewer snapshot: เห็นเฉพาะ table ไม่มีปุ่ม
-
-⑤ สร้าง scenarios จากผลวิเคราะห์
+④ สร้าง scenarios จากผลวิเคราะห์
 ```
 
 ## Cascade Testing (v1.3.0)
@@ -474,63 +470,55 @@ export async function logout(page: Page) {
 
 ---
 
-## Playwright MCP Integration (v1.2.0)
+## Selector Discovery (Code-Based — ไม่ใช้ browser)
 
-Plugin รองรับ `plugin:playwright:playwright` MCP server สำหรับวิเคราะห์หน้าเว็บแบบ real-time
+Plugin หา selectors จาก code analysis เท่านั้น เพื่อลด token usage และเพิ่มความแม่นยำ
 
-### ตรวจสอบก่อนใช้งาน
+### ลำดับการหา Selectors
 
-ก่อนวิเคราะห์หน้าเว็บ ต้องตรวจสอบว่า Playwright MCP พร้อมใช้งาน:
-- ลองเรียก `mcp__plugin_playwright_playwright__browser_snapshot`
-- **ถ้าใช้งานได้** → ใช้ MCP tools (แม่นยำกว่า)
-- **ถ้าไม่พบ** → แจ้งผู้ใช้ให้ติดตั้งก่อน
+1. **อ่าน existing tests** → e2e/*.spec.ts
+   - คัดลอก login helper, API setup patterns
+   - ดู selector conventions: getByRole, getByText, locator("#id")
 
-### เมื่อไม่พบ Playwright MCP ต้องแจ้ง:
+2. **อ่าน frontend components** → src/app/(app)/{module}/
+   - หา data-testid, role, aria-label, className ใน JSX
+   - ดู button labels, form field names, table structure
 
-```
-⚠️ ไม่พบ Playwright MCP Plugin (plugin:playwright:playwright)
-กรุณาติดตั้ง:
-  1. พิมพ์ /mcp → Add MCP Server → plugin:playwright:playwright
-  2. หรือ: claude mcp add playwright -- npx @anthropic-ai/mcp-playwright
-```
+3. **อ่าน Zod schemas** → form validation schemas
+   - ชื่อ fields ใน schema = ชื่อ fields ใน form
 
-### MCP Tools ที่ใช้
+4. **อ่าน API hooks** → src/hooks/use-{module}.ts
+   - ดู endpoint URLs, payload structure
+   - ใช้สำหรับ API-first test setup
 
-| Tool | ใช้ตอนไหน |
-|------|----------|
-| `browser_navigate` | เปิดหน้าเว็บเป้าหมาย |
-| `browser_snapshot` | ดู DOM tree + accessibility tree + element refs |
-| `browser_take_screenshot` | จับภาพหน้าเว็บ |
-| `browser_click` | คลิกปุ่ม Add/Edit/Expand เพื่อสำรวจ |
-| `browser_fill_form` | ทดสอบกรอก form |
-| `browser_press_key` | กด Escape/Enter |
-| `browser_console_messages` | ตรวจ console errors |
-| `browser_run_code` | รัน custom Playwright code |
+5. **ถ้ายังหาไม่ได้** → แนะนำ user:
+   ```
+   npx playwright codegen http://localhost:3000/{page}
+   ```
+   แล้ว paste selectors กลับมา
 
-### ข้อดีของ MCP vs CLI
+### Helper Reuse
 
-```
-MCP (แนะนำ):
-  ✅ เห็น DOM tree + element refs ทันที
-  ✅ คลิกสำรวจ form/dialog ได้ real-time
-  ✅ รู้ field names, types, labels แม่นยำ
-  ✅ ตรวจ detail grid ได้โดย expand row
+ก่อนสร้าง script ใหม่ ต้อง:
+1. อ่าน existing specs → หา shared helpers (login, API setup, etc.)
+2. ถ้ามี helpers ที่ใช้ซ้ำได้ → import หรือ copy pattern
+3. ห้ามเขียน login flow ใหม่ทุกไฟล์ → extract เป็น shared fixture
 
-CLI (fallback):
-  ⚠️ ได้แค่ screenshot
-  ⚠️ ต้องเขียน script ชั่วคราว
-  ⚠️ ไม่เห็น DOM structure
-```
+### CRITICAL RULES
+
+1. **ห้ามใช้ Chrome MCP / browser automation tools ในทุกขั้นตอน**
+2. **หา selectors จาก code เท่านั้น** (e2e/, components/, POM files)
+3. **ถ้าหาไม่ได้ → แนะนำ user ใช้ `npx playwright codegen`**
+4. **Playwright CLI เท่านั้นสำหรับทั้ง generate + run**
 
 ## Core Workflow
 
-1. **ตรวจ MCP** → ตรวจสอบ Playwright MCP พร้อมใช้งาน (แจ้งถ้าไม่พบ)
-2. **Brainstorm** → ถามผู้ใช้เกี่ยวกับ business rules, edge cases, user roles
-3. **Analyze (MCP)** → Navigate, snapshot, click สำรวจ, detect page type
-4. **Create Scenarios** → IEEE 829 format, test data, Playwright scripts
-5. **Run Tests** → Sequential or parallel with subagents
-6. **Report** → Per-run report, comparison report, summary
-7. **Review** → Opus reviews test quality and coverage
+1. **Brainstorm** → ถามผู้ใช้เกี่ยวกับ business rules, edge cases, user roles
+2. **Analyze (Code)** → อ่าน components, schemas, existing tests หา selectors + page type
+3. **Create Scenarios** → IEEE 829 format, test data, Playwright scripts
+4. **Run Tests** → Sequential or parallel with subagents (`npx playwright test`)
+5. **Report** → Per-run report, comparison report, summary
+6. **Review** → Opus reviews test quality and coverage
 
 ## Long-running Agent Features
 
@@ -547,7 +535,7 @@ CLI (fallback):
 | **long-running** | Link scenarios to features via feature_id |
 | **system-design-doc** | Read pages from design doc to generate scenarios |
 | **ui-mockup** | Detect mockup pages for scenario generation |
-| **ai-ui-test** | Complementary: chrome for ad-hoc, Playwright for structured |
+| **ai-ui-test** | Complementary: ai-ui-test for ad-hoc, qa-ui-test for structured |
 | **test-runner** | test-runner for unit/integration, qa-ui-test for E2E UI |
 
 ## Important Notes

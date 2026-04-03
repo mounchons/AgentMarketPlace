@@ -1,6 +1,6 @@
 ---
 description: รีเทส QA UI tests จาก scripts ที่มีอยู่ — เปรียบเทียบผลกับครั้งก่อน, สร้าง comparison report, opus review
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), mcp__plugin_playwright_playwright__*
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 ---
 
 # QA Retest — Re-execute + Compare + Review

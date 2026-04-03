@@ -11,8 +11,10 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 ## CRITICAL RULES
 
 1. **Read qa-tracker.json ก่อนเสมอ** — ดู scenarios ที่มีอยู่
-2. **ใช้ Playwright CLI เท่านั้น** — ห้ามใช้ MCP tools สำหรับรัน test
-3. **MCP ใช้ได้เฉพาะสำรวจหน้าจริง** — หา selectors ก่อนสร้าง script
+2. **ห้ามใช้ Chrome MCP / browser automation tools ในทุกขั้นตอน**
+   — หา selectors จาก existing code (e2e/, components/, POM files)
+   — ถ้าหา selector ไม่ได้ → แนะนำ user ใช้ `npx playwright codegen`
+   — Playwright CLI เท่านั้นสำหรับรัน test
 4. **Backward compatible** — scenarios เดิมต้องไม่เสีย
 5. **Output เป็น qa-tracker.json** — เพิ่ม scenarios พร้อม `advanced` field
 6. **Commit เมื่อเสร็จ** — `advanced-scenario: create/enhance {MODULE}`
@@ -29,7 +31,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 
 - Existing scenarios modified → REJECT
 - Advanced field missing in new scenarios → REJECT
-- MCP used for running tests → REJECT
+- Chrome MCP / browser automation tools used → REJECT
 
 ---
 
@@ -251,7 +253,10 @@ CRUD scenarios ของ entity เดียวกัน?
 สำหรับแต่ละ recommendation ที่เลือก:
 
 1. **State Machine** → เพิ่ม scenario ใน qa-tracker.json พร้อม `advanced.flow_type: "state-machine"`
-2. **Data-Driven** → เพิ่ม scenario + สร้าง `test-data/TS-{MODULE}-DDT-{NNN}.json` พร้อม variants
+2. **Data-Driven** → เพิ่ม scenario + สร้าง `test-data/TS-{MODULE}-DDT-{NNN}.json` ตาม schema `qa-variants-v1`
+   - ต้องมี `"$schema": "qa-variants-v1"`, `"description"`, `"setup"`, `"variants[]"`
+   - ทุก variant: `name` (kebab-case), `input`, `expected.result`
+   - ดู schema: `references/qa-variants-schema.json`
 3. **Network Mock** → เพิ่ม scenario พร้อม `advanced.mocks[]`
 4. **Serial Group** → แก้ existing scenarios เพิ่ม `advanced.serial_group` + `serial_order`
 5. **Merged scenarios** → เดิมตั้ง `status: "deprecated"`, สร้างใหม่แทน

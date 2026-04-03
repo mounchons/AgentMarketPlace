@@ -1,6 +1,6 @@
 ---
 description: สร้าง test scenarios — auto-scan codebase สร้างทีเดียว หรือ brainstorm ทีละหน้า
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), mcp__plugin_playwright_playwright__*
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 ---
 
 # QA Create Scenario — Auto-generate + Brainstorm
@@ -667,170 +667,64 @@ cat "$(dirname "$0")/../skills/qa-ui-test/templates/qa-tracker.json"
 
 ---
 
-### Step 1.5: ตรวจสอบ Playwright MCP Plugin
+### Step 2: วิเคราะห์หน้าเว็บจาก Code (ไม่ใช้ browser)
 
-**ก่อนวิเคราะห์หน้าเว็บ ต้องตรวจสอบว่า Playwright MCP พร้อมใช้งาน:**
-
-ลองเรียก `mcp__plugin_playwright_playwright__browser_snapshot` หรือ tool ใดๆ ของ Playwright MCP
-
-**ถ้า Playwright MCP ใช้งานได้ → ใช้ MCP (Step 2A)**
-**ถ้า Playwright MCP ไม่พบ → แจ้งผู้ใช้:**
+**หา selectors + ตรวจจับ page type จาก code:**
 
 ```
-⚠️ ไม่พบ Playwright MCP Plugin (plugin:playwright:playwright)
+① อ่าน existing spec files ใน e2e/ → ดู selector patterns ที่ project ใช้
+   - คัดลอก login helper, API setup patterns
+   - ดู selector conventions: getByRole, getByText, locator("#id")
 
-ระบบต้องการ Playwright MCP เพื่อวิเคราะห์หน้าเว็บแบบ real-time
-กรุณาติดตั้งก่อน:
+② อ่าน frontend components → src/app/(app)/{module}/
+   - หา data-testid, role, aria-label, className ใน JSX
+   - ดู button labels, form field names, table structure
 
-   1. เปิด Claude Code
-   2. พิมพ์ /mcp
-   3. เลือก "Add MCP Server"
-   4. เลือก plugin:playwright:playwright
+③ อ่าน Zod schemas / validation → ชื่อ fields ใน schema = ชื่อ fields ใน form
 
-หรือรันคำสั่ง:
-   claude mcp add playwright -- npx @anthropic-ai/mcp-playwright
+④ อ่าน API hooks → src/hooks/use-{module}.ts
+   - ดู endpoint URLs, payload structure
+   - ใช้สำหรับ API-first test setup
 
-หลังติดตั้งแล้ว ลองรัน /qa-create-scenario อีกครั้ง
+⑤ ดู POM (Page Object Model) files ถ้ามี → reuse selectors
+
+⑥ ถ้าต้องการ selectors ใหม่ที่หาจาก code ไม่ได้ → แนะนำ user รัน:
+   npx playwright codegen http://localhost:3000/{page}
+   แล้วส่ง selectors กลับมาให้ agent
 ```
 
-**ห้ามข้ามขั้นตอนนี้** — ถ้าไม่มี Playwright MCP ต้องแจ้งผู้ใช้ให้ติดตั้งก่อน
-
----
-
-### Step 2A: วิเคราะห์หน้าเว็บด้วย Playwright MCP (แนะนำ)
-
-**ใช้ Playwright MCP tools วิเคราะห์หน้าเว็บ:**
+**ตรวจจับประเภทหน้าจาก code:**
 
 ```
-ขั้นตอน:
-
-① Navigate ไปหน้าเว็บ
-   → mcp__plugin_playwright_playwright__browser_navigate
-     url: "[URL]"
-
-② จับ Snapshot เพื่อดู DOM tree + elements ทั้งหมด
-   → mcp__plugin_playwright_playwright__browser_snapshot
-   ← ได้: accessibility tree + element refs
-
-③ จับ Screenshot เพื่อดูหน้าตาจริง
-   → mcp__plugin_playwright_playwright__browser_take_screenshot
-
-④ วิเคราะห์จาก snapshot:
-   - มี table (role: table) → อาจเป็น Master Data
-   - มี form (role: form) → อาจเป็น Form
-   - มี expandable rows → อาจเป็น Master-Detail
-   - มี stepper/tabs → อาจเป็น Wizard
-   - มี charts → อาจเป็น Dashboard
-
-⑤ สำรวจ elements เพิ่มเติม (ถ้าต้องการ):
-   → mcp__plugin_playwright_playwright__browser_click
-     (คลิกปุ่ม Add/Edit เพื่อดู form)
-   → mcp__plugin_playwright_playwright__browser_snapshot
-     (จับ snapshot ของ form/dialog ที่เปิด)
-
-⑥ ตรวจสอบ detail grid (ถ้าเป็น Master-Detail):
-   → mcp__plugin_playwright_playwright__browser_click
-     (คลิก row เพื่อ expand)
-   → mcp__plugin_playwright_playwright__browser_snapshot
-     (จับ snapshot ของ detail grid)
-```
-
-**ข้อดีของ MCP เทียบกับ CLI:**
-
-| ความสามารถ | MCP | CLI |
-|-----------|-----|-----|
-| ดู DOM tree + refs | ✅ snapshot ได้ทันที | ❌ ต้องเขียน script |
-| คลิกสำรวจ interactive | ✅ คลิก/กรอกได้เลย | ❌ ต้อง run script |
-| จับ screenshot | ✅ real-time | ⚠️ ต้อง run test |
-| ดู form fields | ✅ เห็น labels, types, refs | ❌ ต้อง parse HTML |
-| ตรวจ detail grid | ✅ expand แล้ว snapshot | ❌ ต้องเขียน script |
-
-**วิเคราะห์จาก Snapshot เพื่อตรวจจับ page type:**
-
-```
-จาก Accessibility Tree:
+จาก Component Analysis:
 
 ถ้าพบ:
-  role: table + role: button[name~=Add|Create|New|เพิ่ม]
-  + role: button[name~=Edit|แก้ไข]
-  + role: button[name~=Delete|ลบ]
+  <Table> + <Button>Add/Create/เพิ่ม</Button>
+  + edit/delete actions per row
   → ประเภท: Master Data CRUD
 
 ถ้าพบ:
-  role: table + rows ที่มี expand icon
-  + ซ้อน table/grid ข้างใน
+  <Table> + expandable rows + nested table/grid
   → ประเภท: Master-Detail Grid
 
 ถ้าพบ:
-  role: form + role: textbox + role: button[name~=Submit|ส่ง|บันทึก]
+  <form> + <input> fields + <Button>Submit/ส่ง/บันทึก</Button>
   ไม่มี table
   → ประเภท: Form
 
 ถ้าพบ:
-  role: tablist หรือ stepper/wizard indicators
+  Stepper/Tabs/Wizard component
   → ประเภท: Multi-step Wizard
 
 ถ้าพบ:
-  charts, metrics, graphs
+  Chart/Graph/Metrics components
   → ประเภท: Dashboard
 ```
 
-**แสดงผลวิเคราะห์ให้ผู้ใช้เห็น:**
+**วิเคราะห์ form fields จาก code:**
 
 ```
-🔍 วิเคราะห์หน้าเว็บ: [URL]
-
-📷 Screenshot: [แสดง screenshot]
-
-📋 Elements ที่พบ:
-   • Table: 1 (15 rows, 5 columns)
-   • Buttons: [Add Product] [Export] [Filter]
-   • Each row: [Edit] [Delete] icons
-   • Pagination: Page 1 of 3
-   • Search: 1 search box
-
-🏷️ ตรวจจับประเภท: Master Data CRUD
-   Confidence: สูง (มีตาราง + CRUD buttons)
-
-⏩ ดำเนินการ brainstorm ต่อ...
-```
-
----
-
-### Step 2A-Extra: สำรวจ Form/Dialog ด้วย MCP
-
-**ถ้าหน้ามีปุ่ม Add/Create → คลิกเปิดเพื่อดู form fields:**
-
-```
-① คลิกปุ่ม Add/Create
-   → mcp__plugin_playwright_playwright__browser_click
-     element: "Add Product button"
-     ref: "[ref from snapshot]"
-
-② จับ snapshot ของ form/dialog
-   → mcp__plugin_playwright_playwright__browser_snapshot
-
-③ วิเคราะห์ form fields:
-   ← ได้: field names, types, labels, required markers
-   เช่น:
-   • textbox "Product Name" (required)
-   • textbox "SKU"
-   • number "Price" (required)
-   • combobox "Category"
-   • file "Image"
-
-④ จับ screenshot ของ form
-   → mcp__plugin_playwright_playwright__browser_take_screenshot
-
-⑤ ปิด form/dialog กลับ
-   → mcp__plugin_playwright_playwright__browser_press_key
-     key: "Escape"
-```
-
-**ข้อมูลจาก form fields → สร้าง test scenarios ที่แม่นยำ:**
-
-```
-จาก form analysis:
+จาก component + validation schema analysis:
   • Product Name (required, text) → test empty, max length, special chars, duplicate
   • SKU (text) → test format, unique constraint
   • Price (required, number) → test 0, negative, max, decimal
@@ -840,31 +734,9 @@ cat "$(dirname "$0")/../skills/qa-ui-test/templates/qa-tracker.json"
 → สร้าง scenarios ที่ตรงกับ fields จริง ไม่ใช่เดา
 ```
 
----
-
-### Step 2B: Fallback — วิเคราะห์ด้วย CLI (ถ้าไม่มี MCP)
-
-**ใช้เฉพาะเมื่อ Playwright MCP ไม่พร้อม:**
-
-```bash
-# Navigate and screenshot using Playwright CLI
-npx playwright test --headed --timeout 10000 -c - <<'EOF'
-import { test } from '@playwright/test';
-test('analyze', async ({ page }) => {
-  await page.goto('[URL]');
-  await page.screenshot({ path: 'qa-analyze.png', fullPage: true });
-});
-EOF
-```
-
-**ตรวจจับประเภทหน้า (จาก screenshot เท่านั้น — แม่นยำน้อยกว่า MCP):**
-
-| Indicator | Page Type |
-|-----------|-----------|
-| table + add/edit/delete buttons | Master Data CRUD |
-| form + submit button | Form |
-| stepper/wizard/multi-step | Wizard |
-| charts/graphs/metrics | Dashboard |
+**Reuse existing helpers:**
+- ก่อนเขียนใหม่ ตรวจ existing helpers (login, API setup) ก่อนเสมอ
+- ห้ามเขียน login flow ใหม่ทุกไฟล์ → import จาก shared fixture
 
 ---
 
@@ -973,32 +845,29 @@ TS-ROLE-{MODULE}-007: [role] ไม่เห็น menu Settings (hidden)
 - disabled → ตรวจว่าปุ่มมีแต่ disabled (กดไม่ได้)
 - server reject → กดปุ่ม → ตรวจ error message "Access Denied"
 
-#### 3c.5: ตรวจสอบด้วย MCP สำหรับแต่ละ role
+#### 3c.5: วิเคราะห์ role permissions จาก code
 
 ```
-วิเคราะห์ว่า role เห็นอะไรในหน้านี้:
+วิเคราะห์ว่า role เห็นอะไรในหน้านี้ (จาก code):
 
-① Login ด้วย role credentials
-   → mcp__plugin_playwright_playwright__browser_navigate (login page)
-   → mcp__plugin_playwright_playwright__browser_fill_form (credentials)
-   → mcp__plugin_playwright_playwright__browser_click (submit)
+① อ่าน authorization config:
+   - C#: [Authorize(Roles = "admin,manager")] attributes
+   - TS: middleware / route guards / useAuth hook
+   - Policy-based auth: AddPolicy("CanDelete", ...) 
 
-② Navigate ไปหน้าเป้าหมาย
-   → mcp__plugin_playwright_playwright__browser_navigate (target URL)
+② อ่าน frontend component ที่ตรวจ role:
+   - {user.role === 'admin' && <DeleteButton />}
+   - v-if="hasPermission('delete')"
+   - canAccess('products.delete')
 
-③ Snapshot เพื่อดูว่า role นี้เห็นอะไร
-   → mcp__plugin_playwright_playwright__browser_snapshot
-   ← วิเคราะห์:
-      - เห็น table? → access granted
-      - เห็นปุ่ม Add? → create allowed
-      - เห็นปุ่ม Edit ที่ disabled? → edit denied (disabled)
-      - ไม่เห็นปุ่ม Delete เลย? → delete denied (hidden)
-      - หน้า redirect ไป login? → access denied
+③ วิเคราะห์ permissions:
+   - เห็น table? → access granted
+   - เห็นปุ่ม Add? → create allowed (ตาม role guard)
+   - ปุ่ม Edit มี disabled condition? → edit denied (disabled)
+   - ปุ่ม Delete ซ่อนตาม role? → delete denied (hidden)
+   - หน้า redirect ตาม auth? → access denied
 
-④ Screenshot เก็บหลักฐาน
-   → mcp__plugin_playwright_playwright__browser_take_screenshot
-
-⑤ Logout แล้วทดสอบ role ถัดไป
+④ Map role → permissions จาก code analysis
 ```
 
 #### 3c.6: Role Permission Matrix Report

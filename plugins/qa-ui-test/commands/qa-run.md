@@ -1,6 +1,6 @@
 ---
 description: รัน QA UI tests — ทีละเคส, ทั้ง module, หรือ parallel ด้วย subagents แบบ long-running agent
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), mcp__plugin_playwright_playwright__*
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 ---
 
 # QA Run — Execute Tests (Long-running Agent Style)

@@ -13,7 +13,10 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 1. **Read qa-tracker.json ก่อนเสมอ** — ดู scenarios ที่มี `advanced` field
 2. **ทำทีละ module** — เหมือน long-running: 1 module per session
 3. **ใช้ Playwright CLI เท่านั้น** — `npx playwright test` สำหรับรัน
-4. **ห้ามใช้ MCP สำหรับรัน test** — MCP ใช้ได้เฉพาะสำรวจหน้าจริงหา selectors
+4. **ห้ามใช้ Chrome MCP / browser automation tools ในทุกขั้นตอน**
+   — หา selectors จาก existing code (e2e/, components/, POM files)
+   — ถ้าหา selector ไม่ได้ → แนะนำ user ใช้ `npx playwright codegen`
+   — Playwright CLI เท่านั้นสำหรับทั้ง generate + run
 5. **Update qa-tracker.json** — ทุกครั้งหลังรัน
 6. **Commit per module** — `qa-advanced(TS-{MODULE}): generate scripts + test`
 
@@ -21,6 +24,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 
 - [ ] qa-tracker.json read?
 - [ ] Only advanced scenarios (with `advanced` field) selected?
+- [ ] **Selectors found from CODE (not browser)?**
+- [ ] **No Chrome MCP / browser tools used?**
 - [ ] Playwright scripts generated per pattern?
 - [ ] Tests run with `npx playwright test` (CLI)?
 - [ ] qa-tracker.json updated (status, runs)?
@@ -29,7 +34,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 
 ### Output Rejection Criteria
 
-- MCP used for running tests → REJECT
+- Chrome MCP / browser automation tools used → REJECT
 - Multiple modules in 1 session → REJECT
 - Scripts created without running → REJECT
 - Status updated without test evidence → REJECT
@@ -99,37 +104,58 @@ npx playwright --version 2>/dev/null
 
 ```
 ถ้า flow_type == "state-machine":
-  → Read references/state-machine-guide.md
+  → Read ${SKILL_ROOT}/references/state-machine-guide.md
 
 ถ้า data_driven == true:
-  → Read references/data-driven-guide.md
+  → Read ${SKILL_ROOT}/references/data-driven-guide.md
 
 ถ้า mocks[] exists:
-  → Read references/network-mock-guide.md
+  → Read ${SKILL_ROOT}/references/network-mock-guide.md
 
 ถ้า serial_group exists:
-  → Read references/state-machine-guide.md (serial section)
+  → Read ${SKILL_ROOT}/references/state-machine-guide.md (serial section)
+
+ถ้าไม่เจอ → ใช้ pattern examples ที่อยู่ใน skill file เอง
 ```
 
 ---
 
-### Step 3: Analyze Page (MCP สำหรับหา selectors เท่านั้น)
+### Step 3: Analyze Selectors (Code-Based — ไม่ใช้ browser)
 
-**ใช้ MCP สำรวจหน้าจริงเพื่อหา selectors:**
+**หา selectors จาก code ตามลำดับ priority:**
 
 ```
-① Login (ถ้าต้อง auth)
-② Navigate ไปหน้า module
-③ Snapshot เพื่อดู elements จริง
-④ จับ actual selectors, field names, button labels
+① อ่าน existing spec files ใน e2e/ → ดู selector patterns ที่ project ใช้
+   - คัดลอก login helper, API setup patterns
+   - ดู selector conventions: getByRole, getByText, locator("#id")
+
+② อ่าน frontend components → src/app/(app)/{module}/
+   - หา data-testid, role, aria-label, className ใน JSX
+   - ดู button labels, form field names, table structure
+
+③ อ่าน Zod schemas / validation → ชื่อ fields ใน schema = ชื่อ fields ใน form
+
+④ อ่าน API hooks → src/hooks/use-{module}.ts
+   - ดู endpoint URLs, payload structure
+   - ใช้สำหรับ API-first test setup
+
+⑤ ดู POM (Page Object Model) files ถ้ามี → reuse selectors
+
+⑥ ถ้าต้องการ selectors ใหม่ที่หาจาก code ไม่ได้ → แนะนำ user รัน:
+   npx playwright codegen http://localhost:3000/{page}
+   แล้วส่ง selectors กลับมาให้ agent
 ```
 
-**สิ่งที่ต้องได้จาก MCP:**
+**สิ่งที่ต้องได้จาก code analysis:**
 - Status badge selectors
 - Action button selectors (submit, approve, ship, cancel)
 - Form field selectors
 - Error message selectors
 - Success message selectors
+
+**Reuse existing helpers:**
+- ก่อนเขียนใหม่ ตรวจ existing helpers (login, API setup) ก่อนเสมอ
+- ห้ามเขียน login flow ใหม่ทุกไฟล์ → import จาก shared fixture
 
 ---
 
@@ -157,6 +183,9 @@ npx playwright --version 2>/dev/null
    - 3 assertion modes (success/error/success_or_error)
 
 2. **variants file** → already exists from qa-create-advanced
+   - ต้องมี `"$schema": "qa-variants-v1"` ที่ต้น file
+   - ทุก variant ต้องมี `name` (kebab-case), `input`, `expected.result`
+   - ดู schema: `references/qa-variants-schema.json`
 
 #### Network Mock Scenarios
 

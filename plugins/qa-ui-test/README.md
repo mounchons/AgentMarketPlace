@@ -2,7 +2,7 @@
 
 > AI-powered QA UI Testing — auto-scan codebase สร้าง scenarios ทีเดียว,
 > multi-agent brainstorm, cascade testing, role-based permission testing,
-> ทำทีละ module เหมือน long-running agent, Playwright MCP + CLI
+> ทำทีละ module เหมือน long-running agent, Playwright CLI only (ไม่ใช้ MCP)
 
 ---
 
@@ -66,22 +66,6 @@
 
 - Node.js 18+
 - Claude Code CLI
-- **Playwright MCP** (แนะนำ): `plugin:playwright:playwright`
-
-### ติดตั้ง Playwright MCP (แนะนำ)
-
-```
-1. เปิด Claude Code
-2. พิมพ์ /mcp
-3. เลือก "Add MCP Server"
-4. เลือก plugin:playwright:playwright
-```
-
-หรือ:
-```bash
-claude mcp add playwright -- npx @anthropic-ai/mcp-playwright
-```
-
 ### ติดตั้ง Playwright CLI (สำหรับรัน tests)
 
 ```bash
@@ -99,7 +83,7 @@ npx playwright install chromium
 |--------|:-----------:|--------|
 | `/qa-create-scenario --auto` | **ไม่ต้อง** | อ่าน source code อย่างเดียว |
 | `/qa-create-scenario --auto --brainstorm-agents` | **ไม่ต้อง** | agents อ่าน code อย่างเดียว |
-| `/qa-create-scenario [URL]` | **ต้อง** | ใช้ MCP เปิดหน้าเว็บจริง |
+| `/qa-create-scenario [URL]` | **ไม่ต้อง** | วิเคราะห์จาก code + brainstorm |
 | `/qa-continue` | **ต้อง** | สร้าง scripts + รัน Playwright test |
 | `/qa-run` | **ต้อง** | รัน Playwright test |
 | `/qa-retest` | **ต้อง** | รัน Playwright test ซ้ำ |
@@ -180,7 +164,7 @@ Agent จะแสดง:
 เลือก: `1` (LOGIN)
 
 Agent จะ:
-1. ใช้ MCP เปิดหน้า Login → snapshot → ดู elements จริง
+1. วิเคราะห์ selectors จาก code (existing specs, components, schemas)
 2. สร้าง Playwright scripts สำหรับ 8 scenarios
 3. รัน tests → แสดงผล
 4. อัพเดท qa-tracker.json
@@ -273,7 +257,7 @@ Dispatch 5 subagents ที่สวมบทบาทต่างกัน (ด
 ```
 1. อ่าน qa-tracker.json → แสดง pending modules
 2. ผู้ใช้เลือก module
-3. ใช้ Playwright MCP เปิดหน้าจริง → snapshot → ดู elements
+3. วิเคราะห์ selectors จาก code (existing specs, components, schemas)
 4. สร้าง Playwright scripts (POM + spec files + test data)
 5. รัน tests ด้วย npx playwright test
 6. อัพเดท qa-tracker.json (status, runs, test_script)
@@ -616,10 +600,10 @@ dotnet run
 | `/qa-run` / `/qa-retest` | **ต้อง** | เปิด browser ทดสอบ |
 | `/qa-edit-scenario` / `/qa-status` / `/qa-explain` | ไม่ | อ่าน/เขียน JSON |
 
-### Q: ต้องติดตั้ง Playwright MCP หรือไม่?
+### Q: ต้องติดตั้ง MCP หรือไม่?
 
-**แนะนำอย่างยิ่ง** — MCP ทำให้ `/qa-continue` วิเคราะห์หน้าจริงได้แม่นยำ (เห็น DOM, field names, selectors)
-ถ้าไม่มี agent จะแจ้งให้ติดตั้ง
+**ไม่ต้อง** — Plugin ใช้ code analysis หา selectors จาก existing specs, components, schemas
+ไม่ต้องใช้ Chrome MCP หรือ Playwright MCP ใดๆ ลด token usage อย่างมาก
 
 ### Q: Credentials มาจากไหน?
 

@@ -109,7 +109,7 @@ $ARGUMENTS
 
   Execution:
     ✅ ใช้: npx playwright test <spec-file> --reporter=json,list
-    ❌ ห้าม: Playwright MCP tools สำหรับรัน test
+    ❌ ห้าม: Chrome MCP / browser automation tools ทุกขั้นตอน
 
 
 ┌──────────────────────────────────────────────────┐
