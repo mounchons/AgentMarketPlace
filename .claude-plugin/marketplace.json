@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -201,6 +201,30 @@
         "internet-research",
         "compliance",
         "competitive-analysis",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
+    },
+    {
+      "name": "bigbrain",
+      "source": "./plugins/bigbrain",
+      "description": "Graph RAG knowledge management — Temporal knowledge graph powered by Graphiti (Neo4j + Ollama), episode-based memory, auto entity/fact extraction, temporal versioning (auto-invalidation), async processing, multi-strategy search (nodes/facts/episodes), interactive graph traversal",
+      "version": "1.1.0",
+      "category": "knowledge",
+      "tags": [
+        "graphiti",
+        "graph-rag",
+        "knowledge-graph",
+        "temporal-versioning",
+        "entity-extraction",
+        "neo4j",
+        "ollama",
+        "mcp",
+        "episodes",
+        "facts",
+        "async-processing",
         "thai"
       ],
       "author": {
