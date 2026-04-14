@@ -252,6 +252,28 @@
       "author": {
         "name": "Mounchons"
       }
+    },
+    {
+      "name": "flow-monitor",
+      "source": "./plugins/flow-monitor",
+      "description": "Interactive dashboard for cross-plugin workflow visualization — two-way data sync with live refresh (SSE), Node.js API server, graph/tree/board/table views, edit from browser, Send to Claude task queue integration",
+      "version": "1.0.0",
+      "category": "dashboard",
+      "tags": [
+        "monitor",
+        "dashboard",
+        "workflow",
+        "graph",
+        "visualization",
+        "live-refresh",
+        "sse",
+        "task-queue",
+        "cross-plugin",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
     }
   ]
 }

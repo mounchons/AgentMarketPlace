@@ -1,0 +1,8 @@
+{
+  "name": "flow-monitor",
+  "description": "Interactive dashboard for cross-plugin workflow visualization with live refresh, editing, and Claude Code task integration",
+  "version": "1.0.0",
+  "author": {
+    "name": "Mounchons"
+  }
+}
