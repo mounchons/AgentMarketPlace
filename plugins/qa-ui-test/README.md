@@ -1,8 +1,10 @@
-# QA UI Test Plugin v2.0.0 — คู่มือการใช้งาน
+# QA UI Test Plugin v2.2.0 — คู่มือการใช้งาน
 
-> AI-powered QA UI Testing — auto-scan codebase สร้าง scenarios ทีเดียว,
-> multi-agent brainstorm, cascade testing, role-based permission testing,
-> ทำทีละ module เหมือน long-running agent, Playwright CLI only (ไม่ใช้ MCP)
+> AI-powered QA UI Testing + **Bug Management System** —
+> auto-scan codebase สร้าง scenarios, multi-agent brainstorm, cascade testing,
+> role-based permission testing, **bug lifecycle (triage → export → verify)**,
+> **integration กับ long-running plugin** (ส่ง bugs เป็น features ให้ dev fix อัตโนมัติ),
+> Playwright CLI only (ไม่ใช้ MCP)
 
 ---
 
@@ -12,7 +14,8 @@
 2. [การติดตั้ง](#2-การติดตั้ง)
 3. [ต้องรันเว็บหรือไม่?](#3-ต้องรันเว็บหรือไม่)
 4. [Quick Start — 3 ขั้นตอน](#4-quick-start--3-ขั้นตอน)
-5. [คำสั่งทั้งหมด (7 คำสั่ง)](#5-คำสั่งทั้งหมด)
+5. [คำสั่งทั้งหมด (13 คำสั่ง — รวม /qa-help)](#5-คำสั่งทั้งหมด)
+   - **Test workflow:**
    - [/qa-create-scenario](#51-qa-create-scenario--สร้าง-scenarios)
    - [/qa-continue](#52-qa-continue--เลือก-module-สร้าง-scripts-รัน-test)
    - [/qa-run](#53-qa-run--รัน-tests)
@@ -20,18 +23,28 @@
    - [/qa-edit-scenario](#55-qa-edit-scenario--แก้ไขเพิ่ม-scenarios)
    - [/qa-status](#56-qa-status--ดูสถานะ)
    - [/qa-explain](#57-qa-explain--อธิบาย-test-plan)
+   - **Bug Management (NEW v2.2):**
+   - [/qa-bug-triage](#58-qa-bug-triage--แปลง-failed--bugs)
+   - [/qa-bug-list](#59-qa-bug-list--ดูรายการ-bugs)
+   - [/qa-bug-export](#510-qa-bug-export--ส่ง-bug--feature-ใหม่)
+   - [/qa-bug-export-subtask](#511-qa-bug-export-subtask--ส่ง-bug--subtask-ของ-feature-เดิม)
+   - [/qa-bug-verify](#512-qa-bug-verify--ยืนยัน-fix-และปิด-bug)
+   - **Help:**
+   - [/qa-help](#513-qa-help--ดูคู่มือการใช้งาน)
 6. [Multi-Agent Brainstorm](#6-multi-agent-brainstorm)
 7. [Role-based Permission Testing](#7-role-based-permission-testing)
 8. [Cascade Testing](#8-cascade-testing)
 9. [ประเภทหน้าที่รองรับ](#9-ประเภทหน้าที่รองรับ)
 10. [Workflow ตัวอย่าง — E-Commerce 4 วัน](#10-workflow-ตัวอย่าง)
 11. [qa-tracker.json — หัวใจของระบบ](#11-qa-trackerjson)
-12. [FAQ — คำถามที่พบบ่อย](#12-faq)
+12. [Bug Management Workflow](#12-bug-management-workflow)
+13. [FAQ — คำถามที่พบบ่อย](#13-faq)
 
 ---
 
 ## 1. ภาพรวม
 
+### Test Workflow
 ```
 /qa-create-scenario --auto          ← สแกน code สร้าง scenarios ทั้งหมด
          │                             (ไม่ต้องรันเว็บ)
@@ -39,10 +52,36 @@
 /qa-continue --module PRODUCT       ← เลือก module → สร้าง scripts → test
          │                             (ต้องรันเว็บ)
          ▼
-/qa-retest --review                 ← แก้ bug → รีเทส → opus review
+/qa-retest --review                 ← รีเทส failed → opus review
          │
          ▼
 /qa-edit-scenario                   ← เพิ่ม scenarios ด้วย brainstorm (เมื่อต้องการ)
+```
+
+### Bug Management Workflow (v2.2 NEW)
+```
+[failed scenarios]
+         │
+         ▼
+/qa-bug-triage                  ← classify (app/test/flaky/env) + severity + reproduction
+         │
+         ▼
+/qa-bug-list                    ← ดู bugs ที่ triage แล้ว
+         │
+         ├─→ /qa-bug-export             ← สร้าง feature ใหม่ใน long-running (epic="bug-fix")
+         │       │
+         │       ▼
+         │   long-running /continue     ← dev หยิบ feature ไป fix
+         │       │
+         │       ▼
+         └─→ /qa-bug-export-subtask     ← agent ค้น feature ที่ตรง → เพิ่ม subtask
+                 │                          (reopen feature ถ้า passes=true)
+                 ▼
+             /qa-bug-verify             ← รีเทส → ปิด bug + sync long-running
+                 │                          ├─ pass: feature.passes=true
+                 │                          └─ fail: bug.status=in_progress, แจ้ง dev
+                 ▼
+             [bug verified / regression watch]
 ```
 
 ### ทำอะไรได้บ้าง
@@ -341,6 +380,144 @@ Dispatch 5 subagents ที่สวมบทบาทต่างกัน (ด
 
 ---
 
+### 5.8 `/qa-bug-triage` — แปลง Failed → Bugs
+
+**ไม่ต้องรันเว็บ** — อ่าน test-results + classify เป็น bug entries
+
+```bash
+/qa-bug-triage                       # triage failed ทั้งหมด
+/qa-bug-triage TS-PRODUCT-003        # เคสเฉพาะ
+/qa-bug-triage --module PRODUCT      # ทั้ง module
+/qa-bug-triage --reclassify          # ตรวจ bug เดิม (เช่น flaky หลังหลายรัน)
+/qa-bug-triage --auto-export         # triage + export ทันที
+```
+
+Agent จะ:
+1. **Auto-classify type:** `app-defect` / `test-issue` / `flaky` / `environment` (จาก error pattern + screenshot + source)
+2. **Auto-derive severity:** `critical` / `high` / `medium` / `low` (จาก scenario priority + module + cascade impact)
+3. **Generate reproduction:** preconditions + steps + expected vs actual
+4. **Root cause hint** (severity ≥ high): opus subagent อ่านโค้ด → suspected files + hypothesis + confidence
+
+---
+
+### 5.9 `/qa-bug-list` — ดูรายการ Bugs
+
+**ไม่ต้องรันเว็บ** — แสดง bugs พร้อม filter, aging, regressions
+
+```bash
+/qa-bug-list                          # default: open bugs sorted by severity
+/qa-bug-list --severity critical,high
+/qa-bug-list --status new,triaged     # ยังไม่ export
+/qa-bug-list --module PRODUCT
+/qa-bug-list BUG-001                  # full detail ของ bug เดียว
+/qa-bug-list --aging 7                # ค้าง > 7 วัน
+/qa-bug-list --regressions            # bugs ที่ reopened
+/qa-bug-list --not-exported           # ยังไม่ส่ง dev
+```
+
+---
+
+### 5.10 `/qa-bug-export` — ส่ง Bug → Feature ใหม่
+
+**ไม่ต้องรันเว็บ** — append bug → `feature_list.json` ของ long-running เป็น **feature ใหม่** (epic="bug-fix")
+
+```bash
+/qa-bug-export BUG-001                       # bug เดียว
+/qa-bug-export BUG-001,BUG-002,BUG-003       # หลาย bugs
+/qa-bug-export --severity critical           # ทุก bug critical
+/qa-bug-export --module PRODUCT
+/qa-bug-export --not-exported                # ที่ยังไม่ส่ง
+/qa-bug-export BUG-001 --dry-run             # preview
+```
+
+**สิ่งที่ Agent ทำ:**
+1. Map bug schema → long-running feature schema
+   - severity → priority + complexity + risk_level + estimated_time + assigned_model
+   - module (qa) → module (long-running) ผ่าน modules.json
+2. Generate subtasks: Reproduce → Investigate (with root_cause_hint) → Fix → Verify → Regression test
+3. References = test-results paths + screenshots + scenario doc
+4. Show **preview ก่อน confirm** — แล้ว append
+5. Sync 2 ทาง: bug.exported_to ↔ feature.linked_bug
+
+**Default skip:**
+- `type == "test-issue"` (QA team แก้เอง)
+- `type == "flaky"` (stabilize test ก่อน)
+- `type == "environment"` (infra)
+
+---
+
+### 5.11 `/qa-bug-export-subtask` — ส่ง Bug → Subtask ของ Feature เดิม
+
+**ไม่ต้องรันเว็บ** — Agent **ค้นหา feature ที่ตรงกับ bug ให้เอง** (ผู้ใช้ไม่ต้องระบุ feature-id)
+
+```bash
+/qa-bug-export-subtask BUG-001               # ค้น feature → เพิ่มเป็น subtask
+/qa-bug-export-subtask BUG-001,BUG-002
+/qa-bug-export-subtask --severity critical
+/qa-bug-export-subtask --module PRODUCT
+/qa-bug-export-subtask BUG-001 --dry-run
+```
+
+**Matching algorithm (agent ทำเอง):**
+- **+50** module match (qa.module ↔ feature.module via modules.json)
+- **+30** description keyword match (bug.title ↔ feature.description)
+- **+15** category alignment (page_type → category)
+- **+10** layer alignment
+- **+15** URL reference match (bug.reproduction.url ↔ feature.references)
+- **+10** recently in_progress / completed (likely regression)
+- **+5** has prior bug-fix subtasks
+- **−30** feature itself is bug-fix (penalty)
+
+แสดง **top 3 candidates** พร้อม score + reasons → user confirm
+- Score ≥ 70 → "RECOMMENDED"
+- Score 40-69 → ปกติ
+- Score < 40 → แจ้งให้ใช้ `/qa-bug-export` แทน
+
+**ถ้า feature.passes=true** → reopen + version_history (audit trail) + แจ้งชัดเจนว่าเป็น regression
+
+---
+
+### 5.12 `/qa-bug-verify` — ยืนยัน Fix และปิด Bug
+
+**ต้องรันเว็บ** — รีเทส scenario ที่ link กับ bug → sync long-running
+
+```bash
+/qa-bug-verify BUG-001                # bug เดียว
+/qa-bug-verify --status fixed         # ทุก bug ที่ dev mark fixed
+/qa-bug-verify --auto-sync            # scan feature_list หา subtask "Verify BUG-XXX" ที่ done=true
+/qa-bug-verify --regression           # sanity check bugs ที่ verified แล้ว
+```
+
+**Auto-sync workflow (เด็ด):**
+1. dev ใน long-running ทำ subtask "Verify BUG-XXX" mark done=true
+2. รัน `/qa-bug-verify --auto-sync`
+3. Agent หา subtask ที่ pattern `/Verify BUG-(\d+)/ && done=true` → รัน Playwright test ทั้งหมด
+4. Pass → bug.status=verified, subtask อื่นๆ done, feature.passes=true
+5. Fail → bug.status=in_progress, แจ้งกลับ dev พร้อม screenshot/trace
+
+---
+
+### 5.13 `/qa-help` — ดูคู่มือการใช้งาน
+
+**ไม่ต้องรันเว็บ** — แสดงคำสั่งทั้งหมด, workflow, ตัวอย่าง พร้อม mode สำหรับ bug management
+
+```bash
+/qa-help                          # ทั้งหมด (12 คำสั่ง + workflows)
+/qa-help bug-export               # คำสั่งเฉพาะ
+/qa-help --quick                  # Quick Start 3 ขั้นตอน
+/qa-help --bugs                   # Bug Management ละเอียด
+/qa-help --workflow               # Workflow ครบวงจร (E2E example)
+/qa-help --integration            # Integration กับ long-running plugin
+```
+
+**Modes:**
+- `--quick` — สำหรับเริ่มต้นใหม่: 3 ขั้นตอน (create → continue → triage)
+- `--bugs` — Bug lifecycle, states, types, severity mapping
+- `--workflow` — End-to-end ตัวอย่าง 3 วัน (Day 1 setup → Day 2 fix → Day 3 verify)
+- `--integration` — อธิบาย data flow qa-tracker.json ↔ feature_list.json + auto-sync loop
+
+---
+
 ## 6. Multi-Agent Brainstorm
 
 ใช้ `--brainstorm-agents` เพื่อให้ 5 subagents ช่วยคิด scenarios:
@@ -589,7 +766,188 @@ dotnet run
 
 ---
 
-## 12. FAQ
+## 12. Bug Management Workflow
+
+### Lifecycle
+
+```
+[failed test]
+    │
+    │ /qa-bug-triage
+    ▼
+[new] ──────► [triaged]
+                │
+                │ /qa-bug-export หรือ /qa-bug-export-subtask
+                ▼
+            [exported] ────────► dev (long-running /continue)
+                                    │
+                                    │ subtask "Verify BUG-XXX" done=true
+                                    ▼
+                                [in_progress]
+                                    │
+                                    │ /qa-bug-verify
+                                    ▼
+                              ┌──────┴──────┐
+                              │             │
+                          test pass     test fail
+                              │             │
+                              ▼             ▼
+                         [verified]   [in_progress]
+                              │             │
+                  (regression │             │ (กลับไปแจ้ง dev)
+                    detect)   │             │
+                              ▼             │
+                          [reopened] ◄──────┘
+```
+
+### Bug States
+
+| State | คำอธิบาย | Owner |
+|-------|---------|-------|
+| `new` | Failed test เพิ่งเกิด ยังไม่ได้ triage | (auto) |
+| `triaged` | Classified แล้ว มี severity + reproduction | QA |
+| `exported` | ส่งไป long-running แล้ว | QA |
+| `in_progress` | Dev กำลัง fix (จาก feature.status) | Dev |
+| `fixed` | Dev บอก fix แล้ว รอ QA verify | Dev |
+| `verified` | QA รี-รันแล้ว pass | QA |
+| `closed` | Bug ปิดถาวร | QA |
+| `reopened` | เคย verified แล้ว fail อีก = regression | (auto) |
+| `wont_fix` | ตัดสินใจไม่ fix | Tech lead |
+
+### Bug Types & Routing
+
+| Type | ส่งไปไหน | คำสั่งแนะนำ |
+|------|---------|------------|
+| `app-defect` | long-running (dev) | `/qa-bug-export` หรือ `/qa-bug-export-subtask` |
+| `test-issue` | QA team (selector/script ผิด) | `/qa-edit-scenario` |
+| `flaky` | QA team (stabilize) | `/qa-edit-scenario` + เพิ่ม wait |
+| `environment` | Infra/DevOps | (manual) |
+
+### Severity & Priority Mapping
+
+| Bug Severity | LR Priority | LR Complexity | LR Risk | LR Model | Est. Time |
+|--------------|-------------|---------------|---------|----------|-----------|
+| 🔴 critical | high | complex | high | opus | 60min |
+| 🟠 high | high | medium | medium | opus | 45min |
+| 🟡 medium | medium | medium | low | sonnet | 30min |
+| ⚪ low | low | simple | low | sonnet | 20min |
+
+### ตัวอย่าง End-to-End Flow
+
+```
+วันที่ 1: QA test ครั้งแรก
+─────────────────────────────────
+$ dotnet run                              # terminal 1
+$ /qa-create-scenario --auto              # สร้าง 156 scenarios
+$ /qa-continue --module PRODUCT           # 11/13 passed (2 failed)
+
+วันที่ 1 (ต่อ): Triage + Export
+─────────────────────────────────
+$ /qa-bug-triage --module PRODUCT
+  → BUG-001: PRODUCT — Create form validation missing (high, app-defect)
+  → BUG-002: PRODUCT — Edit grid sync broken (medium, app-defect)
+
+$ /qa-bug-export --severity high
+  → BUG-001 → feature_list.json#15 (epic="bug-fix", opus)
+  → Subtasks: Reproduce → Investigate → Fix → Verify → Regression test
+
+$ /qa-bug-export-subtask BUG-002
+  → Agent ค้น match: feature #7 (POST /api/products) score 72
+  → Confirm → BUG-002 → feature_list.json#7.4 (subtask)
+
+วันที่ 2: Dev fix (long-running)
+─────────────────────────────────
+$ /continue                                # long-running
+  → หยิบ feature #15 (BUG-001 fix)
+  → ทำ subtask 15.1 → 15.4
+  → mark subtask 15.5 (Verify BUG-001) done=true หลังเชื่อว่า fix แล้ว
+
+วันที่ 2 (ต่อ): Verify (qa-ui-test)
+─────────────────────────────────
+$ /qa-bug-verify --auto-sync               # หา subtask done ที่ verify bug
+  → BUG-001: TS-PRODUCT-003 Run #4 ✅ PASSED
+    └ feature #15.passes = true
+    └ bug.status = verified
+    └ Time-to-fix: 4.2 hours
+
+  → BUG-002: TS-PRODUCT-008 Run #4 ❌ FAILED at step 5
+    └ feature #7 ยัง in_progress (subtask 7.5 รอ verify ผ่าน)
+    └ bug.status = in_progress
+    └ ส่ง screenshot กลับ dev
+
+วันที่ 3: Regression check
+─────────────────────────────────
+$ /qa-bug-verify --regression              # รี-รัน verified bugs
+  → BUG-001 ยัง pass ✅
+  → ถ้า fail → reopen อัตโนมัติ
+```
+
+### qa-tracker.json — bug schema (v1.5)
+
+```json
+{
+  "bugs": [{
+    "id": "BUG-001",
+    "title": "PRODUCT — Create form validation missing",
+    "severity": "high",
+    "type": "app-defect",
+    "status": "verified",
+    "linked_scenario": "TS-PRODUCT-003",
+    "linked_runs": [1, 4],
+    "module": "PRODUCT",
+    "page_type": "master-data",
+    "discovered_at": "2026-05-01T10:00:00Z",
+
+    "evidence": {
+      "failed_step": "Step 4: Verify validation error",
+      "error_message": "Timeout waiting for [role=alert]",
+      "screenshots": ["test-results/TS-PRODUCT-003/run-001/screenshots/04-error.png"],
+      "trace_path": "test-results/TS-PRODUCT-003/run-001/trace.zip",
+      "report_path": "test-results/TS-PRODUCT-003/run-001/test-report.md"
+    },
+
+    "reproduction": {
+      "url": "/admin/products",
+      "preconditions": ["Login as admin@test.com"],
+      "steps": ["Navigate to /admin/products", "Click '+ New'", "Submit empty form"],
+      "expected": "Validation error 'Name is required' shown",
+      "actual": "Form submits silently"
+    },
+
+    "root_cause_hint": {
+      "suspected_files": ["src/Controllers/ProductController.cs:42"],
+      "hypothesis": "ModelState.IsValid check missing",
+      "confidence": 0.78,
+      "generated_by": "opus"
+    },
+
+    "exported_to": {
+      "target": "long-running",
+      "feature_id": 15,
+      "subtask_id": null,
+      "exported_at": "2026-05-01T11:00:00Z",
+      "export_mode": "new-feature"
+    },
+
+    "fix_info": {
+      "verified_in_run": 4,
+      "verified_at": "2026-05-01T15:12:00Z",
+      "regression_tests_added": ["TS-PRODUCT-014"]
+    },
+
+    "history": [
+      { "timestamp": "2026-05-01T10:00:00Z", "action": "discovered", "to_status": "new" },
+      { "timestamp": "2026-05-01T10:30:00Z", "action": "triaged", "to_status": "triaged" },
+      { "timestamp": "2026-05-01T11:00:00Z", "action": "exported", "to_status": "exported" },
+      { "timestamp": "2026-05-01T15:12:00Z", "action": "verified", "to_status": "verified" }
+    ]
+  }]
+}
+```
+
+---
+
+## 13. FAQ
 
 ### Q: ต้องรันเว็บก่อนหรือไม่?
 
@@ -644,6 +1002,24 @@ dotnet run
 cp plugins/qa-ui-test/skills/qa-ui-test/templates/github-actions-ui-test.yml \
    .github/workflows/ui-test.yml
 ```
+
+### Q: Bug Management (v2.2) ต่างจากเดิมยังไง?
+
+**เดิม (v2.0):** เมื่อ test fail → status="failed" ใน scenario เท่านั้น dev ต้องอ่าน test-results เอง
+**ใหม่ (v2.2):** Failed → triage เป็น bug entry (severity, type, reproduction, root cause hint) → export ไป long-running เป็น feature/subtask ให้ `/continue` หยิบไป fix → /qa-bug-verify ปิด loop อัตโนมัติ
+
+### Q: ต่าง /qa-bug-export กับ /qa-bug-export-subtask ยังไง?
+
+| | `/qa-bug-export` | `/qa-bug-export-subtask` |
+|--|-----------------|-------------------------|
+| **ผลลัพธ์** | feature ใหม่ใน long-running | subtask ของ feature เดิม |
+| **Agent ค้น feature?** | ไม่ต้อง (สร้างใหม่) | **ใช่ — auto match** ผู้ใช้ไม่ต้องรู้ feature-id |
+| **Reopen ถ้า passes?** | ไม่ (feature ใหม่ pending) | **ใช่ — เพิ่ม version_history** |
+| **เหมาะกับ** | bug ที่ไม่ตรง feature ใด / scope ใหญ่ | regression ของ feature ที่เพิ่งทำเสร็จ |
+
+### Q: ทำไม `/qa-bug-export-subtask` ไม่รับ feature-id?
+
+เพราะ user ไม่จำเป็นต้องรู้ — agent ใช้ heuristic 8 อย่าง (module, description keyword, category, layer, URL ref, recently active, prior bugs, penalty) ให้ score แล้วโชว์ top 3 ให้ confirm ถ้า score < 40 → แนะนำใช้ `/qa-bug-export` แทน
 
 ### Q: รองรับ technology อะไรบ้าง?
 

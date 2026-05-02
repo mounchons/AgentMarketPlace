@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -152,12 +152,18 @@
     {
       "name": "qa-ui-test",
       "source": "./plugins/qa-ui-test",
-      "description": "QA UI Testing ด้วย Playwright CLI — auto-scan codebase สร้าง scenarios ทีเดียว, /qa-continue ทำทีละ module เหมือน long-running, cascade testing, role-based testing, parallel subagents, opus review รองรับ Master Data CRUD, Master-Detail Grid + Advanced patterns: state-machine flow testing, data-driven parameterized tests, network mocking (API error/timeout/retry), serial test orchestration",
-      "version": "2.1.0",
+      "description": "QA UI Testing + Bug Management — Playwright CLI test automation พร้อม bug lifecycle (triage → export → verify), integration กับ long-running plugin (export bug เป็น feature/subtask ให้ /continue หยิบไป fix อัตโนมัติ), auto-classify (app-defect/test-issue/flaky/env), severity-based priority mapping, agent-driven feature matching, auto-sync verify loop, root cause hint จาก opus, master data CRUD, master-detail grid, cascade testing, role-based testing, multi-agent brainstorm, /qa-help guide",
+      "version": "2.2.0",
       "category": "testing",
       "tags": [
         "qa",
         "ui-testing",
+        "bug-management",
+        "bug-tracking",
+        "bug-lifecycle",
+        "long-running-integration",
+        "auto-sync",
+        "regression-detection",
         "playwright",
         "playwright-cli",
         "e2e",
@@ -166,6 +172,7 @@
         "master-data",
         "master-detail",
         "crud-testing",
+        "cascade-testing",
         "state-machine",
         "data-driven",
         "network-mock",
@@ -173,7 +180,7 @@
         "brainstorming",
         "parallel-agents",
         "opus-review",
-        "long-running",
+        "root-cause-analysis",
         "thai"
       ],
       "author": {

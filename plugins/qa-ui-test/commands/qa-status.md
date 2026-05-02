@@ -17,10 +17,11 @@ allowed-tools: Bash(*), Read(*), Glob(*), Grep(*)
 ## Input ที่ได้รับ
 
 ```
-/qa-status                          # ภาพรวมทั้งหมด
+/qa-status                          # ภาพรวมทั้งหมด (รวม bugs)
 /qa-status --module LOGIN           # เฉพาะ module
 /qa-status --failed                 # เฉพาะ failed
 /qa-status --review                 # สถานะ review
+/qa-status --bugs                   # focus bug management view
 $ARGUMENTS
 ```
 
@@ -148,16 +149,97 @@ ls test-scenarios/TS-*.md 2>/dev/null | wc -l
 
 ---
 
+### Step 6b: Bug Management Summary (NEW)
+
+```
+🐛 Bug Management:
+┌─────────────────────────────────────────────────────┐
+│  Total: T | Open: O | Verified: V | Closed: C       │
+│                                                      │
+│  By Severity:                                        │
+│  🔴 Critical: 2  🟠 High: 5  🟡 Medium: 8  ⚪ Low: 3  │
+│                                                      │
+│  By Status:                                          │
+│  🆕 New: 1  📋 Triaged: 3  🚀 Exported: 6           │
+│  🔧 In progress: 4  ✅ Fixed: 2  ✓ Verified: 15     │
+│                                                      │
+│  By Type:                                            │
+│  🐞 App defect: 14  🧪 Test issue: 2                 │
+│  🌀 Flaky: 1  🔧 Environment: 1                      │
+│                                                      │
+│  ⏰ Aging: oldest open bug = 12 days                  │
+│  🔗 Exported to long-running: 6 bugs (3 features,    │
+│     3 subtasks)                                      │
+│  🔄 Regressions: 2 (BUG-001, BUG-007)                │
+│  ⚡ Avg time-to-fix: 2.1 hours                        │
+└─────────────────────────────────────────────────────┘
+
+🚨 Action needed:
+   - 2 critical bugs ยังไม่ export → /qa-bug-export --severity critical
+   - 1 bug ค้าง > 7 วัน → /qa-bug-list --aging 7
+   - 4 bugs status=fixed รอ verify → /qa-bug-verify --status fixed
+```
+
+---
+
+### Step 6c: Bug Detail View (เมื่อ --bugs)
+
+```
+🐛 Bug Management — Detailed View
+
+📊 Pipeline (visual):
+
+  failed test     bugs[]        long-running
+   scenarios  →   triaged   →   exported     →   verified
+                                                      │
+                                                      ↓
+                                               regression watch
+
+  [40 failed] → [25 triaged] → [12 exported] → [15 verified]
+                  ↓ 2 closed       ↓ 4 in_progress
+                  ↓ 1 wont_fix     ↓ 2 fixed (รอ verify)
+
+📈 Trends (7 days):
+   New bugs:      ████████░░░░  8
+   Verified:      ██████████░░  10
+   Reopened:      ██░░░░░░░░░░  2
+   Net open:      -2 (improving 📉)
+
+🔝 Top modules by bug count:
+   1. PRODUCT  — 8 bugs (3 critical)
+   2. ORDER    — 6 bugs (1 critical)
+   3. CHECKOUT — 4 bugs
+
+🔝 Recurring failures:
+   1. TS-CHECKOUT-002 — failed 4 times (regression hotspot)
+   2. TS-PRODUCT-009  — flaky (3/5 pass rate)
+
+📦 Export status:
+   Method            | Count | Avg time-to-fix
+   new-feature       |   8   | 3.2 hours
+   subtask           |   4   | 1.8 hours
+   not-yet-exported  |   3   | (open avg: 2 days)
+
+🔜 Suggestions:
+   /qa-bug-export --severity critical    # 2 critical ยังไม่ส่ง dev
+   /qa-bug-verify --status fixed          # 2 bugs รอ verify
+   /qa-bug-list --aging 7                 # 1 bug ค้างนาน
+```
+
+---
+
 ### Step 7: Recommendations
 
 ```
 💡 Recommended Next Actions:
 
 1. 🔄 /qa-retest --failed          — รีเทส Y failed scenarios
-2. 📝 /qa-create-scenario --module PAYMENT  — ยังไม่มี scenarios สำหรับ module นี้
-3. 🔍 /qa-retest --review          — ส่ง opus review X scenarios
-4. ✏️ /qa-edit-scenario TS-ORDER-005 — แก้ไขเคสที่ logic เปลี่ยน
-5. 📊 /qa-explain --module ORDER    — ดู test plan flowchart
+2. 🐛 /qa-bug-triage               — แปลง failed → bugs (X failed ยังไม่ triage)
+3. 🚀 /qa-bug-export --severity critical  — ส่ง dev: 2 critical bugs
+4. ✓ /qa-bug-verify --status fixed — verify: 2 bugs ที่ dev mark fixed
+5. 📝 /qa-create-scenario --module PAYMENT  — ยังไม่มี scenarios
+6. ✏️ /qa-edit-scenario TS-ORDER-005 — แก้ไขเคสที่ logic เปลี่ยน
+7. 📊 /qa-explain --module ORDER    — ดู test plan flowchart
 ```
 
 ---

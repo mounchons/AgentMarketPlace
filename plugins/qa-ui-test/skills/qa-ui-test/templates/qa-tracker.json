@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4.0",
+  "schema_version": "1.5.0",
   "project": "",
   "base_url": "http://localhost:3000",
   "technology": "",
@@ -8,6 +8,7 @@
     "scenario_creator": "sonnet",
     "test_runner": "sonnet",
     "reviewer": "opus",
+    "bug_triager": "opus",
     "assignment_strategy": {
       "auto_assign_rules": [
         { "condition": "type == 'state-machine'", "assign": "opus" },
@@ -33,7 +34,102 @@
     "last_run": null,
     "pass_rate": "0%"
   },
+  "bug_summary": {
+    "total_bugs": 0,
+    "by_severity": { "critical": 0, "high": 0, "medium": 0, "low": 0 },
+    "by_status": {
+      "new": 0,
+      "triaged": 0,
+      "exported": 0,
+      "in_progress": 0,
+      "fixed": 0,
+      "verified": 0,
+      "closed": 0,
+      "reopened": 0,
+      "wont_fix": 0
+    },
+    "by_type": {
+      "app-defect": 0,
+      "test-issue": 0,
+      "flaky": 0,
+      "environment": 0
+    },
+    "open_bugs": 0,
+    "exported_bugs": 0,
+    "verified_bugs": 0,
+    "avg_time_to_fix_hours": null,
+    "oldest_open_bug_age_days": null,
+    "last_triage": null
+  },
   "modules": [],
   "page_types": ["form", "master-data", "master-detail", "wizard", "dashboard", "search", "state-machine", "data-driven", "network-mock"],
-  "scenarios": []
+  "scenarios": [],
+  "bugs": [],
+  "_bug_schema_reference": {
+    "_comment": "Reference schema for bug entries. Remove this key in production.",
+    "id": "BUG-001",
+    "title": "Short, action-oriented bug title",
+    "severity": "critical|high|medium|low",
+    "type": "app-defect|test-issue|flaky|environment",
+    "status": "new|triaged|exported|in_progress|fixed|verified|closed|reopened|wont_fix",
+    "linked_scenario": "TS-MODULE-NNN",
+    "linked_runs": [1, 2],
+    "module": "MODULE_NAME",
+    "page_type": "form|master-data|master-detail|...",
+    "discovered_at": "ISO8601",
+    "last_updated": "ISO8601",
+    "evidence": {
+      "failed_step": "Step N: description",
+      "error_message": "Full error from Playwright",
+      "screenshots": ["test-results/TS-XXX/run-NNN/screenshots/04-error.png"],
+      "trace_path": "test-results/TS-XXX/run-NNN/trace.zip",
+      "report_path": "test-results/TS-XXX/run-NNN/test-report.md"
+    },
+    "reproduction": {
+      "url": "/admin/products",
+      "preconditions": ["Login as admin@test.com"],
+      "steps": [
+        "1. Navigate to /admin/products",
+        "2. Click '+ New' button",
+        "3. Submit empty form"
+      ],
+      "expected": "Validation error 'Name is required' shown",
+      "actual": "Form submits or no error shown"
+    },
+    "environment": {
+      "browser": "chromium",
+      "viewport": "1280x720",
+      "base_url": "http://localhost:3000",
+      "os": "win32"
+    },
+    "root_cause_hint": {
+      "suspected_files": ["src/Controllers/ProductController.cs:42"],
+      "hypothesis": "ModelState validation missing before SaveChanges",
+      "confidence": 0.75,
+      "generated_by": "opus|sonnet|manual"
+    },
+    "exported_to": {
+      "target": "long-running|github-issue|jira|null",
+      "feature_id": null,
+      "subtask_id": null,
+      "issue_url": null,
+      "exported_at": null,
+      "export_mode": "new-feature|subtask"
+    },
+    "fix_info": {
+      "assignee": null,
+      "fix_commit": null,
+      "fix_pr": null,
+      "fixed_at": null,
+      "verified_in_run": null,
+      "verified_at": null,
+      "regression_tests_added": []
+    },
+    "history": [
+      { "timestamp": "ISO8601", "action": "discovered", "by": "qa-run", "from_status": null, "to_status": "new" },
+      { "timestamp": "ISO8601", "action": "triaged", "by": "qa-bug-triage", "from_status": "new", "to_status": "triaged" },
+      { "timestamp": "ISO8601", "action": "exported", "by": "qa-bug-export", "from_status": "triaged", "to_status": "exported" }
+    ],
+    "notes": ""
+  }
 }
