@@ -1,7 +1,7 @@
 {
   "name": "qa-ui-test",
-  "version": "2.2.0",
-  "description": "QA UI Testing + Bug Management — Playwright-based test automation พร้อม bug lifecycle (triage → export → verify), integration กับ long-running plugin (ส่ง bugs เป็น features ให้ /continue หยิบไป fix), multi-agent brainstorm, role-based + cascade testing, master-data CRUD, master-detail grid, opus review",
+  "version": "2.3.0",
+  "description": "QA UI Testing + Bug Management — Playwright-based test automation พร้อม bug lifecycle (triage → export → verify), integration กับ long-running plugin (ส่ง bugs เป็น features ให้ /continue หยิบไป fix), idempotent multi-pass scenario creation, auto-template selection (cascade + approval workflow detection), Playwright CLI guide, multi-agent brainstorm, role-based + cascade testing, master-data CRUD, master-detail grid, opus review",
   "author": {
     "name": "Mounchons"
   }
