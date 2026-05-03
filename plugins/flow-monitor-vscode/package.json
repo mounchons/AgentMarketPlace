@@ -1,0 +1,155 @@
+{
+  "name": "flow-monitor-vscode",
+  "displayName": "Flow Monitor",
+  "description": "Cross-plugin workflow visualizer (design ⇄ mockup ⇄ feature ⇄ qa) with AI agent quick actions",
+  "version": "0.1.0",
+  "publisher": "mounchons",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "workflow",
+    "graph",
+    "ai-agent"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "workspaceContains:**/feature_list.json",
+    "workspaceContains:**/design_doc_list.json",
+    "workspaceContains:**/.mockups/mockup_list.json",
+    "workspaceContains:**/qa-tracker.json"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "flow-monitor",
+          "title": "Flow Monitor",
+          "icon": "resources/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "flow-monitor": [
+        {
+          "id": "flowMonitor.sources",
+          "name": "Sources",
+          "icon": "resources/sidebar-icon.svg",
+          "contextualTitle": "Flow Monitor"
+        },
+        {
+          "id": "flowMonitor.activity",
+          "name": "Recent Activity"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "flowMonitor.openGraph",
+        "title": "Open Flow Graph",
+        "category": "Flow Monitor",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "flowMonitor.refresh",
+        "title": "Reload All Sources",
+        "category": "Flow Monitor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "flowMonitor.openSourceFile",
+        "title": "Open Source JSON",
+        "category": "Flow Monitor",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "flowMonitor.sendToAgent",
+        "title": "Send Selected Node to Claude Code",
+        "category": "Flow Monitor"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "flowMonitor.openGraph",
+          "when": "view == flowMonitor.sources",
+          "group": "navigation@1"
+        },
+        {
+          "command": "flowMonitor.refresh",
+          "when": "view == flowMonitor.sources",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "flowMonitor.openSourceFile",
+          "when": "view == flowMonitor.sources && viewItem == sourceFile",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Flow Monitor",
+      "properties": {
+        "flowMonitor.paths.design": {
+          "type": "string",
+          "default": "design_doc_list.json",
+          "description": "Workspace-relative path to design_doc_list.json"
+        },
+        "flowMonitor.paths.mockup": {
+          "type": "string",
+          "default": ".mockups/mockup_list.json",
+          "description": "Workspace-relative path to mockup_list.json"
+        },
+        "flowMonitor.paths.feature": {
+          "type": "string",
+          "default": "feature_list.json",
+          "description": "Workspace-relative path to feature_list.json"
+        },
+        "flowMonitor.paths.qa": {
+          "type": "string",
+          "default": "qa-tracker.json",
+          "description": "Workspace-relative path to qa-tracker.json"
+        },
+        "flowMonitor.activityLogs": {
+          "type": "array",
+          "default": [
+            ".brain/activity-log.json",
+            ".bigbrain/activity-log.json",
+            ".agent/progress.md"
+          ],
+          "description": "Workspace-relative paths to activity log files"
+        },
+        "flowMonitor.terminal.name": {
+          "type": "string",
+          "default": "Claude Code",
+          "description": "Name of the terminal that hosts Claude Code (substring match)"
+        },
+        "flowMonitor.terminal.spawnIfMissing": {
+          "type": "boolean",
+          "default": true,
+          "description": "If no Claude terminal is found, create a new terminal and run 'claude'"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.24.0"
+  }
+}

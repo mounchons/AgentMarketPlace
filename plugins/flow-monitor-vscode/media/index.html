@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="{{CSP}}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow Monitor</title>
+
+  <!-- Bundled vendor assets (no CDN per webview CSP) -->
+  <link rel="stylesheet" href="{{TAILWIND}}">
+  <link rel="stylesheet" href="{{TRACKER_STYLE}}">
+  <link rel="stylesheet" href="{{FLOW_CSS}}">
+
+  <script src="{{CYTOSCAPE}}"></script>
+  <script src="{{DAGRE}}"></script>
+  <script src="{{CYTOSCAPE_DAGRE}}"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 overflow-hidden h-screen">
+
+  <!-- Skip landing screen — extension always loads from workspace.
+       Stubs below exist only to prevent TypeError in tracker-editor.js DOMContentLoaded handler
+       (which references landing/btn-demo/file-input-all/drop-* elements). -->
+  <div id="landing" class="hidden" style="display:none">
+    <div id="drop-design" class="drop-zone"><span id="status-design"></span></div>
+    <div id="drop-mockup" class="drop-zone"><span id="status-mockup"></span></div>
+    <div id="drop-feature" class="drop-zone"><span id="status-feature"></span></div>
+    <div id="drop-qa" class="drop-zone"><span id="status-qa"></span></div>
+    <input type="file" id="file-input-all">
+    <button id="btn-demo"></button>
+  </div>
+
+  <div id="app" class="h-screen">
+    <div class="app-layout">
+
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <h2 class="text-lg font-bold text-white truncate">Flow Monitor</h2>
+          <button id="btn-reload" class="text-indigo-300 hover:text-white transition" title="Reload">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+
+        <div id="project-info" class="sidebar-section">
+          <div class="sidebar-label">Workspace</div>
+          <div id="project-name" class="text-sm text-indigo-200 truncate">—</div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-label">Views</div>
+          <nav class="sidebar-nav">
+            <button class="sidebar-nav-item active" data-view="graph">Graph</button>
+            <button class="sidebar-nav-item" data-view="tree">Tree</button>
+            <button class="sidebar-nav-item" data-view="board">Board</button>
+            <button class="sidebar-nav-item" data-view="table">Table</button>
+          </nav>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-label">Sources</div>
+          <div class="flex flex-col gap-1">
+            <label class="source-toggle">
+              <input type="checkbox" checked data-source-filter="design">
+              <span class="source-dot bg-indigo-500"></span>
+              <span>Design Doc</span>
+              <span class="source-count" id="count-design">0</span>
+            </label>
+            <label class="source-toggle">
+              <input type="checkbox" checked data-source-filter="mockup">
+              <span class="source-dot bg-emerald-500"></span>
+              <span>Mockup</span>
+              <span class="source-count" id="count-mockup">0</span>
+            </label>
+            <label class="source-toggle">
+              <input type="checkbox" checked data-source-filter="feature">
+              <span class="source-dot bg-amber-500"></span>
+              <span>Feature</span>
+              <span class="source-count" id="count-feature">0</span>
+            </label>
+            <label class="source-toggle">
+              <input type="checkbox" checked data-source-filter="qa">
+              <span class="source-dot bg-rose-500"></span>
+              <span>QA</span>
+              <span class="source-count" id="count-qa">0</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-label">Statistics</div>
+          <div class="stats-grid">
+            <div class="stat-item"><span class="stat-value" id="stat-nodes">0</span><span class="stat-label">Nodes</span></div>
+            <div class="stat-item"><span class="stat-value" id="stat-edges">0</span><span class="stat-label">Edges</span></div>
+            <div class="stat-item"><span class="stat-value" id="stat-orphans">0</span><span class="stat-label">Orphans</span></div>
+            <div class="stat-item"><span class="stat-value" id="stat-sync">0%</span><span class="stat-label">Synced</span></div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-label">Activity</div>
+          <div id="activity-timeline" class="activity-timeline"></div>
+        </div>
+
+        <div id="dirty-indicator" class="hidden sidebar-footer">
+          <span class="text-amber-400 text-xs">Unsaved changes</span>
+        </div>
+      </aside>
+
+      <div class="main-content">
+        <header class="topbar">
+          <div class="topbar-left">
+            <input type="text" id="search-input" placeholder="Search nodes..." class="topbar-search">
+            <select id="filter-status" class="topbar-select">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="passed">Passed</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Failed</option>
+              <option value="draft">Draft</option>
+            </select>
+            <select id="filter-layer" class="topbar-select">
+              <option value="">All Layers</option>
+              <option value="presentation">Presentation</option>
+              <option value="application">Application</option>
+              <option value="domain">Domain</option>
+              <option value="infrastructure">Infrastructure</option>
+              <option value="cross-cutting">Cross-Cutting</option>
+            </select>
+          </div>
+          <div class="topbar-right">
+            <span id="sse-indicator" class="sse-dot connected" title="Live workspace sync"></span>
+            <button id="btn-layout-toggle" class="topbar-btn" title="Toggle layout">
+              <span id="layout-dir-label">Fish</span>
+            </button>
+            <button id="btn-fit" class="topbar-btn" title="Fit graph">⤢</button>
+            <button id="btn-add-node" class="topbar-btn btn-accent" title="Add node">+ Add</button>
+            <button id="btn-save-all" class="topbar-btn" title="Save all changes">Save</button>
+          </div>
+        </header>
+
+        <div class="view-area">
+          <div id="view-graph" class="view-container active"><div id="cy" class="w-full h-full"></div></div>
+          <div id="view-tree" class="view-container"><div id="tree-root" class="p-4 overflow-auto h-full"></div></div>
+          <div id="view-board" class="view-container"><div id="board-root" class="p-4 overflow-auto h-full"></div></div>
+          <div id="view-table" class="view-container"><div id="table-root" class="p-4 overflow-auto h-full"></div></div>
+        </div>
+      </div>
+
+      <aside id="detail-panel" class="detail-panel hidden">
+        <div class="detail-header">
+          <h3 id="detail-title" class="text-lg font-semibold truncate">—</h3>
+          <div class="flex items-center gap-2">
+            <button id="btn-edit-node" class="detail-btn" title="Edit">✎</button>
+            <button id="btn-close-panel" class="detail-btn" title="Close">×</button>
+          </div>
+        </div>
+        <div id="detail-body" class="detail-body"></div>
+
+        <!-- Quick Action Bar (AI agent) -->
+        <div id="quick-action-bar" class="quick-action-bar hidden">
+          <div class="quick-action-label">⚡ Send to Claude Code</div>
+          <div id="quick-action-list" class="quick-action-list"></div>
+        </div>
+      </aside>
+
+      <!-- Context Menu (right-click on node) -->
+      <div id="ctx-menu" class="ctx-menu hidden">
+        <div class="ctx-menu-header">Quick actions</div>
+        <div id="ctx-menu-items"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order matters: vscode bridge → tracker app → views → editor → integration -->
+  <script src="{{FLOW_BRIDGE}}"></script>
+  <script src="{{TRACKER_APP}}"></script>
+  <script src="{{TRACKER_VIEWS}}"></script>
+  <script src="{{TRACKER_EDITOR}}"></script>
+  <script src="{{FLOW_JS}}"></script>
+</body>
+</html>

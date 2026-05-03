@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.8.0",
+    "version": "1.9.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -282,7 +282,7 @@
     {
       "name": "flow-monitor",
       "source": "./plugins/flow-monitor",
-      "description": "Interactive dashboard for cross-plugin workflow visualization — two-way data sync with live refresh (SSE), Node.js API server, graph/tree/board/table views, edit from browser, Send to Claude task queue integration",
+      "description": "Interactive dashboard for cross-plugin workflow visualization — two-way data sync with live refresh (SSE), Node.js API server, graph/tree/board/table views, edit from browser, Send to Claude task queue integration. Companion VSCode extension available at ./plugins/flow-monitor-vscode/",
       "version": "1.0.0",
       "category": "dashboard",
       "tags": [
@@ -295,6 +295,28 @@
         "sse",
         "task-queue",
         "cross-plugin",
+        "vscode-companion",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
+    },
+    {
+      "name": "flow-monitor-vscode",
+      "source": "./plugins/flow-monitor-vscode",
+      "description": "VSCode Extension companion สำหรับ flow-monitor plugin — แสดง cross-plugin workflow visualizer (design ⇄ mockup ⇄ feature ⇄ qa) ใน VSCode sidebar พร้อม AI agent quick actions, auto-activate เมื่อพบ feature_list.json/design_doc_list.json/mockup_list.json/qa-tracker.json. ⚠ ติดตั้งผ่าน VSCode .vsix ไม่ใช่ Claude Code",
+      "version": "0.1.0",
+      "category": "vscode-extension",
+      "tags": [
+        "vscode-extension",
+        "flow-monitor",
+        "companion",
+        "workflow-visualizer",
+        "cross-plugin",
+        "ai-agent",
+        "sidebar",
+        "auto-activate",
         "thai"
       ],
       "author": {
