@@ -39,6 +39,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 ```
 /qa-create-scenario --auto                    # สแกน codebase สร้างทุกหน้าทีเดียว (แนะนำ)
 /qa-create-scenario --auto --tech dotnet      # ระบุ technology
+/qa-create-scenario --auto --explain-templates # แสดง decision report เท่านั้น (ไม่สร้าง)
+/qa-create-scenario --auto --override "/admin/products=master-detail"  # บังคับ template
 /qa-create-scenario [URL]                     # manual: brainstorm ทีละหน้า
 /qa-create-scenario --module [MODULE] --url [URL]
 /qa-create-scenario --master-data --url [URL]
@@ -71,13 +73,13 @@ Prompt:
    - Angular: *.component.ts + routing
    - Vue: views/*.vue + router
 
-2. จำแนกแต่ละหน้าเป็นประเภท:
+2. จำแนกแต่ละหน้าเป็นประเภท (ตาม test-templates.md):
+   - login: authentication page (password input + submit)
    - master-data: มี table + CRUD actions
-   - master-detail: มี parent-child relationship
-   - form: มี form + submit
-   - wizard: มี multi-step
-   - dashboard: มี charts/metrics
-   - login: authentication page
+   - master-detail: มี parent-child relationship + expandable rows
+   - form: มี form + submit (no table)
+   - wizard: มี stepper/multi-step component
+   - dashboard: มี charts/metrics (read-only)
 
 3. หา roles + credentials:
    - Seed data files (SeedData.cs, seed.sql, seeds/)
@@ -86,11 +88,34 @@ Prompt:
    - Identity/Auth configuration (roles, claims)
    - Authorization attributes ([Authorize(Roles='Admin')])
 
-4. หา data relationships (cascade):
+4. ⭐ MUST-HAVE #1 — หา Cross-page Master Data (Cascade):
    - Entity Framework: navigation properties, OnDelete behavior
    - Database: foreign keys, cascade rules
    - Which master tables are referenced by detail tables?
    - Which dropdowns/lookups reference which master data?
+   - **Indirect chains (A→B→C)**: Category referenced by Product, Product referenced by Order
+     → ต้องตรวจให้ครบ chain
+   - Output: cascade_dependencies[] พร้อม master_module, dependent_modules,
+     relationship, on_delete, affected_elements
+
+5. ⭐ MUST-HAVE #2 — หา Approval Workflows:
+   - Entity ที่มี state/status field รับค่าหลายขั้น (draft/submitted/approved/rejected)
+   - Actions เปลี่ยนตาม state + role:
+     * If status="draft" + role="requester" → show Submit button
+     * If status="submitted" + role="manager" → show Approve/Reject buttons
+     * If status="approved" + role="admin" → show Complete button
+   - State machine ใน code: switch(status) { case "draft": ... }
+   - Notification triggers (email/push) on state change
+   - Audit log tables (ApprovalHistory, AuditLog)
+   - Output: approval_workflows[] พร้อม module, states[], transitions[], actors[]
+   
+   ตัวอย่าง patterns ที่ trigger:
+   - Leave request, Purchase requisition, Document approval, Expense claim, Permit application
+
+6. หา Lifecycle entities (single-actor CRUD chain):
+   - Entity มี Create/Edit/Delete actions ครบ
+   - มี state field แต่ไม่มี role transition (1 user ทำเอง)
+   - Output: lifecycle_entities[] พร้อม states[]
 
 5. สำหรับแต่ละหน้า ให้ระบุ:
    - URL/route
@@ -103,25 +128,73 @@ Prompt:
 Return ผลเป็น JSON format"
 ```
 
-### Auto Step 2: Parse Results + Build Scenarios
+### Auto Step 2: Template Selection + Build Scenarios
 
-**จาก subagent results → สร้าง scenarios อัตโนมัติ:**
+**ใช้ template catalog เป็น single source of truth:**
+
+📖 อ่าน `skills/qa-ui-test/references/test-templates.md` เป็นกฎเลือก template
+
+**Decision Tree (ตาม test-templates.md):**
 
 ```
-สำหรับแต่ละหน้าที่พบ:
+สำหรับแต่ละหน้าที่พบ → ทดสอบเงื่อนไขจาก high → low priority:
 
-  ถ้า master-data → สร้าง 13 standard scenarios (CRUD template)
-  ถ้า master-detail → สร้าง 15 scenarios (expand/inline edit/sync)
-  ถ้า form → สร้าง 8-10 scenarios (happy/negative/boundary)
-  ถ้า login → สร้าง 5-8 scenarios (valid/invalid/lockout)
-  ถ้า dashboard → สร้าง 3-5 scenarios (load/filter/empty)
+  1. มี stepper/wizard component? → Template 5 (Multi-step Wizard)
+  2. มี expandable rows + nested grid? → Template 4 (Master-Detail, 15)
+  3. มี table + Add/Edit/Delete? → Template 3 (Master Data CRUD, 13)
+  4. มี password input + submit? → Template 1 (Login Form, 5-8)
+  5. มี form + submit (ไม่มี table)? → Template 2 (Form, 9 + per-field)
+  6. มี charts/metrics (read-only)? → Template 6 (Dashboard, 3-5)
+  7. Default → Template 2 + warn user
+```
 
-สำหรับแต่ละ role:
-  สร้าง role-access scenarios (access/denied per page)
-  สร้าง role-action scenarios (button hidden/disabled per action)
+**Cross-cutting templates (ทุก project ต้องประเมินทั้ง 4):**
 
-สำหรับแต่ละ cascade relationship:
-  สร้าง cascade-test scenarios (แก้/ลบ master → ตรวจ detail)
+```
+⭐ MUST-HAVE #1: Cross-page Master Data (Cascade — Template 7)
+   ตรวจสอบทุก entity ที่มี FK relationship:
+   - EF navigation property (Product.Category)
+   - Migration FK constraints
+   - Frontend dropdown ที่ดึงจาก master
+   → สร้าง CASCADE-UPDATE/DELETE-RESTRICT/DELETE-EMPTY/DROPDOWN/INDIRECT
+   → ⭐ INDIRECT (A→B→C) บังคับสร้างถ้ามี chain ≥ 3 entities
+
+⭐ MUST-HAVE #2: Approval Workflow (Template 9)
+   ตรวจสอบ entity ที่มี:
+   - state field + role-gated transitions
+   - actions เปลี่ยนตาม state + role (Submit/Approve/Reject buttons)
+   - notification triggers on state change
+   - audit log table
+   → สร้าง happy path + rejection + visibility + edge cases (8-15 scenarios)
+   → MUST แสดง state transition matrix ใน decision report
+
+   ตัวอย่าง patterns ที่ trigger:
+   - Leave request (employee → manager → HR)
+   - Purchase requisition (staff → supervisor → finance)
+   - Document approval (author → reviewer → publisher)
+
+  3. Role-based (Template 10):
+     ถ้ามีหลาย roles → สร้าง role-access + role-action scenarios per page
+
+  4. Lifecycle (Template 8):
+     ถ้า entity มี full CRUD + state field (single-actor) → สร้าง Serial Group
+     (skip ถ้าตกใน Approval Workflow แล้ว)
+```
+
+**Precedence rule (เมื่อ entity เข้าได้หลายแบบ):**
+
+```
+Entity has FK + state + multi-actor approval?
+  → Apply ALL THREE: Cascade + Approval + (skip Lifecycle)
+
+Entity has FK + state + single actor?
+  → Apply Cascade + Lifecycle
+
+Entity has FK only?
+  → Apply Cascade only
+
+Entity has multi-actor state transitions only?
+  → Apply Approval Workflow only
 ```
 
 ### Auto Step 2.5: Multi-Agent Brainstorm (ถ้า --brainstorm-agents)
@@ -420,9 +493,38 @@ After prioritize: 82 scenarios (12 critical, 25 high, 30 medium, 15 low)
           "page": "/admin/products",
           "relationship": "Product.CategoryId → Category.Id",
           "on_delete": "Restrict",
-          "affected_elements": ["Category dropdown", "Product list filter"]
+          "affected_elements": ["Category dropdown", "Product list filter"],
+          "indirect_chain": ["CATEGORY", "PRODUCT", "ORDER_ITEM"]
         }
       ]
+    }
+  ],
+
+  "approval_workflows": [
+    {
+      "module": "LEAVE",
+      "entity_page": "/leave/{id}",
+      "states": ["draft", "submitted", "approved", "rejected", "completed", "cancelled"],
+      "actors": ["requester", "manager", "admin"],
+      "transitions": [
+        { "from": "draft",     "to": "submitted",  "actor": "requester", "trigger": "Submit button" },
+        { "from": "submitted", "to": "approved",   "actor": "manager",   "trigger": "Approve button" },
+        { "from": "submitted", "to": "rejected",   "actor": "manager",   "trigger": "Reject button + reason" },
+        { "from": "submitted", "to": "draft",      "actor": "manager",   "trigger": "Send back + comment" },
+        { "from": "approved",  "to": "completed",  "actor": "admin",     "trigger": "Complete button" },
+        { "from": "draft",     "to": "cancelled",  "actor": "requester", "trigger": "Cancel button" }
+      ],
+      "notifications": ["email", "in-app"],
+      "audit_log_table": "ApprovalHistory"
+    }
+  ],
+
+  "lifecycle_entities": [
+    {
+      "module": "PRODUCT",
+      "actor": "single",
+      "states": ["draft", "active", "discontinued"],
+      "actions": ["create", "edit", "delete", "activate", "discontinue"]
     }
   ],
 
@@ -450,7 +552,7 @@ After prioritize: 82 scenarios (12 critical, 25 high, 30 medium, 15 low)
 → ยังไม่สร้าง Playwright scripts
 → สร้างตอน `/qa-continue` เลือกเคสไปทำ
 
-### Auto Step 4: Show Summary + Confirm
+### Auto Step 4: Show Summary + Confirm (with Template Decision Report)
 
 ```
 ✅ Auto-generate สำเร็จ!
@@ -458,37 +560,94 @@ After prioritize: 82 scenarios (12 critical, 25 high, 30 medium, 15 low)
 📊 สแกนพบ:
    Pages: 12 หน้า
    Roles: 3 (admin, manager, viewer)
-   Cascade: 5 relationships
+   FK Relationships: 5
+   Approval Workflows: 1
 
-📋 Scenarios ที่สร้าง: 156 total
-   ├── Functional: 98 scenarios (13 modules)
-   │   ├── PRODUCT (master-data): 13 scenarios
-   │   ├── CATEGORY (master-data): 13 scenarios
-   │   ├── ORDER (master-detail): 15 scenarios
-   │   ├── USER (master-data): 13 scenarios
-   │   ├── LOGIN (form): 8 scenarios
-   │   └── ...
-   ├── Role-based: 36 scenarios
-   │   ├── admin: 12 (access all)
-   │   ├── manager: 12 (limited)
-   │   └── viewer: 12 (read-only)
-   └── Cascade: 22 scenarios
-       ├── CATEGORY → PRODUCT: 5 scenarios
-       ├── PRODUCT → ORDER-DETAIL: 5 scenarios
-       └── ...
+🤖 Template Auto-Selection Report
+
+│ Page                  │ Template Selected      │ Why                              │
+├─────────────────────────────────────────────────────────────────────────────────│
+│ /admin/products       │ Master Data CRUD (13)  │ table + Add/Edit/Delete buttons   │
+│ /admin/orders         │ Master-Detail (15)     │ expandable rows + OrderItems grid │
+│ /admin/categories     │ Master Data CRUD (13)  │ table + CRUD                      │
+│ /checkout/cart        │ Multi-step Wizard      │ Stepper, /cart→/shipping→/payment │
+│ /admin/dashboard      │ Dashboard (5)          │ Recharts, no edit actions         │
+│ /login                │ Login Form (8)         │ password input + SignInManager    │
+│ /leave/new            │ Form (9)               │ form + submit, no table           │
+│ /leave/{id}           │ Approval Workflow (12) │ state machine + multi-role actions│
+
+📋 Scenarios Breakdown: 170 total
+
+Functional (75):
+   ├── PRODUCT (master-data): 13
+   ├── CATEGORY (master-data): 13
+   ├── ORDER (master-detail): 15
+   ├── USER (master-data): 13
+   ├── LOGIN (form): 8
+   ├── CHECKOUT (wizard): 8 (3 steps + 5 cross-cutting)
+   └── DASHBOARD (dashboard): 5
+
+⭐ MUST-HAVE #1 — Cross-page Master Data (Cascade): 18 scenarios
+   ├── CATEGORY → PRODUCT (FK, OnDelete=Restrict)
+   │   UPDATE/DELETE-RESTRICT/DELETE-EMPTY/DROPDOWN/INDIRECT (5)
+   ├── PRODUCT → ORDER_ITEM (FK, OnDelete=Restrict)
+   │   UPDATE/DELETE-RESTRICT/DROPDOWN (3)
+   ├── USER → ORDER (FK, OnDelete=Restrict)
+   │   UPDATE/DELETE-RESTRICT/DROPDOWN (3)
+   └── ⭐ INDIRECT chain: CATEGORY → PRODUCT → ORDER (1) + 6 misc
+
+⭐ MUST-HAVE #2 — Approval Workflow: 12 scenarios
+   └── LEAVE (employee → manager → admin)
+       States: draft → submitted → approved/rejected → completed
+       Transition matrix:
+       │ From      │ To         │ Actor      │
+       │ draft     │ submitted  │ requester  │
+       │ submitted │ approved   │ manager    │
+       │ submitted │ rejected   │ manager    │
+       │ submitted │ draft      │ manager (with comment) │
+       │ approved  │ completed  │ admin      │
+       │ draft     │ cancelled  │ requester  │
+       
+       Scenarios:
+       ├── Happy path (4): create → submit → approve → complete
+       ├── Rejection paths (2): reject, send-back
+       ├── Visibility per role × state (4)
+       └── Edge cases (2): self-approval, concurrent
+
+Role-based: 60 scenarios (3 roles × 5 pages × 4 actions)
+Lifecycle: 5 scenarios (PRODUCT single-actor CRUD chain)
 
 🔐 Credentials (from seed data):
-   admin: admin@test.com / Admin@123
-   manager: manager@test.com / Manager@123
-   viewer: viewer@test.com / Viewer@123
+   admin:    admin@test.com    / Admin@123
+   manager:  manager@test.com  / Manager@123
+   viewer:   viewer@test.com   / Viewer@123
+   employee: employee@test.com / Employee@123  ← for approval testing
 
-📁 Output: qa-tracker.json (156 scenarios, all pending)
+📁 Output: qa-tracker.json (170 scenarios, all pending)
+   New sections:
+   - cascade_dependencies[]    (3 entries)
+   - approval_workflows[]      (1 entry)
+   - lifecycle_entities[]      (1 entry)
+   - role_page_access{}        (5 pages × 3 roles)
 
 🔜 Next:
-   /qa-continue              — เลือก scenarios ไปสร้าง scripts + test
-   /qa-edit-scenario          — เพิ่ม/แก้ scenarios ด้วย brainstorm
-   /qa-explain --module XXX   — ดู flowchart ของ module
+   /qa-continue                          — เลือก scenarios ไปสร้าง scripts + test
+   /qa-continue --cascade CATEGORY       — ทดสอบ cross-page master data (MUST-HAVE #1)
+   /qa-continue --approval LEAVE         — ทดสอบ approval workflow (MUST-HAVE #2)
+   /qa-edit-scenario                     — เพิ่ม/แก้ scenarios
+   /qa-explain --module XXX              — ดู flowchart
+
+💡 ต้องการ override template ของหน้าใดไหม?
+   /qa-create-scenario --auto --override "/admin/products=master-detail"
+   หรือพิมพ์ "ok" เพื่อ confirm
 ```
+
+---
+
+### Auto Step 4.5: `--explain-templates` mode (preview only)
+
+ถ้า user ส่ง `--explain-templates` → แสดง decision report ข้างบนเท่านั้น **ไม่สร้าง qa-tracker.json**
+เพื่อให้ user review ก่อน commit จริง
 
 ### Auto Step 5: Commit
 
