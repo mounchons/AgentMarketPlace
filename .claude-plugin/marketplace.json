@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -54,8 +54,8 @@
     {
       "name": "long-running",
       "source": "./plugins/long-running",
-      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development pattern, feature references และ edit-feature command อ้างอิงจาก Anthropic Engineering Blog",
-      "version": "1.5.0",
+      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development pattern, feature references, edit-feature command, design doc impact check ตอน add/edit feature (auto-detect entity/API/diagram impact + interactive sync prompt) อ้างอิงจาก Anthropic Engineering Blog",
+      "version": "2.4.0",
       "category": "agent",
       "tags": [
         "long-running",
@@ -64,6 +64,9 @@
         "incremental-development",
         "agent-harness",
         "session-management",
+        "design-doc-integration",
+        "impact-check",
+        "interactive-sync",
         "thai"
       ],
       "author": {

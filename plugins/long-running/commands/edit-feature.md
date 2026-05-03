@@ -60,7 +60,114 @@ From details provided by user:
 
 Read feature_list.json and find the highest existing id, then +1.
 
-### Step 5: Create New Feature
+### Step 5: Check Design Doc Impact ⭐ NEW
+
+ตรวจสอบว่าการแก้ feature นี้กระทบ design document ที่ออกแบบไว้หรือไม่
+
+```bash
+# ตรวจหา design_doc_list.json
+test -f design_doc_list.json && echo "FOUND" || echo "NOT_FOUND"
+```
+
+**Case A: ไม่พบ design_doc_list.json** → ข้ามขั้นตอนนี้ ไป Step 6
+
+**Case B: พบ design_doc_list.json** → วิเคราะห์ impact
+
+#### ⭐ Important: ตรวจ original feature.design_doc_refs ก่อน
+
+Edit feature สำคัญมาก เพราะ original feature **อาจมี design_doc_refs ผูกอยู่แล้ว** (ถ้าสร้างผ่าน /add-feature เวอร์ชันใหม่)
+
+```bash
+# ดูว่า original feature เคยผูกกับ design doc อะไรบ้าง
+cat feature_list.json | jq ".features[] | select(.id == [OLD_ID]) | .design_doc_refs"
+```
+
+**ถ้ามี:**
+- `api_ref`: API ID ที่ผูกอยู่ (เช่น "API-005")
+- `entity_ref`: Entity ID ที่ผูกอยู่ (เช่น "ENT-001")
+- `diagram_refs`: Diagram IDs ที่ผูกอยู่
+
+#### Detection: เปรียบเทียบ "การเปลี่ยนแปลง" กับ design doc
+
+| Change Pattern (จาก user input) | กระทบ Design Section | Action |
+|--------------------------------|---------------------|--------|
+| "เพิ่ม endpoint", "add new API" | `api_endpoints[]` | ต้องเพิ่ม API entry ใหม่ |
+| "เพิ่ม pagination", "add filter" | `api_endpoints[]` (request_body, response_schema) | ต้องอัปเดต API spec |
+| "เพิ่ม field/column/attribute" | `entities[].attributes` | ต้องอัปเดต entity attributes |
+| "เปลี่ยน relation", "เพิ่ม FK" | `entities[].relationships`, `er_diagram` | ต้องอัปเดต ER diagram |
+| "เพิ่ม role/permission", "OAuth" | `cross-cutting` (security), `api_endpoints[].permissions` | ต้องอัปเดต permission |
+| "เพิ่มหน้า/page" | `sitemap`, `ui_mockups` | ต้องเพิ่ม page |
+| "เปลี่ยน flow", "add step" | `flow_diagrams[]`, `sequence_diagrams[]` | ต้องอัปเดต diagram |
+| ลบ feature/endpoint | ทุก section ที่อ้างถึง | ต้อง mark deprecated หรือลบ |
+
+**ดึงข้อมูลจาก design doc:**
+
+```bash
+# ถ้า original feature มี api_ref → ดู API spec
+cat design_doc_list.json | jq '.api_endpoints[] | select(.id == "[API_REF]")'
+
+# ถ้ามี entity_ref → ดู entity spec
+cat design_doc_list.json | jq '.entities[] | select(.id == "[ENTITY_REF]")'
+```
+
+#### ถ้าไม่พบ impact → แจ้ง user แล้วไป Step 6
+
+```
+✅ Design Doc Impact Check
+   Original feature ไม่ผูกกับ design doc / การเปลี่ยนแปลงไม่กระทบ design
+   ดำเนินการสร้าง edit feature ต่อได้
+```
+
+#### ถ้าพบ impact → แสดงรายงาน + ถาม user
+
+```
+🔍 Design Doc Impact Detected (Edit Feature)
+
+📋 Feature ที่จะแก้:
+   #[OLD_ID]: "[ORIGINAL_DESCRIPTION]"
+   → "[NEW_DESCRIPTION]"
+
+🔗 Original feature ผูกกับ:
+   - API: API-005 (POST /api/users)
+   - Entity: ENT-001 (User)
+   - Diagrams: SEQ-001
+
+📌 พบ Impact จากการแก้ไข:
+
+   1. ⚠ API-005 (POST /api/users)
+      → user เพิ่ม "pagination support"
+      → ต้องอัปเดต api_endpoints[].request_body / response_schema
+      → version จะต้อง bump (breaking change?)
+
+   2. ⚠ Entity ENT-001 (User)
+      → user เพิ่ม "phone" field
+      → entity.attributes ยังไม่มี — ต้องเพิ่ม
+      → er_diagram อาจต้องแก้
+
+   3. ⚠ SEQ-001 (User registration)
+      → flow เปลี่ยน เพราะ pagination ไม่กระทบ — แต่ phone เพิ่มขั้น validation
+      → ควรอัปเดต sequence diagram
+
+❓ คุณต้องการดำเนินการอย่างไร?
+   [1] อัปเดต design doc ก่อนสร้าง edit feature (แนะนำสำหรับ breaking change)
+       → จะแนะนำคำสั่ง /edit-section ที่ต้องรัน
+   [2] สร้าง edit feature ก่อน — บันทึก pending sync action
+       → feature.design_doc_refs.pending_updates[] จะระบุ
+       → รัน /sync-with-features ทีหลังเพื่อ sync
+   [3] ยกเลิก — ไม่สร้าง edit feature
+```
+
+**ใช้ AskUserQuestion tool ถาม user**
+
+#### Action ตามคำตอบ
+
+**ถ้า [1]:** แนะนำ `/edit-section api-endpoints`, `/edit-section entities`, `/create-diagram sequence` ตาม impact → user รันก่อน → กลับมารัน `/edit-feature` อีกครั้ง
+
+**ถ้า [2]:** ดำเนินการ Step 6 + กรอก `design_doc_refs.pending_updates[]` พร้อม inherit `api_ref`/`entity_ref`/`diagram_refs` จาก original feature
+
+**ถ้า [3]:** หยุด — ออกจาก command
+
+### Step 6: Create New Feature
 
 ```json
 {
@@ -77,6 +184,12 @@ Read feature_list.json and find the highest existing id, then +1.
   "references": [],
   "related_features": [ORIGINAL_FEATURE_ID],
   "supersedes": [ORIGINAL_FEATURE_ID],
+  "design_doc_refs": {
+    "api_ref": "[INHERITED_OR_NEW]",
+    "entity_ref": "[INHERITED_OR_NEW]",
+    "diagram_refs": ["[INHERITED_OR_NEW]"],
+    "pending_updates": []
+  },
   "estimated_time": "[ESTIMATED_TIME]",
   "passes": false,
   "tested_at": null,
@@ -89,8 +202,10 @@ Read feature_list.json and find the highest existing id, then +1.
 - `related_features`: Array of related feature IDs
 - `supersedes`: Feature ID being replaced/improved
 - `notes`: Explain which feature this improves
+- `design_doc_refs`: **inherit** จาก original feature ก่อน แล้วค่อย override ตาม impact ที่ตรวจพบ
+- `design_doc_refs.pending_updates[]`: ถ้า user เลือก [2] ใน Step 5 → กรอกรายการ action ที่ค้าง
 
-### Step 6: Add to feature_list.json
+### Step 7: Add to feature_list.json
 
 - Add new feature to `features` array
 - Update `summary.total` (+1)
@@ -99,7 +214,7 @@ Read feature_list.json and find the highest existing id, then +1.
 
 **Note:** The original feature remains unchanged.
 
-### Step 7: Update Progress Log
+### Step 8: Update Progress Log
 
 Add to .agent/progress.md:
 ```markdown
@@ -107,12 +222,14 @@ Add to .agent/progress.md:
 - Created Feature #[NEW_ID] from Feature #[OLD_ID]
 - Original: [original description]
 - Changes: [what changed]
+- Design doc impact: [none | resolved | pending]
+- Pending sync actions: [count, ถ้ามี]
 - Old feature preserved (passes: true)
 - New feature created (passes: false)
 - Created at: [timestamp]
 ```
 
-### Step 8: Git Commit
+### Step 9: Git Commit
 
 ```bash
 git add feature_list.json .agent/progress.md
@@ -166,7 +283,7 @@ When complete, inform user:
 
 ## Examples
 
-### Example 1: Add OAuth
+### Example 1: Add OAuth (with design doc impact)
 
 **Input:** `/edit-feature 5 - add OAuth login`
 
@@ -176,10 +293,23 @@ When complete, inform user:
   "id": 5,
   "category": "feature",
   "description": "Create Login page with username/password",
+  "design_doc_refs": {
+    "api_ref": "API-001",
+    "entity_ref": "ENT-001",
+    "diagram_refs": ["SEQ-001"],
+    "pending_updates": []
+  },
   "passes": true,
   "tested_at": "2025-01-10T10:00:00Z"
 }
 ```
+
+**Step 5 Impact Detected:**
+- "OAuth" keyword → กระทบ `cross-cutting.security` + ต้องเพิ่ม API endpoints (callback URLs)
+- ต้องเพิ่ม OAuth provider config ใน `infrastructure`
+- SEQ-001 (login sequence) ต้องเพิ่ม OAuth path
+
+**User เลือก [2]: สร้าง edit feature ก่อน — บันทึก pending sync**
 
 **New feature created (ID: 13):**
 ```json
@@ -196,13 +326,38 @@ When complete, inform user:
     "Test OAuth flow"
   ],
   "dependencies": [1, 2],
-  "references": [".mockups/login.mockup.md"],
+  "references": [
+    ".mockups/login.mockup.md",
+    "design_doc_list.json#api_endpoints.API-001"
+  ],
   "related_features": [5],
   "supersedes": 5,
+  "design_doc_refs": {
+    "api_ref": "API-001",
+    "entity_ref": "ENT-001",
+    "diagram_refs": ["SEQ-001"],
+    "pending_updates": [
+      {
+        "type": "add-api",
+        "spec": "GET /api/auth/oauth/callback/{provider}",
+        "rationale": "OAuth callback endpoints ยังไม่มีใน design"
+      },
+      {
+        "type": "update-security-section",
+        "spec": "OAuth providers (Google, Facebook)",
+        "rationale": "ต้องระบุ provider list + permission scopes"
+      },
+      {
+        "type": "update-sequence-diagram",
+        "spec": "SEQ-001",
+        "rationale": "เพิ่ม OAuth path ใน login sequence"
+      }
+    ]
+  },
   "estimated_time": "30min",
   "passes": false,
   "tested_at": null,
-  "notes": "Updated from Feature #5 - add OAuth login support",
+  "notes": "Updated from Feature #5 - add OAuth login support. Pending design doc sync (3 actions)",
   "created_at": "2025-01-15T14:00:00Z"
 }
 ```

@@ -34,7 +34,113 @@ From user input:
 
 Read feature_list.json and find the highest existing id, then +1.
 
-### Step 4: Create New Feature Entry
+### Step 4: Check Design Doc Impact ⭐ NEW
+
+ตรวจสอบว่า feature ใหม่กระทบกับ design document ที่ออกแบบไว้หรือไม่
+
+```bash
+# ตรวจหา design_doc_list.json (output ของ system-design-doc plugin)
+test -f design_doc_list.json && echo "FOUND" || echo "NOT_FOUND"
+```
+
+**Case A: ไม่พบ design_doc_list.json**
+
+ข้ามขั้นตอนนี้ — ไปต่อ Step 5
+
+**Case B: พบ design_doc_list.json**
+
+วิเคราะห์ feature description + steps เทียบกับ design doc โดยใช้ heuristics:
+
+| Detection Pattern | กระทบ Design Section | Action |
+|-------------------|---------------------|--------|
+| `(GET\|POST\|PUT\|DELETE\|PATCH) /api/...` | `api_endpoints[]` | ค้นว่ามี API นี้ใน design doc แล้วหรือยัง |
+| ชื่อตรงกับ `entities[].name` หรือ `table_name` | `entities[]` | flag ว่ากระทบ entity เดิม |
+| keyword: `เพิ่ม field`, `เพิ่ม attribute`, `add column`, `add property` | `entities[].attributes` | flag ว่าต้องเพิ่ม attribute |
+| keyword: `Page`, `หน้า`, `screen`, `view`, `mockup` | `diagrams.sitemap`, `ui_mockups` | flag ว่ากระทบ UI design |
+| keyword: `flow`, `workflow`, `process`, `business flow` | `diagrams.flow_diagrams[]` | flag ว่าต้องสร้าง/แก้ flow |
+| keyword: `sequence`, `interaction`, `request flow` | `diagrams.sequence_diagrams[]` | flag ว่าต้องสร้าง/แก้ sequence |
+| ไม่ตรงกับ pattern ใด | — | no impact, ไปต่อได้ |
+
+**ดึงข้อมูลจาก design_doc_list.json:**
+
+```bash
+# entities ที่มีอยู่
+cat design_doc_list.json | jq '.entities[] | {id, name, table_name, attributes: [.attributes[]?.name]}'
+
+# api_endpoints ที่มีอยู่
+cat design_doc_list.json | jq '.api_endpoints[] | {id, method, path, feature_id}'
+
+# diagrams ที่มี
+cat design_doc_list.json | jq '.diagrams | keys'
+```
+
+#### ถ้าตรวจไม่พบ impact → แจ้ง user แล้วไปต่อ Step 5
+
+```
+✅ Design Doc Impact Check
+   ตรวจสอบ design_doc_list.json — ไม่พบ impact ที่ชัดเจน
+   ดำเนินการสร้าง feature ต่อได้
+```
+
+#### ถ้าตรวจพบ impact → แสดงรายงาน + ถาม user
+
+```
+🔍 Design Doc Impact Detected
+
+📋 Feature ที่จะสร้าง:
+   "[FEATURE_DESCRIPTION]"
+
+📌 พบ Impact ต่อ design_doc_list.json:
+
+   1. API Endpoints
+      ❓ feature นี้สร้าง POST /api/users
+      → ยังไม่มีใน api_endpoints[] (จะต้องเพิ่ม API-XXX)
+      → หรือถ้ามีอยู่แล้ว → ผูก feature_id
+
+   2. Entity "User" (ENT-001)
+      ⚠ feature mention "phone field"
+      → entity.attributes ยังไม่มี phone
+      → ควรเพิ่ม attribute
+
+   3. Sequence Diagram
+      ⚠ feature mention "user registration sequence"
+      → ยังไม่มี SEQ ที่เกี่ยวข้อง
+      → แนะนำสร้าง
+
+❓ คุณต้องการดำเนินการอย่างไร?
+   [1] อัปเดต design doc ก่อนสร้าง feature (แนะนำ)
+       → จะรัน /edit-section / /create-diagram ทีละตัว
+   [2] สร้าง feature ก่อน — บันทึก pending sync action
+       → feature.design_doc_refs.pending_updates[] จะระบุสิ่งที่ค้าง
+       → รัน /sync-with-features ทีหลังเพื่อ sync
+   [3] ยกเลิก — ไม่สร้าง feature
+```
+
+**ใช้ AskUserQuestion tool ถาม user**
+
+#### Action ตามคำตอบของ user
+
+**ถ้า [1] อัปเดต design doc ก่อน:**
+
+แนะนำคำสั่งที่ user ต้องรันก่อน (ไม่ทำเอง — ให้ user ตัดสินใจ):
+- `/edit-section api-endpoints` — เพิ่ม/แก้ API
+- `/edit-section entities` — เพิ่ม attribute หรือ entity ใหม่
+- `/create-diagram sequence` — สร้าง sequence diagram
+- `/create-diagram flow` — สร้าง flow diagram
+
+หลังจาก user รันเสร็จ → ให้ user รัน `/add-feature` ใหม่อีกครั้ง
+
+**ถ้า [2] สร้าง feature ก่อน:**
+
+- เพิ่ม `design_doc_refs.pending_updates[]` ใน feature ใหม่ (ดู Step 5)
+- เพิ่ม references ที่ design_doc_list.json
+- ดำเนินการ Step 5 ต่อ
+
+**ถ้า [3] ยกเลิก:**
+
+หยุดการสร้าง feature — ออกจาก command
+
+### Step 5: Create New Feature Entry
 
 ```json
 {
@@ -49,6 +155,12 @@ Read feature_list.json and find the highest existing id, then +1.
   ],
   "dependencies": [],
   "references": [],
+  "design_doc_refs": {
+    "api_ref": null,
+    "entity_ref": null,
+    "diagram_refs": [],
+    "pending_updates": []
+  },
   "estimated_time": "[ESTIMATED_TIME]",
   "passes": false,
   "tested_at": null,
@@ -59,15 +171,24 @@ Read feature_list.json and find the highest existing id, then +1.
 
 **Note:**
 - `references`: array of paths to related documents, e.g., `.mockups/page.mockup.md`, `docs/logic.md`, `sql/create_table.sql`
+- `design_doc_refs.api_ref`: API ID จาก design_doc_list.json (เช่น "API-005") — null ถ้าไม่กระทบ
+- `design_doc_refs.entity_ref`: Entity ID (เช่น "ENT-001") — null ถ้าไม่กระทบ
+- `design_doc_refs.diagram_refs`: array ของ diagram IDs (เช่น `["SEQ-001", "FLOW-002"]`)
+- `design_doc_refs.pending_updates`: array ของ action ที่ user เลือก [2] (skip ก่อน)
+  ตัวอย่าง: `[{"type": "add-api", "spec": "POST /api/users", "rationale": "feature ใหม่ต้องการ API"}]`
 
-### Step 5: Add to feature_list.json
+**ถ้า user เลือก [1] หรือไม่มี impact:** เก็บ `pending_updates: []`
+
+**ถ้า user เลือก [2]:** กรอก `pending_updates[]` ตาม impact ที่ตรวจพบ
+
+### Step 6: Add to feature_list.json
 
 - Add new feature to `features` array
 - Update `summary.total` (+1)
 - Update `summary.failed` (+1)
 - Update `summary.last_updated`
 
-### Step 6: Update Progress Log
+### Step 7: Update Progress Log
 
 Add to .agent/progress.md:
 ```markdown
@@ -75,10 +196,12 @@ Add to .agent/progress.md:
 - Feature #[ID]: [description]
 - Category: [category]
 - Priority: [priority]
+- Design doc impact: [none | resolved | pending]
+- Pending sync actions: [count, ถ้ามี — ระบุ /sync-with-features]
 - Added at: [timestamp]
 ```
 
-### Step 7: Git Commit (if user wants)
+### Step 8: Git Commit (if user wants)
 
 ```bash
 git add feature_list.json .agent/progress.md
@@ -135,9 +258,16 @@ When complete, inform user:
 }
 ```
 
-### Example 2: Feature with references
+### Example 2: Feature with references + design doc impact
 
-**Input:** Add a feature for User Profile page
+**Input:** Add a feature for User Profile page (with design_doc_list.json present)
+
+**Step 4 Impact Detected:**
+- Page keyword detected → กระทบ `diagrams.sitemap` + `ui_mockups`
+- Entity "User" mentioned → ENT-001 อยู่แล้ว, ไม่ต้องเพิ่ม
+- ไม่มี API ใหม่
+
+**User เลือก [2]: สร้าง feature ก่อน — บันทึก pending sync**
 
 **Output that should be created:**
 ```json
@@ -155,13 +285,65 @@ When complete, inform user:
   "dependencies": [3, 5],
   "references": [
     ".mockups/profile.mockup.md",
-    "docs/user-entity.md"
+    "docs/user-entity.md",
+    "design_doc_list.json#entities.ENT-001"
   ],
+  "design_doc_refs": {
+    "api_ref": null,
+    "entity_ref": "ENT-001",
+    "diagram_refs": [],
+    "pending_updates": [
+      {
+        "type": "add-page-to-sitemap",
+        "spec": "/profile",
+        "rationale": "Profile page ยังไม่มีใน sitemap — ต้องเพิ่ม"
+      },
+      {
+        "type": "add-ui-mockup",
+        "spec": "profile.mockup.md",
+        "rationale": "ต้อง mockup ก่อน implement"
+      }
+    ]
+  },
   "estimated_time": "25min",
   "passes": false,
   "tested_at": null,
-  "notes": "",
+  "notes": "Pending design doc sync — รัน /sync-with-features หลัง mockup เสร็จ",
   "added_at": "2025-01-15T11:00:00Z"
+}
+```
+
+### Example 3: Feature ที่ไม่กระทบ design doc
+
+**Input:** Add a feature for fixing typo in error message
+
+**Step 4 Impact Detected:** ไม่พบ pattern ที่กระทบ design doc
+
+**Output:**
+```json
+{
+  "id": 13,
+  "category": "bugfix",
+  "description": "Fix typo in login error message",
+  "priority": "low",
+  "steps": [
+    "หา error message ที่พิมพ์ผิดใน LoginController",
+    "แก้ตัวสะกด",
+    "ทดสอบ"
+  ],
+  "dependencies": [],
+  "references": [],
+  "design_doc_refs": {
+    "api_ref": null,
+    "entity_ref": null,
+    "diagram_refs": [],
+    "pending_updates": []
+  },
+  "estimated_time": "5min",
+  "passes": false,
+  "tested_at": null,
+  "notes": "",
+  "added_at": "2025-01-15T11:30:00Z"
 }
 ```
 
