@@ -5,7 +5,9 @@
       "Bash(tree:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "mcp__graph-brain__search-knowledge",
+      "mcp__graph-brain__brain-stats"
     ]
   },
   "spinnerTipsEnabled": true
