@@ -61,9 +61,12 @@ bug lifecycle (triage → export → verify), integration กับ long-running
 
 🧪 TEST WORKFLOW (7 commands)
 
-  /qa-create-scenario          สร้าง test scenarios จาก codebase
+  /qa-create-scenario          สร้าง test scenarios จาก codebase (รันซ้ำได้ ⭐)
   🌐 ไม่ต้องรันเว็บ              ตัวอย่าง: /qa-create-scenario --auto
                                ตัวอย่าง: /qa-create-scenario --auto --brainstorm-agents
+                               ตัวอย่าง: /qa-create-scenario --auto --pass-mode opus-deep
+                               ตัวอย่าง: /qa-create-scenario --auto --modules PRODUCT,ORDER
+                               ตัวอย่าง: /qa-create-scenario --auto --dry-run
 
   /qa-continue                 เลือก module → สร้าง scripts → รัน test
   🌐 ต้องรันเว็บ                 ตัวอย่าง: /qa-continue

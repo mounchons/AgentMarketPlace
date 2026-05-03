@@ -17,13 +17,22 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 4. **ยังไม่สร้าง Playwright scripts** — สร้างตอน `/qa-continue` เลือกเคสไปทำ
 5. **ต้อง commit เมื่อเสร็จ** — scenario(TS-XXX): create scenarios
 6. **หา credentials จาก code** — ใช้ subagent ค้น seed data, appsettings, migrations
+7. **⭐ Re-run safe (idempotent)** — ถ้ามี qa-tracker.json อยู่แล้ว:
+   - ห้าม overwrite โดยไม่ถาม
+   - ต้องเรียก Step 0 (Re-run Detection) ก่อนทุกครั้ง
+   - ADD-ONLY: scenarios ของ pass เก่าห้ามแก้/ลบ
+   - ต้อง compute diff + confirm ก่อน write
+   📖 ดู `skills/qa-ui-test/references/multi-pass-strategy.md`
 
 ### Self-Check Checklist (MANDATORY)
 
 - [ ] qa-tracker.json read/initialized?
+- [ ] ⭐ Step 0 Re-run Detection ทำแล้ว? (ถ้ามี qa-tracker.json)
+- [ ] ⭐ Diff computed + user confirmed ก่อน write?
 - [ ] All scenarios in qa-tracker.json as JSON?
 - [ ] Roles + credentials found from codebase?
 - [ ] Cascade dependencies mapped?
+- [ ] passes_history[] updated?
 - [ ] qa-tracker.json committed?
 
 ### Output Rejection Criteria
@@ -31,6 +40,9 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 - Auto mode ถาม brainstorm ทุกหน้า → REJECT (ช้าเกินไป)
 - ไม่ค้นหา credentials จาก code → REJECT
 - ไม่มี cascade dependencies → REJECT
+- มี qa-tracker.json อยู่ แต่ overwrite โดยไม่ถาม user → REJECT
+- ไม่ track pass info (created_in_pass, created_by_model) → REJECT
+- Modify scenarios จาก pass เก่า โดยไม่ขอ confirm → REJECT
 
 ---
 
@@ -41,6 +53,17 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-create-scenario --auto --tech dotnet      # ระบุ technology
 /qa-create-scenario --auto --explain-templates # แสดง decision report เท่านั้น (ไม่สร้าง)
 /qa-create-scenario --auto --override "/admin/products=master-detail"  # บังคับ template
+
+# ⭐ Multi-pass / Re-run modes (ถ้ามี qa-tracker.json อยู่แล้ว)
+/qa-create-scenario --auto --pass-mode opus-deep         # Pass ใหม่ด้วย opus
+/qa-create-scenario --auto --pass-mode sonnet-fast       # Pass ด้วย sonnet
+/qa-create-scenario --auto --pass-mode multi-agent       # 5 personas brainstorm
+/qa-create-scenario --auto --pass-mode opus-cascade-focus # ตรวจ MUST-HAVE patterns
+/qa-create-scenario --auto --modules PRODUCT,ORDER       # เฉพาะ modules
+/qa-create-scenario --auto --modules new-only            # หา module ใหม่
+/qa-create-scenario --auto --dry-run                     # preview diff ไม่ write
+/qa-create-scenario --auto --reset --yes                 # ลบเก่าทิ้ง สแกนใหม่ (destructive)
+
 /qa-create-scenario [URL]                     # manual: brainstorm ทีละหน้า
 /qa-create-scenario --module [MODULE] --url [URL]
 /qa-create-scenario --master-data --url [URL]
@@ -57,6 +80,146 @@ $ARGUMENTS
 **มี 2 แบบ:**
 - `--auto` → subagent วิเคราะห์ code อย่างเดียว (เร็ว)
 - `--auto --brainstorm-agents` → dispatch ทีม QA agents ช่วยคิด scenarios (ครบถ้วนกว่า)
+
+---
+
+### ⭐ Auto Step 0: Re-run Detection & User Prompt
+
+**ตรวจสอบก่อนเสมอว่ามี qa-tracker.json อยู่แล้วหรือไม่**
+
+📖 ใช้ logic จาก `references/multi-pass-strategy.md`
+
+```bash
+# Read existing state
+cat qa-tracker.json 2>/dev/null
+```
+
+#### Case A: ไม่มี qa-tracker.json → First-time scan
+
+```
+ℹ️  ไม่พบ qa-tracker.json — จะสร้าง Pass 1 (initial scan)
+```
+
+ดำเนินการ Auto Step 1 ปกติ พร้อม:
+- `passes_history[]` = `[{ pass: 1, model: <current>, ... }]`
+- ทุก scenario มี `created_in_pass: 1`
+
+#### Case B: มี qa-tracker.json + scenarios[] → Re-run mode
+
+**B.1 — แสดง status report:**
+
+```
+🔍 ตรวจพบ qa-tracker.json — มี scenarios อยู่แล้ว
+
+📊 สถานะปัจจุบัน:
+   Total scenarios:     156
+   Passes done:         1 (sonnet, 2026-05-03)
+   Modules:             6 (LOGIN, PRODUCT, ORDER, CATEGORY, USER, DASHBOARD)
+   ⭐ Cascade:           18 scenarios (3 relationships)
+   ⭐ Approval Workflow: 12 scenarios (1 workflow)
+   Functional:          75 scenarios
+   Role-based:          51 scenarios
+```
+
+**B.2 — ถาม Action choice (ห้าม proceed อัตโนมัติ):**
+
+ถ้า user ไม่ได้ส่ง `--yes` flag:
+
+```
+❓ ต้องการดำเนินการอะไร?
+   1) ➕ Add pass — เพิ่มเคสจาก agent ใหม่ (recommended)
+   2) 🔄 Re-scan all — ลบเก่าทิ้ง สแกนใหม่หมด (destructive — ต้อง --reset)
+   3) 📝 Module-specific — เพิ่มเคสเฉพาะ module ที่เลือก
+   4) 📊 Show diff only — preview ว่าจะเพิ่มอะไร (--dry-run)
+   5) ❌ Cancel
+
+[1/2/3/4/5]:
+```
+
+**B.3 — ถ้าเลือก 1 (Add pass) หรือ 3 (Module-specific) → ถาม agent/model:**
+
+ถ้าไม่ได้ส่ง `--pass-mode`:
+
+```
+❓ ใช้ agent/model ใดสำหรับ pass นี้?
+
+   1) opus-deep
+      • model: opus, subagent: general-purpose
+      • เน้น: edge cases, security, complex flows
+      • เหมาะกับ: pass 2 หลัง sonnet
+      
+   2) sonnet-fast
+      • model: sonnet, subagent: Explore
+      • เน้น: quick coverage
+      • เหมาะกับ: pass 1
+      
+   3) multi-agent-brainstorm
+      • dispatch 5 personas parallel
+      • เน้น: end-user, security, bug-hunter, business, accessibility
+      • เหมาะกับ: pass 3+ (deep coverage)
+      
+   4) opus-cascade-focus
+      • model: opus
+      • เน้น: ⭐ Cascade + Approval Workflow เท่านั้น
+      • เหมาะกับ: ตรวจ MUST-HAVE patterns ครบหรือไม่
+      
+   5) custom — ระบุ subagent_type + model + focus เอง
+
+💡 คุณรัน Pass 1 ด้วย sonnet ไปแล้ว — แนะนำ Pass 2 ด้วย opus-deep หรือ multi-agent
+
+[1/2/3/4/5]:
+```
+
+**B.4 — ถ้าเลือก 3 (Module-specific) → ถาม modules:**
+
+ถ้าไม่ได้ส่ง `--modules`:
+
+```
+❓ ทดสอบ module ใด?
+
+Available modules (จาก qa-tracker.json):
+   1) LOGIN       (8 scenarios)
+   2) PRODUCT     (13 scenarios)
+   3) ORDER       (15 scenarios)
+   4) CATEGORY    (13 scenarios)
+   5) USER        (13 scenarios)
+   6) DASHBOARD   (5 scenarios)
+
+Special:
+   a) all
+   b) new-only — เฉพาะ module ที่ scan ใหม่เจอ
+   c) failed-only — เฉพาะ module ที่มี failed scenarios
+   d) cascade-only — ตรวจ cross-page master data
+   e) approval-only — ตรวจ approval workflow
+
+ระบุ (เลขข้อ comma-separated หรือ keyword):
+> 
+```
+
+**B.5 — Skip prompts ถ้า flags ครบ:**
+
+```
+ถ้า user ส่ง: --pass-mode opus-deep --modules PRODUCT,ORDER
+→ ข้าม B.2, B.3, B.4 → ไป B.6 เลย
+
+ถ้าส่ง --reset --yes
+→ ข้าม Case B → ทำ Re-scan all (destructive)
+```
+
+**B.6 — Proceed to Step 1-3 with pass info:**
+
+ส่งต่อข้อมูลให้ subagent:
+
+```
+{
+  current_pass: 2,
+  pass_mode: "opus-deep",
+  modules_filter: ["PRODUCT", "ORDER"],
+  existing_scenarios: [...] // ส่งให้ subagent เพื่อ skip duplicates
+}
+```
+
+---
 
 ### Auto Step 1: Dispatch Code Analysis Subagent
 
@@ -460,17 +623,126 @@ After prioritize: 82 scenarios (12 critical, 25 high, 30 medium, 15 low)
 
 ---
 
+### ⭐ Auto Step 2.7: Diff & Merge (Re-run mode เท่านั้น)
+
+ถ้าใน Step 0 อยู่ Case B (Re-run) → ต้อง diff + merge ก่อน write
+
+#### 2.7.1 — Compute scenario signatures
+
+สำหรับทุก scenario ใหม่ที่ subagent generate:
+```
+signature = `${module}:${page_type}:${type}:${normalize(title)}`
+
+normalize(title) = lowercase + remove special chars + replace spaces with -
+                 + truncate to 50 chars
+```
+
+#### 2.7.2 — Compare with existing
+
+```
+existing_signatures = qa-tracker.json.scenarios.map(s => s.signature)
+
+For each new scenario:
+  if signature in existing_signatures:
+    → SKIP (mark as duplicate)
+    → log: "skipped — already exists from Pass {N}"
+  else:
+    → ADD with:
+      - new ID (next number per module: e.g., last PRODUCT-013 → PRODUCT-014)
+      - created_in_pass = current_pass
+      - created_by_model = pass_mode model
+      - created_at = now
+      - signature = computed above
+      - status = "pending"
+```
+
+#### 2.7.3 — Show Diff Preview + Confirm
+
+```
+🔍 Diff Preview (Pass 2 - opus, modules: PRODUCT, ORDER):
+
+Module: PRODUCT
+   ✓ Existing: 13 scenarios (from Pass 1 by sonnet)
+   + New: 5 scenarios from Pass 2 (opus)
+     - TS-PRODUCT-014: Boundary - SKU 255 chars Unicode
+     - TS-PRODUCT-015: Concurrent edit conflict (2 users)
+     - TS-PRODUCT-016: Partial update — only price field
+     - TS-PRODUCT-017: Soft delete verification
+     - TS-PRODUCT-018: Bulk operations rollback
+   ≈ Skipped: 8 (duplicate signatures with Pass 1)
+
+Module: ORDER
+   ✓ Existing: 15 scenarios
+   + New: 3 scenarios
+     - TS-ORDER-016: Detail row reorder (drag-drop)
+     - TS-ORDER-017: Master total recalc on currency change
+     - TS-ORDER-018: Audit log for inline edits
+
+⭐ Cascade additions:
+   + INDIRECT chain: USER → ORDER → ORDER_ITEM (3 scenarios)
+
+⭐ Approval Workflow additions:
+   + LEAVE: timeout auto-rejection — 1 scenario
+   + LEAVE: bulk approval — 1 scenario
+
+📊 Summary:
+   Pass 1 (sonnet, 2026-05-03):  156 scenarios
+   Pass 2 (opus, 2026-05-04):    +12 new, 28 skipped
+   ────────────────────────────────────────
+   Total after merge:             168 scenarios
+
+✅ Confirm to merge? (yes/no/edit)
+```
+
+ถ้า `--dry-run` → STOP ที่นี่ ไม่ write ไฟล์
+
+ถ้า user เลือก `edit` → ให้ user เลือกว่า scenarios ใดที่ต้องการ skip:
+```
+ระบุ scenarios ที่ไม่ต้องการเพิ่ม (comma-separated IDs หรือ "none"):
+> TS-PRODUCT-018
+```
+
+#### 2.7.4 — Conflict Logging
+
+ถ้าเจอ scenario ที่ชื่อใกล้ๆ กันแต่ details ต่าง:
+```
+⚠️  Potential conflict:
+   Existing: TS-PRODUCT-002 "Create happy path"
+             (created in Pass 1 by sonnet)
+   New:      "Create with auto-generated SKU"  (signature similar)
+   Action:   ADD as TS-PRODUCT-019 (different signature)
+   Logged:   passes_history[1].conflicts[]
+```
+
+---
+
 ### Auto Step 3: Build qa-tracker.json
 
 **สร้าง qa-tracker.json พร้อม scenarios ทั้งหมดเป็น JSON:**
 
 ```json
 {
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "project": "[auto-detected]",
   "base_url": "[from launchSettings/appsettings/env]",
   "technology": "[auto-detected]",
   "login_url": "[auto-detected]",
+
+  "passes_history": [
+    {
+      "pass": 1,
+      "started_at": "ISO8601",
+      "completed_at": "ISO8601",
+      "model": "sonnet",
+      "agent_type": "Explore",
+      "command": "/qa-create-scenario --auto",
+      "modules_scanned": ["LOGIN", "PRODUCT", "..."],
+      "added": 156,
+      "skipped": 0,
+      "conflicts": [],
+      "duration_seconds": 480
+    }
+  ],
 
   "roles": [
     {
@@ -542,7 +814,12 @@ After prioritize: 82 scenarios (12 critical, 25 high, 30 medium, 15 low)
       "validations": ["Name: Required, MaxLength(200)", "Price: Required, Range(0, 999999)"],
       "cascade_from": ["CATEGORY"],
       "test_script": null,
-      "runs": []
+      "runs": [],
+      
+      "created_in_pass": 1,
+      "created_by_model": "sonnet",
+      "created_at": "2026-05-03T10:05:00Z",
+      "signature": "PRODUCT:master-data:happy-path:product-list-view"
     }
   ]
 }

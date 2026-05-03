@@ -19,21 +19,29 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
    — หา selectors จาก existing code (e2e/, components/, POM files)
    — ถ้าหา selector ไม่ได้ → แนะนำ user ใช้ `npx playwright codegen`
    — Playwright CLI เท่านั้นสำหรับรัน test
-3. **อ่าน test-templates.md** — ใช้เป็น single source of truth ในการเลือก template
+3. **อ่าน test-templates.md + multi-pass-strategy.md** — ใช้เป็น single source of truth
 4. **Backward compatible** — scenarios เดิมต้องไม่เสีย
 5. **Output เป็น qa-tracker.json** — เพิ่ม scenarios พร้อม `advanced` field
 6. **Commit เมื่อเสร็จ** — `advanced-scenario: create/enhance {MODULE}`
 7. **MUST evaluate Cascade + Approval ทุกครั้ง** — ห้ามข้าม 2 patterns นี้
+8. **⭐ Re-run safe (idempotent)** — เพิ่มเคสได้ ห้าม overwrite
+   - ต้องเรียก Step 0 (Re-run Detection) ก่อนทุกครั้ง
+   - ต้อง compute diff + confirm ก่อน write
+   - Track `created_in_pass` + `created_by_model`
+   📖 ดู `references/multi-pass-strategy.md`
 
 ### Self-Check Checklist (MANDATORY)
 
 - [ ] qa-tracker.json read?
-- [ ] test-templates.md อ่านแล้ว?
+- [ ] ⭐ Step 0 Re-run Detection ทำแล้ว?
+- [ ] ⭐ Diff computed + user confirmed ก่อน write?
+- [ ] test-templates.md + multi-pass-strategy.md อ่านแล้ว?
 - [ ] ⭐ Cascade detection ทำแล้ว? (MUST-HAVE #1)
 - [ ] ⭐ Approval workflow detection ทำแล้ว? (MUST-HAVE #2)
 - [ ] Advanced scenarios added with `advanced` field?
 - [ ] Backward compatible (existing scenarios unchanged)?
 - [ ] Variants files created in test-data/?
+- [ ] passes_history[] updated?
 - [ ] qa-tracker.json committed?
 
 ### Output Rejection Criteria
@@ -43,6 +51,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 - Chrome MCP / browser automation tools used → REJECT
 - Cascade detection ข้าม → REJECT (MUST-HAVE)
 - Approval workflow detection ข้าม → REJECT (MUST-HAVE)
+- มี qa-tracker.json อยู่ แต่ overwrite โดยไม่ถาม → REJECT
+- ไม่ track pass info → REJECT
 
 ---
 
@@ -54,15 +64,81 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-create-advanced --enhance --flow-only              # เฉพาะ state-machine
 /qa-create-advanced --enhance --mock-only              # เฉพาะ network mock
 /qa-create-advanced --enhance --data-driven-only       # เฉพาะ data-driven
+/qa-create-advanced --enhance --cascade-only           # เฉพาะ cross-page cascade ⭐
+/qa-create-advanced --enhance --approval-only          # เฉพาะ approval workflow ⭐
 /qa-create-advanced --auto                             # scan codebase สร้างใหม่
 /qa-create-advanced --auto --module ORDER              # scan เฉพาะ module
 /qa-create-advanced --auto --brainstorm-agents         # ใช้ multi-agent brainstorm
+
+# ⭐ Multi-pass / Re-run modes
+/qa-create-advanced --enhance --pass-mode opus-deep    # Pass ใหม่ด้วย opus
+/qa-create-advanced --enhance --pass-mode multi-agent  # 5 personas brainstorm
+/qa-create-advanced --enhance --pass-mode opus-cascade-focus  # MUST-HAVE check
+/qa-create-advanced --enhance --modules PRODUCT,ORDER  # เฉพาะ modules
+/qa-create-advanced --enhance --dry-run                # preview ไม่ write
 $ARGUMENTS
 ```
 
 ---
 
 ## Mode A: --enhance (ต่อยอดจากเดิม)
+
+### ⭐ Enhance Step 0: Re-run Detection & User Prompt
+
+📖 ใช้ logic จาก `references/multi-pass-strategy.md`
+
+```bash
+cat qa-tracker.json 2>/dev/null
+```
+
+**ถ้าไม่มี qa-tracker.json:**
+```
+❌ ไม่พบ qa-tracker.json
+   → รัน /qa-create-scenario --auto ก่อน เพื่อสร้าง baseline
+   → หรือใช้ /qa-create-advanced --auto เพื่อสร้างใหม่
+```
+
+**ถ้ามี qa-tracker.json:**
+
+**Step 0.1 — Status report:**
+```
+🔍 ตรวจพบ qa-tracker.json — มี advanced scenarios อยู่แล้ว
+
+📊 สถานะ Advanced patterns:
+   Pass history:        2 (sonnet → opus)
+   State Machine:       12 scenarios (Pass 1)
+   Data-Driven:         15 scenarios (Pass 1)
+   Network Mock:        10 scenarios (Pass 2 by opus)
+   Serial Group:         8 scenarios (Pass 2)
+   ⭐ Cascade:           18 scenarios (Pass 2)
+   ⭐ Approval Workflow:  0 scenarios — ยังไม่ตรวจ! ⚠️
+```
+
+⚠️ ถ้าพบว่า MUST-HAVE pattern ขาด → highlight เป็น warning
+
+**Step 0.2 — Action choice (skip ถ้า --yes):**
+```
+❓ ต้องการดำเนินการอะไร?
+   1) ➕ Add pass — เพิ่ม advanced scenarios จาก agent ใหม่ (recommended)
+   2) 📝 Module-specific — เฉพาะ module
+   3) ⭐ Fill gaps — ตรวจ MUST-HAVE patterns ที่ยังขาด
+      (Pass ใหม่ที่ focus เฉพาะ Cascade + Approval ที่ยังไม่ครบ)
+   4) 📊 Show diff only (dry-run)
+   5) ❌ Cancel
+
+[1/2/3/4/5]:
+```
+
+**Step 0.3 — Pass mode (skip ถ้า --pass-mode):**
+ใช้ prompt เดียวกับ qa-create-scenario Step 0 B.3
+
+**Step 0.4 — Module filter (skip ถ้า --modules):**
+ใช้ prompt เดียวกับ qa-create-scenario Step 0 B.4
+
+**Step 0.5 — Pass info → Step 1:**
+ส่งข้อมูล: current_pass, pass_mode, modules_filter, existing_scenarios → Step 1+
+
+---
 
 ### Enhance Step 1: Read Existing State
 
@@ -445,6 +521,80 @@ Precedence (เมื่อ entity เข้าได้หลายแบบ):
 เลือกทำข้อไหน? (all / เลขข้อ / skip)
 ```
 
+### ⭐ Enhance Step 5.5: Diff & Merge (Re-run mode)
+
+📖 ใช้ logic จาก `references/multi-pass-strategy.md`
+
+#### 5.5.1 — Compute signatures
+```
+For each new advanced scenario:
+  signature = `${module}:${flow_type || cascade_type || approval}:${normalize(title)}`
+  
+  ตัวอย่าง:
+  - "ORDER:state-machine:order-lifecycle-draft-to-shipped"
+  - "CATEGORY:cascade-INDIRECT:category-product-order-chain"
+  - "LEAVE:approval-workflow:manager-approves-leave-request"
+```
+
+#### 5.5.2 — Compare with existing
+```
+existing_signatures = qa-tracker.json.scenarios
+                       .filter(s => s.advanced)
+                       .map(s => s.signature)
+
+For each new scenario:
+  if signature in existing_signatures:
+    → SKIP, log "duplicate of TS-XXX from Pass {N}"
+  else:
+    → ADD with:
+      - new ID
+      - created_in_pass = current_pass
+      - created_by_model = pass_mode model
+      - signature = computed
+```
+
+#### 5.5.3 — Diff Preview + Confirm
+```
+🔍 Diff Preview (Pass 3 - opus, --pass-mode opus-cascade-focus):
+
+State Machine (ORDER):
+   ✓ Existing: 4 scenarios (Pass 1, sonnet)
+   + New: 2 scenarios (Pass 3, opus)
+     - Concurrent transition (2 users approve)
+     - Race condition: state change during edit
+   ≈ Skipped: 2 (duplicate)
+
+⭐ Cross-page Cascade (PRODUCT, CATEGORY):
+   ✓ Existing: 6 scenarios (Pass 2, opus)
+   + New: 5 scenarios (Pass 3, opus-cascade-focus)
+     - INDIRECT: USER → ORDER → ORDER_ITEM (was missed)
+     - DROPDOWN: 3 ระดับ cascade dropdown
+     - DELETE-SETNULL on USER → ORDER (existing OnDelete=SetNull)
+     - DISABLE: inactive Category → Product list
+     - INDIRECT: 4-level chain (Org→Dept→User→Order)
+
+⭐ Approval Workflow (LEAVE):
+   ✓ Existing: 12 scenarios (Pass 2)
+   + New: 4 scenarios (Pass 3, opus-cascade-focus)
+     - Multi-level approval (manager → director → CEO)
+     - Delegation: manager out → backup approves
+     - Auto-escalation after 5 days no action
+     - Audit log integrity check (immutable history)
+
+📊 Summary:
+   Pass 1 (sonnet): 8 advanced scenarios
+   Pass 2 (opus):   +30 scenarios
+   Pass 3 (opus-cascade-focus): +11 new, 5 skipped
+   ────────────────────────────────────────
+   Total advanced: 49 scenarios
+
+✅ Confirm to merge? (yes/no/edit)
+```
+
+ถ้า `--dry-run` → STOP
+
+---
+
 ### Enhance Step 6: Create Scenarios + Variants Files
 
 สำหรับแต่ละ recommendation ที่เลือก:
@@ -549,6 +699,11 @@ git commit -m "advanced-scenario: enhance ORDER with state-machine, cascade, app
 
 ## Mode B: --auto (Scan Codebase)
 
+### ⭐ Auto Step 0: Re-run Detection
+
+ทำเหมือน Enhance Step 0 — ตรวจ qa-tracker.json + ถาม user
+ถ้ามี advanced scenarios อยู่แล้ว → ไป multi-pass flow
+
 ### Auto Step 1: Dispatch Detection Agents
 
 เหมือน Enhance Step 3 แต่ scan ทั้ง codebase (ไม่จำกัด module)
@@ -557,10 +712,22 @@ git commit -m "advanced-scenario: enhance ORDER with state-machine, cascade, app
 
 เหมือน Enhance Step 4
 
+### Auto Step 2.5: Diff & Merge
+
+ทำเหมือน Enhance Step 5.5 — compute signatures + diff + confirm
+
 ### Auto Step 3: Build qa-tracker.json
 
 ถ้ามี qa-tracker.json อยู่แล้ว → เพิ่ม advanced scenarios (ไม่แก้เดิม)
 ถ้าไม่มี → สร้างใหม่พร้อม advanced scenarios
+
+ทุก scenario ต้องมี:
+- `created_in_pass`
+- `created_by_model`
+- `signature`
+- `created_at`
+
+อัปเดต `passes_history[]` ใน qa-tracker.json
 
 ### Auto Step 4: Show Summary + Confirm
 
