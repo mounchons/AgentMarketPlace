@@ -1,7 +1,7 @@
 {
   "name": "system-design-doc",
-  "version": "1.5.0",
-  "description": "Create standardized system design documents — supports Reverse Engineering from codebase, Import from implementation plan, Interactive Brainstorming with Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD)",
+  "version": "1.6.0",
+  "description": "Create standardized system design documents — supports Reverse Engineering from codebase, Import from implementation plan, Interactive Brainstorming with Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD), /help command with mode-based guide (--quick/--workflow/--integration/--diagrams/--reverse/--validation)",
   "author": {
     "name": "Mounchons"
   }

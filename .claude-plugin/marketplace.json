@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.7.1",
+    "version": "1.8.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -13,15 +13,20 @@
     {
       "name": "system-design-doc",
       "source": "./plugins/system-design-doc",
-      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams",
-      "version": "1.2.0",
+      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase, Import จาก implementation plan, Interactive Brainstorming, Mermaid diagrams 7 ประเภท (ER, Flow, DFD, Sequence, Sitemap, State, Class), validate-integration cross-plugin, /help command พร้อม mode-based guide (--quick/--workflow/--integration/--diagrams/--reverse/--validation)",
+      "version": "1.6.0",
       "category": "documentation",
       "tags": [
         "thai",
         "system-design",
         "mermaid",
         "reverse-engineering",
-        "documentation"
+        "documentation",
+        "brainstorming",
+        "import-plan",
+        "validation",
+        "cross-plugin",
+        "help-guide"
       ],
       "author": {
         "name": "Mounchons"
@@ -77,17 +82,23 @@
     {
       "name": "ui-mockup",
       "source": "./plugins/ui-mockup",
-      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document เป็น bridge ระหว่าง system-design-doc และ frontend-design พร้อม ASCII wireframes, component specs และ mockup tracking system",
-      "version": "1.1.0",
+      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document — bridge ระหว่าง system-design-doc และ frontend-design รองรับ ASCII wireframes, HTML mockups (Web Component master page), component specs, design tokens, CLAUDE.md-aware alert library, field mapping, framework-aware URL syntax, parallel sub-agents, /help command พร้อม mode-based guide (--quick/--workflow/--integration/--html/--ascii/--parallel)",
+      "version": "1.6.0",
       "category": "design",
       "tags": [
         "ui",
         "mockup",
         "wireframe",
         "ascii-art",
+        "html-mockup",
+        "web-component",
         "design-system",
+        "design-tokens",
         "responsive",
         "parallel-agents",
+        "frontend-design",
+        "field-mapping",
+        "help-guide",
         "thai"
       ],
       "author": {
