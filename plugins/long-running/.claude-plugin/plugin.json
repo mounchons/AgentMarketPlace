@@ -1,7 +1,7 @@
 {
   "name": "long-running",
-  "version": "2.4.0",
-  "description": "Harness for AI Agents working across context windows — supports multi-session continuity with feature tracking, progress logging, model assignment & review system, Verification Pipeline (7 checks beyond build success), incremental development pattern, design doc impact check on /add-feature & /edit-feature (auto-detect entity/API/diagram impact + interactive sync prompt), and integration with ui-mockup, system-design-doc, dotnet-dev skills",
+  "version": "2.5.0",
+  "description": "Harness for AI Agents working across context windows — supports multi-session continuity with feature tracking, progress logging, model assignment & review system, Verification Pipeline (7 checks beyond build success), incremental development pattern, design doc impact check on /add-feature & /edit-feature (auto-detect entity/API/diagram impact + interactive sync prompt), /help command with mode-based guide (--quick/--workflow/--integration/--new), and integration with ui-mockup, system-design-doc, dotnet-dev skills",
   "author": {
     "name": "Mounchons"
   }
