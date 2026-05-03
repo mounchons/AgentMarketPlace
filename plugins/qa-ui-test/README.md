@@ -6,6 +6,11 @@
 > **integration กับ long-running plugin** (ส่ง bugs เป็น features ให้ dev fix อัตโนมัติ),
 > Playwright CLI only (ไม่ใช้ MCP)
 
+📖 **เอกสารเพิ่มเติม:**
+- [Playwright CLI + QA Plugin Guide](docs/playwright-cli-guide.md) — วิธีใช้ Playwright CLI ร่วมกับ qa command (debug, --ui mode, codegen, list tests)
+- ดูคำสั่งทั้งหมด: `/qa-help`
+- Playwright cheat sheet: `/qa-help --playwright`
+
 ---
 
 ## สารบัญ

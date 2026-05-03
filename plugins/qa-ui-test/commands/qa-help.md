@@ -39,6 +39,7 @@ allowed-tools: Read(*)
 /qa-help --workflow               # workflow แนะนำเท่านั้น
 /qa-help --integration            # อธิบาย integration กับ long-running
 /qa-help --quick                  # quick start (3 ขั้นตอน)
+/qa-help --playwright             # Playwright CLI cheat sheet (เห็นหน้าจอ, debug, list tests)
 $ARGUMENTS
 ```
 
@@ -128,6 +129,7 @@ bug lifecycle (triage → export → verify), integration กับ long-running
 
   เพิ่งเริ่มใหม่?         → /qa-help --quick      (Quick Start 3 ขั้นตอน)
   เพิ่งทำ test fail?      → /qa-help --bugs       (Bug workflow)
+  อยากเห็นหน้าจอ/debug?   → /qa-help --playwright (Playwright CLI cheat sheet)
   อยากเชื่อม long-running? → /qa-help --integration
   ดูคำสั่งเฉพาะ?           → /qa-help [command]   เช่น /qa-help bug-export
 
@@ -164,6 +166,10 @@ bug lifecycle (triage → export → verify), integration กับ long-running
    /qa-help --bugs            Bug Management ละเอียด
    /qa-help --workflow        Workflow ครบวงจร
    /qa-help --integration     Integration กับ long-running plugin
+   /qa-help --playwright      Playwright CLI cheat sheet (debug, --ui, --headed)
+
+📖 เอกสารเต็ม:
+   docs/playwright-cli-guide.md   คู่มือผสม Playwright CLI + qa command
 ```
 
 ---
@@ -517,6 +523,140 @@ $ /qa-bug-verify --regression             # weekly check
 
 ---
 
+### Mode 7: `--playwright` → Playwright CLI Cheat Sheet
+
+```
+🎭 Playwright CLI — Cheat Sheet สำหรับ qa-ui-test
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 ทำไมต้องใช้ Playwright CLI ตรงๆ?
+
+   qa-ui-test plugin ใช้ Playwright อยู่แล้ว — แต่บางสถานการณ์
+   ต้อง control เอง (debug ด้วยตา, watch mode, codegen)
+
+   กฎง่ายๆ:
+   • คิด/แก้เคส        → ใช้ qa command
+   • เห็นหน้าจอ/debug   → ใช้ Playwright CLI
+   • รัน + track สถานะ  → ใช้ qa command
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👁️  เห็นหน้าจอระหว่างรัน (4 วิธี)
+
+  Option 1: --headed (เห็น browser จริง)
+  ───────────────────────────────────
+  $ npx playwright test --headed
+  $ npx playwright test --headed --slow-mo=1000
+  
+  ✅ เหมาะกับ: demo, สาธิตให้ stakeholder
+  ❌ ช้ากว่า headless 3-5 เท่า
+
+
+  Option 2: --ui Mode ⭐ (แนะนำที่สุด)
+  ───────────────────────────────────
+  $ npx playwright test --ui
+  
+  ✅ Time-travel: เห็น DOM ก่อน/หลังทุก step
+  ✅ Watch mode: แก้โค้ด → auto re-run
+  ✅ Network/Console/Errors panels
+  ✅ Pick locator แบบสด
+
+
+  Option 3: --debug (Inspector)
+  ───────────────────────────────────
+  $ npx playwright test --debug
+  $ npx playwright test --debug --grep TS-LOGIN-001
+  
+  ✅ Step-through manual ทีละ action
+  ✅ Pick locator → copy ใส่โค้ด
+
+
+  Option 4: Video (record ดูภายหลัง)
+  ───────────────────────────────────
+  แก้ playwright.config.ts:
+    use: { video: 'on' }   # หรือ 'retain-on-failure'
+  
+  เปิดดูจาก HTML report → mp4
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 ดู List ทดสอบ
+
+  CLI text:        $ npx playwright test --list
+  Filter:          $ npx playwright test --list --grep LOGIN
+  UI Mode:         $ npx playwright test --ui (sidebar)
+  HTML Report:     $ npx playwright show-report
+  qa-tracker ⭐:    /qa-status --module LOGIN
+  Flowchart:       /qa-explain --module CHECKOUT
+
+  💡 /qa-status เห็นเคสที่ยังไม่ได้สร้าง script ด้วย
+     (Playwright list เห็นแค่ที่มี script แล้ว)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Filter (รันเฉพาะที่ต้องการ)
+
+  ตามไฟล์:         $ npx playwright test tests/TS-LOGIN-001.spec.ts
+  ตามชื่อ:          $ npx playwright test --grep TS-LOGIN-001
+  ยกเว้น tag:       $ npx playwright test --grep-invert "@slow"
+  ตาม browser:      $ npx playwright test --project=chromium
+  Workers:          $ npx playwright test --workers=4
+  ซ้ำ (หา flaky):    $ npx playwright test --repeat-each=10
+  เฉพาะที่ fail:     $ npx playwright test --last-failed
+
+  💡 หรือผ่าน qa: /qa-run --failed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎬 Codegen — บันทึก action → generate code
+
+  $ npx playwright codegen http://localhost:3000
+  $ npx playwright codegen --target=javascript [URL]
+  $ npx playwright codegen --load-storage=auth.json [URL]
+
+  หลังบันทึกเสร็จ → copy code → ใส่ไฟล์ใหม่
+  แล้ว /qa-edit-scenario TS-NEW-XXX "describe scenario"
+  เพื่อให้ qa-tracker.json รู้จัก
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 ดูผล + Trace
+
+  HTML report:     $ npx playwright show-report
+  Trace viewer:    $ npx playwright show-trace path/to/trace.zip
+  Force trace:     $ npx playwright test --trace on
+
+  💡 trace.zip อยู่ใน test-results/<test-name>/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 Workflow ผสม (qa + Playwright CLI)
+
+  1. /qa-create-scenario --auto         # qa สร้างเคส
+  2. /qa-continue --module LOGIN         # qa generate + รัน
+  3. # ถ้ามี fail → debug ด้วย UI Mode
+     $ npx playwright test --ui --grep TS-LOGIN-003
+  4. /qa-edit-scenario TS-LOGIN-003 "..."  # qa แก้เคส
+  5. /qa-run TS-LOGIN-003                # qa รันใหม่ + track
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 เอกสารเต็ม:
+   plugins/qa-ui-test/docs/playwright-cli-guide.md
+   
+   ครอบคลุม:
+   • Cheat sheet ทุกหมวด
+   • Persona guide (Manual QA / Dev / Reviewer)
+   • FAQ + Troubleshooting
+
+🔜 ลองเลย:
+   $ npx playwright test --ui              ← ดูทันที
+   /qa-status                              ← ดู list ทั้งหมด
+```
+
+---
+
 ### Mode 6: คำสั่งเฉพาะ (เมื่อมี argument)
 
 **รองรับ format:** `qa-create-scenario`, `create-scenario`, `/qa-create-scenario`, `bug-export`, `bugexport`
@@ -662,7 +802,10 @@ $ /qa-bug-verify --regression             # weekly check
    /qa-status                     — ดูสถานะปัจจุบัน
    /qa-help --quick               — quick start guide
    /qa-help --bugs                — bug management guide
+   /qa-help --playwright          — Playwright CLI cheat sheet
    /qa-help --integration         — เชื่อม long-running plugin
+   
+📖 docs/playwright-cli-guide.md  — คู่มือผสม Playwright CLI + qa command
 ```
 
 > คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)
