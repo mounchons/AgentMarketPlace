@@ -5,7 +5,7 @@ allowed-tools: Read(*), Bash(*)
 
 # Long-Running Help — คู่มือการใช้งาน
 
-คุณคือ **Long-Running Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน long-running plugin (v2.4.0+)
+คุณคือ **Long-Running Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน long-running plugin (v2.6.0+)
 
 ## CRITICAL RULES
 
@@ -33,7 +33,9 @@ allowed-tools: Read(*), Bash(*)
 /help --integration            # Integration กับ plugins อื่น (system-design-doc, ui-mockup, qa-ui-test)
 /help --setup                  # Setup commands เท่านั้น
 /help --features               # Feature management commands
-/help --new                    # What's new in v2.4.0
+/help --qa                     # ⭐ qa-ui-test release gates (NFR + AC + bug verify) — v2.6.0
+/help --gates                  # ⭐ /continue Step 5.6 gate enforcement details
+/help --new                    # What's new in v2.6.0
 ```
 
 ---
@@ -43,12 +45,13 @@ allowed-tools: Read(*), Bash(*)
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 Long-Running — คู่มือการใช้งาน v2.4.0
+📖 Long-Running — คู่มือการใช้งาน v2.6.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Harness สำหรับ AI Agent ทำงานข้าม context windows
 Multi-session continuity, feature tracking, design doc integration,
 verification pipeline, model assignment
+⭐ v2.6.0: qa-ui-test release gates (Gate 1 AC + Gate 2 NFR + Gate 3 Bug verify)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -120,12 +123,32 @@ verification pipeline, model assignment
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+🧪 QA RELEASE GATES (2 commands) ⭐ v2.6.0 — qa-ui-test integration
+
+  /nfr-check                   Read qa-tracker.nfr_results → feature.nfr_compliance
+                               Flag features ที่ blocks_release && score < required
+                               ตัวอย่าง: /nfr-check
+                               ตัวอย่าง: /nfr-check --module CHECKOUT
+                               ตัวอย่าง: /nfr-check --feature 5
+                               ตัวอย่าง: /nfr-check --strict
+
+  /qa-coverage-check           Read qa-tracker.traceability → feature.qa_trace_coverage
+                               Classify ACs as covered/gap/fail/pending
+                               ตัวอย่าง: /qa-coverage-check
+                               ตัวอย่าง: /qa-coverage-check --gaps-only
+                               ตัวอย่าง: /qa-coverage-check --feature 7
+                               ⚠ ต้องรัน /qa-ui-test:qa-trace ก่อน
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 📌 แนะนำจุดเริ่มต้น
 
   เพิ่งเริ่มใหม่?         → /help --quick      (Quick Start 3 ขั้นตอน)
   อยากเชื่อม design doc? → /help --integration
+  ⭐ qa-ui-test gates?    → /help --qa         (v2.6.0 — ใหม่)
+  ⭐ /continue gate detail?→ /help --gates     (Step 5.6 deep-dive)
   ดูคำสั่งเฉพาะ?           → /help [command]   เช่น /help add-feature
-  อยากรู้ว่ามีอะไรใหม่?    → /help --new       (v2.4.0 changes)
+  อยากรู้ว่ามีอะไรใหม่?    → /help --new       (v2.6.0 changes)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -152,6 +175,18 @@ verification pipeline, model assignment
    /validate-coverage                 # ครอบคลุมหมดไหม?
    /dependencies                      # มี blocker ไหม?
    /sync-mockups                      # mockup ตรง feature?
+   /nfr-check                         # ⭐ NFR compliance check
+   /qa-coverage-check                 # ⭐ AC coverage check
+   /status                            # ดู release-blocked features
+
+🧪 QA-aware development (v2.6.0):
+   /qa-ui-test:qa-create-scenario     # สร้าง scenarios ก่อน
+   /qa-ui-test:qa-run                 # รัน tests
+   /qa-ui-test:qa-trace               # build traceability
+   /qa-ui-test:qa-nfr-assess          # NFR scoring
+   /qa-coverage-check                 # pull AC coverage → feature_list
+   /nfr-check                         # pull NFR → feature_list
+   /continue                          # ⭐ Step 5.6 enforce 3 gates ก่อน passes=true
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -159,7 +194,9 @@ verification pipeline, model assignment
    /help --quick           Quick Start 3 ขั้นตอน
    /help --workflow        Full workflow walkthrough
    /help --integration     Integration กับ plugins อื่น
-   /help --new             v2.4.0 changes
+   /help --qa              ⭐ qa-ui-test integration (v2.6.0)
+   /help --gates           ⭐ /continue Step 5.6 gate details
+   /help --new             v2.6.0 changes
 ```
 
 ---
@@ -353,19 +390,48 @@ $ /status                         # 100% pass?
       feature.references = [".mockups/login.mockup.md"]
       mockup.feature_id = 5
 
-   3. qa-ui-test → long-running
-      ─────────────────────────
+   3. qa-ui-test ↔ long-running ⭐ v2.6.0
+      ──────────────────────────────────
+      Two-way data flow:
+
+      qa-ui-test → long-running:
       • /qa-bug-export                  → bug → feature ใหม่ (epic="bug-fix")
       • /qa-bug-export-subtask          → bug → subtask ใน feature เดิม
       • /qa-bug-verify --auto-sync      → ปิด feature เมื่อ verify ผ่าน
 
-      Schema:
+      qa-tracker.json → feature_list.json (read-only via 2 commands):
+      • /nfr-check                      → qa-tracker.nfr_results
+                                           → feature.nfr_compliance
+      • /qa-coverage-check              → qa-tracker.traceability
+                                           → feature.qa_trace_coverage
+
+      /continue (Step 5.6) → reads bugs[].status:
+      • bug.status == "verified" → mark "Verify BUG-XXX" subtask done
+      • else → BLOCK passes=true (override: --force-bug-verify)
+
+      Schema additions (v2.4):
       feature.epic = "bug-fix"
-      feature.linked_bug = "BUG-001"
-      feature.subtasks = [
-        { id: "15.1", description: "Reproduce", done: false },
-        { id: "15.4", description: "Verify BUG-001", done: false }
-      ]
+      feature.linked_bug = {
+        qa_bug_id: "BUG-001",
+        scenario_risk: { priority, score, factors[], scenario_assigned_model },
+        linked_scenario: "TS-MODULE-NNN"
+      }
+      feature.acceptance_criteria_id = ["AC-001", "AC-002"]
+      feature.complexity_tags = ["state-machine", "cascade-deep"]
+      feature.nfr_compliance = {
+        performance: { score, required: 85, blocks_release: false },
+        security:    { score, required: 75, blocks_release: TRUE },
+        reliability: { score, required: 85, blocks_release: false },
+        maintainability: { score, required: 70, blocks_release: false }
+      }
+      feature.qa_trace_coverage = {
+        covered_acs: [...], gap_acs: [...], fail_acs: [...],
+        pending_acs: [...], last_checked_at
+      }
+
+      ⭐ ID propagation = ONE-WAY (qa-ui-test → long-running)
+        BUG IDs from qa-ui-test, AC IDs from system-design-doc
+        long-running mirrors only — never creates these IDs
 
    4. brain / bigbrain → long-running
       ──────────────────────────────
@@ -391,18 +457,31 @@ $ /status                         # 100% pass?
    2. /qa-bug-export           (creates bug-fix feature in long-running)
    3. /continue                (long-running picks bug-fix feature)
    4. /qa-bug-verify --auto-sync  (closes loop)
+   5. /continue Step 5.6 Gate 3 → "Verify BUG-XXX" done=true ✅
+
+   QA-aware development flow ⭐ v2.6.0:
+   ─────────────────────────────────────
+   1. /qa-ui-test:qa-create-scenario  → seed scenarios with AC IDs
+   2. /qa-ui-test:qa-run              → execute tests
+   3. /qa-ui-test:qa-trace            → build traceability matrix
+   4. /qa-ui-test:qa-nfr-assess       → score NFR
+   5. /qa-coverage-check              → pull AC coverage
+   6. /nfr-check                      → pull NFR compliance
+   7. /continue (Step 5.6 enforces 3 gates) → mark passes=true only when all green
 
 
 💡 Setup Requirements:
-  • system-design-doc plugin installed
+  • system-design-doc plugin installed (recommended for AC IDs)
   • ui-mockup plugin installed (optional)
-  • qa-ui-test plugin installed (optional)
+  • qa-ui-test plugin installed (recommended ⭐ v2.6.0 for release gates)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🔜 ดูเพิ่ม:
    /help add-feature       → design doc impact check details
    /help edit-feature      → inherit + impact check details
+   /help --qa              → qa-ui-test integration deep-dive ⭐
+   /help --gates           → Step 5.6 enforcement details
    /qa-help --integration  → qa-ui-test side
 ```
 
@@ -452,55 +531,374 @@ $ /status                         # 100% pass?
 
 ---
 
-### Mode 7: `--new` → What's new in v2.4.0
+### Mode 7: `--qa` → QA Integration (v2.6.0) ⭐
 
 ```
-✨ What's new in v2.4.0
+🧪 qa-ui-test Integration — long-running v2.6.0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 long-running consumes qa-tracker.json (read-only) เป็น release-gate enforcer
+   feature.passes=true ต้องผ่าน 3 gates ก่อน
+
+
+📊 Data Flow
+
+  qa-tracker.json (qa-ui-test) ──read-only──▶ feature_list.json (long-running)
+  source of truth                              consumer + gate enforcer
+
+  Inputs from qa-tracker:
+   ├── nfr_results       → /nfr-check         → feature.nfr_compliance
+   ├── traceability      → /qa-coverage-check → feature.qa_trace_coverage
+   └── bugs[].status     → /continue Gate 3   → bug-fix subtask done
+
+
+🔒 3 Release Gates (enforced ใน /continue Step 5.6)
+
+  Gate 1 — AC Coverage:
+    qa_trace_coverage.gap_acs == [] AND
+    qa_trace_coverage.fail_acs == []
+
+  Gate 2 — NFR Compliance:
+    For each type in {performance, security, reliability, maintainability}:
+      IF blocks_release && score < required → FAIL
+    Default: security blocks (≥75); others advisory
+
+  Gate 3 — Bug Verification:
+    For each subtask "Verify BUG-XXX":
+      Check qa-tracker.bugs[BUG-XXX].status == "verified"
+
+
+🆕 New Commands (v2.6.0)
+
+  /nfr-check
+  ──────────
+  Read qa-tracker.nfr_results → feature.nfr_compliance
+
+  Default thresholds:
+    performance     = 85  (advisory)
+    security        = 75  ⚠ BLOCKS RELEASE
+    reliability     = 85  (advisory)
+    maintainability = 70  (advisory)
+
+  Override per-feature: edit feature.nfr_compliance.<type>.required / blocks_release
+  Override globally: --strict (ทำให้ทุก type blocks_release=true)
+  Override threshold: --threshold security=80
+
+  Flags:
+    /nfr-check                       # all features
+    /nfr-check --module CHECKOUT     # module-scoped
+    /nfr-check --feature 5           # single feature
+    /nfr-check --report-only         # show report ไม่เขียน
+
+  Critical failures (security floor):
+    AWS keys ใน DOM, plain-text password, DB conn string
+    → ALL gates BLOCKED จนกว่าจะ remediate
+
+
+  /qa-coverage-check
+  ──────────────────
+  Read qa-tracker.traceability → feature.qa_trace_coverage
+
+  Per-AC classification:
+    PASS    — linked scenarios + all passed
+    FAIL    — linked scenarios but failed (release blocker)
+    GAP     — zero linked scenarios (release blocker)
+    PENDING — linked but not run yet (CONCERNS, warning only)
+
+  Flags:
+    /qa-coverage-check                       # all features with ACs
+    /qa-coverage-check --feature 5           # single
+    /qa-coverage-check --gaps-only           # only blockers
+    /qa-coverage-check --strict-orphans      # fail if any feature lacks ACs
+
+
+🔧 Schema additions (feature_list.json 2.3.0 → 2.4.0)
+
+  features[].acceptance_criteria_id[]   # AC-NNN refs to design-doc
+  features[].complexity_tags[]          # qa's 8 factors
+  features[].linked_bug{}               # for bug-fix features
+  features[].nfr_compliance{}           # per-type score/required/blocks
+  features[].qa_trace_coverage{}        # covered/gap/fail/pending ACs
+
+  integration.qa_tracker_path
+  integration.last_nfr_check
+  integration.last_qa_coverage_check
+
+  sync_status.qa_tracker {
+    total_features_with_acs,
+    features_with_gap_acs,
+    features_failing_nfr,
+    release_blocked_features
+  }
+
+
+🔄 Bug-fix workflow (qa-ui-test → long-running → qa-ui-test)
+
+  qa-bug-list                       (qa-ui-test)
+       ↓
+  qa-bug-export                     (qa-ui-test creates bug-fix feature)
+       ↓
+  feature.linked_bug = {            (auto-populated frozen snapshot)
+    qa_bug_id: "BUG-001",
+    scenario_risk: { priority: "P0", factors: [...] },
+    linked_scenario: "TS-XXX-001"
+  }
+       ↓
+  /continue                          (long-running implements fix)
+       ↓
+  qa-bug-verify                      (qa-ui-test re-runs scenario)
+       ↓
+  bug.status == "verified"
+       ↓
+  /continue Step 5.6 Gate 3 PASS    (subtask "Verify BUG-001" → done=true)
+       ↓
+  feature.passes = true              ✅
+
+
+🔙 Backward compat
+
+  Features without acceptance_criteria_id[]  → skip Gate 1
+  Features without nfr_compliance            → skip Gate 2
+  Features not epic="bug-fix"                → skip Gate 3
+  pre-v2.4 feature_list.json                 → /continue uses old behavior
+                                                (Verification Pipeline only)
+
+
+🚪 Override flags (logged in audit trail)
+
+  /continue --force-coverage    # bypass Gate 1 (AC)
+  /continue --force-nfr         # bypass Gate 2 (NFR)
+  /continue --force-bug-verify  # bypass Gate 3 (Bug)
+  /continue --force-all         # bypass all 3
+
+  Override logged ใน feature.notes พร้อม timestamp + reason
+
+  When acceptable:
+   ✅ Pre-launch + stakeholder sign-off (defer ACs to next sprint)
+   ✅ Production hotfix (verify มาทีหลัง)
+
+  When NOT acceptable:
+   ❌ ทำให้ CI green เฉยๆ
+   ❌ "ไว้ทำทีหลัง" โดยไม่มีแผน
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔜 ดูเพิ่ม:
+   /help --gates                  → Step 5.6 deep-dive
+   /help nfr-check                → command details
+   /help qa-coverage-check        → command details
+   /qa-help --integration         → qa-ui-test side
+```
+
+---
+
+### Mode 7.5: `--gates` → /continue Step 5.6 Deep-Dive ⭐
+
+```
+🚪 /continue Step 5.6 — QA + NFR Release Gates
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Step 5.6 รันหลัง Step 5.5 (Verification Pipeline)
+   ก่อน Step 6 (Mark as Passed)
+
+   Order:
+     5.0 — Implement
+     5.5 — Verification Pipeline (build, design-doc, CRUD, etc.)
+     5.6 — ⭐ QA + NFR Gates (NEW v2.6.0)
+     6.0 — Mark passes=true (only if 5.5 + 5.6 ALL GREEN)
+
+
+🔍 Pre-conditions ก่อนเข้า Step 5.6
+
+  Step 5.6 รันต่อเมื่อ:
+   • feature.acceptance_criteria_id[] non-empty (มี AC links)
+     OR
+   • qa-tracker.json มีอยู่ (มี NFR / bugs ให้ตรวจ)
+
+  ถ้าไม่ตรงเงื่อนไข → skip step (backward compat)
+
+
+🔄 Refresh data ก่อนตัดสิน
+
+  /qa-coverage-check --feature <ID> --report-only
+  /nfr-check --feature <ID> --report-only
+
+  → ดึงข้อมูลล่าสุดจาก qa-tracker (ไม่เขียน feature_list)
+
+
+✅ Gate 1 — AC Coverage
+
+  Read feature.qa_trace_coverage:
+   PASS  if  gap_acs == [] AND fail_acs == []
+   FAIL  if  gap_acs non-empty   → BLOCK
+   FAIL  if  fail_acs non-empty  → BLOCK
+   WARN  if  pending_acs non-empty (CONCERNS gate) → ALLOW + warn
+
+
+✅ Gate 2 — NFR Compliance
+
+  Read feature.nfr_compliance:
+   For each type in {performance, security, reliability, maintainability}:
+     IF blocks_release == true AND score < required:
+       → BLOCK
+
+
+✅ Gate 3 — Bug Verification (epic="bug-fix" only)
+
+  For each subtask labeled "Verify BUG-XXX":
+   Read qa-tracker.bugs[BUG-XXX].status:
+     "verified"           → mark subtask done=true
+     "new"/"triaged"/...  → BLOCK subtask done=true
+     "closed"/"wont_fix"  → mark done=true (closed without verify)
+
+
+❌ ถ้า gate FAIL (ไม่ใช้ --force)
+
+  feature ถูก mark เป็น "blocked" (ไม่ใช่ "passed"):
+    {
+      "status": "blocked",
+      "blocked_reason": "qa_trace_coverage.gap_acs=[AC-007] — run /qa-create-scenario",
+      "passes": false,
+      "qa_trace_coverage": { "gap_acs": ["AC-007"], ... }
+    }
+
+  → สร้าง follow-up subtask แก้ gap
+  → update progress.md ระบุ gate ที่ block
+
+
+🚪 Override flags
+
+  --force-coverage      bypass Gate 1
+  --force-nfr           bypass Gate 2
+  --force-bug-verify    bypass Gate 3
+  --force-all           bypass ทั้ง 3 gates
+
+  ⚠ Override จะถูก log ใน feature.notes พร้อม timestamp + reason
+
+
+🛑 Output Rejection (ถ้า mark passes=true ผิด)
+
+  REJECT ถ้า:
+   • qa_trace_coverage.gap_acs non-empty (ไม่ใช้ --force-coverage)
+   • qa_trace_coverage.fail_acs non-empty (ไม่ใช้ --force-coverage)
+   • nfr_compliance.[*].blocks_release && score < required (ไม่ใช้ --force-nfr)
+   • bug-fix subtask "Verify BUG-XXX" done=true while bug.status != "verified"
+     (ไม่ใช้ --force-bug-verify)
+
+
+💡 ตัวอย่างการใช้งาน
+
+  Normal flow:
+    /qa-coverage-check --feature 5
+    /nfr-check --feature 5
+    /continue 5
+    → Step 5.5 GREEN → Step 5.6 GREEN → mark passes=true ✅
+
+  Gap detected:
+    /qa-coverage-check --feature 7
+    → AC-007, AC-008 GAP
+    /continue 7
+    → Step 5.6 Gate 1 FAIL → feature blocked
+    /qa-ui-test:qa-create-scenario --module AUTH
+    → create scenarios → /qa-run → /qa-trace → /qa-coverage-check
+    /continue 7
+    → Gate 1 PASS → mark passes=true ✅
+
+  Override (production hotfix):
+    /continue 12 --force-bug-verify
+    → mark passes=true (Gate 3 bypassed)
+    → feature.notes: "[OVERRIDE] --force-bug-verify @ 2026-05-05T10:00 reason: production hotfix, verify deferred"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔜 ดูเพิ่ม:
+   /help --qa                   → integration overview
+   /help continue               → /continue command details
+```
+
+---
+
+### Mode 8: `--new` → What's new in v2.6.0
+
+```
+✨ What's new in v2.6.0 (2026-05-05)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⭐ qa-ui-test v2.5 Release Gates
+
+long-running consume qa-tracker.json เป็น release-gate enforcer
+feature.passes=true ต้องผ่าน 3 gates ก่อน (Step 5.6 ใน /continue)
+
+
+🆕 New Commands
+
+  /nfr-check                Read qa-tracker.nfr_results → feature.nfr_compliance
+                            Default thresholds: perf 85, security 75 [BLOCKS],
+                                                reliability 85, maint 70
+
+  /qa-coverage-check        Read qa-tracker.traceability → feature.qa_trace_coverage
+                            Classify ACs: PASS/CONCERNS/FAIL/GAP
+
+
+🔄 /continue (Step 5.6 — NEW)
+
+  Insert ระหว่าง Step 5.5 (Verification Pipeline) และ Step 6 (Mark Passed)
+
+  Gate 1 — AC Coverage:    gap_acs == [] AND fail_acs == []
+  Gate 2 — NFR Compliance: blocks_release types ทุกตัว score >= required
+  Gate 3 — Bug Verify:     bug-fix subtask done only when bug verified
+
+
+🚪 Override flags (logged in audit trail)
+
+  --force-coverage / --force-nfr / --force-bug-verify / --force-all
+  Logged ใน feature.notes พร้อม reason
+
+
+🔧 Schema additions (feature_list.json 2.3.0 → 2.4.0)
+
+  features[].acceptance_criteria_id[]   # AC-NNN refs to design-doc
+  features[].complexity_tags[]          # qa's 8 factors
+  features[].linked_bug{}               # frozen snapshot for bug-fix features
+  features[].nfr_compliance{}           # per-type compliance
+  features[].qa_trace_coverage{}        # covered/gap/fail/pending
+
+
+🔙 Backward compat
+
+  Features without new fields skip the corresponding gate
+  Pre-v2.4 feature_list.json → /continue uses old behavior (Pipeline only)
+  ไม่ต้อง /migrate — fields เป็น optional
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📜 Previous version (v2.4.0 design doc impact check)
 
 ⭐ Design Doc Impact Check (proactive sync)
 
-/add-feature และ /edit-feature ตอนนี้ตรวจ design_doc_list.json ก่อนสร้าง feature
+/add-feature และ /edit-feature ตรวจ design_doc_list.json ก่อนสร้าง feature
 
   flow:
     user รัน /add-feature
        ▼
     Step 4: ตรวจหา design_doc_list.json
        ▼
-    ถ้ามี → วิเคราะห์ impact:
-       • API endpoints (HTTP method+path)
-       • Entities (table/attributes)
-       • Diagrams (flow/sequence/ER)
+    ถ้ามี → วิเคราะห์ impact: API/Entity/Diagram
        ▼
     ถ้าพบ impact → ถาม 3 ทาง:
        [1] อัปเดต design doc ก่อน
        [2] Skip + บันทึก pending_updates[]
        [3] ยกเลิก
 
-
-🔧 Schema additions:
-   feature.design_doc_refs = {
-     api_ref: "API-005" | null,
-     entity_ref: "ENT-001" | null,
-     diagram_refs: [],
-     pending_updates: []        ← deferred sync queue
-   }
-
-
-🔄 Edit feature inheritance:
-   เมื่อ /edit-feature → new feature inherit design_doc_refs จาก original
-   + เพิ่ม pending_updates ตาม impact ใหม่
-   → history ของ design linkage ไม่หาย
-
-
-📌 Migration:
-   features เก่าที่ไม่มี design_doc_refs → field เป็น optional
-   ไม่ต้องรัน /migrate (backward compatible)
+Schema additions:
+   feature.design_doc_refs = { api_ref, entity_ref, diagram_refs, pending_updates }
 
 
 📚 ดูเพิ่ม:
-   plugins/long-running/tests/INTEGRATION_TEST.md  (regression checklist)
-   /help --integration                              (cross-plugin flow)
+   /help --qa                   → qa-ui-test integration deep-dive
+   /help --gates                → Step 5.6 enforcement details
+   /help --integration          → cross-plugin overview
 ```
 
 ---
@@ -567,9 +965,11 @@ $ /status                         # 100% pass?
 
 **continue:**
 - Prerequisites: feature_list.json มี features ที่ passes=false
-- Output: implement → mark passes=true
+- Output: implement → Step 5.5 Verification Pipeline → ⭐ Step 5.6 QA+NFR Gates → mark passes=true
+- Special: ⭐ v2.6.0 Step 5.6 enforces 3 gates (AC coverage, NFR, bug verify)
+- Override flags: --force-coverage / --force-nfr / --force-bug-verify / --force-all
 - Time: 10-60 min ต่อ feature (ขึ้นกับ complexity)
-- Next: /continue (next), /review, /qa-create-scenario
+- Next: /continue (next), /review, /qa-create-scenario, /qa-coverage-check
 
 **status:**
 - Prerequisites: .agent/config.json
@@ -629,6 +1029,22 @@ $ /status                         # 100% pass?
 - Time: 2-3 min
 - Next: /add-feature (เพิ่ม coverage gap)
 
+**nfr-check:** ⭐ v2.6.0
+- Prerequisites: feature_list.json (schema ≥ 2.4.0) + qa-tracker.json (schema ≥ 1.7.0, nfr_results not null)
+- Output: update features[].nfr_compliance + integration.last_nfr_check + sync_status.qa_tracker
+- Special: ⭐ Read-only on qa-tracker; default thresholds (perf 85, security 75 [BLOCKS], reliability 85, maint 70)
+- Flags: --module / --feature / --strict / --report-only / --threshold X=N
+- Time: 1-3 min
+- Next: /continue (Gate 2 will use these results), fix security issues if blocked
+
+**qa-coverage-check:** ⭐ v2.6.0
+- Prerequisites: feature_list.json (schema ≥ 2.4.0) + qa-tracker.json with traceability not null
+- Output: update features[].qa_trace_coverage + integration.last_qa_coverage_check + sync_status.qa_tracker
+- Special: ⭐ Read-only on qa-tracker; classifies ACs as PASS/CONCERNS/FAIL/GAP
+- Flags: --module / --feature / --gaps-only / --report-only / --strict-orphans
+- Time: 1-3 min
+- Next: /continue (Gate 1 will use these results), /qa-create-scenario for GAP ACs
+
 **help:**
 - Prerequisites: ไม่มี
 - Output: display only
@@ -650,7 +1066,9 @@ $ /status                         # 100% pass?
    /status                         — ดูสถานะปัจจุบัน
    /help --quick                   — Quick start guide
    /help --integration             — เชื่อม plugins อื่น
-   /help --new                     — ดูที่เพิ่มใน v2.4.0
+   /help --qa                      — ⭐ qa-ui-test release gates (v2.6.0)
+   /help --gates                   — ⭐ Step 5.6 deep-dive
+   /help --new                     — ดูที่เพิ่มใน v2.6.0
 ```
 
 > 💬 **หมายเหตุ:** คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)

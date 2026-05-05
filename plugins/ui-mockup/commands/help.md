@@ -5,7 +5,7 @@ allowed-tools: Read(*), Bash(*)
 
 # UI Mockup Help — คู่มือการใช้งาน
 
-คุณคือ **UI Mockup Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน ui-mockup plugin (v1.6.0+)
+คุณคือ **UI Mockup Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน ui-mockup plugin (v1.8.0+)
 
 ## CRITICAL RULES
 
@@ -30,10 +30,12 @@ allowed-tools: Read(*), Bash(*)
 /help [command-name]           # คำสั่งเฉพาะ เช่น /help create-mockup
 /help --quick                  # Quick Start (3 ขั้นตอน)
 /help --workflow               # Full workflow
-/help --integration            # Integration กับ system-design-doc, long-running, frontend-design
+/help --integration            # Integration กับ system-design-doc, long-running, frontend-design, qa-ui-test
 /help --html                   # HTML mockup workflow (Web Component)
 /help --ascii                  # ASCII wireframe workflow
 /help --parallel               # Parallel mockup creation (sub-agents)
+/help --qa                     # ⭐ qa-ui-test integration (factor inference + risk baseline) — v1.8.0
+/help --new                    # What's new in v1.8.0
 ```
 
 ---
@@ -43,12 +45,13 @@ allowed-tools: Read(*), Bash(*)
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 UI Mockup — คู่มือการใช้งาน v1.6.0
+📖 UI Mockup — คู่มือการใช้งาน v1.8.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document
 รองรับ ASCII wireframes + HTML mockups (Web Component master page)
-Bridge ระหว่าง system-design-doc และ frontend-design + long-running
+Bridge ระหว่าง system-design-doc และ frontend-design + long-running + qa-ui-test
+⭐ v1.8.0: factor inference + risk baseline → seeds qa-create-scenario
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -58,6 +61,10 @@ Bridge ระหว่าง system-design-doc และ frontend-design + long-
                                (สร้าง .mockups/ + mockup_list.json)
                                ตัวอย่าง: /init-mockup
                                ⚠ แนะนำให้รันหลัง /system-design-doc
+                               ⭐ v1.8: Step 3.55 auto-derive complexity_factors[]
+                                  + risk_baseline + acceptance_criteria_ids[]
+                                  จาก existing signals (components, category, ฯลฯ)
+                                  → seeds qa-create-scenario โดยไม่ต้อง re-scan code
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -107,6 +114,8 @@ Bridge ระหว่าง system-design-doc และ frontend-design + long-
   อยาก ASCII wireframe?   → /help --ascii           (เร็ว, สำหรับ early stage)
   มี pages เยอะ?          → /help --parallel        (Sub-agent parallel)
   เชื่อม design doc?      → /help --integration
+  ⭐ qa-ui-test factors?  → /help --qa              (v1.8.0 — ใหม่)
+  v1.8 มีอะไรใหม่?         → /help --new
   ดูคำสั่งเฉพาะ?           → /help [command]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -158,7 +167,9 @@ Bridge ระหว่าง system-design-doc และ frontend-design + long-
    /help --quick           Quick Start
    /help --html            HTML mockup flow
    /help --parallel        Parallel creation
-   /help --integration     Cross-plugin integration
+   /help --integration     Cross-plugin integration (incl. qa-ui-test)
+   /help --qa              ⭐ qa-ui-test integration (v1.8.0)
+   /help --new             What's new in v1.8.0
 ```
 
 ---
@@ -389,7 +400,33 @@ $ /sync-mockups (long-running)
         - production-grade component patterns
         - Web Component master page
 
-   4. ← brain (knowledge, optional)
+   4. → qa-ui-test (downstream) ⭐ v1.8.0
+      ──────────────────────────────────
+      • /init-mockup Step 3.55 auto-derive ลง mockup_list.json:
+        - complexity_factors[]    (qa's 8 factors เช่น state-machine, multi-step)
+        - acceptance_criteria_ids[] (AC-NNN จาก design_doc_list)
+        - risk_baseline { probability, impact, priority P0-P3 }
+        - cascade_chain[]         (cascading dropdowns)
+        - wizard_steps            (multi-step form depth)
+      • qa-create-scenario ใช้เป็น hint:
+        - ไม่ต้อง re-scan code
+        - inherits factors → seed scenario.complexity_factors[]
+        - inherits risk → seed scenario.risk{ priority, score }
+
+      Schema:
+      page = {
+        complexity_factors: ["multi-step", "cascade-deep"],
+        acceptance_criteria_ids: ["AC-001", "AC-002"],
+        risk_baseline: { probability: 2, impact: 3, priority: "P1" },
+        cascade_chain: ["Category", "SubCategory", "Product"],
+        wizard_steps: 5
+      }
+
+      ⭐ ID propagation: ui-mockup เป็น hint provider
+        AC IDs from design-doc (read), factors auto-derived locally,
+        scenario in qa-tracker = the consumer
+
+   5. ← brain (knowledge, optional)
       ──────────────────────────
       • /init-mockup อ่าน CLAUDE.md → conventions
       • /create-mockup อ่าน reference_nav_example (ถ้ามีใน brain)
@@ -417,11 +454,13 @@ $ /sync-mockups (long-running)
   • system-design-doc plugin (upstream — recommended)
   • long-running plugin (downstream — สำหรับ implement)
   • frontend-design skill (สำหรับ /create-html-mockup)
+  • qa-ui-test plugin (downstream — สำหรับ test scenarios) ⭐ v1.8.0
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🔜 ดูเพิ่ม:
    /help --html            HTML mockup workflow
+   /help --qa              ⭐ qa-ui-test integration deep-dive
    /help create-html-mockup → command details
 ```
 
@@ -613,6 +652,223 @@ $ /sync-mockups (long-running)
 
 ---
 
+### Mode 7.5: `--qa` → QA Integration (v1.8.0) ⭐
+
+```
+🧪 qa-ui-test Integration — ui-mockup v1.8.0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 ui-mockup เป็น "factor hint provider" ให้ qa-create-scenario
+   auto-derive จาก existing signals — qa ไม่ต้อง re-scan code
+
+
+📋 5 Optional Page Fields (v1.8.0)
+
+  page.complexity_factors[]      qa's 8 factors:
+                                 state-machine, cascade-deep, multi-step,
+                                 concurrent, security-flow, network-mock,
+                                 master-detail-sync, cross-browser
+
+  page.acceptance_criteria_ids[] AC-NNN refs to design_doc_list
+                                 (system-design-doc is source of truth)
+
+  page.risk_baseline             { probability: 1-3,
+                                   impact: 1-3,
+                                   priority: P0-P3 }
+
+  page.cascade_chain[]           ["Category", "Subcategory", "Product"]
+                                 length >= 2 ⇒ cascade-deep factor
+
+  page.wizard_steps              number; >= 3 ⇒ multi-step factor
+
+
+🔍 Auto-derivation rules (Step 3.55 ใน /init-mockup)
+
+  Apply top-to-bottom (each match adds factor; final list de-duplicated):
+
+  ┌──────────────────────────────────────────────────┬──────────────────────┐
+  │ Signal                                            │ → Factor             │
+  ├──────────────────────────────────────────────────┼──────────────────────┤
+  │ category == "auth"                                │ security-flow        │
+  │ delete sensitive entity (User, Payment, Order)    │ security-flow        │
+  │ components has Wizard / Stepper                   │ multi-step           │
+  │ wizard_steps >= 3                                 │ multi-step           │
+  │ ui_pattern == "page" + 3+ pages in crud_group     │ multi-step           │
+  │ 2+ dependent Selects (Category → Subcategory)     │ cascade-deep         │
+  │ cascade_chain.length >= 2                         │ cascade-deep         │
+  │ Grid + crud_type=="detail" + related grid items   │ master-detail-sync   │
+  │ crud_type=="list" + expandable rows / inline edit │ master-detail-sync   │
+  │ related_pages have status flow                    │ state-machine        │
+  │ StatusBadge + status changes mentioned            │ state-machine        │
+  └──────────────────────────────────────────────────┴──────────────────────┘
+
+  Note: concurrent / network-mock / cross-browser มักจะถูก infer ตอน qa-create-scenario
+  ไม่ใช่ตอน mockup — ต้อง set manual ถ้าต้องการ
+
+
+💰 Risk Baseline Heuristics
+
+  priority:
+    P0 — security-flow + complexity == complex
+    P1 — security-flow OR multi-step (no complex)
+    P2 — any factor present (default for complex flows)
+    P3 — no factors AND simple CRUD (list/form)
+
+  probability defaults:
+    P0/P1 → 3 (likely — auth, payment, main flows)
+    P2    → 2 (occasional)
+    P3    → 1 (rare)
+
+  impact defaults:
+    security-flow OR money entity      → 3 (critical)
+    master-detail-sync OR multi-step   → 3 (data integrity)
+    state-machine OR cascade-deep      → 2 (functional)
+    simple CRUD                        → 2 (functional)
+    pure read-only                     → 1 (cosmetic)
+
+
+🔗 AC ID Linkage
+
+  ถ้า design_doc_list.json มี documents[].acceptance_criteria[]:
+
+  For each AC in design_doc:
+    If ac.module matches page.crud_group OR page.category:
+      Add ac.id to page.acceptance_criteria_ids[]
+
+  สร้าง 3-way link:
+    design-doc AC-001 ──┬── ui-mockup page 004
+                        ├── qa-tracker scenario TS-USER-001
+                        └── feature_list feature 5
+
+
+💬 User Confirmation Prompt
+
+  หลัง auto-derivation, /init-mockup จะถาม:
+
+  ```
+  🤖 Auto-derived complexity factors for 7 pages:
+     - 004 User List → [master-detail-sync] P2
+     - 005 User Form → [security-flow] P1
+     - ... (5 more)
+
+  Accept all? [Y/n/edit]
+  ```
+
+  → user override ได้รายหน้า ก่อน persist
+
+
+🔙 Backward Compatibility
+
+  Pages without complexity_factors[]      → qa-create-scenario falls back to code-scan
+  Pages without acceptance_criteria_ids[] → orphan in /validate-integration (warn-only)
+  Pages without risk_baseline             → qa-create-scenario computes from scratch
+
+
+🚫 When NOT to set factors manually
+
+  Auto-derivation handles ~90% — manual override only when:
+  ✅ canvas-based pages → likely concurrent
+  ✅ pages with PDF export → likely cross-browser
+  ✅ pages mocking external APIs → network-mock
+  ❌ ปกติทั่วไป — let auto-derive ทำ
+
+
+💡 ตัวอย่าง output ของ /init-mockup Step 3.55
+
+  page 004 "User List":
+    components: [Navbar, Sidebar, SearchBar, Table, Pagination, ActionButtons]
+    crud_group: User
+    crud_type: list
+    complexity: complex
+    →
+    complexity_factors: ["master-detail-sync"]   ← grid + actions
+    risk_baseline: { probability: 2, impact: 2, priority: "P2" }
+    acceptance_criteria_ids: ["AC-001", "AC-002"]  ← from design-doc
+    cascade_chain: []
+    wizard_steps: null
+
+
+🔄 Workflow QA-aware
+
+  1. /system-design-doc                      # design-doc + AC table
+  2. /init-mockup                            # ⭐ Step 3.55 auto-derive
+                                              accept/reject prompt
+  3. /create-mockup [page]                   # ASCII or HTML
+  4. /validate-mockup                        # check
+  5. /sync-with-mockups                      # design-doc side
+  6. /qa-ui-test:qa-create-scenario          # uses ui-mockup hints
+                                              → faster, more accurate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔜 ดูเพิ่ม:
+   /help init-mockup              → command details
+   /help validate-mockup          → quality checks
+   /qa-help --quick               → qa-ui-test side
+```
+
+---
+
+### Mode 7.6: `--new` → What's new in v1.8.0
+
+```
+✨ What's new in v1.8.0 (2026-05-05)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⭐ qa-ui-test v2.5 Integration
+
+ui-mockup auto-derive QA hints จาก existing page signals →
+qa-create-scenario ใช้เป็น input โดยไม่ต้อง re-scan code
+
+
+🔧 Schema additions (mockup_list.json 1.7.0 → 1.8.0):
+
+  pages[].complexity_factors[]       # qa's 8 factors
+  pages[].acceptance_criteria_ids[]  # AC-NNN refs
+  pages[].risk_baseline              # { probability, impact, priority }
+  pages[].cascade_chain[]            # cascading dropdowns
+  pages[].wizard_steps               # multi-step depth
+
+  integration.qa_tracker_path
+  integration.last_synced_with_qa_tracker
+  sync_status.qa_tracker { pages_with_factors, pages_with_acs, pages_p0_p1 }
+
+
+🆕 /init-mockup Step 3.55 (NEW)
+
+  Insert ระหว่าง Step 3.5 (Auto-generate CRUD pages) และ Step 3.6 (Related Documents)
+
+  11 inference rules → derive complexity_factors[]
+  Heuristic table → derive risk_baseline
+  AC ID propagation → fill acceptance_criteria_ids[] from design-doc
+  User confirmation prompt before persist
+
+
+📊 SKILL.md additions
+
+  New "QA Integration" section documenting:
+   - data flow (ui-mockup → qa-create-scenario)
+   - 11 inference rules (full table)
+   - 3-way AC linkage (design-doc ↔ ui-mockup ↔ qa-tracker ↔ feature_list)
+   - risk baseline heuristics
+   - schema requirements + backward compat
+   - guidance on manual overrides
+
+
+🔙 Migration
+
+  Pages เก่าไม่มี QA fields?
+  → ทำงานปกติ (qa-create-scenario falls back to code-scan)
+  → optional: re-run /init-mockup เพื่อ auto-derive
+
+
+📚 ดูเพิ่ม:
+   /help --qa                     → AC/factor integration deep-dive
+   /help init-mockup              → command details (with Step 3.55)
+```
+
+---
+
 ### Mode 8: คำสั่งเฉพาะ (เมื่อมี argument)
 
 **สำหรับแต่ละคำสั่ง แสดง:**
@@ -652,9 +908,10 @@ $ /sync-mockups (long-running)
 
 **init-mockup:**
 - Prerequisites: ไม่มี (optional: design_doc_list.json)
-- Output: .mockups/ directory + mockup_list.json
+- Output: .mockups/ directory + mockup_list.json (with auto-derived QA fields ⭐ v1.8.0)
 - Mode: setup
-- Time: 2-5 min
+- Special: ⭐ v1.8.0 Step 3.55 auto-derive complexity_factors[], risk_baseline, acceptance_criteria_ids[], cascade_chain[], wizard_steps; user confirmation prompt
+- Time: 2-5 min (เพิ่ม 1-2 min ถ้ามี QA inference)
 - Next: /create-mockup, /create-html-mockup, /create-mockups-parallel
 
 **create-mockup:**
@@ -720,12 +977,14 @@ $ /sync-mockups (long-running)
 
 ```
 🔜 พร้อมเริ่มต้น?
-   /init-mockup                    — Setup .mockups/
+   /init-mockup                    — Setup .mockups/ (⭐ v1.8 auto QA inference)
    /create-mockup [page]           — ASCII wireframe (เร็ว)
    /create-html-mockup [page]      — HTML mockup (production-grade)
    /help --quick                   — Quick start guide
    /help --html                    — HTML workflow
    /help --integration             — เชื่อม plugins อื่น
+   /help --qa                      — ⭐ qa-ui-test integration (v1.8.0)
+   /help --new                     — What's new in v1.8.0
 ```
 
 > 💬 **หมายเหตุ:** คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)
