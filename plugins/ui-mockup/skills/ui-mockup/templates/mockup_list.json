@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.7.0",
+  "schema_version": "1.8.0",
   "project": "[Project Name]",
   "description": "[Project Description]",
   "source_documents": [],
@@ -9,8 +9,10 @@
   "integration": {
     "design_doc_path": "design_doc_list.json",
     "feature_list_path": "feature_list.json",
+    "qa_tracker_path": "qa-tracker.json",
     "last_synced_with_design_doc": null,
     "last_synced_with_features": null,
+    "last_synced_with_qa_tracker": null,
     "auto_sync_enabled": false
   },
 
@@ -362,6 +364,12 @@
       "mapped_pages": 0,
       "unmapped_pages": 0,
       "last_sync": null
+    },
+    "qa_tracker": {
+      "total_pages_with_factors": 0,
+      "pages_with_acs": 0,
+      "pages_p0_p1": 0,
+      "last_sync": null
     }
   },
 
@@ -379,11 +387,62 @@
   },
 
   "metadata": {
-    "schema_version": "1.7.0",
-    "plugin_version": "1.4.0",
+    "schema_version": "1.8.0",
+    "plugin_version": "1.8.0",
     "compatible_with": {
-      "design_doc_list_schema": ">=2.0.0",
-      "feature_list_schema": ">=1.10.0"
+      "design_doc_list_schema": ">=2.2.0",
+      "feature_list_schema": ">=2.4.0",
+      "qa_tracker_schema": ">=1.7.0"
+    },
+    "_v1.8_qa_field_definitions": {
+      "_comment": "Optional qa-ui-test v2.5 integration fields per page. Pages without these fields default to: complexity_factors=[], acceptance_criteria_ids=[], risk_baseline=null, cascade_chain=[], wizard_steps=null. /qa-ui-test:qa-create-scenario reads these as hints to seed scenarios with correct factors + risk; reduces re-scanning code.",
+      "complexity_factors": {
+        "type": "string[]",
+        "values": "qa-tracker complexity_factor_catalog (state-machine, cascade-deep, multi-step, concurrent, security-flow, network-mock, master-detail-sync, cross-browser)",
+        "description": "Auto-inferred by /init-mockup heuristics OR manually set. Used by qa-create-scenario to assign model (opus/sonnet/haiku) and risk priority.",
+        "example": ["multi-step", "cascade-deep"]
+      },
+      "acceptance_criteria_ids": {
+        "type": "string[]",
+        "format": "AC-NNN (references design_doc_list.json acceptance_criteria[].id)",
+        "description": "Pages link to ACs they implement. Bidirectional with feature_list.features[].acceptance_criteria_id[]. Empty array = no AC mapping yet.",
+        "example": ["AC-001", "AC-002"]
+      },
+      "risk_baseline": {
+        "type": "object | null",
+        "description": "Initial risk estimation per page. qa-create-scenario uses this to seed scenario.risk before factor evaluation. null = no baseline (scenarios will compute from scratch).",
+        "schema": {
+          "probability": "1 (rare) | 2 (occasional) | 3 (likely)",
+          "impact": "1 (cosmetic) | 2 (functional) | 3 (critical: money/data/security/blocker)",
+          "priority": "P0 (7-9) | P1 (5-6) | P2 (3-4) | P3 (1-2)"
+        }
+      },
+      "cascade_chain": {
+        "type": "string[]",
+        "description": "Cascade dependency chain for cascading dropdowns / dependent fields. Length >= 2 implies cascade-deep complexity factor. Order: parent → child → grandchild.",
+        "example": ["Category", "SubCategory", "Product"]
+      },
+      "wizard_steps": {
+        "type": "number | null",
+        "description": "Step count for wizard pages. Value >= 3 implies multi-step complexity factor. null = not a wizard.",
+        "example": 5
+      }
+    },
+    "_v1.8_factor_inference_heuristics": {
+      "_comment": "Rules used by /init-mockup to auto-derive complexity_factors[] from existing fields. Applied top-to-bottom; each rule that matches adds its factor (factors are de-duplicated).",
+      "rules": [
+        { "if": "category == 'auth'",                                    "add": "security-flow" },
+        { "if": "crud_actions.delete && entity is sensitive (User, Payment, Order)", "add": "security-flow" },
+        { "if": "components includes 'Wizard' || components includes 'Stepper'", "add": "multi-step" },
+        { "if": "wizard_steps >= 3",                                     "add": "multi-step" },
+        { "if": "ui_pattern == 'page' && pages-in-crud_group >= 3",      "add": "multi-step" },
+        { "if": "components has cascading dropdowns (>= 2 dependent Selects)", "add": "cascade-deep" },
+        { "if": "cascade_chain.length >= 2",                             "add": "cascade-deep" },
+        { "if": "components includes 'Grid' && crud_type == 'detail' && has_related_grid", "add": "master-detail-sync" },
+        { "if": "crud_type == 'list' && expandable rows mentioned",      "add": "master-detail-sync" },
+        { "if": "related_pages have status flow / state transitions",    "add": "state-machine" },
+        { "if": "components includes 'StatusBadge' && crud_type == 'detail' && status changes", "add": "state-machine" }
+      ]
     }
   }
 }

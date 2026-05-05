@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -91,8 +91,8 @@
     {
       "name": "ui-mockup",
       "source": "./plugins/ui-mockup",
-      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document — bridge ระหว่าง system-design-doc และ frontend-design รองรับ ASCII wireframes, HTML mockups (Web Component master page), component specs, design tokens, CLAUDE.md-aware alert library, field mapping, framework-aware URL syntax, parallel sub-agents, /help command พร้อม mode-based guide (--quick/--workflow/--integration/--html/--ascii/--parallel)",
-      "version": "1.6.0",
+      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document — bridge ระหว่าง system-design-doc และ frontend-design รองรับ ASCII wireframes, HTML mockups (Web Component master page), component specs, design tokens, CLAUDE.md-aware alert library, field mapping, framework-aware URL syntax, parallel sub-agents, qa-ui-test v2.5 integration: auto-derive complexity_factors + risk_baseline + acceptance_criteria_ids ใน /init-mockup Step 3.55 (factor inference heuristics ลด re-scan code) /help command พร้อม mode-based guide",
+      "version": "1.8.0",
       "category": "design",
       "tags": [
         "ui",
@@ -108,6 +108,9 @@
         "frontend-design",
         "field-mapping",
         "help-guide",
+        "qa-integration",
+        "complexity-factors",
+        "risk-baseline",
         "thai"
       ],
       "author": {

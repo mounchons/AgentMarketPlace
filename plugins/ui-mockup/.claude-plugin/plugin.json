@@ -1,7 +1,7 @@
 {
   "name": "ui-mockup",
-  "version": "1.6.0",
-  "description": "Create and edit UI Mockup/Wireframe from System Design Document — supports ASCII wireframes, HTML mockups with Web Component master page, component specifications, design tokens, CLAUDE.md-aware alert library (SweetAlert2 default), field mapping, framework-aware URL syntax, validation and quality checks, /help command with mode-based guide (--quick/--workflow/--integration/--html/--ascii/--parallel), integrated with system-design-doc, frontend-design, and brain skills",
+  "version": "1.8.0",
+  "description": "Create and edit UI Mockup/Wireframe from System Design Document — supports ASCII wireframes, HTML mockups with Web Component master page, component specifications, design tokens, CLAUDE.md-aware alert library (SweetAlert2 default), field mapping, framework-aware URL syntax, qa-ui-test v2.5 integration: auto-derive complexity_factors[] + risk_baseline + acceptance_criteria_ids[] in /init-mockup Step 3.55 (factor inference heuristics from components/category/crud_type → seeds qa-create-scenario without code re-scan), validation and quality checks, /help command with mode-based guide, integrated with system-design-doc, frontend-design, qa-ui-test, and brain skills",
   "author": {
     "name": "Mounchons"
   }

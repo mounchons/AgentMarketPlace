@@ -278,6 +278,89 @@ mkdir -p .mockups
 }
 ```
 
+### Step 3.55: Auto-derive QA Complexity Factors (NEW v1.8.0 — qa-ui-test integration)
+
+**For each page, derive `complexity_factors[]`** from existing signals (components, category, crud_type, etc.) so `qa-ui-test:qa-create-scenario` doesn't have to re-scan code.
+
+**Apply rules in order (each match adds a factor — final list de-duplicated):**
+
+| Signal | → Factor |
+|--------|----------|
+| `category == "auth"` | `security-flow` |
+| `crud_actions.delete.enabled && entity in [User, Payment, Order, Invoice, Auth]` | `security-flow` |
+| `components includes "Wizard" \|\| "Stepper"` | `multi-step` |
+| `wizard_steps >= 3` (when known) | `multi-step` |
+| `ui_pattern == "page" && pages-in-same-crud_group >= 3` | `multi-step` |
+| 2+ Select components with name patterns suggesting dependency (Category→Subcategory) | `cascade-deep` |
+| `cascade_chain.length >= 2` (when populated) | `cascade-deep` |
+| `components includes "Grid" && crud_type == "detail" && has related grid items` | `master-detail-sync` |
+| `crud_type == "list" && row expandable / inline edit` | `master-detail-sync` |
+| `related_pages` show status flow (e.g., draft→submitted→approved) | `state-machine` |
+| `components includes "StatusBadge" && crud_type == "detail" && status changes mentioned` | `state-machine` |
+
+**Risk baseline derivation** (auto-suggested; user can override):
+
+```
+priority = "P0"  if "security-flow" in factors AND complexity == "complex"
+priority = "P1"  if security-flow in factors OR multi-step in factors
+priority = "P2"  if any factor present (default for complex flows)
+priority = "P3"  if no factors AND crud_type in ["list", "form"] AND complexity == "simple"
+
+probability defaults:
+- P0/P1: 3 (likely to be hit by users — auth, payment, main flows)
+- P2:    2 (occasional)
+- P3:    1 (rare)
+
+impact defaults:
+- security-flow OR money-related entity: 3 (critical)
+- master-detail-sync OR multi-step:      3 (data integrity)
+- state-machine OR cascade-deep:         2 (functional)
+- simple CRUD:                            2 (functional)
+- pure read-only:                         1 (cosmetic)
+```
+
+**AC ID propagation** — if design_doc_list.json exists with `documents[].acceptance_criteria[]`:
+
+```
+For each AC in design_doc:
+  If ac.module matches page.crud_group OR page.category:
+    Add ac.id to page.acceptance_criteria_ids[]
+```
+
+**Output for each page** (extending existing schema):
+
+```json
+{
+  "id": "004",
+  "name": "User List",
+  "category": "list",
+  "crud_type": "list",
+  "complexity": "complex",
+
+  "complexity_factors": ["master-detail-sync"],
+  "acceptance_criteria_ids": ["AC-001", "AC-002"],
+  "risk_baseline": {
+    "probability": 2,
+    "impact": 2,
+    "priority": "P2"
+  },
+  "cascade_chain": [],
+  "wizard_steps": null
+}
+```
+
+**Skip rule**: pages with `category in ["auth", "main"]` (login, dashboard) don't need cascade_chain or wizard_steps unless explicitly relevant.
+
+**User override**: After auto-derivation, prompt user:
+```
+🤖 Auto-derived complexity factors for 7 pages:
+   - 004 User List → [master-detail-sync] P2
+   - 005 User Form → [security-flow] P1
+   - ... (5 more)
+
+Accept all? [Y/n/edit]
+```
+
 ### Step 3.6: Auto-assign Related Documents
 
 **For each page, search for related documents:**

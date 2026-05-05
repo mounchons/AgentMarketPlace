@@ -1010,3 +1010,77 @@ Every page in mockup_list.json can have related_documents:
 - `erd` - ER Diagram
 - `flow` - Flow Diagram
 - `data-dict` - Data Dictionary
+
+---
+
+## 🧪 QA Integration (v1.8.0 — qa-ui-test v2.5)
+
+ui-mockup acts as a **factor hint provider** for `qa-ui-test:qa-create-scenario`. By auto-deriving complexity factors and risk baseline at mockup time, scenarios get correct model assignment + risk priority without re-scanning code.
+
+### Data Flow
+
+```
+ui-mockup pages[].complexity_factors[]
+                ↓
+   qa-create-scenario reads as hints
+                ↓
+   scenario.complexity_factors = [merged with code-scan results]
+                ↓
+   model assignment (opus/sonnet/haiku)
+   risk.priority (P0-P3)
+```
+
+### Factor Inference Heuristics
+
+When `/init-mockup` runs (Step 3.55), each page is analyzed for factors:
+
+| Signal | → Factor |
+|--------|----------|
+| `category == "auth"` | `security-flow` |
+| Sensitive entity delete (User, Payment, Order, Invoice, Auth) | `security-flow` |
+| Components include Wizard/Stepper, or `wizard_steps >= 3`, or 3+ pages in same crud_group | `multi-step` |
+| Cascading dropdowns (2+ dependent Selects), or `cascade_chain.length >= 2` | `cascade-deep` |
+| Grid + detail with related grid items, or list with expandable rows | `master-detail-sync` |
+| Status-flow related_pages, or StatusBadge + status changes | `state-machine` |
+
+The 8 qa-tracker factors:
+
+```
+state-machine        cascade-deep         multi-step          concurrent
+security-flow        network-mock         master-detail-sync  cross-browser
+```
+
+(`concurrent`, `network-mock`, `cross-browser` are usually inferred at qa scenario time — not from mockups.)
+
+### AC ID Linkage
+
+Each page can declare `acceptance_criteria_ids[]` pointing to AC IDs in `design_doc_list.json`. This creates a 3-way link:
+
+```
+design-doc AC-001 ──┬── ui-mockup page 004 (acceptance_criteria_ids)
+                    ├── qa-tracker scenario TS-USER-001 (acceptance_criteria_id)
+                    └── feature_list feature 5 (acceptance_criteria_id)
+```
+
+### Risk Baseline
+
+Each page can carry a `risk_baseline { probability, impact, priority }` consumed by `qa-create-scenario`. The auto-derivation in `/init-mockup` Step 3.55 produces sensible defaults; users can override per-page.
+
+### Schema Requirements
+
+- mockup_list.json: `>= 1.8.0`
+- design_doc_list.json: `>= 2.2.0` (for AC IDs to propagate)
+- qa-tracker.json: `>= 1.7.0` (consumer)
+
+### Backward Compat
+
+- Pages without `complexity_factors[]` → qa-create-scenario falls back to code-scan only (old behavior)
+- Pages without `acceptance_criteria_ids[]` → no AC linkage; appears as orphan in `/validate-integration`
+- Pages without `risk_baseline` → qa-create-scenario computes risk from scratch
+
+### When NOT to Set Factors Manually
+
+Auto-derivation handles 90% of cases. Manual override only when:
+- Page does something unusual not captured by component list (e.g., uses `<canvas>` for drawing → likely `concurrent`)
+- Cross-browser testing required for specific pages (e.g., reports with PDF export → `cross-browser`)
+- Page mocks external APIs in tests (`network-mock`)
