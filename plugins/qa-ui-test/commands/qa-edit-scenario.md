@@ -14,12 +14,16 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 2. **ต้องวิเคราะห์ impact ก่อน** — หา scenarios ที่ได้รับผลกระทบทั้งหมด
 3. **ต้อง update Playwright scripts** — ทั้ง spec file และ POM
 4. **ต้อง update qa-tracker.json** — เคสเก่า mark deprecated, เคสใหม่ pending
-5. **Commit ทุกครั้ง** — `qa-edit(TS-XXX): [description of change]`
+5. **⭐ ต้อง recompute risk + factors + model (v2.3)** — ทุกเคสที่แก้ logic ต้อง recompute และแสดง diff ก่อน apply
+6. **Commit ทุกครั้ง** — `qa-edit(TS-XXX): [description of change]`
 
 ### Self-Check Checklist (MANDATORY)
 
 - [ ] Impact analysis completed?
 - [ ] All affected scenarios identified?
+- [ ] ⭐ Risk + factors recomputed for affected scenarios?
+- [ ] ⭐ Risk diff shown to user before apply?
+- [ ] ⭐ assigned_model updated if factors changed?
 - [ ] New scenarios reference old ones (supersedes field)?
 - [ ] Old scenarios marked "deprecated"?
 - [ ] Playwright scripts updated?
@@ -32,6 +36,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 - Deleted old scenarios without creating new ones → REJECT
 - Edited scripts without updating qa-tracker.json → REJECT
 - No impact analysis shown → REJECT
+- ⭐ Logic changed but risk/factors NOT recomputed → REJECT
+- ⭐ Model assignment ไม่ตรงกับ factors ใหม่ → REJECT
 
 ---
 
@@ -93,6 +99,123 @@ Impact Types:
 
 ---
 
+### Step 1.5: Recompute Risk + Complexity Factors (⭐ v2.3 — MANDATORY)
+
+**ก่อน apply changes ใดๆ ต้อง recompute risk + factors ของเคสที่ได้รับผลกระทบ HIGH/MEDIUM**
+
+เพราะ logic change มักทำให้ scenario "ง่ายขึ้น" หรือ "ยากขึ้น" — model assignment ต้อง follow
+
+#### A. Auto-Detect Factor Changes จาก change_reason
+
+อ่าน user description (เช่น "เพิ่ม OTP verification หลัง login") และ logic delta จาก code → infer factor changes:
+
+| Keyword/Pattern ใน change_reason | Add factor |
+|---|---|
+| "OTP", "MFA", "2FA", "captcha" | `security-flow` (P0 bump) |
+| "wizard", "step 1, 2, 3", ">= 3 steps", "multi-page form" | `multi-step` |
+| "status", "transition", "approval flow", "state machine" | `state-machine` |
+| "cascade", "delete dependent", "foreign key" | `cascade-deep` |
+| "concurrent", "race", "optimistic lock", "concurrent edit" | `concurrent` |
+| "inline edit", "master-detail", "expand row", "detail grid" | `master-detail-sync` |
+| "API mock", "retry sequence", "error injection" | `network-mock` |
+| "Firefox", "Safari", "WebKit", "cross browser" | `cross-browser` |
+| "auth", "login", "permission", "role", "CSRF", "XSS" | `security-flow` |
+| "money", "payment", "checkout", "Stripe", "refund" | `security-flow` (money flow) |
+| "remove [feature]", "simplify", "split flow" | **REMOVE** factor (เคสง่ายลง) |
+
+#### B. Recompute risk.score
+
+อ่าน new_steps, new_dependencies, new_validations → re-evaluate:
+
+```
+probability:  เปลี่ยนถ้า frequency of use เปลี่ยน
+              (เช่น เพิ่ม MFA → ทุกคน login ทุกครั้ง → likely=3)
+
+impact:       เปลี่ยนถ้า business value เปลี่ยน
+              (เช่น เพิ่ม payment step → critical=3)
+
+new_score = new_probability × new_impact
+new_priority = derive(new_score)  [P0(7-9) | P1(5-6) | P2(3-4) | P3(1-2)]
+```
+
+#### C. Re-apply assignment_strategy.auto_assign_rules
+
+ใช้ new factors + new risk.priority รัน rules ใน qa-tracker.json (top-down first match) → ได้ new model
+
+#### D. Show Diff to User
+
+```
+🔄 Risk + Model Diff (logic change: "เพิ่ม OTP verification หลัง login")
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ TS-LOGIN-001 (HIGH impact — recreated as TS-LOGIN-014)              │
+├─────────────────────────────────────────────────────────────────────┤
+│              │ Before                  │ After                       │
+├──────────────┼─────────────────────────┼─────────────────────────────┤
+│ risk.prob    │ 3 (likely)              │ 3 (likely)                  │
+│ risk.impact  │ 2 (functional)          │ 3 (critical/security)  ⬆️   │
+│ risk.score   │ 6                       │ 9  ⬆️                       │
+│ risk.priority│ P1                      │ P0  ⬆️ (release blocker)    │
+│ factors      │ —                       │ [security-flow, multi-step] │
+│ model        │ sonnet                  │ opus  ⬆️                    │
+│ reason       │ default mid-complexity  │ multiple complexity factors │
+└──────────────┴─────────────────────────┴─────────────────────────────┘
+
+📌 Why: เพิ่ม OTP step → security-flow factor + step ที่ 5-6 → multi-step factor (≥3 steps)
+        impact ขึ้นเป็น critical เพราะ MFA ป้องกัน account takeover
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ TS-LOGIN-002 (MEDIUM impact — updated to v2)                        │
+├─────────────────────────────────────────────────────────────────────┤
+│              │ Before                  │ After                       │
+├──────────────┼─────────────────────────┼─────────────────────────────┤
+│ risk.score   │ 6 (P1)                  │ 6 (P1)  (unchanged)         │
+│ factors      │ —                       │ [security-flow]  ⬆️         │
+│ model        │ sonnet                  │ sonnet (unchanged — P1 +    │
+│              │                         │   security-flow ไม่ trigger │
+│              │                         │   opus rule เพราะ rule      │
+│              │                         │   ต้อง P0)                  │
+└──────────────┴─────────────────────────┴─────────────────────────────┘
+
+❓ Apply? (y/n หรือเลือกเฉพาะ)
+   y          — apply ทั้งหมด
+   skip-X     — skip recompute ของเคส X (เก็บค่าเก่า — ไม่แนะนำ)
+   manual     — เปิด editor ให้แก้เอง
+```
+
+#### E. Apply Recompute Logic
+
+ทุก scenario ที่ user confirm → update fields:
+
+```json
+{
+  "id": "TS-LOGIN-014",
+  "risk": {
+    "probability": 3,
+    "impact": 3,
+    "score": 9,
+    "priority": "P0",
+    "rationale": "MFA prevents account takeover; every user logs in (likely × critical)"
+  },
+  "complexity_factors": ["security-flow", "multi-step"],
+  "assigned_model": "opus",
+  "assigned_model_reason": "multiple complexity factors require deep reasoning",
+  "risk_recompute_history": [
+    {
+      "timestamp": "TIMESTAMP",
+      "trigger": "qa-edit-scenario",
+      "change_reason": "Added OTP verification",
+      "before": { "score": 6, "priority": "P1", "factors": [], "model": "sonnet" },
+      "after":  { "score": 9, "priority": "P0", "factors": ["security-flow","multi-step"], "model": "opus" }
+    }
+  ]
+}
+```
+
+**ทำไมต้องเก็บ `risk_recompute_history`:** ใช้ audit ว่าเคสนี้ขึ้นเป็น P0 ตอนไหน — ถ้า bug ที่เคยเกิดตอนเป็น P1 ยัง relevant ไหม
+
+---
+
 ### Step 2: Handle Each Affected Scenario
 
 **สำหรับแต่ละ scenario ที่ได้รับผลกระทบ (🔴 HIGH, 🟡 MEDIUM):**
@@ -108,13 +231,23 @@ Impact Types:
   "superseded_by": "TS-LOGIN-014"
 }
 
-// เคสใหม่: reference เคสเก่า
+// เคสใหม่: reference เคสเก่า + risk + factors recomputed
 {
   "id": "TS-LOGIN-014",
   "title": "Login with OTP verification",
   "supersedes": "TS-LOGIN-001",
   "change_reason": "Added OTP step after password",
   "status": "pending",
+  "risk": {
+    "probability": 3,
+    "impact": 3,
+    "score": 9,
+    "priority": "P0",
+    "rationale": "MFA prevents account takeover (security-critical)"
+  },
+  "complexity_factors": ["security-flow", "multi-step"],
+  "assigned_model": "opus",
+  "assigned_model_reason": "multiple complexity factors require deep reasoning",
   "created_at": "TIMESTAMP"
 }
 ```
@@ -128,11 +261,23 @@ Impact Types:
 #### Strategy B: 🟡 MEDIUM Impact — ปรับ script เดิม
 
 ```json
-// เคสเดิม: update version
+// เคสเดิม: update version + recompute risk/factors
 {
   "id": "TS-LOGIN-002",
   "status": "pending",
   "version": 2,
+  "complexity_factors": ["security-flow"],          // ⭐ added
+  "assigned_model": "sonnet",                       // ⭐ unchanged (P1 + security-flow ไม่ trigger opus rule)
+  "assigned_model_reason": "default mid-complexity (security-flow only triggers opus when P0)",
+  "risk_recompute_history": [
+    {
+      "timestamp": "TIMESTAMP",
+      "trigger": "qa-edit-scenario",
+      "change_reason": "Added OTP input step",
+      "before": { "score": 6, "priority": "P1", "factors": [], "model": "sonnet" },
+      "after":  { "score": 6, "priority": "P1", "factors": ["security-flow"], "model": "sonnet" }
+    }
+  ],
   "change_log": [
     {
       "version": 2,
@@ -302,8 +447,13 @@ export class LoginPage {
 - ✏️ TS-LOGIN-002 → updated to v2 (added OTP step)
 - ✅ POM updated with OTP elements
 
+### Risk Recompute Summary (⭐ v2.3):
+- TS-LOGIN-014 (new):    P1/6 → **P0/9** | factors: [] → [security-flow, multi-step] | sonnet → **opus**
+- TS-LOGIN-002 (v2):     P1/6 → P1/6     | factors: [] → [security-flow]            | sonnet → sonnet (unchanged)
+
 ### Current status:
 - Scenarios: X active | Y deprecated
+- ⚠️ New release blockers: 1 (TS-LOGIN-014 became P0)
 
 ### Next:
 - /qa-run --module LOGIN เพื่อรันเคสที่ปรับปรุง
@@ -343,9 +493,17 @@ Impact Summary:
 ├── tests/ (1 new spec, 2 modified specs, POM updated)
 └── qa-tracker.json (updated)
 
-📊 Scenarios: X active | Y deprecated | Z pending retest
+🎯 Risk + Model Diff Applied:
+├── TS-LOGIN-014: P1/6 → P0/9 ⬆️ | [] → [security-flow, multi-step] | sonnet → opus
+└── TS-LOGIN-002: factors: [] → [security-flow] (model unchanged: sonnet)
 
-🔜 Next: /qa-run --module LOGIN เพื่อรันเคสที่ปรับปรุง
+📊 Scenarios: X active | Y deprecated | Z pending retest
+⚠️ Release blockers added: 1 (TS-LOGIN-014 became P0)
+
+🔜 Next:
+   /qa-run --priority P0          — รัน P0 ก่อน (รวมเคสใหม่ที่ขึ้นเป็น P0)
+   /qa-run --module LOGIN         — รันทั้ง module
+   /qa-status --priority P0       — ดู release-blocker view
 ```
 
 > This command responds in Thai (ภาษาไทย)

@@ -130,9 +130,9 @@ let feature = {
   layer: <derive_layer(bug.page_type)>,
   category: "bug-fix",
   description: `[BUG-FIX] ${bug.title}`,
-  priority: <severity_to_priority(bug.severity)>,
-  complexity: <severity_to_complexity(bug.severity)>,
-  risk_level: <severity_to_risk(bug.severity)>,
+  priority: <derive_priority(bug)>,           // v2.3: risk-aware
+  complexity: <derive_complexity(bug)>,       // v2.3: factor-aware
+  risk_level: <derive_risk_level(bug)>,       // v2.3: blast-radius-aware
   status: "pending",
   blocked_reason: null,
 
@@ -141,7 +141,7 @@ let feature = {
   acceptance_criteria: <generate_acceptance(bug)>,
 
   time_tracking: {
-    estimated_time: <severity_to_time(bug.severity)>,
+    estimated_time: <derive_time(bug)>,       // v2.3: factor-aware (+10min/factor, +15 for state-machine/cascade)
     actual_time: null,
     started_at: null,
     completed_at: null
@@ -172,7 +172,7 @@ let feature = {
 
   steps_legacy: <reproduction_to_steps(bug.reproduction)>,
   tested_at: null,
-  assigned_model: <severity_to_model(bug.severity)>,
+  assigned_model: <derive_model(bug)>,        // v2.3: mirrors scenario's model when scenario was opus
   is_reference_impl: false,
   review: null,
 
@@ -183,7 +183,14 @@ let feature = {
     type: bug.type,
     linked_scenario: bug.linked_scenario,
     discovered_at: bug.discovered_at,
-    qa_tracker_path: "qa-tracker.json"
+    qa_tracker_path: "qa-tracker.json",
+    // v2.3 — risk context propagated from qa-tracker.scenarios[X].risk
+    scenario_risk: {
+      priority: bug.scenario_risk_snapshot.priority,         // P0/P1/P2/P3
+      score: bug.scenario_risk_snapshot.score,
+      factors: bug.scenario_risk_snapshot.factors,           // [security-flow, ...]
+      scenario_assigned_model: bug.scenario_risk_snapshot.scenario_assigned_model
+    }
   },
 
   notes: <generate_notes(bug)>
@@ -192,46 +199,83 @@ let feature = {
 
 ---
 
-### Step 3: Mapping Functions (Implementation)
+### Step 3: Mapping Functions (v2.3 — risk-aware)
 
-#### `severity_to_priority(severity)`
-```
-critical → "high"
-high     → "high"
-medium   → "medium"
-low      → "low"
-```
+**v2.3 input:** ใช้ทั้ง `bug.severity` AND `bug.scenario_risk_snapshot` (priority + factors) เพื่อ derive long-running fields
+**Why:** severity = "ความเร่งด่วนของ bug", risk.priority = "ความสำคัญของ scenario", factors = "ความซับซ้อนของ flow" — 3 มิตินี้ให้ภาพ accurate กว่า severity ตัวเดียว
 
-#### `severity_to_complexity(severity)`
+#### `derive_priority(bug)` (formerly severity_to_priority)
 ```
-critical → "complex"  // ต้องระวัง, อาจกระทบหลายจุด
-high     → "medium"
-medium   → "medium"
-low      → "simple"
-```
+input: bug.severity, bug.scenario_risk_snapshot.priority
 
-#### `severity_to_risk(severity)`
-```
-critical → "high"
-high     → "medium"
-medium   → "low"
-low      → "low"
+# Use scenario risk priority as ceiling, severity as floor
+if snapshot.priority == "P0":  → "high"  (always high if scenario was must-pass)
+elif severity == "critical":   → "high"
+elif severity == "high":       → "high"
+elif severity == "medium":     → "medium"
+elif severity == "low":        → "low"
 ```
 
-#### `severity_to_time(severity)`
+#### `derive_complexity(bug)` (formerly severity_to_complexity)
 ```
-critical → "60min"
-high     → "45min"
-medium   → "30min"
-low      → "20min"
+input: bug.severity, bug.scenario_risk_snapshot.factors
+
+# Factors mostly drive complexity (broad-impact factors → complex)
+factors = bug.scenario_risk_snapshot.factors
+broad_impact = factors intersects ["state-machine", "cascade-deep", "master-detail-sync", "concurrent"]
+
+if broad_impact OR len(factors) >= 2:    → "complex"  (multi-area fix)
+elif severity == "critical":             → "complex"
+elif severity in ["high", "medium"]:     → "medium"
+elif severity == "low":                  → "simple"
 ```
 
-#### `severity_to_model(severity)`
+#### `derive_risk_level(bug)` (formerly severity_to_risk)
 ```
-critical → "opus"      // architectural fix อาจซับซ้อน
-high     → "opus"
-medium   → "sonnet"
-low      → "sonnet"
+# Risk of regression / blast radius if fix breaks
+factors = bug.scenario_risk_snapshot.factors
+
+if "cascade-deep" in factors:            → "high"  (multi-page blast radius)
+elif "security-flow" in factors:         → "high"  (security regression bad)
+elif severity == "critical":             → "high"
+elif severity == "high":                 → "medium"
+elif severity == "medium":               → "low"
+else:                                    → "low"
+```
+
+#### `derive_time(bug)` (formerly severity_to_time)
+```
+input: bug.severity, bug.scenario_risk_snapshot.factors
+
+base = {critical: 60, high: 45, medium: 30, low: 20}[severity]
+
+# Add overhead per complexity factor
+overhead = len(factors) * 10  # +10min per factor
+if "state-machine" in factors: overhead += 15   # state machines need extra
+if "cascade-deep" in factors:  overhead += 15   # cascade verification
+
+return f"{base + overhead}min"
+
+# Examples:
+#   severity=high, factors=[]                 → 45min
+#   severity=high, factors=[state-machine]    → 70min  (45 + 10 + 15)
+#   severity=critical, factors=[cascade-deep] → 85min  (60 + 10 + 15)
+```
+
+#### `derive_model(bug)` (formerly severity_to_model)
+```
+input: bug.severity, bug.scenario_risk_snapshot
+
+# Mirror the scenario's model assignment when fixing — same complexity needs same reasoning
+if bug.scenario_risk_snapshot.scenario_assigned_model == "opus":
+    return "opus"   # if scenario needed opus, fix likely needs opus too
+
+# Otherwise derive from severity + factors
+factors = bug.scenario_risk_snapshot.factors
+if severity in ["critical", "high"] OR len(factors) >= 1:
+    return "opus"
+else:
+    return "sonnet"
 ```
 
 #### `map_module(qa_module)`
@@ -289,11 +333,20 @@ subtasks.push({
   done: false, depends_on: [`${next_id}.3`], commits: [], files: []
 })
 
-// 5. Add regression test (ถ้า severity >= high)
-if bug.severity in ["critical", "high"]:
+// 5. Add regression test (v2.3: severity >= high OR scenario was P0 OR has broad-impact factor)
+factors = bug.scenario_risk_snapshot.factors
+broad_impact = factors intersects ["state-machine", "cascade-deep", "master-detail-sync", "concurrent"]
+needs_regression = bug.severity in ["critical", "high"]
+                   OR bug.scenario_risk_snapshot.priority == "P0"
+                   OR broad_impact
+
+if needs_regression:
+  regression_desc = `เพิ่ม regression test (boundary/negative case) — /qa-edit-scenario ${bug.linked_scenario} "ป้องกัน regression ของ ${bug.id}"`
+  if broad_impact:
+    regression_desc += ` (broad-impact factor: ${factors.join(',')} → cover related flows)`
   subtasks.push({
     id: `${next_id}.5`,
-    description: `เพิ่ม regression test (boundary/negative case) — /qa-edit-scenario ${bug.linked_scenario} "ป้องกัน regression ของ ${bug.id}"`,
+    description: regression_desc,
     done: false, depends_on: [`${next_id}.4`], commits: [], files: []
   })
 
@@ -328,6 +381,7 @@ return `
 
 **Source:** ${bug.id} (qa-ui-test)
 **Severity:** ${bug.severity} | **Type:** ${bug.type}
+**Scenario risk:** ${bug.scenario_risk_snapshot.priority}/${bug.scenario_risk_snapshot.score} | **Factors:** ${bug.scenario_risk_snapshot.factors.join(', ') || '—'}
 **Discovered:** ${bug.discovered_at}
 **Linked scenario:** ${bug.linked_scenario}
 **Failed runs:** ${bug.linked_runs.join(', ')}
@@ -372,6 +426,7 @@ ${bug.root_cause_hint.suggested_fix ? `**Suggested fix:** \`${bug.root_cause_hin
 
 🐛 BUG-001: LOGIN — Validation error not shown on empty submit
    Severity: 🔴 critical | Type: 🐞 app-defect
+   Scenario risk: P0/9 [security-flow]  | Scenario model: opus
 
 ⏬ จะสร้าง feature ใหม่ใน feature_list.json:
 
@@ -380,11 +435,11 @@ ${bug.root_cause_hint.suggested_fix ? `**Suggested fix:** \`${bug.root_cause_hin
 │ Module:      auth-module  (mapped from LOGIN)     │
 │ Layer:       presentation                         │
 │ Category:    bug-fix                              │
-│ Priority:    high  ← from severity                │
-│ Complexity:  complex  ← from severity             │
-│ Risk:        high                                 │
-│ Est. time:   60min                                │
-│ Model:       opus  ← critical → opus              │
+│ Priority:    high  ← P0 scenario (must-pass)      │
+│ Complexity:  complex  ← security-flow factor      │
+│ Risk:        high  ← security regression risk     │
+│ Est. time:   55min  ← 45min + 10min/factor        │
+│ Model:       opus  ← scenario was opus, mirror    │
 │                                                   │
 │ Description:                                      │
 │   [BUG-FIX] LOGIN — Validation error not shown   │

@@ -53,38 +53,36 @@ for f in test-scenarios/TS-*.md; do head -20 "$f"; echo "---"; done
 ````markdown
 ## Test Plan Overview
 
+**Node label format:** `TS-XXX-NNN<br>title<br>[risk] [factors] [model]`
+**Color coding (by risk.priority):** P0 = red 🔴 | P1 = orange 🟠 | P2 = yellow 🟡 | P3 = green 🟢
+**Status border:** ✅ passed = solid green | ❌ failed = solid red | ⏳ pending = dashed
+
 ```mermaid
 graph TD
     subgraph "🔐 LOGIN Module"
-        L1[TS-LOGIN-001<br>Login Valid ✅]
-        L2[TS-LOGIN-002<br>Login Invalid ❌]
-        L3[TS-LOGIN-003<br>Login Empty 🔴]
-        L4[TS-LOGIN-004<br>Login Boundary]
-        L5[TS-LOGIN-005<br>SQL Injection]
+        L1["TS-LOGIN-001<br>Login Valid + CSRF<br>P0/9 · security-flow · opus ✅"]
+        L2["TS-LOGIN-002<br>Login Invalid<br>P1/6 · — · sonnet ✅"]
+        L3["TS-LOGIN-003<br>Login Empty<br>P1/6 · — · sonnet ❌"]
+        L4["TS-LOGIN-004<br>Login Boundary<br>P2/4 · — · sonnet"]
+        L5["TS-LOGIN-005<br>SQL Injection<br>P0/9 · security-flow · opus"]
     end
 
     subgraph "📦 PRODUCT Module (Master Data)"
-        P1[TS-PRODUCT-001<br>List View]
-        P2[TS-PRODUCT-002<br>Create Happy]
-        P3[TS-PRODUCT-003<br>Create Negative 🔴]
-        P4[TS-PRODUCT-004<br>Create Boundary]
-        P5[TS-PRODUCT-005<br>Edit Happy]
-        P6[TS-PRODUCT-006<br>Edit Negative]
-        P7[TS-PRODUCT-007<br>Delete Confirm]
-        P8[TS-PRODUCT-008<br>Delete Cancel]
-        P9[TS-PRODUCT-009<br>Search/Filter]
-        P10[TS-PRODUCT-010<br>Sort]
-        P11[TS-PRODUCT-011<br>Pagination]
+        P1["TS-PRODUCT-001<br>List View<br>P2/3 · — · sonnet"]
+        P2["TS-PRODUCT-002<br>Create Happy<br>P1/6 · — · sonnet"]
+        P3["TS-PRODUCT-003<br>Create Negative<br>P1/6 · — · sonnet ❌"]
+        P4["TS-PRODUCT-004<br>Create Boundary<br>P2/4 · — · sonnet"]
+        P5["TS-PRODUCT-005<br>Edit Happy<br>P1/6 · — · sonnet"]
+        P6["TS-PRODUCT-006<br>Cascade delete<br>P1/6 · cascade-deep · opus"]
+        P11["TS-PRODUCT-011<br>Pagination<br>P3/2 · — · haiku"]
     end
 
     subgraph "📋 ORDER Module (Master-Detail)"
-        O1[TS-ORDER-001<br>List Orders]
-        O2[TS-ORDER-002<br>Create Order]
-        O3[TS-ORDER-003<br>Expand Detail]
-        O4[TS-ORDER-004<br>Edit Detail Row]
-        O5[TS-ORDER-005<br>Add Detail Row]
-        O6[TS-ORDER-006<br>Delete Detail Row]
-        O7[TS-ORDER-007<br>Master-Detail Sync]
+        O1["TS-ORDER-001<br>List Orders<br>P2/3 · — · sonnet"]
+        O2["TS-ORDER-002<br>Create Order<br>P1/6 · — · sonnet"]
+        O3["TS-ORDER-003<br>Expand Detail<br>P2/4 · — · sonnet"]
+        O4["TS-ORDER-004<br>Edit Detail (sync)<br>P0/9 · master-detail-sync · opus"]
+        O7["TS-ORDER-007<br>Status flow<br>P0/7 · state-machine · opus"]
     end
 
     L1 -->|"requires login"| P1
@@ -92,13 +90,19 @@ graph TD
     P2 -->|"product exists"| O2
     O1 -->|"click expand"| O3
     O3 -->|"edit in grid"| O4
-    O3 -->|"add row"| O5
-    O3 -->|"delete row"| O6
 
-    style L3 fill:#ff6b6b
-    style P3 fill:#ff6b6b
-    style L1 fill:#51cf66
-    style P1 fill:#51cf66
+    %% Risk-based color coding (fill = priority, stroke = status)
+    classDef p0 fill:#ff6b6b,stroke:#333,color:#fff
+    classDef p1 fill:#ffa94d,stroke:#333,color:#000
+    classDef p2 fill:#ffe066,stroke:#333,color:#000
+    classDef p3 fill:#8ce99a,stroke:#333,color:#000
+    classDef failed stroke:#c92a2a,stroke-width:3px
+
+    class L1,L5,O4,O7 p0
+    class L2,L3,P2,P3,P5,P6,O2 p1
+    class P1,P4,O1,O3 p2
+    class P11 p3
+    class L3,P3 failed
 ```
 ````
 
@@ -206,7 +210,9 @@ graph TD
 │     • Pagination ทำงาน                                            │
 │     • จำนวนรายการถูกต้อง                                          │
 │  ❓ ทำไมถึงสำคัญ: เป็นหน้าแรกที่ user เห็น ต้องแสดงข้อมูลถูกต้อง    │
-│  📊 Type: Happy Path | Priority: High                             │
+│  📊 Type: Happy Path | Risk: P2/3 (occasional × functional)       │
+│  🧩 Complexity Factors: — (standard CRUD list)                    │
+│  🤖 Model: sonnet (mid-complexity, no factors)                    │
 │  🔗 Dependencies: Login required                                  │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -220,8 +226,24 @@ graph TD
 │     • Master total อัพเดทตาม detail ที่เปลี่ยน                     │
 │     • Cancel edit → ค่ากลับเป็นเดิม                                │
 │  ❓ ทำไมถึงสำคัญ: ข้อมูล detail ต้อง sync กับ master อย่างถูกต้อง    │
-│  📊 Type: Happy Path | Priority: Critical                         │
+│  📊 Type: Happy Path | Risk: P0/9 (likely × critical/money-flow)  │
+│  🧩 Complexity Factors: master-detail-sync                        │
+│  🤖 Model: opus — reason: master-detail sync requires verifying   │
+│      multiple states (totals, count, row state)                  │
+│  🚨 RELEASE BLOCKER (P0)                                          │
 │  🔗 Dependencies: TS-ORDER-003 (expand detail)                    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  TS-DASH-001: Footer Links Visibility                            │
+├─────────────────────────────────────────────────────────────────┤
+│  📌 จุดประสงค์: ตรวจ footer มี link ครบ (about, contact, terms)   │
+│  🎯 สิ่งที่ทดสอบ: visibility + href ของ 3 links                   │
+│  ❓ ทำไมถึงสำคัญ: requirement ทาง legal ต้องมีลิงก์ terms          │
+│  📊 Type: Static Check | Risk: P3/2 (rare × functional)           │
+│  🧩 Complexity Factors: —                                         │
+│  🤖 Model: haiku — reason: P3 trivial pattern-based               │
+│  🔗 Dependencies: — (public page, no auth)                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -231,6 +253,8 @@ graph TD
 
 ```
 📊 Test Coverage Matrix — MODULE: [name]
+
+### A. Test Type Coverage
 
 | Test Type | Count | Scenarios | Coverage |
 |-----------|-------|-----------|----------|
@@ -246,11 +270,45 @@ graph TD
 | Accessibility | 0 | — | ❌ Missing |
 
 Overall Coverage: 9/10 types (90%)
-Missing: Accessibility tests
+
+### B. Risk Distribution (v2.3)
+
+| Risk | Count | % | Scenarios | Pass Rate |
+|------|-------|---|-----------|-----------|
+| 🔴 P0 (must-pass) | 3 | 23% | 002, 005, 007 | 67% (2/3) ⚠️ |
+| 🟠 P1 (should-pass) | 5 | 38% | 001, 003, 006, 009, 011 | 80% (4/5) |
+| 🟡 P2 (nice-to-have) | 4 | 31% | 004, 008, 010, 013 | 100% (4/4) ✅ |
+| 🟢 P3 (regression watch) | 1 | 8% | 012 | 100% (1/1) ✅ |
+| **Total** | **13** | **100%** | | **85%** |
+
+🚨 **Release readiness:** ⚠️ NOT READY — 1 P0 ยัง failing (TS-PRODUCT-005)
+
+### C. Complexity Factor Coverage
+
+| Factor | Count | Scenarios | Notes |
+|--------|-------|-----------|-------|
+| state-machine | 0 | — | (none — module ไม่มี status flow) |
+| cascade-deep | 1 | TS-PRODUCT-006 | Category → Product cascade |
+| multi-step | 0 | — | (CRUD ไม่ใช่ wizard) |
+| concurrent | 0 | — | ❌ Missing — แนะนำเพิ่ม optimistic lock test |
+| security-flow | 0 | — | (ไม่ใช่ auth module) |
+| network-mock | 0 | — | (no API error injection coverage) |
+| master-detail-sync | 0 | — | (ไม่ใช่ master-detail) |
+| cross-browser | 0 | — | (ไม่ critical สำหรับ admin page) |
+
+### D. Model Distribution
+
+| Model | Count | % | Reasons |
+|-------|-------|---|---------|
+| opus | 1 | 8% | cascade-deep |
+| sonnet | 11 | 85% | mid-complexity standard |
+| haiku | 1 | 8% | P3 trivial (pagination) |
 
 💡 Recommendations:
 1. เพิ่ม accessibility test (keyboard nav, screen reader)
-2. เพิ่ม XSS security test
+2. เพิ่ม XSS security test (P0 missing!)
+3. ⚠️ TS-PRODUCT-005 (P0) ยังไม่ pass — release blocker, แนะนำ fix ก่อน
+4. พิจารณาเพิ่ม concurrent edit test (factor: concurrent → opus)
 ```
 
 ---
@@ -305,10 +363,23 @@ EOF
 📊 Modules: N modules | NN scenarios total
 📈 Coverage: X/10 test types (Y%)
 
+🎯 Risk Distribution:
+   🔴 P0: A scenarios (must-pass)        Pass rate: PP%
+   🟠 P1: B scenarios (should-pass)      Pass rate: QQ%
+   🟡 P2: C scenarios (nice-to-have)     Pass rate: RR%
+   🟢 P3: D scenarios (regression watch) Pass rate: SS%
+
+🤖 Model Distribution:
+   opus: O (P0 + factors)  |  sonnet: S (mid-complexity)  |  haiku: H (P3 trivial)
+
+🚨 Release Readiness: [READY ✅ / NOT READY ⚠️ — N P0 failing]
+
 🔜 Actions:
-   /qa-create-scenario  — สร้าง scenarios ที่ขาด
-   /qa-run --all        — รัน tests ทั้งหมด
-   /qa-status           — ดูสถานะล่าสุด
+   /qa-create-scenario          — สร้าง scenarios ที่ขาด
+   /qa-run --priority P0        — รัน P0 ก่อน (release smoke)
+   /qa-run --all                — รัน tests ทั้งหมด
+   /qa-status --priority P0     — ดูสถานะ P0 release blockers
+   /qa-explain --module [name]  — drill-down รายละเอียด
 ```
 
 > This command responds in Thai (ภาษาไทย)

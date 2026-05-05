@@ -31,6 +31,13 @@ allowed-tools: Bash(*), Read(*), Glob(*), Grep(*)
 /qa-bug-list --not-exported               # bugs ที่ยังไม่ส่ง dev
 /qa-bug-list --all                        # รวมที่ closed/verified ด้วย
 /qa-bug-list --json                       # output เป็น JSON
+
+# Risk-based filters (v2.3 — ใช้ bug.scenario_risk_snapshot)
+/qa-bug-list --priority P0                # bugs จาก P0 scenarios (release blockers)
+/qa-bug-list --priority P0,P1             # P0 + P1 (must-fix-first)
+/qa-bug-list --factor state-machine       # bugs ที่ scenario มี factor นี้
+/qa-bug-list --factor cascade-deep,security-flow  # หลาย factors (OR)
+/qa-bug-list --release-blockers           # alias = --priority P0 + status open
 $ARGUMENTS
 ```
 
@@ -77,6 +84,11 @@ sort BY severity DESC, discovered_at ASC
 | `--regressions` | `bug.history` มี action="reopened" |
 | `--not-exported` | `bug.exported_to.target == null` AND `status not in [closed, verified, wont_fix]` |
 | `--all` | ไม่ filter status (รวม closed/verified) |
+| `--priority P0[,P1...]` | `bug.scenario_risk_snapshot.priority IN [...]` — fallback to legacy `priority` ถ้าไม่มี snapshot |
+| `--factor NAME[,NAME]` | `bug.scenario_risk_snapshot.factors` intersects [...] (OR) |
+| `--release-blockers` | shorthand: `--priority P0` AND `status NOT IN [closed, verified, wont_fix]` |
+
+**Combination:** flags AND together; comma-values within flag OR.
 
 ---
 
@@ -102,22 +114,27 @@ sort BY severity DESC, discovered_at ASC
 🐛 QA Bug List — [filter description]
    Showing N of M bugs
 
-┌────────────┬──────────┬──────────────┬──────────────┬────────┬─────────┬─────────┐
-│ ID         │ Severity │ Title        │ Module       │ Type   │ Status  │ Age     │
-├────────────┼──────────┼──────────────┼──────────────┼────────┼─────────┼─────────┤
-│ BUG-001    │ 🔴 crit  │ LOGIN: empty │ LOGIN        │ app    │ exported│ 5 days  │
-│ BUG-002    │ 🟠 high  │ PRODUCT: ... │ PRODUCT      │ app    │ in_prog │ 3 days  │
-│ BUG-003    │ 🟡 med   │ ORDER: grid  │ ORDER        │ flaky  │ triaged │ 1 day   │
-│ BUG-004    │ 🟠 high  │ AUTH: cookie │ AUTH         │ app    │ new     │ 2 hr    │
-└────────────┴──────────┴──────────────┴──────────────┴────────┴─────────┴─────────┘
+┌──────────┬──────────┬───────────────┬─────────┬──────┬──────────────────┬────────┬─────────┬───────┐
+│ ID       │ Severity │ Title         │ Module  │ Risk │ Factors          │ Type   │ Status  │ Age   │
+├──────────┼──────────┼───────────────┼─────────┼──────┼──────────────────┼────────┼─────────┼───────┤
+│ BUG-001  │ 🔴 crit  │ LOGIN: empty  │ LOGIN   │ P0/9 │ security-flow    │ app    │ exported│ 5 d   │
+│ BUG-005  │ 🔴 crit  │ ORDER: state  │ ORDER   │ P0/7 │ state-machine    │ app    │ in_prog │ 3 d   │
+│ BUG-002  │ 🟠 high  │ PRODUCT: req  │ PRODUCT │ P1/6 │ —                │ app    │ in_prog │ 3 d   │
+│ BUG-003  │ 🟡 med   │ ORDER: grid   │ ORDER   │ P1/6 │ master-detail-s. │ flaky  │ triaged │ 1 d   │
+│ BUG-004  │ 🟠 high  │ AUTH: cookie  │ AUTH    │ P0/9 │ security-flow    │ app    │ new     │ 2 hr  │
+│ BUG-008  │ ⚪ low   │ FOOTER: link  │ DASH    │ P3/2 │ —                │ app    │ new     │ 1 d   │
+└──────────┴──────────┴───────────────┴─────────┴──────┴──────────────────┴────────┴─────────┴───────┘
 
 📊 Filtered Summary:
-   By severity:  🔴 1 critical | 🟠 2 high | 🟡 1 medium | ⚪ 0 low
-   By status:    new: 1 | triaged: 1 | exported: 1 | in_progress: 1
-   By type:      app-defect: 3 | flaky: 1
-   Avg age: 2.5 days | Oldest: 5 days
+   By severity:    🔴 2 critical | 🟠 2 high | 🟡 1 medium | ⚪ 1 low
+   By risk:        🔴 P0: 3  |  🟠 P1: 2  |  🟡 P2: 0  |  🟢 P3: 1
+   By factor:      security-flow: 2 | state-machine: 1 | master-detail-sync: 1 | (no factor): 2
+   By status:      new: 2 | triaged: 1 | exported: 1 | in_progress: 2
+   By type:        app-defect: 5 | flaky: 1
+   Avg age: 2.2 days | Oldest: 5 days
 
-🔗 Exported to long-running: 1 / 4 (25%)
+🚨 Release Blockers (P0 + open): 3 bugs (BUG-001, BUG-004, BUG-005) — must fix before release
+🔗 Exported to long-running: 2 / 6 (33%)
 ```
 
 ---
@@ -134,6 +151,16 @@ sort BY severity DESC, discovered_at ASC
 │ Age:         5 days                          │
 │ Module:      LOGIN | Page: form              │
 └──────────────────────────────────────────────┘
+
+🎯 Scenario Risk Snapshot (frozen at fail-time)
+┌───────────────────────────────────────────────────┐
+│ Priority:           P0 (score 9 = likely × crit)  │
+│ Complexity factors: [security-flow]               │
+│ Scenario model:     opus                          │
+│ Severity rationale: P0 base + security-flow bump  │
+│                     + LOGIN blocker module        │
+│ 🚨 RELEASE BLOCKER                                 │
+└───────────────────────────────────────────────────┘
 
 📋 Linked Scenario
    TS-LOGIN-003: Login with empty fields
@@ -194,13 +221,13 @@ sort BY severity DESC, discovered_at ASC
 ```
 ⏰ Aging Bugs — open > N days
 
-🔥 Critical Aging:
-├── BUG-001 — 12 days [🔴 critical, exported] — LOGIN: validation
-└── BUG-007 — 9 days  [🟠 high, in_progress]  — PAYMENT: timeout
+🔥 Critical Aging (P0 release-blockers):
+├── BUG-001 — 12 days [🔴 crit, P0/9, security-flow, exported] — LOGIN: validation
+└── BUG-007 — 9 days  [🟠 high, P0/9, multi-step, in_progress]  — PAYMENT: timeout
 
 ⚠️ Stale (open > 7 days):
-├── BUG-005 — 8 days  [🟡 medium, triaged] — REPORT: chart
-└── BUG-008 — 7 days  [⚪ low, new]         — UI: tooltip
+├── BUG-005 — 8 days  [🟡 med,  P1/6, —, triaged] — REPORT: chart
+└── BUG-008 — 7 days  [⚪ low,  P3/2, —, new]     — UI: tooltip
 
 📊 Aging Summary:
    > 14 days: 0
@@ -249,20 +276,27 @@ cat qa-tracker.json | jq '[.bugs[] | select(<filter>)]'
 ```
 💡 Recommended Actions:
 
-1. 🚨 BUG-001, BUG-004 (critical/high, ยังไม่ export):
-   /qa-bug-export BUG-001        # → สร้าง feature ใหม่
-   /qa-bug-export-subtask BUG-004 # → agent ค้น feature ที่ตรง
+1. 🚨 Release blockers (3 P0 bugs ยังไม่ปิด):
+   /qa-bug-list --release-blockers     # ดูทั้งหมด
+   /qa-bug-export --priority P0        # ส่งไป long-running ทั้งหมด
 
-2. 🔄 BUG-007 (regression):
+2. 🔴 Critical/High ยังไม่ export (BUG-001, BUG-004):
+   /qa-bug-export BUG-001              # → สร้าง feature ใหม่
+   /qa-bug-export-subtask BUG-004      # → agent ค้น feature ที่ตรง
+
+3. 🧩 Bugs ที่ scenario มี state-machine factor (1 bug):
+   /qa-bug-list --factor state-machine # ดูรายละเอียด — ต้อง regression test ครอบ all states
+
+4. 🔄 BUG-007 (regression):
    ตรวจ recent commits ที่กระทบ checkout flow
 
-3. ⏰ Aging > 7 วัน (3 bugs):
-   /qa-bug-list --aging 7         # ดูรายละเอียด
+5. ⏰ Aging > 7 วัน (3 bugs):
+   /qa-bug-list --aging 7              # ดูรายละเอียด
 
-4. 🧪 Test issues (2 bugs) — QA team:
-   /qa-edit-scenario TS-PROFILE-005 # แก้ selector
+6. 🧪 Test issues (2 bugs) — QA team:
+   /qa-edit-scenario TS-PROFILE-005    # แก้ selector
 
-5. 🌀 Flaky tests (1 bug):
+7. 🌀 Flaky tests (1 bug):
    ตรวจ wait conditions, timeouts ใน script
 ```
 

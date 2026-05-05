@@ -22,6 +22,15 @@ allowed-tools: Bash(*), Read(*), Glob(*), Grep(*)
 /qa-status --failed                 # เฉพาะ failed
 /qa-status --review                 # สถานะ review
 /qa-status --bugs                   # focus bug management view
+
+# Risk-based filters (v2.3 / schema 1.6)
+/qa-status --priority P0            # เฉพาะ P0 — release-blocker view
+/qa-status --priority P0,P1         # P0 + P1 (must-pass + should-pass)
+/qa-status --priority critical      # legacy alias = P0
+/qa-status --model opus             # เฉพาะที่ assigned opus (เคสยาก)
+/qa-status --model haiku            # เฉพาะ haiku (P3 trivial)
+/qa-status --factor state-machine   # เฉพาะที่มี complexity factor นี้
+/qa-status --factor cascade-deep,security-flow  # หลาย factors (OR)
 $ARGUMENTS
 ```
 
@@ -47,6 +56,71 @@ ls test-scenarios/TS-*.md 2>/dev/null | wc -l
 ```
 ❌ ไม่พบ qa-tracker.json
    → รัน /qa-create-scenario ก่อนเพื่อเริ่มต้น
+```
+
+---
+
+### Step 1b: Parse Filter Arguments (v2.3)
+
+**ก่อนแสดง overview ให้ apply filters ก่อน:**
+
+| Argument | Field ใน scenario | Match |
+|---|---|---|
+| `--module XXX` | `scenario.module` | exact (case-insensitive) |
+| `--failed` | `scenario.last_run_status` | == "failed" |
+| `--priority P0,P1` | `scenario.risk.priority` | IN list |
+| `--priority critical` | (legacy alias) | map: critical→P0, high→P1, medium→P2, low→P3 |
+| `--model opus,sonnet,haiku` | `scenario.assigned_model` | IN list |
+| `--factor state-machine,...` | `scenario.complexity_factors` | array intersect (OR) |
+
+**Filter combination rules:**
+- ระหว่าง flag = AND (`--priority P0 --model opus` → P0 AND opus)
+- ภายใน flag = OR (`--priority P0,P1` → P0 OR P1)
+- ถ้า scenario ไม่มี `risk` field (legacy data) → derive จาก `priority` field:
+  ```
+  critical → P0  |  high → P1  |  medium → P2  |  low → P3
+  ```
+
+**ถ้า filter เหลือ 0 scenarios:**
+```
+🔍 Filter: --priority P0 --model opus
+ไม่พบ scenarios ที่ตรง — ลอง:
+  /qa-status --priority P0           (ไม่ filter model)
+  /qa-status --model opus            (ไม่ filter priority)
+```
+
+**ตัวอย่าง output เมื่อใช้ `--priority P0`:**
+
+```
+📊 QA UI Test Status — P0 Release-Blocker View
+
+🎯 Filter: priority IN [P0]  (must-pass before release)
+🔢 Matched: 18 of 156 scenarios
+
+┌─────────────────────────────────────────────────────┐
+│              P0 SUMMARY                              │
+├─────────────────────────────────────────────────────┤
+│  Total P0:       18                                  │
+│  ✅ Passed:      14   ████████████████░░░░  78%     │
+│  ❌ Failed:       3   ███░░░░░░░░░░░░░░░░░  17%     │
+│  ⏳ Pending:      1   █░░░░░░░░░░░░░░░░░░░   5%     │
+│                                                      │
+│  🚨 Release Status: ⚠️ NOT READY — 4 P0 ยังไม่ pass  │
+└─────────────────────────────────────────────────────┘
+
+P0 Scenarios:
+| ID            | Title                  | Risk | Factors           | Model | Status |
+|---------------|------------------------|------|-------------------|-------|--------|
+| TS-LOGIN-001  | Login + CSRF           | P0/9 | security-flow     | opus  | ✅     |
+| TS-CHECKOUT-1 | Checkout 5 steps       | P0/9 | multi-step,m-d    | opus  | ❌     |
+| TS-PAYMENT-1  | Stripe webhook retry   | P0/9 | network-mock      | opus  | ✅     |
+| TS-ORDER-007  | Status state machine   | P0/7 | state-machine     | opus  | ❌     |
+| ...
+
+🚨 P0 Failures (release blockers):
+   1. TS-CHECKOUT-1: Step 4 — Stripe redirect timeout
+   2. TS-ORDER-007: Step 3 — PAID→SHIPPED transition stuck
+   3. TS-PAYMENT-2: Step 5 — Refund amount mismatch
 ```
 
 ---
@@ -80,15 +154,20 @@ ls test-scenarios/TS-*.md 2>/dev/null | wc -l
 ### Step 3: Module Breakdown
 
 ```
-📋 Breakdown by Module:
+📋 Breakdown by Module (with risk distribution):
 
-| Module | Total | ✅ | ❌ | ⏳ | Rate | Page Type |
-|--------|-------|----|----|----|------|-----------|
-| LOGIN | 8 | 6 | 1 | 1 | 75% | form |
-| PRODUCT | 13 | 10 | 2 | 1 | 77% | master-data |
-| CATEGORY | 13 | 13 | 0 | 0 | 100% | master-data |
-| CHECKOUT | 6 | 3 | 2 | 1 | 50% | wizard |
-| ORDER | 15 | 8 | 3 | 4 | 53% | master-detail |
+| Module   | Total | ✅ | ❌ | ⏳ | Rate | Page Type     | P0 | P1 | P2 | P3 |
+|----------|-------|----|----|----|------|---------------|----|----|----|----|
+| LOGIN    |   8   |  6 |  1 |  1 |  75% | form          |  3 |  3 |  2 |  0 |
+| PRODUCT  |  13   | 10 |  2 |  1 |  77% | master-data   |  2 |  4 |  5 |  2 |
+| CATEGORY |  13   | 13 |  0 |  0 | 100% | master-data   |  1 |  3 |  6 |  3 |
+| CHECKOUT |   6   |  3 |  2 |  1 |  50% | wizard        |  4 |  2 |  0 |  0 |
+| ORDER    |  15   |  8 |  3 |  4 |  53% | master-detail |  3 |  6 |  4 |  2 |
+
+🚨 P0 Status (release blockers):
+   LOGIN: 3 P0 → 3 ✅ 0 ❌ 0 ⏳   READY
+   CHECKOUT: 4 P0 → 2 ✅ 2 ❌ 0 ⏳  ⚠️ NOT READY (2 P0 failing)
+   ORDER: 3 P0 → 2 ✅ 1 ❌ 0 ⏳   ⚠️ NOT READY
 ```
 
 ---
@@ -96,23 +175,31 @@ ls test-scenarios/TS-*.md 2>/dev/null | wc -l
 ### Step 4: Failed Scenarios Detail
 
 ```
-❌ Failed Scenarios (Y total):
+❌ Failed Scenarios (Y total) — sorted by risk.priority:
 
-1. TS-LOGIN-003: Login with empty fields
-   Module: LOGIN | Priority: high | Runs: 2
+1. TS-CHECKOUT-001: Checkout 5 steps
+   Module: CHECKOUT | Risk: P0/9 | Factors: [multi-step, master-detail-sync] | Model: opus | Runs: 2
+   Last Error: Step 4 — Stripe redirect timeout
+   Last Run: 2026-03-20 14:30
+   🚨 RELEASE BLOCKER (P0)
+   📷 Screenshot: test-results/TS-CHECKOUT-001/run-002/screenshots/04-error.png
+
+2. TS-ORDER-007: Status state machine
+   Module: ORDER | Risk: P0/7 | Factors: [state-machine] | Model: opus | Runs: 1
+   Last Error: Step 3 — PAID→SHIPPED transition stuck
+   Last Run: 2026-03-20 11:00
+   🚨 RELEASE BLOCKER (P0)
+
+3. TS-LOGIN-003: Login with empty fields
+   Module: LOGIN | Risk: P1/6 | Factors: — | Model: sonnet | Runs: 2
    Last Error: Step 4 — Timeout waiting for validation error
    Last Run: 2026-03-20 14:30
    📷 Screenshot: test-results/TS-LOGIN-003/run-002/screenshots/04-error.png
 
-2. TS-PRODUCT-003: Create product — negative
-   Module: PRODUCT | Priority: high | Runs: 1
+4. TS-PRODUCT-003: Create product — negative
+   Module: PRODUCT | Risk: P1/6 | Factors: — | Model: sonnet | Runs: 1
    Last Error: Step 3 — Expected "Name is required" — got nothing
    Last Run: 2026-03-20 10:00
-
-3. TS-ORDER-005: Edit detail row
-   Module: ORDER | Priority: critical | Runs: 1
-   Last Error: Step 6 — Detail grid did not expand
-   Last Run: 2026-03-20 11:00
 ```
 
 ---
@@ -120,9 +207,20 @@ ls test-scenarios/TS-*.md 2>/dev/null | wc -l
 ### Step 5: Model Assignment & Review Status
 
 ```
-🤖 Model Assignment:
-   opus:   X scenarios (critical + first-in-module)
-   sonnet: Y scenarios (standard)
+🤖 Model Assignment (3-tier risk-based — schema 1.6):
+   opus:   X scenarios (P0 + complexity factors / state-machine / cascade-deep / etc.)
+   sonnet: Y scenarios (P1-P2 standard CRUD / mid-complexity)
+   haiku:  Z scenarios (P3 trivial — pattern-based)
+
+   Top reasons (group by assigned_model_reason):
+   • opus  ← state-machine factor present       → 5 scenarios
+   • opus  ← multiple complexity factors        → 4 scenarios
+   • opus  ← cascade-deep                       → 3 scenarios
+   • sonnet ← default mid-complexity            → 89 scenarios
+   • haiku ← P3 trivial pattern-based           → 22 scenarios
+
+   💰 Est. cost ratio:  opus ~15x  |  sonnet ~3x  |  haiku ~1x
+   → ใช้ /qa-status --model opus เพื่อดูเฉพาะเคสยาก
 
 🔍 Review Status:
    ✅ Reviewed: N scenarios
@@ -249,16 +347,16 @@ ls test-scenarios/TS-*.md 2>/dev/null | wc -l
 ```
 📊 Module: LOGIN — Detailed Status
 
-| ID | Title | Priority | Status | Runs | Last Run |
-|----|-------|----------|--------|------|----------|
-| TS-LOGIN-001 | Login valid | critical | ✅ passed | 2 | 14:30 |
-| TS-LOGIN-002 | Login invalid email | high | ✅ passed | 1 | 10:00 |
-| TS-LOGIN-003 | Login empty fields | high | ❌ failed | 2 | 14:30 |
-| TS-LOGIN-004 | Login boundary | medium | ✅ passed | 1 | 10:00 |
-| TS-LOGIN-005 | Login SQL injection | high | ✅ passed | 1 | 10:00 |
-| TS-LOGIN-006 | Login XSS attempt | high | ✅ passed | 1 | 10:00 |
-| TS-LOGIN-007 | Login duplicate submit | medium | ✅ passed | 1 | 10:00 |
-| TS-LOGIN-008 | Login back navigation | low | ⏳ pending | 0 | — |
+| ID            | Title                  | Risk | Factors        | Model  | Status     | Runs | Last Run |
+|---------------|------------------------|------|----------------|--------|------------|------|----------|
+| TS-LOGIN-001  | Login valid + CSRF     | P0/9 | security-flow  | opus   | ✅ passed  |   2  | 14:30    |
+| TS-LOGIN-002  | Login invalid email    | P1/6 | —              | sonnet | ✅ passed  |   1  | 10:00    |
+| TS-LOGIN-003  | Login empty fields     | P1/6 | —              | sonnet | ❌ failed  |   2  | 14:30    |
+| TS-LOGIN-004  | Login boundary         | P2/4 | —              | sonnet | ✅ passed  |   1  | 10:00    |
+| TS-LOGIN-005  | Login SQL injection    | P0/9 | security-flow  | opus   | ✅ passed  |   1  | 10:00    |
+| TS-LOGIN-006  | Login XSS attempt      | P0/9 | security-flow  | opus   | ✅ passed  |   1  | 10:00    |
+| TS-LOGIN-007  | Login duplicate submit | P2/4 | —              | sonnet | ✅ passed  |   1  | 10:00    |
+| TS-LOGIN-008  | Login back navigation  | P3/2 | —              | haiku  | ⏳ pending |   0  | —        |
 
 Run History (recent 5):
 ├── Run #2 (14:30): 6/8 passed — retest

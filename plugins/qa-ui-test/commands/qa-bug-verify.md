@@ -47,6 +47,10 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-bug-verify --status fixed           # bug ทุกตัวที่ dev mark fixed (จาก long-running)
 /qa-bug-verify --auto-sync              # อ่าน feature_list ดู subtask "Verify BUG-XXX" ที่ done=true → run verify
 /qa-bug-verify --regression             # รี-รัน bug ทุกตัวที่ verified แล้ว (sanity check)
+
+# v2.3 — risk-prioritized batches
+/qa-bug-verify --priority P0            # verify เฉพาะ P0 bugs (release smoke)
+/qa-bug-verify --release-blockers       # alias: --priority P0 + status in [fixed, in_progress]
 $ARGUMENTS
 ```
 
@@ -139,14 +143,21 @@ verification_error = result....error?.message || null
 
 ```
 🔍 Verification: BUG-001
+   🎯 Risk Snapshot: P0/9 [security-flow] (frozen at fail-time, scenario.assigned_model: opus)
+   🚨 RELEASE BLOCKER
+
    Original failure: TS-LOGIN-003 Run #1 (4.5s)
       Step 4: Timeout waiting for validation error
-      
+
    Verification: TS-LOGIN-003 Run #4 (2.8s)
       All steps passed ✅
-   
+
    📈 Delta: FIXED — error resolved, faster by 1.7s
 ```
+
+**ทำไมแสดง Risk Snapshot:**
+- ช่วยให้เห็นทันทีว่า bug นี้สำคัญแค่ไหน (P0 = release blocker)
+- ถ้ามี factors เช่น state-machine → เตือนให้ check transition states ใน Step 7
 
 ---
 
@@ -318,23 +329,66 @@ feature_list.summary.last_updated = NOW;
 
 ---
 
-### Step 7: Optional — Add Regression Test (ถ้า severity high+)
+### Step 7: Factor-Aware Regression Test Recommendation (v2.3)
 
-**ถ้า bug.severity in [critical, high] AND ผ่านการ verify:**
+**Trigger conditions (any of):**
+- `bug.severity in [critical, high]`
+- `bug.scenario_risk_snapshot.priority == "P0"`
+- `bug.scenario_risk_snapshot.factors` มี broad-impact factor: `state-machine`, `cascade-deep`, `master-detail-sync`, `concurrent`
+
+**Factor-specific recommendations:**
+
+ตาม `bug.scenario_risk_snapshot.factors` ให้แนะนำ regression coverage ที่เฉพาะเจาะจง:
+
+| Factor | คำแนะนำ regression scope |
+|---|---|
+| `state-machine` | ครอบคลุม **ทุก transition** ที่เป็นไปได้ ไม่ใช่แค่ transition ที่ fail (เช่น PENDING→PAID→SHIPPED→DELIVERED + invalid transitions) |
+| `cascade-deep` | ครอบ **dependent pages ทุกระดับ** (Category→Product→OrderItem) — เพิ่ม cascade-update + cascade-delete-restrict |
+| `multi-step` | ครอบ **navigation patterns**: forward, backward, jump-to-step, browser back button |
+| `master-detail-sync` | ครอบ **sync directions**: master totals after detail edit + after detail delete + after master change → detail refresh |
+| `concurrent` | ครอบ **race conditions**: 2 users edit, optimistic lock conflict, version mismatch |
+| `security-flow` | ครอบ **attack vectors เพิ่ม**: ที่ fail แค่ 1 → CSRF + XSS + IDOR + boundary tokens ที่ใกล้เคียง |
+| `network-mock` | ครอบ **error chains**: 500 + 503 + timeout + retry exhaustion + partial response |
+| `master-detail-sync` + `cascade-deep` | combined scope: master change → detail sync → cascade to dependents |
+
+**Output แนะนำ user:**
 
 ```
-แนะนำ user เพิ่ม regression scenario:
+💡 BUG-001 — Regression test recommendation
 
-💡 BUG-001 severity = critical → ควรเพิ่ม regression test ป้องกันเกิดซ้ำ
+Trigger: P0 + security-flow factor
 
-   /qa-edit-scenario {linked_scenario} "เพิ่ม regression: ${bug.title}"
+📋 แนะนำเพิ่ม scenarios ครอบคลุม security attack vectors:
+   1. CSRF token tampering test
+   2. Concurrent session hijack test
+   3. Auth bypass via direct URL access (IDOR)
+   4. Token expiration edge cases
 
-   หรือเพิ่ม subtask ใน feature:
-   "เพิ่ม regression test สำหรับ BUG-001"
+Run:
+   /qa-edit-scenario TS-LOGIN-003 "เพิ่ม regression: security flow coverage หลัง BUG-001"
+   → qa-edit-scenario auto-recompute risk + factors
+   → คาดว่าจะได้: 4 new scenarios เป็น P0 + security-flow → assigned opus
 ```
 
-ถ้า user ตอบ y → dispatch /qa-edit-scenario subagent หรือ tag ใน feature.notes
+**สำหรับ state-machine bug:**
 
+```
+💡 BUG-005 — State machine regression coverage
+
+Trigger: P0 + state-machine factor
+
+📋 แนะนำเพิ่ม scenarios ครอบ all transitions:
+   เคสปัจจุบัน: TS-ORDER-007 (PAID→SHIPPED transition fail)
+   
+   เพิ่ม:
+   - TS-ORDER-007a: PENDING→PAID transition (happy)
+   - TS-ORDER-007b: PAID→CANCELLED transition (refund)
+   - TS-ORDER-007c: SHIPPED→DELIVERED transition
+   - TS-ORDER-007d: Invalid transition: PENDING→SHIPPED (must reject)
+   - TS-ORDER-007e: Race: 2 admins approve simultaneously
+```
+
+ถ้า user ตอบ y → dispatch `/qa-edit-scenario` subagent
 อัพเดท `bug.fix_info.regression_tests_added` ถ้าเพิ่มจริง
 
 ---
@@ -425,28 +479,33 @@ git commit -m "qa-verify: X bugs verified, Y still failing — long-running sync
 
 ✅ Verified (Bug → Closed in long-running):
 
-├── BUG-001 — TS-LOGIN-003 ✅ Run #4 (2.8s, was 4.5s)
+├── BUG-001 [P0/9] [security-flow] — TS-LOGIN-003 ✅ Run #4 (2.8s, was 4.5s)
+│   🚨 RELEASE BLOCKER VERIFIED ✅
 │   Long-running: feature #45 → passes=true ✅
 │   Subtasks 45.1-45.5 all done
 │   Time-to-fix: 4.2 hours
-│   💡 Severity=critical → แนะนำเพิ่ม regression test
+│   💡 Trigger=P0+security-flow → แนะนำ regression: CSRF + IDOR + token expiry
 │
-└── BUG-004 — TS-AUTH-002 ✅ Run #3 (1.2s)
+└── BUG-004 [P2/4] [—] — TS-AUTH-002 ✅ Run #3 (1.2s)
     Long-running: feature #5.6 → done=true ✅
     Feature #5 ยังคง in_progress (มี subtask อื่น)
+    💡 No factor → standard regression test (negative case ก็พอ)
 
 ❌ Verification Failed (กลับไปแจ้ง dev):
 
-└── BUG-007 — TS-CHECKOUT-002 ❌ Run #6
+└── BUG-007 [P0/9] [multi-step, master-detail-sync] — TS-CHECKOUT-002 ❌ Run #6
+    🚨 RELEASE BLOCKER STILL FAILING
     Step 4 ยัง fail ที่จุดเดิม
     Long-running: feature #11.5 ยัง in_progress (ไม่เปลี่ยน)
-    
+
     📷 ดู: test-results/TS-CHECKOUT-002/run-006/screenshots/
     📝 Trace: test-results/TS-CHECKOUT-002/run-006/trace.zip
-    
-    💬 Suggested message ไป dev:
-       "BUG-007 verify ไม่ผ่าน — fix ที่ commit abc123 ยังไม่ครอบ
-        case validation timing. ตรวจ AsyncValidator.ts:88"
+
+    💬 Suggested message ไป dev (factor-aware):
+       "BUG-007 verify ไม่ผ่าน — scenario มี multi-step + master-detail-sync
+        factors ดังนั้น fix อาจต้องครอบ flow มากกว่า 1 step.
+        ตรวจ AsyncValidator.ts:88 + verify master totals หลัง detail edit
+        + verify navigation backward จาก step 5 → step 4"
 
 🔄 Regressions (1):
 

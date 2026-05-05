@@ -1,6 +1,6 @@
 ---
 name: qa-ui-test
-version: 2.0.0
+version: 2.5.0
 description: |
   QA UI Testing plugin ด้วย Playwright — long-running agent style tracking, brainstorming,
   model assignment, parallel subagents, master data CRUD testing, master-detail grid testing, opus review
@@ -92,6 +92,130 @@ AI-powered QA testing skill ที่สร้าง, รัน, และจั
 | Accessibility | ทดสอบ a11y | keyboard, screen reader, WCAG |
 
 ทุก agent ทำงาน **parallel** → รวมผล → deduplicate → สร้าง scenarios
+
+## Risk-Based Model Assignment (v2.3.0)
+
+ทุก scenario ใน `qa-tracker.json` (schema 1.6+) มี 2 fields หลักที่ใช้เลือก model:
+
+```json
+{
+  "risk": {
+    "probability": 1-3,
+    "impact": 1-3,
+    "score": 1-9,
+    "priority": "P0|P1|P2|P3",
+    "rationale": "..."
+  },
+  "complexity_factors": ["state-machine", "cascade-deep", ...],
+  "assigned_model": "opus|sonnet",
+  "assigned_model_reason": "rule that matched"
+}
+```
+
+### หลักคิด: 2 มิติแยกกัน
+
+```
+มิติ 1 — RISK (สำหรับ scope: รัน scenario ไหนก่อน)
+  P0 = score 7-9 → must-pass before release
+  P1 = score 5-6 → should-pass
+  P2 = score 3-4 → nice-to-have
+  P3 = score 1-2 → regression watch
+
+มิติ 2 — COMPLEXITY FACTORS (ตัวจริงที่เลือก model — 3 tiers)
+  ถ้า flow ยาก          → opus    (Tier 1)
+  ถ้า CRUD ทั่วไป        → sonnet  (Tier 2 / default)
+  ถ้า P3 + ไม่มี factor → haiku   (Tier 3 — pattern-based, ลด cost)
+```
+
+### 8 Complexity Factors
+
+| Factor | ใช้เมื่อ | ตัวอย่าง |
+|---|---|---|
+| `state-machine` | flow มี status transitions | order PENDING→PAID→SHIPPED |
+| `cascade-deep` | cascade depth ≥ 2 | Category→Product→OrderItem |
+| `multi-step` | wizard ≥ 3 steps | checkout 5 steps |
+| `concurrent` | race condition / optimistic lock | 2 users edit same row |
+| `security-flow` | auth, CSRF, XSS, IDOR, money | login + CSRF, payment |
+| `network-mock` | API mock + retry sequences | error injection chain |
+| `master-detail-sync` | inline edit + master total sync | order detail + total update |
+| `cross-browser` | engine diff testing | Chromium vs Firefox vs WebKit |
+
+### Auto-Assign Rules — 3 Tiers (top-down, first match wins)
+
+```
+# TIER 1 — opus (เคสยาก, reasoning ลึก) — 10 rules
+opus  ← มี factor ≥ 2          → multiple complexity factors
+opus  ← state-machine          → flow-aware reasoning
+opus  ← cascade-deep           → cross-module reasoning
+opus  ← concurrent             → race condition sequencing
+opus  ← cross-browser          → engine diff analysis
+opus  ← security-flow + P0     → exhaustive coverage
+opus  ← master-detail-sync     → multi-state verification
+opus  ← network-mock + P0      → precise scripting
+opus  ← multi-step + P0/P1     → branch reasoning
+opus  ← P0 + factor ≥ 1        → P0 with any complexity
+
+# TIER 3 — haiku (P3 trivial เท่านั้น) — ต้องมาก่อน default sonnet
+haiku ← P3 + factor == 0       → pattern-based, no reasoning needed
+
+# TIER 2 — sonnet (default — CRUD / mid-complexity)
+sonnet ← default               → mid-complexity / standard CRUD
+```
+
+### เมื่อไหร่ haiku ใช้ไม่ได้
+
+❌ **ห้าม** override ให้ haiku กับเคสเหล่านี้:
+- มี complexity factor ใดๆ (ตกไป opus rule อยู่แล้ว — ไม่มาถึง haiku)
+- P0/P1/P2 (สงวน haiku สำหรับ P3 เพื่อ pattern-based การันตี)
+- Security/auth/payment (ต้องการ correctness ลึก ไม่ใช่ pattern matching)
+- Master-detail / cascade / wizard
+
+✅ haiku เหมาะกับเคสเหล่านี้:
+- About page / static page check
+- Empty state display
+- Footer link existence
+- Pagination next/prev (UI mechanical)
+- Logout button visibility check
+- Help text / tooltip presence
+- ตรวจ heading / label text ตายตัว
+
+### ทำไมต้องเปลี่ยนจาก "critical = opus"
+
+ของเก่า (schema 1.5):
+```
+priority == 'critical' → opus
+default → sonnet
+```
+
+ปัญหา: critical มาจาก impact อย่างเดียว ไม่ดู complexity → ตัวอย่าง:
+- "Login form (critical because security)" → opus (overkill, flow ตรงๆ)
+- "Order checkout 5 steps (high)" → sonnet (underkill, flow ซับซ้อน)
+
+ของใหม่ (schema 1.6, 3-tier) — แยก 2 มิติ:
+- Login form: P0 + [security-flow] → opus (P0 security ต้อง exhaustive) ✅
+- Login form แบบ simple (no MFA): P1 + [] → sonnet ✅
+- Order checkout 5 steps: P0 + [multi-step, master-detail-sync] → opus (2 factors) ✅
+- Product CRUD: P2 + [] → sonnet ✅
+- About page / footer / pagination: P3 + [] → **haiku** ✅ (ลด cost)
+
+### ต้องบันทึก reason
+
+```json
+{
+  "id": "TS-ORDER-007",
+  "assigned_model": "opus",
+  "assigned_model_reason": "state-machine factor present"
+}
+```
+
+ใช้ตอน audit cost: ทำไมเดือนนี้ใช้ opus เยอะ? → group by `assigned_model_reason`
+
+### Backward Compat
+
+field `priority: critical|high|medium|low` ยังคงอยู่ — derive จาก `risk.priority`:
+- P0 → critical, P1 → high, P2 → medium, P3 → low
+
+commands เก่าที่ filter `--severity critical` หรือ `--priority high` ยังทำงานได้
 
 ## Quick Reference
 

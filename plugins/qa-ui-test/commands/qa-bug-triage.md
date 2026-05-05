@@ -127,26 +127,46 @@ default: return "app-defect"  # fail-safe: dev ตรวจ
 
 ---
 
-### Step 2: Auto-Derive Severity
+### Step 2: Auto-Derive Severity (v2.3 — risk-aware)
 
-**Severity rules:**
+**v2.3 Severity rules ใช้ scenario.risk.priority + complexity_factors แทน priority อย่างเดียว:**
 
-| condition | severity |
-|-----------|----------|
-| `priority == "critical"` หรือ scenario มี role-access fail | `critical` |
-| `priority == "high"` AND `type == "app-defect"` | `high` |
-| `priority == "high"` AND `type != "app-defect"` | `medium` |
-| Module = LOGIN/AUTH/PAYMENT (blocker modules) | bump up 1 ระดับ |
-| Cascade test fail (กระทบหลายหน้า) | bump up 1 ระดับ |
-| `type == "flaky"` | downgrade 1 ระดับ (ไม่ block release แต่ต้อง stabilize) |
-| `priority == "low"` | `low` |
-| default | `medium` |
+#### A. Base severity จาก risk.priority
+
+| `scenario.risk.priority` | base severity |
+|---|---|
+| P0 (score 7-9) | `critical` |
+| P1 (score 5-6) | `high` |
+| P2 (score 3-4) | `medium` |
+| P3 (score 1-2) | `low` |
+
+**Legacy fallback:** ถ้า scenario ไม่มี `risk` field → derive จาก `priority`:
+- critical → P0, high → P1, medium → P2, low → P3
+
+#### B. Bump rules (apply ตามลำดับ)
+
+| condition | adjustment |
+|---|---|
+| `type == "app-defect"` AND base = high | keep `high` |
+| `type != "app-defect"` AND base = critical | downgrade to `high` (ไม่ใช่ app bug = ไม่ block release) |
+| `type == "flaky"` | downgrade 1 level (stabilize ก่อน) |
+| `type == "test-issue"` | downgrade 1 level (QA แก้เอง) |
+| `type == "environment"` | bump down to `low` (infra issue) |
+| `complexity_factors` มี `state-machine` | bump UP 1 (broad flow impact) |
+| `complexity_factors` มี `cascade-deep` | bump UP 1 (multi-page impact) |
+| `complexity_factors` มี `security-flow` AND type = app-defect | bump UP 1 (security debt) |
+| `complexity_factors` มี `master-detail-sync` | bump UP 1 (data integrity risk) |
+| Module = AUTH/LOGIN/PAYMENT (blocker modules) AND type = app-defect | bump UP 1 |
+
+**Cap:** ไม่เกิน `critical`, ไม่ต่ำกว่า `low`
 
 **Examples:**
-- TS-LOGIN-001 (priority=critical) fail → severity=critical (LOGIN blocker)
-- TS-PRODUCT-003 (priority=high, app-defect) → severity=high
-- TS-PRODUCT-009 (priority=medium, flaky) → severity=low
-- TS-CASCADE-CAT-002 (priority=high, app-defect) → severity=critical (cascade bump)
+- TS-LOGIN-001 (risk: P0/9, factors: [security-flow]) fail app-defect → base=critical (cap) → severity=**critical**
+- TS-PRODUCT-003 (risk: P1/6, factors: []) app-defect → base=high → severity=**high**
+- TS-PRODUCT-009 (risk: P1/6) flaky → base=high → downgrade → severity=**medium**
+- TS-CASCADE-CAT-002 (risk: P1/6, factors: [cascade-deep]) app-defect → base=high → bump UP → severity=**critical**
+- TS-FOOTER-001 (risk: P3/2, factors: []) app-defect → base=low → severity=**low** (haiku-tier bug — quick fix)
+- TS-ORDER-007 (risk: P0/7, factors: [state-machine]) app-defect → base=critical (cap) → severity=**critical**
 
 ---
 
@@ -167,6 +187,14 @@ default: return "app-defect"  # fail-safe: dev ตรวจ
   "page_type": "{scenario.page_type}",
   "discovered_at": "{first_fail_run.timestamp}",
   "last_updated": "{NOW}",
+
+  "scenario_risk_snapshot": {
+    "_comment": "v2.3 — frozen risk context at bug-discovery time. Used downstream by qa-bug-export to derive priority/complexity/model. Snapshot semantics: never updated even if scenario.risk changes later.",
+    "priority": "{scenario.risk.priority}",
+    "score": "{scenario.risk.score}",
+    "factors": [/* copy of scenario.complexity_factors at fail time */],
+    "scenario_assigned_model": "{scenario.assigned_model}"
+  },
 
   "evidence": {
     "failed_step": "{from test-report.json}",
@@ -374,20 +402,30 @@ git commit -m "qa(triage): X bugs triaged, Y regressions reopened"
 
 🔴 Critical (A):
 ├── BUG-001: LOGIN — Validation error not shown on empty submit
-│   └── TS-LOGIN-003 | Run #1, #2 | App defect
+│   └── TS-LOGIN-003 [P0/9] [security-flow] [opus] | Run #1, #2 | App defect
+│   └── Severity rationale: P0 base + security-flow factor + LOGIN blocker module
 │   └── Suspected: src/Controllers/AuthController.cs:42 (75% confidence)
 
 🟠 High (B):
 ├── BUG-002: PRODUCT — Create form bypasses required check
-│   └── TS-PRODUCT-003 | Run #1 | App defect
+│   └── TS-PRODUCT-003 [P1/6] [—] [sonnet] | Run #1 | App defect
+│   └── Severity rationale: P1 base, no factor bump
 │   └── Suspected: src/Components/ProductForm.tsx:88 (60%)
+
+🟠 High (B):
+├── BUG-005: ORDER — Status PAID→SHIPPED transition fails
+│   └── TS-ORDER-007 [P0/7] [state-machine] [opus] | Run #1 | App defect
+│   └── Severity rationale: P0 base (cap to critical) — but downgraded to high
+│       because not blocker-module — final = critical via state-machine bump
 
 🟡 Medium (C):
 ├── BUG-003: ORDER — Detail grid expand inconsistent
-│   └── TS-ORDER-005 | Run #1, #3 (passed #2) | Flaky
+│   └── TS-ORDER-005 [P1/6] [master-detail-sync] [opus] | Run #1, #3 (passed #2) | Flaky
+│   └── Severity rationale: P1 base + flaky downgrade + master-detail bump = medium
 
 🧪 Test issues (D) — QA team แก้ test:
 ├── BUG-004: PROFILE — Selector data-testid="save-btn" ไม่มีในหน้า
+│   └── TS-PROFILE-001 [P2/4] [—] [sonnet] | test-issue → downgrade to low
 
 🔄 Regressions detected (Y):
 └── BUG-007 (was verified) — TS-CHECKOUT-002 fail again at run #4

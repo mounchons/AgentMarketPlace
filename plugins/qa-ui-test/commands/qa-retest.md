@@ -42,6 +42,9 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-retest TS-LOGIN-003            # รีเทสเคสเฉพาะ
 /qa-retest --module LOGIN          # รีเทสทั้ง module
 /qa-retest --all                   # รีเทสทุกเคส (regression test)
+/qa-retest --priority P0           # รีเทสเฉพาะ P0 (release smoke)
+/qa-retest --model opus            # รีเทสเฉพาะที่ assigned เป็น opus
+/qa-retest --factor cascade-deep   # รีเทสเฉพาะที่มี factor นี้
 /qa-retest --review                # รีเทส + opus review
 /qa-retest --parallel              # รีเทส parallel
 $ARGUMENTS
@@ -86,12 +89,14 @@ cat qa-tracker.json | jq '[.scenarios[] | select(.last_run_status == "failed")] 
 ```
 🔄 Scenarios ที่จะรีเทส:
 
-| # | ID | Title | Last Status | Last Run | Error |
-|---|-----|-------|-------------|----------|-------|
-| 1 | TS-LOGIN-003 | Login empty | ❌ FAILED | Run #1 | Timeout |
-| 2 | TS-PRODUCT-003 | Create neg | ❌ FAILED | Run #1 | Missing error |
+| # | ID            | Title         | Risk  | Factors        | Model  | Last Status | Last Run | Error         |
+|---|---------------|---------------|-------|----------------|--------|-------------|----------|---------------|
+| 1 | TS-LOGIN-003  | Login empty   | P1/6  | —              | sonnet | ❌ FAILED   | Run #1   | Timeout       |
+| 2 | TS-PRODUCT-003| Create neg    | P1/6  | —              | sonnet | ❌ FAILED   | Run #1   | Missing error |
+| 3 | TS-ORDER-007  | Status flow   | P0/9  | state-machine  | opus   | ❌ FAILED   | Run #2   | State stuck   |
 
 ❓ รีเทสทั้งหมด? (y/n หรือเลือกเฉพาะ)
+   เพิ่ม filter ได้: --priority P0  | --model opus  | --factor state-machine
 ```
 
 ---
@@ -210,54 +215,90 @@ Next run: run-003
 
 ---
 
-### Step 6: Opus Review (ถ้า --review)
+### Step 6: Opus Review with Numeric Score 0-100 (v2.5)
 
 **Dispatch opus review subagent:**
 
 ```
 Subagent prompt:
 
-You are an **Opus QA Reviewer**. Review the QA test results and provide feedback.
+You are an **Opus QA Reviewer**. Score test quality across 4 orthogonal dimensions
+(each 25 points → total 100). Use ONLY observable evidence from test files,
+qa-tracker.json, and test-results — no fabricated metrics.
 
 ## Input
 - qa-tracker.json: [content]
 - Test results: [summary of all passed/failed]
 - Test scripts: [list of spec files]
 
-## Review Criteria
+## 4 Scoring Dimensions (25 points each)
 
-1. **Test Quality** (0-100)
-   - Are assertions sufficient? (not just checking page loads)
-   - Are error messages verified?
-   - Are edge cases covered?
+### 1. Coverage (25 points)
 
-2. **Coverage Gaps**
-   - Missing test types (no boundary tests?)
-   - Missing negative cases?
-   - Missing user roles?
+วัดว่า scenarios ครอบ test types แค่ไหน:
+- Happy path scenarios: existence + count vs page count                    (5 pts)
+- Negative scenarios: count + variety (validation, boundary, error)        (7 pts)
+- Edge cases: boundary values, special chars, concurrent edit              (5 pts)
+- Role coverage: each role tested for module                               (4 pts)
+- Risk priority distribution: P0/P1/P2/P3 balance not skewed              (4 pts)
 
-3. **Test Script Quality**
-   - POM used correctly?
-   - Selectors robust? (data-testid > CSS)
-   - Waits explicit? (no hardcoded sleeps)
+Bonus: -3 ถ้า P0 scenarios < 10% (under-tested critical paths)
+Bonus: +2 ถ้ามี complexity_factors coverage ≥ 4 different factors
 
-4. **Recommendations**
-   - New scenarios to add
-   - Existing scenarios to improve
-   - Priority adjustments
+### 2. Determinism (25 points)
+
+วัดว่า tests stable + reliable แค่ไหน:
+- Pass rate of last run: ≥95%=12 / 90-94%=8 / 80-89%=4 / <80%=0           (12 pts)
+- Flaky rate (pass+fail in runs[]): <2%=8 / 2-5%=5 / 5-10%=2 / >10%=0     (8 pts)
+- No `waitForTimeout()` hardcoded sleep: count=0=5 / 1-3=3 / >3=0          (5 pts)
+
+### 3. Assertion Quality (25 points)
+
+วัดว่า assertions ตรวจสิ่งที่ต้อง verify จริง:
+- Specific text assertions (not just toBeVisible): ratio 0.7+=10 / 0.4-0.7=6 / <0.4=0  (10 pts)
+- Error messages verified by content (not just "error appears"): 8 pts ถ้าทุก negative scenario verify text
+- API response shape verified (when applicable): 4 pts
+- State after action verified (not just action success): 3 pts
+
+Penalty: -3 ถ้ามี scenario แค่ click button without verifying result
+
+### 4. Maintainability (25 points)
+
+วัดว่า test code maintain ง่ายแค่ไหน:
+- Selector quality (data-testid + getByRole ratio): ≥85%=10 / 70-84%=7 / 55-69%=4 / <55%=0  (10 pts)
+- Helper reuse (login + API setup helpers used): ratio ≥0.8=8 / 0.6-0.79=5 / <0.6=2  (8 pts)
+- POM coverage (specs importing pages/): ≥0.8=4 / 0.5-0.79=2 / <0.5=0  (4 pts)
+- Comments referencing scenario doc: ratio ≥0.7=3 / <0.7=1  (3 pts)
 
 ## Output Format
+
 {
-  "result": "pass|fail",
-  "score": 85,
-  "test_quality": { "score": 90, "notes": "..." },
-  "coverage_gaps": ["...", "..."],
-  "script_quality": { "score": 80, "issues": ["..."] },
+  "score": 84,
+  "result": "pass" if score >= 80 else "concerns" if score >= 65 else "fail",
+  "dimensions": {
+    "coverage":         { "score": 22, "notes": "Strong happy+negative; missing concurrent edit edge cases" },
+    "determinism":      { "score": 20, "notes": "94% pass rate; 1 flaky scenario; 2 waitForTimeout occurrences" },
+    "assertion_quality":{ "score": 18, "notes": "3 scenarios use only toBeVisible — verify text instead" },
+    "maintainability":  { "score": 24, "notes": "98% data-testid; helpers reused; 1 spec without POM import" }
+  },
   "recommendations": [
-    { "type": "add_scenario", "id": "TS-XXX-NNN", "title": "...", "priority": "..." },
-    { "type": "improve", "id": "TS-XXX-NNN", "suggestion": "..." }
-  ]
+    { "type": "improve_assertion", "id": "TS-PRODUCT-007", "fix": "Verify error text content not just visibility" },
+    { "type": "add_scenario", "module": "ORDER", "title": "Concurrent edit conflict", "priority": "P0", "factors": ["concurrent"] },
+    { "type": "remove_anti_pattern", "id": "TS-CHECKOUT-005", "fix": "Replace waitForTimeout(2000) with waitFor({state:'visible'})" }
+  ],
+  "trend": {
+    "previous_score": 78,
+    "delta": "+6"
+  }
 }
+```
+
+**Score thresholds (Quality Gate):**
+
+```
+score >= 80  → PASS       (release-ready quality)
+score 65-79  → CONCERNS   (acceptable, fix recommendations before next release)
+score < 65   → FAIL       (block — significant test debt)
 ```
 
 **Save review to qa-tracker.json:**
@@ -266,19 +307,49 @@ You are an **Opus QA Reviewer**. Review the QA test results and provide feedback
 {
   "review": {
     "reviewer": "opus",
-    "result": "pass|fail",
-    "score": 85,
+    "score": 84,
+    "result": "pass|concerns|fail",
     "timestamp": "TIMESTAMP",
-    "coverage_gaps": ["..."],
-    "recommendations": ["..."],
-    "remaining_issues": []
+    "dimensions": {
+      "coverage":         { "score": 22, "max": 25, "notes": "..." },
+      "determinism":      { "score": 20, "max": 25, "notes": "..." },
+      "assertion_quality":{ "score": 18, "max": 25, "notes": "..." },
+      "maintainability":  { "score": 24, "max": 25, "notes": "..." }
+    },
+    "recommendations": [...],
+    "history": [
+      { "date": "2026-04-15", "score": 78 },
+      { "date": "2026-05-05", "score": 84 }
+    ]
   }
 }
 ```
 
-**ถ้า review result == "fail":**
-- เพิ่ม recommended scenarios เป็น pending
-- แจ้งผู้ใช้ให้รัน /qa-create-scenario เพิ่ม
+**Output to user:**
+
+```
+🔍 Opus Review Score: 84/100 ✅ PASS
+
+  Coverage:           22/25 ████████████████████████░░  (88%)
+  Determinism:        20/25 ████████████████████░░░░░░  (80%)
+  Assertion quality:  18/25 ██████████████████░░░░░░░░  (72%)  ⚠️
+  Maintainability:    24/25 ████████████████████████░░  (96%)
+
+  Trend: +6 vs last review (was 78, 3 weeks ago)
+
+  💡 Top recommendations (3):
+    1. [HIGH] Replace toBeVisible-only assertions in 3 scenarios
+       TS-PRODUCT-007, TS-ORDER-005, TS-LOGIN-008
+       → Verify error text content explicitly
+    2. [MED] Add concurrent edit scenario for ORDER
+       Factor: concurrent → opus | P0
+    3. [LOW] Replace waitForTimeout in TS-CHECKOUT-005
+       → waitFor({ state: 'visible' })
+```
+
+**ถ้า score < 80 (CONCERNS/FAIL):**
+- เพิ่ม recommendations เป็น tracker.review.recommendations
+- แจ้งผู้ใช้ commands ที่ต้อง run เพื่อ fix
 
 ---
 
@@ -378,17 +449,19 @@ git commit -m "qa-retest: X/N fixed — [scenario list]"
 └─────────────────────────────────────────────────────┘
 
 ✅ Fixed (❌→✅):
-├── TS-LOGIN-003: Run#1 ❌ → Run#2 ✅ (2.8s)
-└── TS-LOGIN-005: Run#1 ❌ → Run#2 ✅ (3.1s)
+├── TS-LOGIN-003 [P1/6] [—] [sonnet]: Run#1 ❌ → Run#2 ✅ (2.8s)
+└── TS-LOGIN-005 [P0/9] [security-flow] [opus]: Run#1 ❌ → Run#2 ✅ (3.1s)
 
 ❌ Still Failing:
-└── TS-PRODUCT-003: Run#2 ❌ (3.5s)
+└── TS-PRODUCT-003 [P1/6] [—] [sonnet]: Run#2 ❌ (3.5s)
     Step 3: Expected "Name is required" — got nothing
 
-🔍 Opus Review (if --review):
-   Score: 85/100 | Result: ✅ Pass
-   Coverage gaps: Missing boundary test for price field
-   Recommendation: Add TS-PRODUCT-014 (price boundary)
+🔍 Opus Review (if --review): 84/100 ✅ PASS  (was 78, +6)
+   Coverage:           22/25 (88%)
+   Determinism:        20/25 (80%)
+   Assertion quality:  18/25 (72%) ⚠️
+   Maintainability:    24/25 (96%)
+   Top fix: Replace toBeVisible-only in 3 scenarios → verify error text
 
 📝 Reports:
 ├── test-results/retest-comparison.md

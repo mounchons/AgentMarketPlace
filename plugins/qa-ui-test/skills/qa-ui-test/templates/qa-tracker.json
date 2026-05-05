@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5.0",
+  "schema_version": "1.7.0",
   "project": "",
   "base_url": "http://localhost:3000",
   "technology": "",
@@ -10,15 +10,20 @@
     "reviewer": "opus",
     "bug_triager": "opus",
     "assignment_strategy": {
+      "_comment": "Risk-based model assignment v1.6. Evaluates rules top-down; first match wins. 3-tier model: opus (complex flow), sonnet (standard CRUD), haiku (P3 trivial CRUD). Each scenario gets risk{score,priority,factors[]} computed from probability(1-3) x impact(1-3). complexity_factors[] track flow difficulty (state-machine, cascade-deep, multi-step, concurrent, security-flow, network-mock, master-detail-sync, cross-browser).",
       "auto_assign_rules": [
-        { "condition": "type == 'state-machine'", "assign": "opus" },
-        { "condition": "type == 'network-mock' && priority == 'critical'", "assign": "opus" },
-        { "condition": "priority == 'critical'", "assign": "opus" },
-        { "condition": "type == 'cross-browser'", "assign": "opus" },
-        { "condition": "type == 'role-access'", "assign": "opus" },
-        { "condition": "page_type == 'wizard' && priority == 'high'", "assign": "opus" },
-        { "condition": "page_type == 'master-detail' && priority == 'critical'", "assign": "opus" },
-        { "condition": "default", "assign": "sonnet" }
+        { "condition": "complexity_factors.length >= 2", "assign": "opus", "reason": "multiple complexity factors require deep reasoning" },
+        { "condition": "complexity_factors.includes('state-machine')", "assign": "opus", "reason": "state transitions need flow-aware reasoning" },
+        { "condition": "complexity_factors.includes('cascade-deep')", "assign": "opus", "reason": "cascade depth >= 2 requires cross-module reasoning" },
+        { "condition": "complexity_factors.includes('concurrent')", "assign": "opus", "reason": "race conditions need careful sequencing" },
+        { "condition": "complexity_factors.includes('cross-browser')", "assign": "opus", "reason": "cross-browser diff analysis is non-trivial" },
+        { "condition": "complexity_factors.includes('security-flow') && risk.priority == 'P0'", "assign": "opus", "reason": "P0 security flows need exhaustive coverage" },
+        { "condition": "complexity_factors.includes('master-detail-sync')", "assign": "opus", "reason": "master-detail sync requires verifying multiple states" },
+        { "condition": "complexity_factors.includes('network-mock') && risk.priority == 'P0'", "assign": "opus", "reason": "P0 with mock sequences need precise scripting" },
+        { "condition": "complexity_factors.includes('multi-step') && risk.priority in ['P0','P1']", "assign": "opus", "reason": "multi-step P0/P1 wizards need branch reasoning" },
+        { "condition": "risk.priority == 'P0' && complexity_factors.length >= 1", "assign": "opus", "reason": "P0 with any factor warrants opus" },
+        { "condition": "risk.priority == 'P3' && complexity_factors.length == 0", "assign": "haiku", "reason": "P3 trivial CRUD — pattern-based, no reasoning required" },
+        { "condition": "default", "assign": "sonnet", "reason": "standard CRUD / mid-complexity flow" }
       ]
     }
   },
@@ -63,6 +68,138 @@
   },
   "modules": [],
   "page_types": ["form", "master-data", "master-detail", "wizard", "dashboard", "search", "state-machine", "data-driven", "network-mock"],
+  "complexity_factor_catalog": {
+    "state-machine": "Status transitions / workflow with multiple conditional states",
+    "cascade-deep": "Cascade dependency chain with depth >= 2 (A->B->C)",
+    "multi-step": "Wizard or multi-step form with >= 3 sequential steps",
+    "concurrent": "Concurrent edit / race condition / optimistic lock test",
+    "security-flow": "Auth, authz, CSRF, XSS, IDOR, payment / money-related flow",
+    "network-mock": "API mocking with retry sequences, error injection, or chained responses",
+    "master-detail-sync": "Master-detail grid where master totals must sync with detail edits",
+    "cross-browser": "Behavior or visual diff across multiple browser engines"
+  },
+  "_scenario_schema_reference": {
+    "_comment": "Reference schema for scenario entries. Each scenario MUST have risk{} + complexity_factors[] for v1.6 model assignment. Remove this key in production.",
+    "id": "TS-MODULE-001",
+    "title": "Short, intent-revealing scenario title",
+    "module": "MODULE_NAME",
+    "page_type": "form|master-data|master-detail|wizard|dashboard|...",
+    "type": "happy-path|negative|boundary|security|role-access|state-machine|...",
+    "priority": "critical|high|medium|low (legacy, derived from risk.priority for backward-compat)",
+    "risk": {
+      "_comment": "v1.6 — risk-based prioritization. score = probability x impact",
+      "probability": "1=rare | 2=occasional | 3=likely",
+      "impact": "1=cosmetic | 2=functional | 3=critical (money/data/security/blocker)",
+      "score": "1-9 (probability * impact)",
+      "priority": "P0(7-9) | P1(5-6) | P2(3-4) | P3(1-2)",
+      "rationale": "Why this risk level (e.g. 'money-flow + cascade depth 3')"
+    },
+    "complexity_factors": ["state-machine", "cascade-deep"],
+    "acceptance_criteria_id": ["AC-1.1", "AC-1.2", "_v2.5: link to system-design-doc ACs (manual or auto via /qa-trace --auto-link). Empty array = unlinked (will appear as GAP candidate)."],
+    "status": "pending|running|passed|failed|deprecated",
+    "assigned_model": "sonnet|opus|haiku (haiku reserved for P3 + no factors)",
+    "assigned_model_reason": "Rule that matched (e.g. 'state-machine factor present')",
+    "url": "/admin/products",
+    "depends_on": [],
+    "test_script": "tests/TS-MODULE-001.spec.ts",
+    "test_data": "test-data/TS-MODULE-001.json",
+    "scenario_doc": "test-scenarios/TS-MODULE-001.md",
+    "runs": [],
+    "review": {
+      "_comment": "v2.5 — Opus review with 4-dimension score (each 25 → total 100). Result: PASS≥80, CONCERNS 65-79, FAIL<65.",
+      "reviewer": "opus",
+      "score": 84,
+      "result": "pass|concerns|fail",
+      "timestamp": "ISO8601",
+      "dimensions": {
+        "coverage":         { "score": 22, "max": 25, "notes": "..." },
+        "determinism":      { "score": 20, "max": 25, "notes": "..." },
+        "assertion_quality":{ "score": 18, "max": 25, "notes": "..." },
+        "maintainability":  { "score": 24, "max": 25, "notes": "..." }
+      },
+      "recommendations": [
+        { "type": "improve_assertion", "id": "TS-PRODUCT-007", "fix": "Verify error text content not just visibility" }
+      ],
+      "history": [
+        { "date": "ISO8601", "score": 78 }
+      ]
+    },
+    "last_run_status": null,
+    "created_at": "ISO8601",
+    "created_in_pass": 1,
+    "created_by_model": "sonnet"
+  },
+  "_nfr_results_schema_reference": {
+    "_comment": "Reference schema for NFR (Non-Functional Requirements) assessment. Populated by /qa-nfr-assess (v2.4). Remove this key in production.",
+    "schema_version": "1.0",
+    "assessed_at": "ISO8601",
+    "mode": "light|deep|full",
+    "scope": { "module": "all|MODULE_NAME", "category": "all|performance|security|reliability|maintainability" },
+    "overall": {
+      "score": "0-100 (smoothed: 0.7 × current + 0.3 × previous)",
+      "raw_score": "0-100 (unsmoothed)",
+      "gate": "PASS|CONCERNS|FAIL",
+      "by_category": {
+        "performance":     { "score": 88, "gate": "PASS", "subscores": { "lcp": 18, "inp": 20, "ttfb": 12, "bundle": 18, "resilience": 20 } },
+        "security":        { "score": 75, "gate": "CONCERNS", "subscores": { "headers": 12, "auth": 17, "vulns": 16, "secrets": 20, "tokens": 10 } },
+        "reliability":     { "score": 92, "gate": "PASS", "subscores": { "pass_rate": 18, "flaky": 18, "network": 16, "recovery": 20, "reopen": 20 } },
+        "maintainability": { "score": 73, "gate": "CONCERNS", "subscores": { "selectors": 16, "helpers": 18, "density": 14, "pom": 15, "comments": 10 } }
+      }
+    },
+    "by_module": {
+      "MODULE_NAME": {
+        "score": 85,
+        "gate": "PASS",
+        "categories": { "performance": 88, "security": 80, "reliability": 92, "maintainability": 80 }
+      }
+    },
+    "recommendations": [
+      {
+        "category": "security",
+        "severity": "high",
+        "module": "CHECKOUT",
+        "issue": "Missing CSP header on /checkout",
+        "fix": "Add Content-Security-Policy: default-src 'self' to web.config",
+        "effort": "30min",
+        "impact_on_score": "+5"
+      }
+    ],
+    "critical_failures": [
+      "_comment: only populated when security floor triggered. e.g. AWS keys in DOM, DB connection strings, plain-text passwords in storage"
+    ],
+    "history": [
+      { "date": "ISO8601", "overall_score": 78, "by_category": { "performance": 80, "security": 72, "reliability": 85, "maintainability": 75 } }
+    ]
+  },
+  "nfr_results": null,
+  "_traceability_schema_reference": {
+    "_comment": "Reference schema for AC-to-test traceability. Populated by /qa-trace (v2.5). Remove this key in production.",
+    "schema_version": "1.0",
+    "last_traced_at": "ISO8601",
+    "ac_sources": ["docs/design/checkout.md", "docs/design/auth.md"],
+    "ac_inventory": [
+      {
+        "id": "AC-1.1",
+        "title": "User can place order with valid payment",
+        "module": "CHECKOUT",
+        "source": "docs/design/checkout.md:23",
+        "type": "functional|non-functional|business-rule",
+        "linked_scenarios": ["TS-CHECKOUT-001", "TS-CHECKOUT-002"],
+        "auto_linked": false,
+        "confidence": 1.0,
+        "gate": "PASS|CONCERNS|FAIL|GAP"
+      }
+    ],
+    "summary": {
+      "total_acs": 24,
+      "covered": 21,
+      "gaps": 3,
+      "pass_rate": 0.87,
+      "by_gate": { "PASS": 19, "CONCERNS": 0, "FAIL": 2, "GAP": 3 }
+    },
+    "release_ready": false
+  },
+  "traceability": null,
   "scenarios": [],
   "bugs": [],
   "_bug_schema_reference": {

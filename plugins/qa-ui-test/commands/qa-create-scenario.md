@@ -722,7 +722,7 @@ Module: ORDER
 
 ```json
 {
-  "schema_version": "1.4.0",
+  "schema_version": "1.6.0",
   "project": "[auto-detected]",
   "base_url": "[from launchSettings/appsettings/env]",
   "technology": "[auto-detected]",
@@ -1505,11 +1505,20 @@ export function getRoleNames(): string[] {
       "id": "TS-{MODULE}-001",
       "title": "...",
       "module": "{MODULE}",
-      "priority": "critical|high|medium|low",
       "type": "happy-path|negative|boundary|security",
       "page_type": "master-data|form|wizard|dashboard",
+      "priority": "critical|high|medium|low",
+      "risk": {
+        "probability": 3,
+        "impact": 3,
+        "score": 9,
+        "priority": "P0",
+        "rationale": "money-flow + cascade depth 3"
+      },
+      "complexity_factors": ["state-machine", "cascade-deep"],
       "status": "pending",
-      "assigned_model": "sonnet|opus",
+      "assigned_model": "opus",
+      "assigned_model_reason": "state-machine factor present",
       "url": "...",
       "depends_on": [],
       "test_script": "tests/TS-{MODULE}-001.spec.ts",
@@ -1525,13 +1534,83 @@ export function getRoleNames(): string[] {
 }
 ```
 
-**Auto-assign model:**
+**⭐ Risk-Based Model Assignment (v2.3 / schema 1.6) — แทน "critical = opus"**
+
+Auto-assign แบ่ง 2 ขั้นตอน:
+
+**ขั้นตอน A: คำนวณ risk + complexity_factors**
+
 ```
-priority == 'critical' → opus
-type == 'cross-browser' → opus
-page_type == 'wizard' && priority == 'high' → opus
-default → sonnet
+risk.score = probability (1-3) × impact (1-3)
+
+probability:  1=rare        2=occasional   3=likely
+impact:       1=cosmetic    2=functional   3=critical (money/data/security/blocker)
+
+risk.priority:
+  P0 = score 7-9   (must-pass before release)
+  P1 = score 5-6   (should-pass)
+  P2 = score 3-4   (nice-to-have)
+  P3 = score 1-2   (regression watch)
 ```
+
+**Complexity factors (ตัวจริงที่ใช้เลือก model):**
+
+| Factor | Trigger เมื่อ |
+|---|---|
+| `state-machine` | type == 'state-machine' OR page มี status flow |
+| `cascade-deep` | cascade depth >= 2 (A→B→C) |
+| `multi-step` | wizard ≥ 3 steps |
+| `concurrent` | optimistic lock / race condition test |
+| `security-flow` | auth, CSRF, XSS, IDOR, money-related |
+| `network-mock` | type == 'network-mock' with retry/error injection |
+| `master-detail-sync` | inline edit ใน detail grid + master total sync |
+| `cross-browser` | type == 'cross-browser' |
+
+**ขั้นตอน B: Apply auto-assign rules (top-down, first match wins)**
+
+```
+# Tier 1 — opus (เคสยาก, ต้อง reasoning ลึก)
+IF complexity_factors.length >= 2                       → opus  (multiple factors)
+IF complexity_factors includes 'state-machine'          → opus  (flow reasoning)
+IF complexity_factors includes 'cascade-deep'           → opus  (cross-module)
+IF complexity_factors includes 'concurrent'             → opus  (race condition)
+IF complexity_factors includes 'cross-browser'          → opus  (engine diff)
+IF includes 'security-flow' AND risk.priority == 'P0'   → opus  (security exhaustive)
+IF includes 'master-detail-sync'                        → opus  (multi-state verify)
+IF includes 'network-mock' AND risk.priority == 'P0'    → opus  (precise scripting)
+IF includes 'multi-step' AND priority IN [P0,P1]        → opus  (branch reasoning)
+IF risk.priority == 'P0' AND factors.length >= 1        → opus  (P0+factor)
+
+# Tier 3 — haiku (P3 trivial CRUD เท่านั้น — pattern-based)
+IF risk.priority == 'P3' AND factors.length == 0        → haiku (pattern-based)
+
+# Tier 2 — sonnet (default — CRUD ทั่วไป / mid-complexity)
+ELSE                                                    → sonnet (mid-complexity)
+```
+
+**ทำไม haiku ต้องอยู่ก่อน default sonnet?**
+- First-match-wins: ถ้า haiku อยู่หลัง default จะไม่มีทางยิง
+- haiku เร็ว+ถูก แต่ใช้ได้เฉพาะ pattern-based generation เท่านั้น (list view, simple form CRUD ที่ไม่มี business logic)
+- ถ้า P3 มี factor ใดๆ → ตกไป opus rule (เพราะ Tier 1 อยู่บนสุด) → ไม่มาถึง haiku rule
+
+**ต้องบันทึก `assigned_model_reason`** ทุก scenario เพื่อให้ audit ได้ว่าทำไมเคสนี้ใช้ opus/sonnet
+
+**Backward compat:** field `priority: critical|high|medium|low` ยังคงอยู่ — derive จาก risk:
+- P0 → critical, P1 → high, P2 → medium, P3 → low
+
+**ตัวอย่าง:**
+
+| Scenario | risk.score | priority | factors | model | reason |
+|---|---|---|---|---|---|
+| Product list view | 3 (1×3) | P2 | [] | sonnet | mid-complexity standard |
+| Login + CSRF check | 9 (3×3) | P0 | [security-flow] | opus | P0 security exhaustive |
+| Order checkout 5 steps | 9 (3×3) | P0 | [multi-step, master-detail-sync] | opus | multiple factors |
+| Category cascade delete | 6 (3×2) | P1 | [cascade-deep] | opus | cross-module reasoning |
+| Viewer access denied | 4 (2×2) | P2 | [] | sonnet | standard role-access |
+| Order status flow | 7 (3×3 capped) | P0 | [state-machine] | opus | flow reasoning |
+| User pagination | 2 (1×2) | P3 | [] | **haiku** | **P3 trivial — pattern-based** |
+| Empty-state message | 1 (1×1) | P3 | [] | **haiku** | **P3 trivial — pattern-based** |
+| About page link check | 2 (1×2) | P3 | [] | **haiku** | **P3 trivial — pattern-based** |
 
 **Update summary:**
 ```json
@@ -1599,12 +1678,21 @@ git commit -m "scenario(TS-{MODULE}): create N scenarios for {MODULE} module"
 📋 Module: {MODULE} ({PAGE_TYPE})
 📍 URL: {URL}
 
-Scenarios ที่สร้าง:
-├── TS-{MODULE}-001: [title] (critical) → opus
-├── TS-{MODULE}-002: [title] (high) → sonnet
-├── TS-{MODULE}-003: [title] (high) → sonnet
-├── TS-{MODULE}-004: [title] (medium) → sonnet
+Scenarios ที่สร้าง (พร้อม risk + model reason):
+├── TS-{MODULE}-001: [title] [P0/9] [state-machine]      → opus   (flow reasoning)
+├── TS-{MODULE}-002: [title] [P1/6] [cascade-deep]       → opus   (cross-module)
+├── TS-{MODULE}-003: [title] [P1/6] []                   → sonnet (mid-complexity)
+├── TS-{MODULE}-004: [title] [P2/4] []                   → sonnet (mid-complexity)
+├── TS-{MODULE}-005: [title] [P3/2] []                   → haiku  (P3 trivial)
 └── ... (N total)
+
+📊 Model distribution (3-tier):
+   opus:   N scenarios (P0 + complexity factors)
+   sonnet: M scenarios (mid-complexity / standard CRUD)
+   haiku:  K scenarios (P3 trivial — pattern-based)
+   ────────────────────────────────────────────────
+   Est. cost ratio (rough):  haiku ~1x  |  sonnet ~3x  |  opus ~15x
+   → ใช้ haiku สำหรับ P3 ลด cost ของ batch generation อย่างมาก
 
 📁 Files created:
 ├── test-scenarios/ (N files)

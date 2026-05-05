@@ -105,26 +105,32 @@ npx playwright --version 2>/dev/null
 
 ### Step 2: Select Module + List Scenarios
 
-**แสดง scenarios ของ module ที่เลือก:**
+**แสดง scenarios ของ module ที่เลือก (พร้อม risk + factors + model — schema 1.6):**
 
 ```
 📋 Module: PRODUCT (master-data) — 13 scenarios
 
-│ # │ ID              │ Title                    │ Priority │ Status  │
-│ 1 │ TS-PRODUCT-001  │ List view                │ high     │ pending │
-│ 2 │ TS-PRODUCT-002  │ Create happy path        │ critical │ pending │
-│ 3 │ TS-PRODUCT-003  │ Create negative          │ high     │ pending │
-│ 4 │ TS-PRODUCT-004  │ Create boundary          │ medium   │ pending │
-│ 5 │ TS-PRODUCT-005  │ Edit happy path          │ high     │ pending │
+│ #  │ ID              │ Title                  │ Risk │ Factors           │ Model  │ Status  │
+│ 1  │ TS-PRODUCT-001  │ List view              │ P2/3 │ —                 │ sonnet │ pending │
+│ 2  │ TS-PRODUCT-002  │ Create happy path      │ P0/9 │ —                 │ sonnet │ pending │
+│ 3  │ TS-PRODUCT-003  │ Create negative        │ P1/6 │ —                 │ sonnet │ pending │
+│ 4  │ TS-PRODUCT-004  │ Create boundary        │ P2/4 │ —                 │ sonnet │ pending │
+│ 5  │ TS-PRODUCT-005  │ Edit happy path        │ P1/6 │ —                 │ sonnet │ pending │
+│ 6  │ TS-PRODUCT-006  │ Cascade delete         │ P1/6 │ cascade-deep      │ opus   │ pending │
+│ 7  │ TS-PRODUCT-007  │ Concurrent edit        │ P0/9 │ concurrent        │ opus   │ pending │
 │ ...
-│13 │ TS-PRODUCT-013  │ Duplicate entry          │ medium   │ pending │
+│ 12 │ TS-PRODUCT-012  │ Pagination next/prev   │ P3/2 │ —                 │ haiku  │ pending │
+│ 13 │ TS-PRODUCT-013  │ Duplicate entry        │ P2/4 │ —                 │ sonnet │ pending │
 
+📊 Model breakdown: opus 2 | sonnet 10 | haiku 1
 Fields: Name (Required, MaxLength 200), SKU, Price (Required, >0), Category (FK)
 Cascade from: CATEGORY
 URL: /admin/products
 
 ⏩ สร้าง Playwright scripts แล้วรัน test ทั้ง module?
 ```
+
+**Risk legend:** P0(score 7-9, must-pass) · P1(5-6, should-pass) · P2(3-4, nice-to-have) · P3(1-2, regression watch)
 
 ---
 
@@ -294,16 +300,18 @@ git commit -m "qa(TS-{MODULE}): generate scripts + test — X/N passed"
 ✅ QA Continue — Module {MODULE} Complete!
 
 📋 Module: {MODULE} ({page_type})
-🧪 Scripts Generated: N
+🧪 Scripts Generated: N (opus: A | sonnet: B | haiku: C)
 📊 Test Results: X/N passed (Y%)
 
 ✅ Passed:
-├── TS-{MODULE}-001: List view (3.2s)
-├── TS-{MODULE}-002: Create happy path (4.1s)
+├── TS-{MODULE}-001: List view              [P2/3] [—]              [sonnet] (3.2s)
+├── TS-{MODULE}-002: Create happy path      [P0/9] [—]              [sonnet] (4.1s)
+├── TS-{MODULE}-006: Cascade delete         [P1/6] [cascade-deep]   [opus]   (5.4s)
+├── TS-{MODULE}-012: Pagination next/prev   [P3/2] [—]              [haiku]  (1.8s)
 └── ...
 
 ❌ Failed:
-└── TS-{MODULE}-003: Create negative (3.8s)
+└── TS-{MODULE}-003: Create negative        [P1/6] [—]              [sonnet] (3.8s)
     Step 3: Expected validation error — got nothing
 
 📊 Overall Progress:

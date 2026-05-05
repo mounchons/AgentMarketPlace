@@ -5,7 +5,13 @@ allowed-tools: Read(*)
 
 # QA Help — อธิบายวิธีใช้งาน qa-ui-test
 
-คุณคือ **QA Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน qa-ui-test plugin (v2.2.0) ทั้ง test workflow และ bug management
+คุณคือ **QA Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน qa-ui-test plugin (**v2.5.0**) ครอบคลุม:
+- Test workflow (สร้าง scenario, รัน, retest)
+- Bug management (triage, export, verify) — v2.2
+- **Risk-based priority + 3-tier model assignment (P0-P3 + opus/sonnet/haiku)** — v2.3
+- **NFR Assessment** (performance/security/reliability/maintainability) — v2.4
+- **Traceability** (AC ↔ scenarios) + **Numeric Review Score 0-100** — v2.5
+- **Troubleshoot mode** — ถ้าติดอะไร เรียก command ไหนต่อ
 
 ## CRITICAL RULES
 
@@ -35,11 +41,18 @@ allowed-tools: Read(*)
 ```
 /qa-help                          # แสดงทั้งหมด
 /qa-help [command-name]           # คำสั่งเฉพาะ เช่น /qa-help bug-export
-/qa-help --bugs                   # เฉพาะ bug management workflow
-/qa-help --workflow               # workflow แนะนำเท่านั้น
-/qa-help --integration            # อธิบาย integration กับ long-running
+/qa-help --bugs                   # bug management workflow
+/qa-help --workflow               # workflow แนะนำ (E2E)
+/qa-help --integration            # integration กับ long-running
 /qa-help --quick                  # quick start (3 ขั้นตอน)
-/qa-help --playwright             # Playwright CLI cheat sheet (เห็นหน้าจอ, debug, list tests)
+/qa-help --playwright             # Playwright CLI cheat sheet (debug, --ui, list tests)
+
+# v2.3-2.5 modes:
+/qa-help --troubleshoot           # ⭐ ถ้าติดอะไร → คำสั่งต่อไหน (decision tree)
+/qa-help --risk                   # Risk-based priority + complexity factors + model assignment
+/qa-help --nfr                    # NFR assessment (4 categories + gate)
+/qa-help --trace                  # Traceability matrix (AC ↔ scenarios)
+/qa-help --review                 # Numeric review score 0-100 (4 dimensions)
 $ARGUMENTS
 ```
 
@@ -50,12 +63,18 @@ $ARGUMENTS
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 QA UI Test — คู่มือการใช้งาน v2.2.0
+📖 QA UI Test — คู่มือการใช้งาน v2.5.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-AI-powered QA UI Testing + Bug Management
-Auto-scan codebase สร้าง scenarios, multi-agent brainstorm,
-bug lifecycle (triage → export → verify), integration กับ long-running
+AI-powered QA UI Testing + Bug Management + NFR + Traceability
+
+   v2.0 Foundation:    Auto-scan, multi-agent brainstorm, role-based, cascade
+   v2.2 Bug Mgmt:      Triage → Export → Verify (link long-running)
+   v2.3 Risk-based:    P0-P3 priority + 8 complexity factors + 3-tier model
+                       (opus / sonnet / haiku)
+   v2.4 NFR Assess:    Performance / Security / Reliability / Maintainability
+                       Each 0-100 + Gate (PASS/CONCERNS/FAIL)
+   v2.5 Trace+Review:  Traceability matrix (AC↔tests) + Numeric review 0-100
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -73,26 +92,38 @@ bug lifecycle (triage → export → verify), integration กับ long-running
                                ตัวอย่าง: /qa-continue --module PRODUCT
                                ตัวอย่าง: /qa-continue --cascade CATEGORY
 
-  /qa-run                      รัน Playwright tests
+  /qa-run                      รัน Playwright tests (+ risk filters v2.3)
   🌐 ต้องรันเว็บ                 ตัวอย่าง: /qa-run TS-LOGIN-001
                                ตัวอย่าง: /qa-run --module LOGIN
+                               ตัวอย่าง: /qa-run --priority P0 ⭐ (smoke release)
+                               ตัวอย่าง: /qa-run --model opus
+                               ตัวอย่าง: /qa-run --factor state-machine
                                ตัวอย่าง: /qa-run --parallel
 
-  /qa-retest                   รี-รัน failed tests + comparison
+  /qa-retest                   รี-รัน failed + comparison + numeric review (v2.5)
   🌐 ต้องรันเว็บ                 ตัวอย่าง: /qa-retest
-                               ตัวอย่าง: /qa-retest --review (opus review)
+                               ตัวอย่าง: /qa-retest --review ⭐ score 0-100, 4 dimensions
+                               ตัวอย่าง: /qa-retest --priority P0
+                               ตัวอย่าง: /qa-retest --factor cascade-deep
 
-  /qa-edit-scenario            แก้ไข/เพิ่ม scenarios ด้วย brainstorm
+  /qa-edit-scenario            แก้ไข + auto-recompute risk/factors/model (v2.3)
   🌐 ไม่ต้องรันเว็บ              ตัวอย่าง: /qa-edit-scenario TS-PRODUCT-002 "เพิ่ม discount"
+                               ⭐ Auto: ถ้า logic เปลี่ยน → recompute risk score + factors
+                                   + assigned_model + แสดง diff before/after
 
-  /qa-status                   ดูสถานะภาพรวม + bug summary
+  /qa-status                   ภาพรวม + bug summary + risk filter (v2.3)
   🌐 ไม่ต้องรันเว็บ              ตัวอย่าง: /qa-status
+                               ตัวอย่าง: /qa-status --priority P0 ⭐ release-blocker view
+                               ตัวอย่าง: /qa-status --model opus
+                               ตัวอย่าง: /qa-status --factor security-flow
                                ตัวอย่าง: /qa-status --bugs
                                ตัวอย่าง: /qa-status --module ORDER
 
-  /qa-explain                  สร้าง flowchart + coverage matrix
+  /qa-explain                  Mermaid flowchart + 4 coverage tables (v2.3)
   🌐 ไม่ต้องรันเว็บ              ตัวอย่าง: /qa-explain
                                ตัวอย่าง: /qa-explain --module CHECKOUT --save
+                               ⭐ Color-coded by P0(🔴)/P1(🟠)/P2(🟡)/P3(🟢)
+                                   + risk distribution + factor coverage tables
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -125,51 +156,92 @@ bug lifecycle (triage → export → verify), integration กับ long-running
   🌐 ต้องรันเว็บ                 ตัวอย่าง: /qa-bug-verify BUG-001
                                ตัวอย่าง: /qa-bug-verify --auto-sync
                                ตัวอย่าง: /qa-bug-verify --regression
+                               ตัวอย่าง: /qa-bug-verify --priority P0 ⭐ (release smoke)
+                               ตัวอย่าง: /qa-bug-verify --release-blockers
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📌 แนะนำจุดเริ่มต้น
+🎯 NFR ASSESSMENT (1 command — NEW v2.4)
 
-  เพิ่งเริ่มใหม่?         → /qa-help --quick      (Quick Start 3 ขั้นตอน)
-  เพิ่งทำ test fail?      → /qa-help --bugs       (Bug workflow)
-  อยากเห็นหน้าจอ/debug?   → /qa-help --playwright (Playwright CLI cheat sheet)
-  อยากเชื่อม long-running? → /qa-help --integration
-  ดูคำสั่งเฉพาะ?           → /qa-help [command]   เช่น /qa-help bug-export
+  /qa-nfr-assess               ประเมิน 4 มิติ (perf/security/reliability/maint.)
+  🌐 ไม่ต้องรันเว็บ (light)       ตัวอย่าง: /qa-nfr-assess
+  🌐 ต้องรันเว็บ (--deep)        ตัวอย่าง: /qa-nfr-assess --deep ⭐ + Lighthouse
+                               ตัวอย่าง: /qa-nfr-assess --module CHECKOUT
+                               ตัวอย่าง: /qa-nfr-assess --category security
+                               ตัวอย่าง: /qa-nfr-assess --gate-only ⭐ CI integration
+                               ⭐ Output: score 0-100 + gate (PASS/CONCERNS/FAIL)
+                                   + recommendations actionable
+                               ⚠️ Security < 75 → overall FAIL (hard floor)
+
+🔗 TRACEABILITY (1 command — NEW v2.5)
+
+  /qa-trace                    Matrix: Acceptance Criteria ↔ Test scenarios
+  🌐 ไม่ต้องรันเว็บ              ตัวอย่าง: /qa-trace
+                               ตัวอย่าง: /qa-trace --gaps-only ⭐ release blockers
+                               ตัวอย่าง: /qa-trace --auto-link
+                               ตัวอย่าง: /qa-trace --module CHECKOUT
+                               ตัวอย่าง: /qa-trace --save (→ traceability-matrix.md)
+                               ⭐ Output: per-AC gate (PASS/CONCERNS/FAIL/GAP)
+                                   + GAP detection (AC ไม่มี scenario covered)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💡 Workflow แนะนำ
+📌 แนะนำจุดเริ่มต้น (เลือกตามสถานการณ์)
 
-🧪 First-time setup (Day 1):
-   /qa-create-scenario --auto              # สแกน code → 156 scenarios
+  ✨ เพิ่งเริ่มใหม่?               → /qa-help --quick         (Quick Start 3 ขั้นตอน)
+  🆘 ติดอะไร? ไม่รู้จะทำต่อยังไง?  → /qa-help --troubleshoot ⭐ (decision tree)
+  🐛 เพิ่งทำ test fail?           → /qa-help --bugs          (Bug workflow)
+  🎯 อยากเข้าใจ P0-P3 + factors?  → /qa-help --risk          (v2.3 risk-based)
+  📊 ก่อน release ตรวจอะไรบ้าง?    → /qa-help --nfr           (v2.4 NFR assessment)
+  🔗 Requirement → test ครอบไหม?  → /qa-help --trace         (v2.5 traceability)
+  ⭐ Test quality score?          → /qa-help --review        (v2.5 numeric score)
+  👁️ อยากเห็นหน้าจอ/debug?       → /qa-help --playwright    (Playwright CLI)
+  🔗 อยากเชื่อม long-running?     → /qa-help --integration
+  📋 Workflow ครบวงจร?            → /qa-help --workflow      (E2E example)
+  📖 ดูคำสั่งเฉพาะ?                → /qa-help [command]      เช่น /qa-help nfr-assess
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 Workflow แนะนำ (มาตรฐาน — Day 1-3 + release-readiness)
+
+🧪 Day 1 — Test:
+   /qa-create-scenario --auto              # สแกน code → 156 scenarios + risk + factors
    /qa-continue --module LOGIN              # ทำทีละ module
-   /qa-continue --module PRODUCT
-   /qa-status                               # ดูภาพรวม
+   /qa-status --priority P0                 # ⭐ check P0 release blockers
 
-🐛 Found bugs (Day 1-2):
-   /qa-bug-triage                           # failed → bugs
-   /qa-bug-list --severity critical         # ดู critical
-   /qa-bug-export --severity critical       # ส่ง dev (สร้าง feature ใหม่)
-   /qa-bug-export-subtask BUG-005           # หรือ subtask ใน feature เดิม
+🐛 Day 1-2 — Bugs:
+   /qa-bug-triage                           # failed → bugs (severity ใช้ risk + factors)
+   /qa-bug-list --release-blockers          # ⭐ P0 + open
+   /qa-bug-export --severity critical       # ส่ง dev
 
-🔧 Dev fix (Day 2-3, ใน long-running):
+🔧 Day 2-3 — Dev fix (ใน long-running):
    /continue                                # หยิบ feature → fix → mark done
 
-✓ Verify (Day 3):
+✓ Day 3 — Verify:
    /qa-bug-verify --auto-sync               # ยืนยัน fix → ปิด bug + sync
 
-🔄 Regression watch (weekly):
+🎯 Pre-release — Quality Gate (v2.4-2.5):
+   /qa-trace --gaps-only                    # ⭐ AC ใดไม่มี scenario covered?
+   /qa-nfr-assess                           # ⭐ overall NFR score + gate
+   /qa-retest --review                      # ⭐ test quality score 0-100
+
+🔄 Weekly — Regression watch:
    /qa-bug-verify --regression              # รี-รัน verified bugs
    /qa-bug-list --regressions               # ดู bugs ที่ regress
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📚 ดูเพิ่ม
+   /qa-help --troubleshoot    ⭐ ถ้าติด → คำสั่งต่อไหน
+   /qa-help --risk            v2.3 risk + factors + model
+   /qa-help --nfr             v2.4 NFR assessment
+   /qa-help --trace           v2.5 traceability
+   /qa-help --review          v2.5 numeric review score
    /qa-help --quick           Quick Start 3 ขั้นตอน
    /qa-help --bugs            Bug Management ละเอียด
    /qa-help --workflow        Workflow ครบวงจร
-   /qa-help --integration     Integration กับ long-running plugin
-   /qa-help --playwright      Playwright CLI cheat sheet (debug, --ui, --headed)
+   /qa-help --integration     Integration กับ long-running
+   /qa-help --playwright      Playwright CLI cheat sheet
 
 📖 เอกสารเต็ม:
    docs/playwright-cli-guide.md   คู่มือผสม Playwright CLI + qa command
@@ -660,6 +732,545 @@ $ /qa-bug-verify --regression             # weekly check
 
 ---
 
+### Mode 8: `--troubleshoot` → ถ้าติดอะไร ให้ทำอะไรต่อ ⭐
+
+```
+🆘 QA Troubleshoot — Decision Tree
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QA workflow ซับซ้อน — ใช้ตารางนี้ map "อาการ → คำสั่งถัดไป"
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 1: เริ่มต้น / ตั้งค่า                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+ไม่มี qa-tracker.json              → /qa-create-scenario --auto
+ไม่รู้จะเริ่มจากไหน                  → /qa-help --quick
+qa-create-scenario error           → /qa-help create-scenario
+                                     ตรวจ: codebase มี Controllers/Pages?
+ไม่เจอ credentials                  → manual mode: /qa-create-scenario [URL]
+                                     หรือเพิ่ม seed data
+ไม่มี Playwright                   → npm i -D @playwright/test
+                                     npx playwright install chromium
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 2: รัน Tests                                              │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+"ไม่พบ tests/TS-XXX.spec.ts"        → /qa-continue --module XXX
+                                     (สร้าง script ก่อน)
+Test ทุกตัว fail step 1 (login)    → ตรวจ web running ที่ base_url?
+                                     → /qa-edit-scenario แก้ login flow
+Test fail บางตัว                   → /qa-bug-triage (failed → bugs)
+ไม่รู้รัน module ไหนก่อน            → /qa-status (เห็น recommended order)
+ทำมานานยังไม่จบ                    → /qa-status --priority P0
+                                     (focus release blockers ก่อน)
+รัน tests ช้ามาก                   → /qa-run --parallel
+                                     หรือ --priority P0 (รันที่จำเป็น)
+Test เห็นแต่ผ่าน — ไม่มั่นใจครอบจริง → /qa-retest --review (score 0-100)
+                                     /qa-explain (coverage matrix)
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 3: Bug Management                                         │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+ไม่รู้ bug ไหนสำคัญที่สุด             → /qa-bug-list --release-blockers ⭐
+                                     /qa-bug-list --severity critical
+Bug เยอะ — ส่ง dev ทีเดียวได้ไหม    → /qa-bug-export --severity critical,high
+                                     /qa-bug-triage --auto-export
+Bug ตรงกับ feature ที่กำลังทำ        → /qa-bug-export-subtask BUG-XXX
+                                     (agent ค้น feature ให้)
+ไม่รู้ว่าควรสร้าง feature ใหม่หรือ    → score ≥ 70 → use --subtask
+subtask                            → score < 40 → use /qa-bug-export
+                                     (agent บอกใน /qa-bug-export-subtask)
+Test fail หลายครั้ง — flaky หรือ?  → /qa-bug-triage --reclassify
+                                     (3+ runs จะ classify เป็น flaky)
+Bug เก่าค้างนาน                    → /qa-bug-list --aging 7
+Bug ที่ verify แล้วกลับ fail        → /qa-bug-verify --regression ⭐
+                                     /qa-bug-list --regressions
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 4: Logic เปลี่ยน / แก้เคส                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+Business logic เปลี่ยน              → /qa-edit-scenario [TS-ID] "อะไรเปลี่ยน"
+                                     ⭐ Auto: recompute risk + factors + model
+                                     แสดง diff ก่อน apply
+เคสเดิมยังต้องเก็บไว้                → /qa-edit-scenario สร้างเคสใหม่
+                                     supersedes เคสเก่า (ไม่ลบ)
+หลังแก้ logic — model ขึ้นเป็น opus → ดูที่ risk_recompute_history
+                                     เห็น before/after diff ทันที
+เพิ่ม security flow ใน scenario    → factor "security-flow" ขึ้นอัตโนมัติ
+                                     model อาจเปลี่ยนเป็น opus
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 5: Risk + Model (v2.3)                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+ไม่รู้เคสไหน priority สูง            → /qa-status --priority P0
+                                     /qa-explain (color-coded flowchart)
+ไม่เข้าใจว่าทำไม model เป็น opus    → ดู scenario.assigned_model_reason
+                                     /qa-help --risk (อธิบายเต็ม)
+อยากดูเฉพาะเคส cascade-deep         → /qa-status --factor cascade-deep
+                                     /qa-run --factor cascade-deep
+P0 fail = release blocker?          → ใช่ — fix ก่อน release
+                                     /qa-bug-verify --priority P0
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 6: NFR Assessment (v2.4)                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+ไม่รู้ว่า release ได้หรือยัง         → /qa-nfr-assess (overall score + gate)
+                                     /qa-trace --gaps-only (release blockers)
+NFR overall = FAIL                  → ดู by_category — มิติไหนแย่ที่สุด?
+                                     /qa-nfr-assess --category [name]
+                                     ทำตาม top recommendations
+Security score ต่ำกว่า 75            → 🚨 hard floor → overall = FAIL
+                                     fix critical first (CSP, secrets,
+                                     cookies HttpOnly)
+Performance ต่ำ                     → /qa-nfr-assess --deep (รัน Lighthouse)
+                                     ใช้ค่าจริงแทน proxy
+Maintainability ต่ำ                 → ตรวจ waitForTimeout, CSS selectors
+                                     refactor ใช้ data-testid + helpers
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 7: Traceability (v2.5)                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+ไม่รู้ AC ครอบโดน scenario ไหน       → /qa-trace
+                                     (matrix AC ↔ TS-ID)
+มี AC ที่ไม่มี scenario covered     → /qa-trace --gaps-only
+                                     /qa-edit-scenario เพิ่มเคสครอบ
+                                     หรือ /qa-create-scenario
+Design doc ใช้ pattern ของตัวเอง    → /qa-trace --source path/to/design/
+                                     (custom AC source)
+AC ↔ scenarios ไม่ link manual      → /qa-trace --auto-link
+                                     (keyword + module match)
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 8: Test Quality Review (v2.5)                             │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ อาการ                              ✅ Recovery / Next
+─────────────────────────────────────────────────────────────────
+ไม่รู้ test quality ดีพอไหม          → /qa-retest --review ⭐
+                                     score 0-100, 4 dimensions
+Score < 65 (FAIL)                  → ดูแต่ละ dimension
+                                     - Coverage ต่ำ → /qa-create-scenario
+                                     - Determinism → fix flaky
+                                     - Assertion → verify text content
+                                     - Maintainability → refactor selectors
+Score 65-79 (CONCERNS)             → ทำ recommendations จาก review
+Trend score ลดลง                   → ดู review.history เห็น delta
+                                     อะไรเปลี่ยนช่วงนี้?
+
+┌─────────────────────────────────────────────────────────────────┐
+│ STAGE 9: Release Sign-off                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+❓ ก่อน release ตรวจอะไรบ้าง?
+   1. /qa-status --priority P0           ← P0 ทุกตัว pass?
+   2. /qa-trace --gaps-only              ← AC ครบหรือไม่?
+   3. /qa-nfr-assess                     ← NFR gate = PASS?
+   4. /qa-retest --review                ← Quality score ≥ 80?
+   5. /qa-bug-list --release-blockers    ← P0 bugs = 0?
+
+✅ ทุกข้อผ่าน → release-ready
+⚠️ มีข้อใดไม่ผ่าน → ดู recommendations + fix ก่อน
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 Quick recovery cheat sheet:
+
+   ดูภาพรวม:                /qa-status
+   ดูที่สำคัญที่สุด:          /qa-status --priority P0
+   หา bug:                  /qa-bug-list --release-blockers
+   ก่อน release:             /qa-trace + /qa-nfr-assess + /qa-retest --review
+   debug script:            npx playwright test --ui --grep TS-XXX
+   ดู doc command:          /qa-help [command-name]
+```
+
+---
+
+### Mode 9: `--risk` → Risk-Based Priority + Model (v2.3)
+
+```
+🎯 Risk-Based Priority + 3-Tier Model Assignment (v2.3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 2 มิติ (แยกกัน):
+
+   มิติ 1 — RISK (เลือก scope: รันเคสไหนก่อน)
+   ──────────────────────────────────────────
+   risk.score = probability (1-3) × impact (1-3)
+
+   probability:  1=rare       2=occasional   3=likely
+   impact:       1=cosmetic   2=functional   3=critical
+                                                 (money/data/security/blocker)
+
+   risk.priority:
+     🔴 P0 = score 7-9   must-pass (release blocker)
+     🟠 P1 = score 5-6   should-pass
+     🟡 P2 = score 3-4   nice-to-have
+     🟢 P3 = score 1-2   regression watch
+
+
+   มิติ 2 — COMPLEXITY FACTORS (ตัวจริงเลือก model)
+   ──────────────────────────────────────────────
+   8 factors:
+   ├─ state-machine        flow มี status transitions
+   ├─ cascade-deep         cascade depth ≥ 2
+   ├─ multi-step           wizard ≥ 3 steps
+   ├─ concurrent           race / optimistic lock
+   ├─ security-flow        auth, CSRF, XSS, money
+   ├─ network-mock         API mock + retry
+   ├─ master-detail-sync   inline edit + master total
+   └─ cross-browser        engine diff testing
+
+
+🤖 3-Tier Model Assignment (top-down, first match wins):
+
+   TIER 1 — opus (เคสยาก, reasoning ลึก) — 10 rules
+     ✓ มี factor ≥ 2
+     ✓ state-machine
+     ✓ cascade-deep
+     ✓ concurrent
+     ✓ cross-browser
+     ✓ security-flow + P0
+     ✓ master-detail-sync
+     ✓ network-mock + P0
+     ✓ multi-step + P0/P1
+     ✓ P0 + factor ≥ 1
+
+   TIER 3 — haiku (P3 trivial — pattern-based) — 1 rule
+     ✓ P3 + factor == 0  (ตัวอย่าง: about page, footer link, pagination)
+
+   TIER 2 — sonnet (default — mid-complexity / standard CRUD)
+     ✓ ทุกเคสที่ไม่ตรง Tier 1/3
+
+
+💰 Cost ratio:  haiku ~1x  |  sonnet ~3x  |  opus ~15x
+
+
+🔧 Filter commands ที่ใช้ risk:
+
+   /qa-status --priority P0              # release-blocker view
+   /qa-status --model opus               # focus เคสยาก
+   /qa-status --factor state-machine     # ทุกเคสที่มี factor นี้
+   /qa-run --priority P0                 # release smoke
+   /qa-retest --priority P0
+   /qa-bug-list --priority P0            # bugs จาก P0 scenarios
+   /qa-bug-list --release-blockers       # alias = --priority P0 + open
+
+
+✏️ /qa-edit-scenario auto-recompute:
+
+   เมื่อ logic เปลี่ยน → agent infer factor changes:
+     "OTP", "MFA"           → +security-flow
+     "wizard", "step 1,2,3" → +multi-step
+     "cascade", "dependent" → +cascade-deep
+     "transition", "status" → +state-machine
+     ฯลฯ
+
+   แสดง before/after diff:
+     TS-LOGIN-001:
+       risk:  P1/6 → P0/9 ⬆️
+       factors: [] → [security-flow, multi-step]
+       model: sonnet → opus ⬆️
+       reason: multiple complexity factors
+
+   user confirm ก่อน apply → เก็บ risk_recompute_history
+
+
+💡 ใช้เมื่อ:
+   - ก่อนรัน tests: /qa-status --priority P0 → focus ทำ P0 ก่อน
+   - หลัง logic เปลี่ยน: /qa-edit-scenario auto-recompute model
+   - audit cost: group by assigned_model_reason → ดู opus ใช้กับอะไร
+
+🔜 ดู:
+   /qa-help create-scenario    — รายละเอียด auto-assign rules
+   /qa-help edit-scenario      — auto-recompute logic
+```
+
+---
+
+### Mode 10: `--nfr` → NFR Assessment (v2.4)
+
+```
+🎯 NFR (Non-Functional Requirements) Assessment — v2.4
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 4 Categories (each 0-100):
+
+   🚀 Performance
+   ──────────────────────────
+   • LCP             20 pts   (Largest Contentful Paint)
+   • INP             20 pts   (Interaction to Next Paint)
+   • TTFB            20 pts   (Time to First Byte)
+   • Bundle size     20 pts
+   • Network resil.  20 pts   (จาก network-mock scenarios)
+
+   🔒 Security
+   ──────────────────────────
+   • Headers         20 pts   (CSP, X-Frame, HSTS, ฯลฯ)
+   • Auth coverage   20 pts   (login, MFA, rate limit, CSRF)
+   • Vulns coverage  20 pts   (XSS, SQLi, CSRF, IDOR scenarios)
+   • Secret scan     20 pts   (DOM/trace ไม่มี keys/passwords)
+   • Token hygiene   20 pts   (HttpOnly, Secure, SameSite)
+
+   ⚠️ Hard floor: security < 75 → overall = FAIL
+
+   🛡️ Reliability
+   ──────────────────────────
+   • Pass rate       20 pts
+   • Flaky rate      20 pts
+   • Network resil.  20 pts
+   • Error recovery  20 pts   (specific error msg + retry)
+   • Bug reopen rate 20 pts   (regression frequency)
+
+   🔧 Maintainability
+   ──────────────────────────
+   • Selector qual.  20 pts   (data-testid > CSS)
+   • Helper reuse    20 pts   (login + API helpers)
+   • Test density    20 pts   (scenarios / pages)
+   • POM coverage    20 pts   (specs ที่ import pages/)
+   • Comments+docs   20 pts
+
+
+🚦 Gate Decision:
+
+   score >= 85    → PASS         (release-ready)
+   score 65-84    → CONCERNS     (fix recommendations)
+   score < 65     → FAIL         (block release)
+
+   Special: security < 75 → overall = FAIL (security floor)
+
+
+🎚️ 3 Modes (cost vs depth):
+
+   Light (default)   — qa-tracker data + bugs[] เท่านั้น (no Lighthouse)
+   /qa-nfr-assess
+
+   Deep              — + Lighthouse audit ทุก URL + curl headers
+   /qa-nfr-assess --deep
+
+   Full              — + manual security audit + a11y scan
+   /qa-nfr-assess --full
+
+
+📋 ตัวอย่าง output:
+
+   🎯 NFR Assessment — Overall: 82/100 CONCERNS
+
+   Performance:     88   PASS  ✅
+   Security:        75   CONCERNS ⚠️  (close to floor!)
+   Reliability:     92   PASS  ✅
+   Maintainability: 73   CONCERNS ⚠️
+
+   🚨 Top recommendations:
+     1. [HIGH/security] Add CSP header on /checkout (30min)
+     2. [HIGH/maint] Replace waitForTimeout in 5 specs (1hr)
+     3. [MED/perf] Code-split /admin routes (half-day)
+
+
+💡 ใช้เมื่อ:
+   - ก่อน PR merge: /qa-nfr-assess --module {MODULE}
+   - ก่อน release: /qa-nfr-assess --deep (full coverage)
+   - CI gate: /qa-nfr-assess --gate-only (env var output)
+   - หลัง production incident: /qa-nfr-assess --full
+
+🔜 ดู:
+   /qa-help nfr-assess         — รายละเอียดคำสั่ง
+   skills/qa-nfr/SKILL.md      — skill documentation
+   skills/qa-nfr/references/   — algorithm details ทั้ง 4 categories
+```
+
+---
+
+### Mode 11: `--trace` → Traceability Matrix (v2.5)
+
+```
+🔗 Traceability Matrix — AC ↔ Test Scenarios — v2.5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Goal: ตอบคำถาม "Acceptance Criteria ทุกตัวมี scenario ครอบไหม?"
+        เห็น GAPs ที่ block release
+
+
+📚 3 AC Sources (ตามลำดับ priority):
+
+   1. Inline ใน scenario:
+      scenario.acceptance_criteria_id = ["AC-1.1", "AC-1.2"]
+
+   2. Auto-discover จาก design docs:
+      grep -E "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" docs/
+
+      Patterns ที่ scan:
+      • AC-1.1: User can place order
+      • UC-3: Cancel order workflow
+      • ## Acceptance Criteria
+      • - AC-5: System logs all actions
+
+   3. Section-based (fallback):
+      ถ้าไม่มี AC pattern → extract จาก ## Use case headers
+
+
+🚦 Per-AC Gate Decision:
+
+   ✅ PASS       — มี scenario covered AND ทุก scenario passed
+   ⚠️ CONCERNS  — pass rate 80-99% (มี fail บ้าง)
+   ❌ FAIL      — มี scenario AND fail rate > 20% หรือ P0 fail
+   🚨 GAP       — ไม่มี scenario ครอบเลย (release blocker)
+
+
+📋 ตัวอย่าง output:
+
+   🔗 Traceability Matrix — 24 ACs total
+
+   | AC ID  | Title                    | Tests          | Gate    |
+   |--------|--------------------------|----------------|---------|
+   | AC-1.1 | Place order valid pay    | TS-CO-001,002  | ✅ PASS |
+   | AC-1.2 | Cancel within 10 min     | TS-CO-008      | ✅ PASS |
+   | AC-1.3 | VAT calculation correct  | (no test)      | 🚨 GAP  |
+   | AC-1.4 | Payment retry timeout    | TS-CO-MOCK-3   | ❌ FAIL |
+   | AC-2.2 | MFA suspicious activity  | (no test)      | 🚨 GAP  |
+
+   🚨 Release Status: NOT READY
+      • 2 ACs without coverage (GAP)
+      • 1 AC failing (FAIL)
+
+
+🔧 Common workflows:
+
+   /qa-trace                       # full matrix
+   /qa-trace --gaps-only           # ⭐ release blockers ก่อน
+   /qa-trace --auto-link           # ดึง ACs จาก design + auto-link scenarios
+   /qa-trace --module CHECKOUT     # drill-down
+   /qa-trace --save                # → traceability-matrix.md (sharable)
+
+
+💡 ใช้เมื่อ:
+   - ก่อน release: ตรวจ AC coverage + GAPs
+   - หลัง design doc update: /qa-trace --auto-link หา ACs ใหม่
+   - PR review: /qa-trace --module {MODULE} เห็น coverage ของ feature
+
+
+🔜 ดู:
+   /qa-help trace             — รายละเอียดคำสั่ง
+   /qa-trace --save           — ลองสร้าง matrix เอกสาร
+```
+
+---
+
+### Mode 12: `--review` → Numeric Review Score 0-100 (v2.5)
+
+```
+⭐ /qa-retest --review — Numeric Quality Score 0-100 (v2.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Goal: วัด test quality เป็น number — track trend ตามเวลา
+
+
+📊 4 Dimensions (each 25 pts → 100 total):
+
+   📦 1. Coverage (25 pts)
+   ────────────────────────
+   • Happy path scenarios            5 pts
+   • Negative scenarios              7 pts
+   • Edge cases (boundary, special)  5 pts
+   • Role coverage                   4 pts
+   • Risk priority distribution      4 pts
+
+   Bonus: -3 ถ้า P0 < 10%
+   Bonus: +2 ถ้ามี factors ≥ 4 different
+
+
+   ⚖️ 2. Determinism (25 pts)
+   ────────────────────────
+   • Pass rate (last run)            12 pts (≥95%=12, 90-94=8, <80=0)
+   • Flaky rate                      8 pts  (<2%=8, 2-5%=5, >10%=0)
+   • No waitForTimeout               5 pts  (count=0=5, 1-3=3, >3=0)
+
+
+   🎯 3. Assertion Quality (25 pts)
+   ────────────────────────
+   • Specific text assertions        10 pts (ratio ≥0.7=10)
+   • Error messages verified         8 pts
+   • API response shape verified     4 pts
+   • State after action verified     3 pts
+
+   Penalty: -3 ถ้ามีเคสแค่ click button
+
+
+   🔧 4. Maintainability (25 pts)
+   ────────────────────────
+   • Selector quality                10 pts (data-testid + getByRole)
+   • Helper reuse                    8 pts
+   • POM coverage                    4 pts
+   • Comments referencing scenario   3 pts
+
+
+🚦 Quality Gate:
+
+   score >= 80    → PASS       (release-ready)
+   score 65-79    → CONCERNS   (acceptable, fix before next release)
+   score < 65     → FAIL       (block — significant test debt)
+
+
+📋 ตัวอย่าง output:
+
+   🔍 Opus Review Score: 84/100 ✅ PASS
+
+   Coverage:           22/25  ████████████████████████░░  (88%)
+   Determinism:        20/25  ████████████████████░░░░░░  (80%)
+   Assertion quality:  18/25  ██████████████████░░░░░░░░  (72%) ⚠️
+   Maintainability:    24/25  ████████████████████████░░  (96%)
+
+   Trend: +6 vs last review (78 → 84, 3 weeks ago)
+
+   💡 Top 3 fixes:
+     1. [HIGH] Replace toBeVisible-only assertions in 3 scenarios
+     2. [MED] Add concurrent edit scenario for ORDER
+     3. [LOW] Replace waitForTimeout in TS-CHECKOUT-005
+
+
+🔧 ใช้คำสั่ง:
+
+   /qa-retest --review                  # all failed scenarios + review
+   /qa-retest --review --priority P0    # focus P0 only
+   /qa-retest --review --module ORDER   # per-module score
+
+
+💡 ใช้เมื่อ:
+   - หลังรัน batch tests — ดู quality
+   - ก่อน release — ต้อง score ≥ 80
+   - หลังเพิ่ม scenarios — ดูว่า score ขึ้นจริงไหม
+   - Trend tracking — เห็น quality เปลี่ยนตามเวลา
+
+
+🔜 ดู:
+   /qa-help retest            — รายละเอียดคำสั่ง /qa-retest
+   /qa-help nfr               — NFR ก็มี maintainability — แยกกันคนละ scope:
+                                  review = test code quality
+                                  NFR maintainability = test ecosystem health
+```
+
+---
+
 ### Mode 6: คำสั่งเฉพาะ (เมื่อมี argument)
 
 **รองรับ format:** `qa-create-scenario`, `create-scenario`, `/qa-create-scenario`, `bug-export`, `bugexport`
@@ -783,9 +1394,26 @@ $ /qa-bug-verify --regression             # weekly check
 - Time: 1-3 min per verify
 - Next: /qa-bug-list (check remaining), /qa-edit-scenario (regression test)
 
+**qa-nfr-assess:** ⭐ NEW v2.4
+- Web: ❌ ไม่ต้อง (light), ✅ ต้อง (--deep — Lighthouse)
+- Flags: --deep, --full, --category [name], --module [name], --gate-only, --json
+- Output: qa-tracker.nfr_results, recommendations[], history[]
+- Special: 4 categories × 100 pts; security < 75 → overall FAIL; rolling smoothing 0.7×current + 0.3×prev
+- Time: 1-2 min (light), 5-10 min (--deep with Lighthouse)
+- Next: ทำ top recommendations → /qa-nfr-assess again เพื่อ track score change
+
+**qa-trace:** ⭐ NEW v2.5
+- Web: ❌ ไม่ต้อง
+- Flags: --module, --gaps-only, --auto-link, --source [path], --save
+- Output: traceability matrix display + traceability-matrix.md (--save), qa-tracker.traceability
+- Special: AC sources priority — inline > auto-discover > section-based; per-AC gate (PASS/CONCERNS/FAIL/GAP)
+- Prerequisites: design docs ใน docs/ (or --source path)
+- Time: 1-3 min
+- Next: /qa-edit-scenario เพิ่ม scenarios สำหรับ GAPs, /qa-bug-triage สำหรับ FAILs
+
 **qa-help:**
 - Web: ❌ ไม่ต้อง
-- Flags: [command-name], --quick, --bugs, --workflow, --integration
+- Flags: [command-name], --quick, --bugs, --workflow, --integration, --troubleshoot, --risk, --nfr, --trace, --review, --playwright
 - Output: display only
 - Time: < 1 min
 
@@ -801,14 +1429,25 @@ $ /qa-bug-verify --regression             # weekly check
 
 ```
 🔜 พร้อมเริ่มต้น?
-   /qa-create-scenario --auto    — สแกน code สร้าง scenarios
-   /qa-status                     — ดูสถานะปัจจุบัน
-   /qa-help --quick               — quick start guide
-   /qa-help --bugs                — bug management guide
-   /qa-help --playwright          — Playwright CLI cheat sheet
-   /qa-help --integration         — เชื่อม long-running plugin
+   /qa-create-scenario --auto         — สแกน code สร้าง scenarios
+   /qa-status                          — ดูสถานะปัจจุบัน
+   /qa-status --priority P0            — ⭐ release-blocker view (v2.3)
    
-📖 docs/playwright-cli-guide.md  — คู่มือผสม Playwright CLI + qa command
+🆘 ติดอะไร?
+   /qa-help --troubleshoot            — ⭐ decision tree (อาการ → คำสั่งต่อ)
+
+📚 ดูเพิ่ม:
+   /qa-help --quick                    — quick start guide
+   /qa-help --risk                     — v2.3 risk + factors + model
+   /qa-help --nfr                      — v2.4 NFR assessment
+   /qa-help --trace                    — v2.5 traceability
+   /qa-help --review                   — v2.5 numeric review score
+   /qa-help --bugs                     — bug management guide
+   /qa-help --playwright               — Playwright CLI cheat sheet
+   /qa-help --integration              — เชื่อม long-running plugin
+   /qa-help --workflow                 — workflow ครบวงจร (E2E)
+
+📖 docs/playwright-cli-guide.md       — คู่มือผสม Playwright CLI + qa command
 ```
 
 > คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)

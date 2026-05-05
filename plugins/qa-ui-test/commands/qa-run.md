@@ -45,6 +45,10 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-run --parallel                # รันทั้งหมด (parallel subagents)
 /qa-run --parallel --module LOGIN # parallel เฉพาะ module
 /qa-run --failed                  # รันเฉพาะ failed
+/qa-run --priority P0             # รันเฉพาะ P0 (smoke test ก่อน release)
+/qa-run --priority P0,P1          # รัน P0 + P1
+/qa-run --model opus              # รันเฉพาะที่ assigned เป็น opus (เคสยาก)
+/qa-run --factor state-machine    # รันเฉพาะที่มี complexity factor นี้
 $ARGUMENTS
 ```
 
@@ -89,21 +93,29 @@ npx playwright install chromium
 | `--module XXX` | Filter by module |
 | `--all` | All scenarios with status != "running" |
 | `--failed` | Only scenarios with last_run_status == "failed" |
+| `--priority P0[,P1...]` | Filter by `risk.priority` (P0/P1/P2/P3) — also accepts legacy `critical/high/medium/low` |
+| `--model opus[,sonnet,haiku]` | Filter by `assigned_model` |
+| `--factor NAME[,NAME...]` | Filter by complexity factor (state-machine, cascade-deep, etc.) |
 | `--parallel` | Enable parallel mode |
 | (no args) | Show scenario list, ask which to run |
+
+**Filter combination rules:** filters AND together (e.g. `--priority P0 --model opus` = P0 AND opus). Multi-value within one filter ORs (e.g. `--priority P0,P1` = P0 OR P1).
 
 **ถ้าไม่มี argument → แสดงรายการให้เลือก:**
 
 ```
 📋 Scenarios ที่พร้อมรัน:
 
-| # | ID | Title | Module | Priority | Status |
-|---|-----|-------|--------|----------|--------|
-| 1 | TS-LOGIN-001 | Login valid | LOGIN | critical | pending |
-| 2 | TS-LOGIN-002 | Login invalid | LOGIN | high | pending |
-| 3 | TS-PRODUCT-001 | Product list | PRODUCT | high | failed |
+| # | ID            | Title         | Module  | Risk  | Factors        | Model  | Status  |
+|---|---------------|---------------|---------|-------|----------------|--------|---------|
+| 1 | TS-LOGIN-001  | Login valid   | LOGIN   | P0/9  | security-flow  | opus   | pending |
+| 2 | TS-LOGIN-002  | Login invalid | LOGIN   | P1/6  | —              | sonnet | pending |
+| 3 | TS-PRODUCT-001| Product list  | PRODUCT | P2/3  | —              | sonnet | failed  |
+| 4 | TS-DASH-001   | Footer links  | DASH    | P3/2  | —              | haiku  | pending |
 
 ❓ เลือก scenario ที่จะรัน (เลข, ID, หรือ --all):
+   เพิ่มได้: --priority P0,P1     # filter เฉพาะ P0/P1
+            --model opus           # filter เฉพาะที่ assigned เป็น opus
 ```
 
 ---
@@ -335,14 +347,14 @@ git commit -m "qa-run: X/N passed (Y%) — [module or scenario list]"
 └─────────────────────────────────────────────────────┘
 
 ✅ Passed:
-├── TS-LOGIN-001: Login valid (3.2s)
-├── TS-LOGIN-002: Login invalid email (2.1s)
-└── TS-PRODUCT-001: Product list (4.0s)
+├── TS-LOGIN-001: Login valid          [P0/9] [security-flow]  [opus]   (3.2s)
+├── TS-LOGIN-002: Login invalid email  [P1/6] [—]              [sonnet] (2.1s)
+└── TS-PRODUCT-001: Product list       [P2/3] [—]              [sonnet] (4.0s)
 
 ❌ Failed:
-├── TS-LOGIN-003: Login empty fields (4.5s)
+├── TS-LOGIN-003: Login empty fields   [P1/6] [—]              [sonnet] (4.5s)
 │   Step 4: Timeout — validation error not shown
-└── TS-PRODUCT-003: Create negative (3.8s)
+└── TS-PRODUCT-003: Create negative    [P1/6] [—]              [sonnet] (3.8s)
     Step 3: Expected "Name is required" — got nothing
 
 📝 Reports: test-results/summary-report.md
