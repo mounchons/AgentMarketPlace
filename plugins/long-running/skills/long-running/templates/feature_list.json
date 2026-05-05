@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.3.0",
+  "schema_version": "2.4.0",
   "project": "PROJECT_NAME",
   "description": "PROJECT_DESCRIPTION",
   "technology": {
@@ -13,8 +13,12 @@
   "integration": {
     "design_doc_path": "design_doc_list.json",
     "mockup_list_path": ".mockups/mockup_list.json",
+    "qa_tracker_path": "qa-tracker.json",
     "last_synced_with_design_doc": null,
     "last_synced_with_mockups": null,
+    "last_synced_with_qa_tracker": null,
+    "last_nfr_check": null,
+    "last_qa_coverage_check": null,
     "auto_sync_enabled": false
   },
 
@@ -948,6 +952,13 @@
       "mapped_features": 0,
       "unmapped_features": 0,
       "last_sync": null
+    },
+    "qa_tracker": {
+      "total_features_with_acs": 0,
+      "features_with_gap_acs": 0,
+      "features_failing_nfr": 0,
+      "release_blocked_features": 0,
+      "last_sync": null
     }
   },
 
@@ -974,11 +985,64 @@
   },
 
   "metadata": {
-    "schema_version": "2.3.0",
-    "plugin_version": "2.1.0",
+    "schema_version": "2.4.0",
+    "plugin_version": "2.6.0",
     "compatible_with": {
-      "design_doc_list_schema": ">=2.1.0",
-      "mockup_list_schema": ">=1.7.0"
+      "design_doc_list_schema": ">=2.2.0",
+      "mockup_list_schema": ">=1.7.0",
+      "qa_tracker_schema": ">=1.7.0"
+    },
+    "_v2.4_qa_field_definitions": {
+      "_comment": "Optional qa-ui-test v2.5 integration fields per feature. Features without these fields default to: acceptance_criteria_id=[], complexity_tags=[], linked_bug=null, nfr_compliance={}, qa_trace_coverage={covered_acs:[],gap_acs:[],last_checked_at:null}. /continue refuses to mark passes=true when nfr_compliance has any blocks_release && score<required, OR qa_trace_coverage.gap_acs is non-empty.",
+      "acceptance_criteria_id": {
+        "type": "string[]",
+        "format": "AC-NNN (flat, references design_doc_list.json acceptance_criteria[].id)",
+        "description": "Structured AC links — distinct from features[].acceptance_criteria (prose). Populated by /sync-with-features in design-doc plugin or manually.",
+        "example": ["AC-001", "AC-002"]
+      },
+      "complexity_tags": {
+        "type": "string[]",
+        "values": "qa-tracker complexity_factor_catalog (state-machine, cascade-deep, multi-step, concurrent, security-flow, network-mock, master-detail-sync, cross-browser)",
+        "description": "Hints to qa-bug-export-subtask matching (factor overlap +15 points). Auto-derived from feature.complexity + design_doc when synced.",
+        "example": ["state-machine", "cascade-deep"]
+      },
+      "linked_bug": {
+        "type": "object | null",
+        "description": "Populated when feature.epic == 'bug-fix' (created via qa-bug-export). Frozen snapshot at export time.",
+        "schema": {
+          "qa_bug_id": "BUG-NNN",
+          "scenario_risk": {
+            "priority": "P0|P1|P2|P3",
+            "score": "1-9",
+            "factors": ["security-flow", "..."],
+            "scenario_assigned_model": "opus|sonnet|haiku"
+          },
+          "linked_scenario": "TS-MODULE-NNN",
+          "exported_at": "ISO8601"
+        }
+      },
+      "nfr_compliance": {
+        "type": "object",
+        "description": "Mirrors qa-tracker.nfr_results for the module this feature touches. Populated by /nfr-check.",
+        "schema": {
+          "performance":     { "score": 88, "required": 85, "blocks_release": false },
+          "security":        { "score": 70, "required": 75, "blocks_release": true },
+          "reliability":     { "score": 92, "required": 85, "blocks_release": false },
+          "maintainability": { "score": 73, "required": 70, "blocks_release": false }
+        },
+        "release_gate": "ANY type with blocks_release=true && score<required → blocks /continue from marking passes=true"
+      },
+      "qa_trace_coverage": {
+        "type": "object",
+        "description": "AC coverage for this feature's acceptance_criteria_id[]. Populated by /qa-coverage-check.",
+        "schema": {
+          "covered_acs": ["AC-001", "AC-002"],
+          "gap_acs": [],
+          "fail_acs": [],
+          "last_checked_at": "ISO8601"
+        },
+        "release_gate": "gap_acs[] non-empty → blocks /continue from marking passes=true (override with --force)"
+      }
     }
   }
 }

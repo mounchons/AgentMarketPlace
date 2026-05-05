@@ -31,7 +31,12 @@ Before completing your session, verify EVERY item:
   - [ ] Test coverage: minimum tests met? (not just build passes)
   - [ ] Tech stack: CLAUDE.md libraries used? (per phase)
   - [ ] Config flags enforced?
-- [ ] progress.md updated with verification results?
+- [ ] **QA + NFR Release Gates passed?** (v2.6.0 — for AC-linked features)
+  - [ ] qa_trace_coverage.gap_acs == [] (no GAP ACs)?
+  - [ ] qa_trace_coverage.fail_acs == [] (no failing scenarios)?
+  - [ ] All nfr_compliance types with blocks_release=true have score >= required?
+  - [ ] Bug-fix subtask "Verify BUG-XXX" only done when bug.status == "verified"?
+- [ ] progress.md updated with verification + gate results?
 - [ ] Code builds successfully?
 
 If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
@@ -48,6 +53,9 @@ Your output will be REJECTED and you must REDO from scratch if:
 - progress.md not updated
 - Code left in non-buildable state
 - Config flags (max_features_per_session, require_tests) ignored
+- (v2.6.0) Feature marked `passed` while `qa_trace_coverage.gap_acs` or `fail_acs` non-empty (without --force-coverage)
+- (v2.6.0) Feature marked `passed` while any `nfr_compliance.[*].blocks_release && score < required` (without --force-nfr)
+- (v2.6.0) Bug-fix subtask "Verify BUG-XXX" marked `done=true` while qa-tracker `bugs[BUG-XXX].status != "verified"` (without --force-bug-verify)
 
 ### ⚠️ Penalty
 
@@ -786,7 +794,7 @@ Verification Pipeline Results:
   require_tests: enforced ✅
   tdd_approach: N/A / enforced ✅
 ─────────────────────────────────────────────────
-Pipeline Result: ALL GREEN → proceed to mark passed
+Pipeline Result: ALL GREEN → proceed to Step 5.6 (qa+nfr gates)
                  ANY RED → mark "partial" or "incomplete"
 ```
 
@@ -796,6 +804,94 @@ Pipeline Result: ALL GREEN → proceed to mark passed
 - Mark feature as `"partial"` (mock data) or `"incomplete"` (missing CRUD/entities)
 - Create follow-up features for missing items
 - Document what's missing in feature notes
+
+### Step 5.6: QA + NFR Release Gates (NEW v2.6.0 — MANDATORY for AC-linked features)
+
+**Only applies if** `feature.acceptance_criteria_id[]` is non-empty OR `qa-tracker.json` exists.
+
+```bash
+# 1. Refresh coverage data (read-only on qa-tracker)
+/qa-coverage-check --feature <FEATURE_ID> --report-only
+
+# 2. Refresh NFR data
+/nfr-check --feature <FEATURE_ID> --report-only
+```
+
+**Gate 1 — AC Coverage**
+
+Read `feature.qa_trace_coverage`:
+
+```
+PASS  if  gap_acs[] == [] AND fail_acs[] == []
+FAIL  if  gap_acs[] non-empty   → BLOCK passes=true (release blocker)
+FAIL  if  fail_acs[] non-empty  → BLOCK passes=true (release blocker)
+WARN  if  pending_acs[] non-empty (CONCERNS) → allow passes=true with warning
+```
+
+**Gate 2 — NFR Compliance**
+
+Read `feature.nfr_compliance`:
+
+```
+For each type in {performance, security, reliability, maintainability}:
+  IF blocks_release == true AND score < required:
+    → BLOCK passes=true
+```
+
+**Gate 3 — Bug-fix verification (if feature.epic == "bug-fix")**
+
+```
+For each subtask labeled "Verify BUG-XXX":
+  Read qa-tracker.bugs[BUG-XXX].status:
+    - status == "verified"            → mark subtask done=true
+    - status in ["new","triaged","exported","in_progress","fixed"]
+                                       → BLOCK subtask done=true
+    - status in ["closed","wont_fix"] → mark subtask done=true (closed without verify)
+```
+
+**Override mechanism (use sparingly)**:
+
+| Flag | Effect | Logged in |
+|------|--------|-----------|
+| `--force-coverage` | Bypass Gate 1 (AC coverage) | feature.notes + audit log |
+| `--force-nfr`      | Bypass Gate 2 (NFR compliance) | feature.notes + audit log |
+| `--force-bug-verify` | Bypass Gate 3 (bug verification) | feature.notes |
+| `--force-all`      | Bypass all 3 gates | feature.notes + audit log + alert |
+
+**When override is acceptable**:
+- Pre-launch: ACs deferred to next sprint with explicit stakeholder sign-off
+- Bug-fix is patch released before re-test possible (e.g., production hotfix)
+
+**When override is NOT acceptable**:
+- Just to make CI green
+- "I'll do it later" with no concrete plan
+
+**If any gate FAILs without --force**:
+- Mark feature as `"blocked"` (not `passed`)
+- Set `feature.blocked_reason` to gate failure summary
+- Create follow-up feature/subtask to address gap
+- Update `progress.md` noting which gate blocked
+
+```json
+{
+  "id": 7,
+  "status": "blocked",
+  "blocked_reason": "qa_trace_coverage.gap_acs=[AC-007,AC-008] — run /qa-ui-test:qa-create-scenario --module AUTH",
+  "passes": false,
+  "qa_trace_coverage": {
+    "covered_acs": [],
+    "gap_acs": ["AC-007", "AC-008"],
+    "fail_acs": [],
+    "last_checked_at": "ISO8601"
+  }
+}
+```
+
+**⚠️ Output Rejection** if you mark `passes=true` while:
+- `qa_trace_coverage.gap_acs` non-empty (without --force-coverage)
+- `qa_trace_coverage.fail_acs` non-empty (without --force-coverage)
+- ANY `nfr_compliance.[*].blocks_release && score < required` (without --force-nfr)
+- Bug-fix subtask "Verify BUG-XXX" marked done while bug.status != "verified" (without --force-bug-verify)
 
 ### Step 6: Mark as Passed (Schema v1.5.0)
 
@@ -817,6 +913,19 @@ Edit feature_list.json:
   "mockup_validated": true,               // NEW v1.5.0 - if has mockup ref
   "passes": true,                         // KEEP for backward compat
   "tested_at": "TIMESTAMP",
+  "qa_trace_coverage": {                  // NEW v2.6.0 - if AC-linked
+    "covered_acs": ["AC-001", "AC-002"],
+    "gap_acs": [],
+    "fail_acs": [],
+    "pending_acs": [],
+    "last_checked_at": "TIMESTAMP"
+  },
+  "nfr_compliance": {                     // NEW v2.6.0 - if qa-tracker has NFR
+    "performance":     { "score": 88, "required": 85, "blocks_release": false },
+    "security":        { "score": 80, "required": 75, "blocks_release": true },
+    "reliability":     { "score": 92, "required": 85, "blocks_release": false },
+    "maintainability": { "score": 73, "required": 70, "blocks_release": false }
+  },
   "notes": "Test results..."
 }
 ```

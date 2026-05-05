@@ -1,11 +1,13 @@
 ---
 name: long-running
-version: 2.3.0
-description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, Verification Pipeline, and integration with ui-mockup, system-design-doc, dotnet-dev skills
+version: 2.6.0
+description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, Verification Pipeline, qa-ui-test v2.5 release gates (NFR + AC coverage + bug verification), and integration with ui-mockup, system-design-doc, qa-ui-test, dotnet-dev skills
 ---
 
 # Long-Running Agent Skill
 
+> **Version 2.6.0** - Added qa-ui-test v2.5 release gates: /nfr-check + /qa-coverage-check commands; /continue Step 5.6 enforces Gate 1 (AC coverage), Gate 2 (NFR compliance), Gate 3 (bug verification) before passes=true; schema 2.4.0 with acceptance_criteria_id[], complexity_tags[], linked_bug{}, nfr_compliance{}, qa_trace_coverage{}; --force-coverage / --force-nfr / --force-bug-verify overrides
+>
 > **Version 2.3.0** - Added Verification Pipeline (6 checks beyond build success), Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement
 
 > **Response Language**: Always respond to users in Thai (ภาษาไทย)
@@ -50,6 +52,8 @@ Based on [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effe
 | **Generate features from design** | `/generate-features-from-design` |
 | **Validate coverage** | `/validate-coverage` |
 | **Sync mockups** | `/sync-mockups` |
+| **NFR compliance check** (v2.6) | `/nfr-check` |
+| **QA AC coverage check** (v2.6) | `/qa-coverage-check` |
 | **View dependencies** | `/dependencies` |
 | **Migrate schema** | `/migrate` |
 
@@ -686,6 +690,83 @@ Recommended workflow:
 - If Design Doc found → **must** use ER Diagram for database
 - **Do not** create schema that differs from design without approval
 - **Must** use Data Dictionary for field specifications
+
+---
+
+### 🧪 With qa-ui-test skill (v2.6.0 — Release Gates)
+
+**qa-ui-test is a release gate, not just a test suite.** Long-running enforces 3 gates before marking `passes=true`:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                  QA-UI-TEST INTEGRATION (v2.6.0)                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Data flow:                                                        │
+│  qa-tracker.json ────read-only────▶ feature_list.json              │
+│  (source of truth)                  (consumer + gate enforcer)     │
+│                                                                     │
+│  Inputs from qa-tracker:                                           │
+│  ├── nfr_results       → /nfr-check         → feature.nfr_compliance│
+│  ├── traceability      → /qa-coverage-check → feature.qa_trace_cov.│
+│  └── bugs[].status     → /continue Gate 3   → bug-fix subtask done  │
+│                                                                     │
+│  Gates enforced in /continue Step 5.6:                             │
+│  Gate 1 — AC Coverage:  qa_trace_coverage.gap_acs == [] AND        │
+│                          fail_acs == []                             │
+│  Gate 2 — NFR Compliance: ALL types where blocks_release           │
+│                            have score >= required                   │
+│  Gate 3 — Bug Verify:    bug-fix subtasks "Verify BUG-XXX"         │
+│                           require qa-tracker bug.status==verified   │
+│                                                                     │
+│  Override flags (logged in audit trail):                           │
+│  --force-coverage / --force-nfr / --force-bug-verify / --force-all │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Recommended workflow:**
+
+1. `/qa-ui-test:qa-create-scenario` — generate scenarios linked to AC IDs
+2. `/qa-ui-test:qa-run` — execute tests
+3. `/qa-ui-test:qa-trace` — build traceability matrix
+4. `/qa-ui-test:qa-nfr-assess` — score NFR
+5. `/qa-coverage-check` — pull AC coverage into feature_list
+6. `/nfr-check` — pull NFR compliance into feature_list
+7. `/continue` — enforces gates, marks features passed only when gates green
+
+**Bug-fix workflow (epic="bug-fix"):**
+
+```
+qa-bug-list → qa-bug-export → feature_list (with linked_bug)
+                                   ↓
+                                /continue (implements fix)
+                                   ↓
+                            qa-bug-verify (re-runs scenario)
+                                   ↓
+                       bug.status="verified" → feature.passes=true
+```
+
+**ID propagation rules:**
+- AC IDs (`AC-NNN`) come from **system-design-doc** (source of truth)
+- Bug IDs (`BUG-NNN`) come from **qa-ui-test** (source of truth)
+- Long-running **mirrors** these IDs in `acceptance_criteria_id[]` and `linked_bug{}` — never creates them
+
+**Schema requirement:**
+- feature_list.json: `>= 2.4.0`
+- qa-tracker.json: `>= 1.7.0`
+- design_doc_list.json: `>= 2.2.0` (for AC IDs)
+
+**Backward compat:**
+- Features without `acceptance_criteria_id[]` skip Gate 1 (no AC = no AC gate)
+- Features without `nfr_compliance` skip Gate 2 (no NFR data = no NFR gate)
+- Features not `epic="bug-fix"` skip Gate 3
+- Pre-v2.4.0 feature_list.json: `/continue` runs old behavior (Verification Pipeline only)
+
+**⚠️ Important rules:**
+- If `qa-tracker.json` exists → run `/qa-coverage-check` and `/nfr-check` before `/continue`
+- **Do not** override gates without stakeholder sign-off
+- **Must** document override reason in `feature.notes` (auto-logged but should be human-readable)
 
 ---
 
