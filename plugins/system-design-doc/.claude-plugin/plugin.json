@@ -1,7 +1,7 @@
 {
   "name": "system-design-doc",
-  "version": "1.6.0",
-  "description": "Create standardized system design documents — supports Reverse Engineering from codebase, Import from implementation plan, Interactive Brainstorming with Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD), /help command with mode-based guide (--quick/--workflow/--integration/--diagrams/--reverse/--validation)",
+  "version": "1.7.0",
+  "description": "Create standardized system design documents — supports Reverse Engineering from codebase, Import from implementation plan, Interactive Brainstorming with Mermaid diagrams, Architecture patterns (Microservices, Event-driven, Clean Architecture, DDD), qa-ui-test v2.5 integration via Section 2.4 Acceptance Criteria + Section 2.5 Use Cases (flat AC-NNN/UC-NNN IDs), /sync-with-qa-tracker bidirectional sync, /validate-integration covering 4 plugins with AC coverage + release-ready flag, /help command with mode-based guide",
   "author": {
     "name": "Mounchons"
   }

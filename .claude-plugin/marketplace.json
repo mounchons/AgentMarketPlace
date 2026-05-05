@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.9.0",
+    "version": "1.10.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -13,8 +13,8 @@
     {
       "name": "system-design-doc",
       "source": "./plugins/system-design-doc",
-      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase, Import จาก implementation plan, Interactive Brainstorming, Mermaid diagrams 7 ประเภท (ER, Flow, DFD, Sequence, Sitemap, State, Class), validate-integration cross-plugin, /help command พร้อม mode-based guide (--quick/--workflow/--integration/--diagrams/--reverse/--validation)",
-      "version": "1.6.0",
+      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase, Import จาก implementation plan, Interactive Brainstorming, Mermaid diagrams 7 ประเภท (ER, Flow, DFD, Sequence, Sitemap, State, Class), qa-ui-test v2.5 integration: Section 2.4 Acceptance Criteria + Section 2.5 Use Cases (flat AC-NNN/UC-NNN IDs), /sync-with-qa-tracker bidirectional sync, /validate-integration ครอบ 4 plugins พร้อม AC coverage + release-ready flag, /help command พร้อม mode-based guide",
+      "version": "1.7.0",
       "category": "documentation",
       "tags": [
         "thai",
@@ -26,7 +26,11 @@
         "import-plan",
         "validation",
         "cross-plugin",
-        "help-guide"
+        "help-guide",
+        "qa-integration",
+        "acceptance-criteria",
+        "use-cases",
+        "traceability"
       ],
       "author": {
         "name": "Mounchons"

@@ -1,6 +1,6 @@
 # /validate-integration
 
-Validate cross-references and consistency across 3 plugins: system-design-doc, ui-mockup, long-running
+Validate cross-references and consistency across 4 plugins: system-design-doc, ui-mockup, long-running, **qa-ui-test**
 
 ---
 
@@ -34,21 +34,29 @@ cat .mockups/mockup_list.json
 
 # Read feature_list.json
 cat feature_list.json
+
+# Read qa-tracker.json (path from design_doc_list.integration.qa_tracker_path)
+cat qa-tracker.json
 ```
+
+> **Note**: qa-tracker.json is **optional** — if missing, skip qa-related checks and emit a warning (do not fail validation).
 
 ### Step 2: Validate Schema Compatibility
 
 ```
 Check schema versions:
-- design_doc_list.json: 2.0.0
-- mockup_list.json: 1.6.0
-- feature_list.json: 1.10.0
+- design_doc_list.json: 2.2.0
+- mockup_list.json:     1.7.0  (or 1.8.0 with QA factor inference)
+- feature_list.json:    1.10.0 (or 2.4.0 with NFR + coverage gates)
+- qa-tracker.json:      1.7.0  (optional)
 
 Verify compatibility:
-- design_doc requires mockup >= 1.6.0 ✅
-- design_doc requires feature >= 1.10.0 ✅
-- mockup requires design_doc >= 2.0.0 ✅
-- feature requires design_doc >= 2.0.0 ✅
+- design_doc requires mockup     >= 1.6.0  ✅
+- design_doc requires feature    >= 1.10.0 ✅
+- design_doc requires qa-tracker >= 1.7.0  ✅ (or warn if missing)
+- mockup     requires design_doc >= 2.0.0  ✅
+- feature    requires design_doc >= 2.0.0  ✅
+- qa-tracker requires design_doc >= 2.2.0  ⚠️ (warn-only when older)
 ```
 
 ### Step 3: Validate Entity References
@@ -123,6 +131,82 @@ Report:
    - implemented_by_features: [] ⚠️ No features yet
 ```
 
+### Step 5b: Validate Acceptance Criteria Coverage (qa-ui-test integration)
+
+> **Backward-compat**: If `documents[].acceptance_criteria[]` is empty AND no AC pattern found in markdown → emit **WARN** only (do not fail). Score this section as `n/a` instead of `0%`.
+
+```
+For each AC in design_doc.documents[].acceptance_criteria:
+  1. Check linked_scenarios[] is non-empty
+  2. For each linked scenario_id:
+     - Verify scenario exists in qa-tracker.scenarios[]
+     - Check scenario.acceptance_criteria_id[] includes this AC ID (bidirectional)
+  3. Compute AC gate:
+     - PASS    — at least 1 linked scenario AND latest run = passed
+     - FAIL    — all linked scenarios failed
+     - GAP     — zero linked scenarios (release blocker)
+     - PENDING — scenarios linked but not run yet
+
+Report:
+✅ AC-001 "User can place order with valid payment"
+   - Module: CHECKOUT
+   - Linked: TS-CHECKOUT-001 ✅, TS-CHECKOUT-002 ✅
+   - Bidirectional: ✅
+   - Gate: PASS
+
+⚠️ AC-003 "VAT calculation correct"
+   - Linked: TS-CHECKOUT-005 ❌ (FAIL — bug BUG-001)
+   - Gate: FAIL
+
+❌ AC-004 "User can cancel order within 10min"
+   - Linked: [] ❌
+   - Gate: GAP — release blocker
+```
+
+### Step 5c: Validate Use Case Coverage
+
+```
+For each UC in design_doc.documents[].use_cases:
+  1. Check linked_scenarios[] is non-empty
+  2. Check ac_refs[] all exist in acceptance_criteria[]
+  3. Verify each ac_ref AC has at least 1 scenario
+
+Report:
+✅ UC-001 "Place Order"
+   - AC Refs: AC-001, AC-002 (both PASS)
+   - Linked scenarios: 5
+   - Coverage: complete
+
+⚠️ UC-003 "Refund"
+   - AC Refs: AC-007 (GAP)
+   - Linked scenarios: 0
+   - Coverage: incomplete
+```
+
+### Step 5d: Validate Long-Running Release Gates (if feature_list >= 2.4.0)
+
+```
+For each feature in feature_list.features[]:
+  1. Check feature.acceptance_criteria_id[] (if present in schema)
+     - Verify all AC IDs exist in design_doc
+  2. Check feature.qa_trace_coverage.gap_acs[] (if present)
+     - Should be empty for "passed" features
+  3. Check feature.nfr_compliance (if present)
+     - All required NFRs must have score >= required when blocks_release=true
+
+Report:
+✅ Feature #5 "Place Order API"
+   - AC: AC-001, AC-002 → both PASS
+   - Coverage gaps: 0
+   - NFR: security 75/75 PASS, performance 88/85 PASS
+   - Release-ready: YES
+
+⚠️ Feature #7 "Cancel Order"
+   - AC: AC-005 → GAP
+   - Coverage gaps: 1 (AC-005)
+   - Release-ready: NO
+```
+
 ### Step 6: Detect Orphans
 
 ```
@@ -132,14 +216,22 @@ Design Doc:
 - Entities without mockup refs: 0
 - APIs without feature refs: 1
 - Diagrams without refs: 0
+- ACs without scenarios (GAP): 3
+- UCs without scenarios: 1
 
 Mockups:
 - Pages without features: 2
 - Entities without design_doc refs: 0
+- Pages without AC refs: 4 (warn-only)
 
 Features:
 - Features without design_doc refs: 3
 - Features without mockup refs: 5
+- Features without AC refs: 2 (warn-only when feature_list < 2.4.0)
+
+QA Tracker:
+- Scenarios without acceptance_criteria_id[]: 6
+- ACs missing in design_doc but referenced by scenarios: 0
 ```
 
 ### Step 7: Check Layer Consistency
@@ -177,15 +269,16 @@ Mockup Categories:
 ╔════════════════════════════════════════════════════════════════════╗
 ║                 CROSS-PLUGIN INTEGRATION REPORT                     ║
 ╠════════════════════════════════════════════════════════════════════╣
-║ Generated: 2025-01-05T10:00:00Z                                     ║
-║ Plugins: system-design-doc, ui-mockup, long-running          ║
+║ Generated: 2026-05-05T10:00:00Z                                     ║
+║ Plugins: system-design-doc, ui-mockup, long-running, qa-ui-test     ║
 ╠════════════════════════════════════════════════════════════════════╣
 
 1. SCHEMA COMPATIBILITY
    ─────────────────────
-   design_doc_list.json: v2.0.0 ✅
-   mockup_list.json: v1.6.0 ✅
-   feature_list.json: v1.10.0 ✅
+   design_doc_list.json: v2.2.0 ✅
+   mockup_list.json:     v1.7.0 ✅
+   feature_list.json:    v2.4.0 ✅
+   qa-tracker.json:      v1.7.0 ✅ (or "missing — qa checks skipped")
 
    All schemas are compatible ✅
 
@@ -245,36 +338,64 @@ Mockup Categories:
    - 3 features without design_doc refs (#1, #2, #10)
    - 5 features without mockup refs (#1-4, #10-12)
 
-6. SYNC STATUS
-   ────────────
-   ┌─────────────────┬──────────────────────────┐
-   │ Integration     │ Last Synced              │
-   ├─────────────────┼──────────────────────────┤
-   │ Design ↔ Mockup │ 2025-01-05T10:00:00Z ✅  │
-   │ Design ↔ Feature│ 2025-01-05T10:00:00Z ✅  │
-   │ Mockup ↔ Feature│ 2025-01-05T09:30:00Z ⚠️  │
-   └─────────────────┴──────────────────────────┘
+6. ACCEPTANCE CRITERIA COVERAGE (qa-ui-test)
+   ──────────────────────────────────────────
+   ┌────────┬────────────────────┬──────────┬──────┐
+   │ AC ID  │ Title              │ Scenarios│ Gate │
+   ├────────┼────────────────────┼──────────┼──────┤
+   │ AC-001 │ Place order valid  │ 2 ✅     │ PASS │
+   │ AC-002 │ Cart >= 1 item     │ 1 ✅     │ PASS │
+   │ AC-003 │ VAT correct        │ 1 ❌     │ FAIL │
+   │ AC-004 │ Cancel within 10m  │ 0        │ GAP  │
+   │ AC-005 │ Refund flow        │ 0        │ GAP  │
+   └────────┴────────────────────┴──────────┴──────┘
 
-7. RECOMMENDATIONS
+   Coverage: 3/5 ACs covered (60%) — 2 GAPs, 1 FAIL
+   Release Ready: NO (2 GAPs are release blockers)
+
+7. USE CASE COVERAGE
+   ──────────────────
+   - UC-001 "Place Order" → 5 scenarios ✅
+   - UC-002 "Cancel Order" → 2 scenarios ✅
+   - UC-003 "Refund" → 0 scenarios ❌
+
+8. SYNC STATUS
+   ────────────
+   ┌─────────────────────┬──────────────────────────┐
+   │ Integration         │ Last Synced              │
+   ├─────────────────────┼──────────────────────────┤
+   │ Design ↔ Mockup     │ 2026-05-05T10:00:00Z ✅  │
+   │ Design ↔ Feature    │ 2026-05-05T10:00:00Z ✅  │
+   │ Design ↔ QA Tracker │ 2026-05-05T10:00:00Z ✅  │
+   │ Mockup ↔ Feature    │ 2026-05-05T09:30:00Z ⚠️  │
+   └─────────────────────┴──────────────────────────┘
+
+9. RECOMMENDATIONS
    ────────────────
-   HIGH Priority:
+   HIGH Priority (release blockers):
+   - [ ] AC-004, AC-005 → run /qa-ui-test:qa-create-scenario
+   - [ ] Fix AC-003 FAIL → /qa-ui-test:qa-bug-list
    - [ ] Create features for Department entity
-   - [ ] Create features for pages 002, 003, 007
 
    MEDIUM Priority:
    - [ ] Add design_doc_refs to features #1, #2, #10
+   - [ ] Run /sync-with-qa-tracker to refresh AC coverage
 
    LOW Priority:
-   - [ ] Run /sync-mockups to update Feature ↔ Mockup sync
+   - [ ] Run /sync-with-mockups to update Feature ↔ Mockup sync
 
 ╠════════════════════════════════════════════════════════════════════╣
-║ OVERALL INTEGRATION SCORE: 75% (Good)                               ║
+║ OVERALL INTEGRATION SCORE: 68% (Needs Improvement)                  ║
 ║                                                                      ║
 ║ Breakdown:                                                           ║
 ║ - Entity Integration: 50%                                            ║
-║ - API Integration: 100%                                              ║
-║ - Page Integration: 57%                                              ║
-║ - Sync Freshness: 95%                                                ║
+║ - API Integration:    100%                                           ║
+║ - Page Integration:   57%                                            ║
+║ - AC Coverage:        60%                                            ║
+║ - UC Coverage:        67%                                            ║
+║ - Sync Freshness:     95%                                            ║
+║                                                                      ║
+║ Release Ready: NO — 2 GAP ACs are release blockers                   ║
 ╚════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -303,16 +424,27 @@ Mockup Categories:
 
 ```
 Score = weighted average of:
-- Entity Integration (25%): entities with all 3 references
-- API Integration (25%): APIs with feature + page references
-- Page Integration (25%): pages with feature references
-- Sync Freshness (25%): how recent the sync timestamps are
+- Entity Integration (15%): entities with all 3 references
+- API Integration    (15%): APIs with feature + page references
+- Page Integration   (15%): pages with feature references
+- AC Coverage        (25%): % of ACs with passing scenarios (qa-ui-test)
+- UC Coverage        (15%): % of UCs with at least 1 scenario
+- Sync Freshness     (15%): how recent sync timestamps are
+
+If qa-tracker.json is missing:
+- AC + UC weights collapse to 0; redistribute proportionally to other dims
+- Report: "qa-tracker.json not found — AC/UC coverage skipped"
 
 Rating:
 - 90-100%: Excellent
-- 75-89%: Good
-- 50-74%: Needs Improvement
-- <50%: Critical
+- 75-89%:  Good
+- 50-74%:  Needs Improvement
+- <50%:    Critical
+
+Release-Ready Override:
+- ANY AC with gate=GAP    → release blocker (regardless of total score)
+- ANY AC with gate=FAIL   → release blocker
+- ANY feature.nfr_compliance.[*].blocks_release=true && score<required → blocker
 ```
 
 ---

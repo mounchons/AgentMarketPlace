@@ -23,7 +23,8 @@ Skill for creating enterprise-grade standardized system design documents with Me
 | `/import-plan` | Import a document from an implementation plan or free-form design doc |
 | `/sync-with-mockups` | Sync entities and pages with ui-mockup |
 | `/sync-with-features` | Sync APIs and entities with long-running |
-| `/validate-integration` | Validate cross-references across all 3 plugins |
+| `/sync-with-qa-tracker` | Sync acceptance criteria + use cases with qa-ui-test (v1.7.0) |
+| `/validate-integration` | Validate cross-references across all 4 plugins (v1.7.0: + qa-ui-test) |
 | `/brainstorm-design` | Interactive brainstorming and Q&A session for system design |
 | `/system-design-doc` | General command (supports all modes) |
 
@@ -137,12 +138,21 @@ flowchart LR
         DN[dotnet-dev]
     end
 
+    subgraph QAPhase["QA Phase"]
+        QA[qa-ui-test]
+    end
+
     SD -->|Sitemap, Entities| UM
     SD -->|Data Model, APIs| LR
+    SD -->|AC IDs, UC IDs| QA
     UM -->|Component specs| LR
     SD -->|.NET specific| DN
     LR -->|Feature tracking| SD
+    QA -->|Coverage, NFR results| LR
+    QA -->|Bug snapshots| LR
 ```
+
+> **AC ID Propagation** is **one-way** from system-design-doc → consumers. Other plugins reference AC IDs but do **not** create them. Use `/sync-with-qa-tracker` to push IDs to qa-tracker scenarios and pull coverage back.
 
 ---
 
@@ -275,6 +285,16 @@ The system design document consists of 10 main sections:
 21. **ER diagrams are living documents** — NOT one-time creations. When DD changes, ER must update.
 22. **Schema redesign tracking** — when a table is redesigned (e.g., FK → VARCHAR, 4 tables → 2 tables consolidated), the ER diagram must reflect the current design, not the original design
 23. **Post-edit consistency report** — after any edit to DD or ER, generate a brief consistency check:
+
+### Acceptance Criteria & Use Case Rules (v1.7.0 — qa-ui-test integration)
+
+24. **AC ID format is fixed** — flat `AC-NNN` (3-digit zero-padded). Never use `AC-X.Y` or `AC-N` (no padding). The ID format is enforced by the schema; consumers (qa-tracker) reference these strings literally.
+25. **UC heading pattern is fixed** — every Use Case must use `### Use Case (UC-NNN): <Title>` heading exactly. The `qa-trace` regex `^### Use Case \(UC-\d+\):.*$` greps this pattern; deviations (e.g., `### UC-001:`) will not be detected.
+26. **Each AC must be independently testable** — one assertion per AC. If you find yourself writing "AC-001: User can login AND see dashboard", split into two ACs.
+27. **AC must reference at least one of FR/BR/NFR** — orphan ACs (no upstream requirement) are forbidden. Cross-reference is bidirectional: every FR with testable behavior should be covered by ≥ 1 AC.
+28. **UC ↔ AC bidirectional** — every UC must list `AC Refs` for the criteria derived from its main + alternative flows. Every AC derived from a UC step must list `UC Ref`.
+29. **AC backward-compat** — pre-v1.7.0 design docs without Section 2.4 are valid (warn-only in `/validate-integration`). Adding ACs is **opt-in**, but once added, rules 24-28 apply strictly.
+30. **AC line format for inline ACs** — AC lines outside the table must be `AC-NNN: <criterion>` (colon, single space, then criterion) on their own line. This is what `qa-trace` greps.
     ```
     Tables Summary:
     - DD sections: N
@@ -302,6 +322,10 @@ Before completing the design document, verify EVERY item:
 - [ ] All Foreign Keys reference valid tables?
 - [ ] No placeholder text remaining ("[TBD]", "[TODO]")?
 - [ ] Permission matrix is complete for all roles?
+- [ ] All ACs use flat `AC-NNN` format (no `AC-X.Y`, no unpadded IDs)? (v1.7.0)
+- [ ] All UCs use `### Use Case (UC-NNN): Title` heading exactly? (v1.7.0)
+- [ ] Each AC references at least one FR/BR/NFR? (v1.7.0)
+- [ ] UC ↔ AC bidirectional refs are consistent? (v1.7.0)
 
 If ANY checkbox is unchecked, DO NOT submit. Fix the issue first.
 
@@ -393,6 +417,31 @@ Data passed:
 • Data Dictionary → Database migrations
 • APIs → Controller scaffolding
 ```
+
+### qa-ui-test Integration (v1.7.0)
+
+```
+system-design-doc → qa-ui-test
+
+Data passed:
+• Acceptance Criteria (AC-NNN) → scenario.acceptance_criteria_id[]
+• Use Cases (UC-NNN)           → scenario.use_case_id (optional, wizard/state-machine)
+• FR / NFR                     → seed data for /qa-create-scenario + /qa-nfr-assess
+• Module names                 → grouping for traceability matrix
+
+qa-ui-test → system-design-doc
+
+Data flowed back:
+• Scenario coverage per AC → documents[].acceptance_criteria[].linked_scenarios
+• Gate decision per AC     → ac.sync_status (synced/partially-covered/gap)
+• Pass rate, GAPs          → sync_status.qa_tracker.{covered_acs, gap_acs}
+```
+
+**Sync command**: `/sync-with-qa-tracker` (pushes AC IDs, pulls coverage)
+
+**Validation**: `/validate-integration` reports AC coverage + UC coverage + release-ready flag
+
+**ID propagation rule**: system-design-doc is the **source of truth** for AC + UC IDs. qa-tracker mirrors them; never create AC IDs in qa-tracker.
 
 ---
 
@@ -494,6 +543,8 @@ Data passed:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.7.0 | 2026-05-05 | qa-ui-test v2.5 integration: Section 2.4 Acceptance Criteria + Section 2.5 Use Cases in template; flat AC-NNN / UC-NNN ID format; new `/sync-with-qa-tracker` command; expanded `/validate-integration` to 4 plugins (added qa-ui-test) with AC coverage + UC coverage + release-ready flag; schema bumped to 2.2.0 (added `documents[].acceptance_criteria[]`, `documents[].use_cases[]`, `integration.qa_tracker_path`, `sync_status.qa_tracker`); 7 new CRITICAL RULES (24-30) |
+| 1.6.0 | | (Skipped — internal version)  |
 | 1.5.0 | 2026-03-24 | Added cross-validation rules from audit: section numbering validation, ER↔DD bidirectional check, DD↔DDL sync, FK column type consistency, API↔DD cross-reference, table count validation, ER auto-update rule, living document enforcement, post-edit consistency report |
 | 1.4.0 | | - Added CRITICAL RULES with self-check checklist, output rejection criteria, and penalty<br>- Added `/brainstorm-design` command (8-phase interactive brainstorming)<br>- Added hybrid brainstorm auto-detect in `/create-design-doc`<br>- Translated all content to English for AI comprehension |
 | 1.3.0 | 2025-01-25 | Added /import-plan command, cross-plugin integration (/sync-with-mockups, /sync-with-features, /validate-integration), schema v2.1.0 with CRUD enabled/disabled + soft delete strategy |

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "schema_version": "2.1.0",
+  "schema_version": "2.2.0",
   "project_name": "",
   "description": "",
   "technology_stack": {
@@ -16,8 +16,10 @@
   "integration": {
     "mockup_list_path": ".mockups/mockup_list.json",
     "feature_list_path": "feature_list.json",
+    "qa_tracker_path": "qa-tracker.json",
     "last_synced_with_mockups": null,
     "last_synced_with_features": null,
+    "last_synced_with_qa_tracker": null,
     "auto_sync_enabled": false
   },
 
@@ -196,13 +198,46 @@
           "sync_status": "pending"
         }
       ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-001",
+          "title": "",
+          "module": "",
+          "fr_ref": null,
+          "br_ref": null,
+          "uc_ref": null,
+          "type": "functional",
+          "linked_scenarios": [],
+          "sync_status": "pending",
+          "_comment": "type: functional | non-functional | business-rule. Flat ID format AC-NNN (3-digit zero-padded). uc_ref links to use_cases[].id when AC is derived from a UC step. linked_scenarios mirrors scenario.acceptance_criteria_id[] from qa-tracker.json (populated by /sync-with-qa-tracker)."
+        }
+      ],
+      "use_cases": [
+        {
+          "id": "UC-001",
+          "title": "",
+          "module": "",
+          "actors": [],
+          "preconditions": [],
+          "main_flow": [],
+          "alternative_flows": [],
+          "postconditions": [],
+          "fr_refs": [],
+          "ac_refs": [],
+          "linked_scenarios": [],
+          "sync_status": "pending",
+          "_comment": "UC-NNN flat format. Header in design doc: '### Use Case (UC-NNN): Title' — qa-trace greps this pattern. ac_refs mirror acceptance_criteria[].id derived from this UC."
+        }
+      ],
       "statistics": {
         "entities_count": 0,
         "tables_count": 0,
         "relationships_count": 0,
         "api_endpoints_count": 0,
         "pages_count": 0,
-        "user_roles_count": 0
+        "user_roles_count": 0,
+        "acceptance_criteria_count": 0,
+        "use_cases_count": 0
       },
       "notes": "",
       "created_at": "",
@@ -246,6 +281,14 @@
       "mapped_features": 0,
       "unmapped_features": 0,
       "last_sync": null
+    },
+    "qa_tracker": {
+      "total_acs": 0,
+      "covered_acs": 0,
+      "gap_acs": 0,
+      "total_ucs": 0,
+      "covered_ucs": 0,
+      "last_sync": null
     }
   },
 
@@ -257,15 +300,21 @@
     "reviewed": 0,
     "total_entities": 0,
     "total_api_endpoints": 0,
-    "total_diagrams": 0
+    "total_diagrams": 0,
+    "total_acceptance_criteria": 0,
+    "total_use_cases": 0
   },
 
   "metadata": {
-    "schema_version": "2.1.0",
-    "plugin_version": "1.3.0",
+    "schema_version": "2.2.0",
+    "plugin_version": "1.7.0",
     "compatible_with": {
       "mockup_list_schema": ">=1.6.0",
-      "feature_list_schema": ">=1.10.0"
-    }
+      "feature_list_schema": ">=1.10.0",
+      "qa_tracker_schema": ">=1.7.0"
+    },
+    "ac_id_format": "AC-NNN (flat, 3-digit zero-padded, e.g., AC-001)",
+    "uc_id_format": "UC-NNN (flat, 3-digit zero-padded, e.g., UC-001)",
+    "uc_header_pattern": "^### Use Case \\(UC-\\d+\\):.*$"
   }
 }
