@@ -27,6 +27,14 @@ Skill for creating enterprise-grade standardized system design documents with Me
 | `/validate-integration` | Validate cross-references across all 4 plugins (v1.7.0: + qa-ui-test) |
 | `/brainstorm-design` | Interactive brainstorming and Q&A session for system design |
 | `/system-design-doc` | General command (supports all modes) |
+| `/sitemap-init` | Initialize .design-docs/sitemap.json |
+| `/sitemap-add-node` | Add node (page/api/mw/ext/master/template/nav/component) |
+| `/sitemap-link` | Add edge between two nodes |
+| `/sitemap-scan` | Auto-scan codebase to populate nodes |
+| `/sync-sitemap` | Bidirectional sync md ↔ sitemap.json + pull downstream |
+| `/sitemap-validate` | Run schema + R31-R35 validation |
+| `/sitemap-graph` | Render Mermaid graph from edges |
+| `/sitemap-export` | Export to Cytoscape / GraphML / DOT |
 
 ---
 
@@ -303,6 +311,14 @@ The system design document consists of 10 main sections:
     - Mismatches: [list or "none"]
     ```
 
+### Sitemap Rules (v2.0.0 — sitemap.json integration)
+
+31. **Page DS membership** — once Design System is defined, every Page must declare `uses_master` (error) and `uses_template` (warn)
+32. **API mirror** — every API in sitemap.application.apis must have a matching `(method, path)` in md Section 3.3 (bidirectional)
+33. **source_file existence** — every node with `source_file` set must reference an existing file (warn; error in `--strict` mode)
+34. **No orphan edges** — every `edges[].from` and `edges[].to` must reference an existing node ID
+35. **Cross-doc artifact integrity** — `linked_artifacts.{mockups, features, qa_scenarios}` paths/IDs must exist in their respective files
+
 ### 🔍 Self-Check Checklist (MANDATORY before submitting output)
 
 Before completing the design document, verify EVERY item:
@@ -524,6 +540,10 @@ Data flowed back:
 | Troubleshooting | `references/troubleshooting.md` | Common problem solutions |
 | Full Template | `templates/design-doc-template.md` | Full document template |
 | Tracking File | `templates/design_doc_list.json` | Tracking schema |
+| Sitemap Schema | `references/sitemap-schema.json` | JSON Schema draft-07 for sitemap.json |
+| Node Types Reference | `references/node-types.md` | 8 node types reference |
+| Sitemap Validation Rules | `references/sitemap-validation-rules.md` | R31-R35 details |
+| Sitemap Template | `templates/sitemap-template.json` | Empty starter for sitemap.json |
 
 ---
 
@@ -543,6 +563,7 @@ Data flowed back:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.0 | 2026-05-07 | Major: introduce `.design-docs/sitemap.json` (machine-readable mirror) with 8 node types in 2 layers (Design System: Master/Template/Nav/Component + Application: Page/API/Middleware/External Function), 8 new commands (`/sitemap-init`, `/sitemap-add-node`, `/sitemap-link`, `/sitemap-scan`, `/sync-sitemap`, `/sitemap-validate`, `/sitemap-graph`, `/sitemap-export`), Section 9 expansion (9.4-9.9), 5 new cross-validation rules (R31-R35), JSON Schema draft-07 validator (`ajv-cli`), `workflow_stages` + `linked_artifacts` + `stage_status` schema features for downstream VS Code extension (sub-project B) |
 | 1.7.0 | 2026-05-05 | qa-ui-test v2.5 integration: Section 2.4 Acceptance Criteria + Section 2.5 Use Cases in template; flat AC-NNN / UC-NNN ID format; new `/sync-with-qa-tracker` command; expanded `/validate-integration` to 4 plugins (added qa-ui-test) with AC coverage + UC coverage + release-ready flag; schema bumped to 2.2.0 (added `documents[].acceptance_criteria[]`, `documents[].use_cases[]`, `integration.qa_tracker_path`, `sync_status.qa_tracker`); 7 new CRITICAL RULES (24-30) |
 | 1.6.0 | | (Skipped — internal version)  |
 | 1.5.0 | 2026-03-24 | Added cross-validation rules from audit: section numbering validation, ER↔DD bidirectional check, DD↔DDL sync, FK column type consistency, API↔DD cross-reference, table count validation, ER auto-update rule, living document enforcement, post-edit consistency report |

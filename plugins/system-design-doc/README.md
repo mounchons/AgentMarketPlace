@@ -2,6 +2,16 @@
 
 > สร้างเอกสารออกแบบระบบมาตรฐาน รองรับ Reverse Engineering จาก codebase พร้อม Mermaid diagrams และ Architecture patterns
 
+## What's new in v2.0
+
+- **`.design-docs/sitemap.json`** — machine-readable mirror of Section 9 with 8 node types (Master/Template/Nav/Component + Page/API/Middleware/External Function)
+- **8 new commands** — `/sitemap-init`, `/sitemap-add-node`, `/sitemap-link`, `/sitemap-scan`, `/sync-sitemap`, `/sitemap-validate`, `/sitemap-graph`, `/sitemap-export`
+- **5 new validation rules** — R31-R35
+- **Section 9 expansion** — 9.4 Design System Inventory, 9.5 API Inventory, 9.6 Middleware Inventory, 9.7 External Functions, 9.8 Node Relationships, 9.9 File Structure Map
+- **JSON Schema draft-07** — `references/sitemap-schema.json` for `ajv-cli` validation
+
+---
+
 ## Overview
 
 Plugin สำหรับสร้างเอกสารออกแบบระบบ (System Design Document) แบบครบวงจร รองรับทั้งการสร้างใหม่จาก requirements และ reverse engineering จาก codebase ที่มีอยู่ พร้อม Architecture patterns สำหรับ Microservices, Event-driven, Clean Architecture และ DDD
