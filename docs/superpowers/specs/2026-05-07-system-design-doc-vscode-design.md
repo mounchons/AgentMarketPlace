@@ -143,6 +143,8 @@ git commit -m "chore: remove deprecated plugins (flow-monitor, flow-monitor-vsco
   "project_name": "string",
   "generated_at": "ISO 8601 datetime",
   "last_synced_at": "ISO 8601 datetime",
+  "last_modified_by": "user | claude | extension",
+  "etag": "mtime-or-hash for optimistic concurrency",
 
   "workflow_stages": [...],
 
@@ -268,7 +270,7 @@ git commit -m "chore: remove deprecated plugins (flow-monitor, flow-monitor-vsco
     "mockups":      [".mockups/html/001-order-list.html"],
     "features":     ["feature_list.json#5", "feature_list.json#6"],
     "qa_scenarios": ["qa-tracker.json#OL-001", "qa-tracker.json#OL-002"],
-    "test_cases":   12,
+    "test_cases_count": 12,
     "code_files":   ["src/Pages/OrderListPage.tsx"]
   },
   "stage_status": [
@@ -475,8 +477,8 @@ Typed edges สำหรับ graph rendering:
 ### 8.4 Concurrency note
 
 Feature 4 (inline editor) + Feature 6 (real-time sync) มี race condition risk — เพิ่ม:
-- `last_modified_by`: `"user" | "claude" | "extension"` ใน root
-- Optimistic concurrency: extension เก็บ ETag (file mtime) ใน memory; ก่อน save เช็ค mtime — ถ้า diverge → prompt user
+- `last_modified_by`: `"user" | "claude" | "extension"` ใน root (defined in §4.1)
+- `etag` field ใน root: file mtime หรือ content hash; extension เก็บ ETag ใน memory; ก่อน save เช็ค `etag` ใน file — ถ้า diverge → prompt user
 
 ---
 
