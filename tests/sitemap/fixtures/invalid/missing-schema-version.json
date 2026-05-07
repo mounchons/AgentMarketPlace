@@ -1,0 +1,13 @@
+{
+  "design_doc_ref": "system-design-app.md",
+  "project_name": "Test Project",
+  "workflow_stages": [],
+  "design_system": { "masters": [], "templates": [], "navs": [], "components": [] },
+  "application": { "pages": [], "apis": [], "middlewares": [], "external_functions": [] },
+  "edges": [],
+  "sync_status": {
+    "ui_mockup": { "covered": 0, "gap": 0 },
+    "long_running": { "covered": 0, "gap": 0 },
+    "qa_tracker": { "covered_acs": 0, "gap_acs": 0 }
+  }
+}

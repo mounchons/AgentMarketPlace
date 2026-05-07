@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "design_doc_ref": "system-design-app.md",
+  "project_name": "Test Project",
+  "generated_at": "2026-05-07T10:30:00Z",
+  "last_synced_at": "2026-05-07T10:30:00Z",
+  "last_modified_by": "claude",
+  "etag": "abc123",
+  "workflow_stages": [
+    { "id": "design", "name": "System Design", "owner_plugin": "system-design-doc", "order": 1 }
+  ],
+  "design_system": {
+    "masters": [],
+    "templates": [],
+    "navs": [],
+    "components": []
+  },
+  "application": {
+    "pages": [],
+    "apis": [],
+    "middlewares": [],
+    "external_functions": []
+  },
+  "edges": [],
+  "sync_status": {
+    "ui_mockup":    { "covered": 0, "gap": 0, "last_sync": "2026-05-07T10:30:00Z" },
+    "long_running": { "covered": 0, "gap": 0, "last_sync": "2026-05-07T10:30:00Z" },
+    "qa_tracker":   { "covered_acs": 0, "gap_acs": 0, "last_sync": "2026-05-07T10:30:00Z" }
+  }
+}
