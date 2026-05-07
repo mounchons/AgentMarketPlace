@@ -1,0 +1,13 @@
+{
+  "name": "sitemap-schema-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Schema validation harness for plugins/system-design-doc/skills/system-design-doc/references/sitemap-schema.json",
+  "scripts": {
+    "validate": "ajv -s ../../plugins/system-design-doc/skills/system-design-doc/references/sitemap-schema.json -d 'fixtures/valid/*.json' --strict=false",
+    "validate-invalid": "ajv -s ../../plugins/system-design-doc/skills/system-design-doc/references/sitemap-schema.json -d 'fixtures/invalid/*.json' --strict=false; if [ $? -eq 0 ]; then echo 'FAIL: invalid fixtures should not validate'; exit 1; else echo 'PASS: invalid fixtures correctly rejected'; fi"
+  },
+  "devDependencies": {
+    "ajv-cli": "^5.0.0"
+  }
+}
