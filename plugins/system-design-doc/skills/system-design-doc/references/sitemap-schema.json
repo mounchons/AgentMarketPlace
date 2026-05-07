@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "sitemap.json",
+  "description": "Machine-readable sitemap mirror for system-design-doc v2.0+ — covers Design System (Master/Template/Nav/Component) + Application (Page/API/Middleware/External Function)",
+  "type": "object",
+  "required": [
+    "schema_version", "design_doc_ref", "project_name",
+    "generated_at", "last_synced_at", "last_modified_by", "etag",
+    "workflow_stages", "design_system", "application", "edges", "sync_status"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "design_doc_ref": { "type": "string", "minLength": 1 },
+    "project_name":   { "type": "string", "minLength": 1 },
+    "generated_at":   { "type": "string", "format": "date-time" },
+    "last_synced_at": { "type": "string", "format": "date-time" },
+    "last_modified_by": { "type": "string", "enum": ["user", "claude", "extension"] },
+    "etag": { "type": "string", "minLength": 1 },
+
+    "workflow_stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "owner_plugin", "order"],
+        "properties": {
+          "id":           { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+          "name":         { "type": "string", "minLength": 1 },
+          "owner_plugin": { "type": "string", "minLength": 1 },
+          "order":        { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+
+    "design_system": {
+      "type": "object",
+      "required": ["masters", "templates", "navs", "components"],
+      "properties": {
+        "masters":    { "type": "array", "items": { "$ref": "#/definitions/master" } },
+        "templates":  { "type": "array", "items": { "$ref": "#/definitions/template" } },
+        "navs":       { "type": "array", "items": { "$ref": "#/definitions/nav" } },
+        "components": { "type": "array", "items": { "$ref": "#/definitions/component" } }
+      }
+    },
+
+    "application": {
+      "type": "object",
+      "required": ["pages", "apis", "middlewares", "external_functions"],
+      "properties": {
+        "pages":              { "type": "array", "items": { "$ref": "#/definitions/page" } },
+        "apis":               { "type": "array", "items": { "$ref": "#/definitions/api" } },
+        "middlewares":        { "type": "array", "items": { "$ref": "#/definitions/middleware" } },
+        "external_functions": { "type": "array", "items": { "$ref": "#/definitions/external_function" } }
+      }
+    },
+
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "type"],
+        "properties": {
+          "from": { "$ref": "#/definitions/node_id" },
+          "to":   { "$ref": "#/definitions/node_id" },
+          "type": { "type": "string", "enum": [
+            "calls", "guarded-by", "calls-external",
+            "uses-master", "uses-template", "uses-component",
+            "has-nav", "links-to"
+          ] }
+        }
+      }
+    },
+
+    "sync_status": {
+      "type": "object",
+      "required": ["ui_mockup", "long_running", "qa_tracker"],
+      "properties": {
+        "ui_mockup":    { "$ref": "#/definitions/sync_block" },
+        "long_running": { "$ref": "#/definitions/sync_block" },
+        "qa_tracker": {
+          "type": "object",
+          "required": ["covered_acs", "gap_acs", "last_sync"],
+          "properties": {
+            "covered_acs": { "type": "integer", "minimum": 0 },
+            "gap_acs":     { "type": "integer", "minimum": 0 },
+            "last_sync":   { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "node_id": { "type": "string", "pattern": "^(MP|TPL|NAV|CMP|P|API|MW|EXT)-\\d{3,}$" },
+
+    "linked_artifacts": {
+      "type": "object",
+      "properties": {
+        "mockups":          { "type": "array", "items": { "type": "string" } },
+        "features":         { "type": "array", "items": { "type": "string" } },
+        "qa_scenarios":     { "type": "array", "items": { "type": "string" } },
+        "test_cases_count": { "type": "integer", "minimum": 0 },
+        "code_files":       { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "stage_status_entry": {
+      "type": "object",
+      "required": ["stage", "status"],
+      "properties": {
+        "stage":      { "type": "string" },
+        "status":     { "type": "string", "enum": ["not-started", "in-progress", "done", "blocked", "ready", "n/a"] },
+        "progress":   { "type": "number", "minimum": 0, "maximum": 1 },
+        "passed":     { "type": "integer", "minimum": 0 },
+        "total":      { "type": "integer", "minimum": 0 },
+        "blocked_by": { "type": "string" }
+      }
+    },
+
+    "available_action": {
+      "type": "object",
+      "required": ["label", "command"],
+      "properties": {
+        "label":   { "type": "string", "minLength": 1 },
+        "command": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "sync_block": {
+      "type": "object",
+      "required": ["covered", "gap", "last_sync"],
+      "properties": {
+        "covered":   { "type": "integer", "minimum": 0 },
+        "gap":       { "type": "integer", "minimum": 0 },
+        "last_sync": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "master": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id":          { "type": "string", "pattern": "^MP-\\d{3,}$" },
+        "name":        { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "source_file": { "type": "string" },
+        "css_file":    { "type": "string" },
+        "regions":     { "type": "array", "items": { "type": "string" } },
+        "linked_artifacts": { "$ref": "#/definitions/linked_artifacts" }
+      }
+    },
+
+    "template": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id":            { "type": "string", "pattern": "^TPL-\\d{3,}$" },
+        "name":          { "type": "string", "minLength": 1 },
+        "description":   { "type": "string" },
+        "uses_master":   { "type": "string", "pattern": "^MP-\\d{3,}$" },
+        "default_components": { "type": "array", "items": { "type": "string", "pattern": "^CMP-\\d{3,}$" } },
+        "source_file":   { "type": "string" }
+      }
+    },
+
+    "nav": {
+      "type": "object",
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id":   { "type": "string", "pattern": "^NAV-\\d{3,}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "enum": ["sidebar", "navbar", "breadcrumb", "tabs", "footer"] },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+              "label":    { "type": "string" },
+              "url":      { "type": "string" },
+              "page_ref": { "type": "string", "pattern": "^P-\\d{3,}$" }
+            }
+          }
+        },
+        "source_file": { "type": "string" }
+      }
+    },
+
+    "component": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id":            { "type": "string", "pattern": "^CMP-\\d{3,}$" },
+        "name":          { "type": "string", "minLength": 1 },
+        "category":      { "type": "string" },
+        "props_schema":  { "type": "object" },
+        "source_file":   { "type": "string" },
+        "used_by_pages": { "type": "array", "items": { "type": "string", "pattern": "^P-\\d{3,}$" } }
+      }
+    },
+
+    "page": {
+      "type": "object",
+      "required": ["id", "name", "url"],
+      "properties": {
+        "id":              { "type": "string", "pattern": "^P-\\d{3,}$" },
+        "name":            { "type": "string", "minLength": 1 },
+        "url":             { "type": "string" },
+        "access_level":    { "type": "string" },
+        "uses_master":     { "type": "string", "pattern": "^MP-\\d{3,}$" },
+        "uses_template":   { "type": "string", "pattern": "^TPL-\\d{3,}$" },
+        "uses_components": { "type": "array", "items": { "type": "string", "pattern": "^CMP-\\d{3,}$" } },
+        "calls_apis":      { "type": "array", "items": { "type": "string", "pattern": "^API-\\d{3,}$" } },
+        "ac_refs":         { "type": "array", "items": { "type": "string", "pattern": "^AC-\\d{3,}$" } },
+        "uc_refs":         { "type": "array", "items": { "type": "string", "pattern": "^UC-\\d{3,}$" } },
+        "source_file":     { "type": "string" },
+        "linked_artifacts": { "$ref": "#/definitions/linked_artifacts" },
+        "stage_status":     { "type": "array", "items": { "$ref": "#/definitions/stage_status_entry" } },
+        "available_actions":{ "type": "array", "items": { "$ref": "#/definitions/available_action" } }
+      }
+    },
+
+    "api": {
+      "type": "object",
+      "required": ["id", "method", "path"],
+      "properties": {
+        "id":              { "type": "string", "pattern": "^API-\\d{3,}$" },
+        "method":          { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "WS"] },
+        "path":            { "type": "string", "minLength": 1 },
+        "controller":      { "type": "string" },
+        "auth_required":   { "type": "boolean" },
+        "middlewares":     { "type": "array", "items": { "type": "string", "pattern": "^MW-\\d{3,}$" } },
+        "calls_external":  { "type": "array", "items": { "type": "string", "pattern": "^EXT-\\d{3,}$" } },
+        "called_by_pages": { "type": "array", "items": { "type": "string", "pattern": "^P-\\d{3,}$" } },
+        "request_schema":  { "type": "object" },
+        "response_schema": { "type": "object" },
+        "source_file":     { "type": "string" },
+        "linked_artifacts": { "$ref": "#/definitions/linked_artifacts" },
+        "stage_status":     { "type": "array", "items": { "$ref": "#/definitions/stage_status_entry" } }
+      }
+    },
+
+    "middleware": {
+      "type": "object",
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id":          { "type": "string", "pattern": "^MW-\\d{3,}$" },
+        "name":        { "type": "string", "minLength": 1 },
+        "type":        { "type": "string", "enum": ["auth", "rate-limit", "logging", "cors", "validation", "compression", "exception-handler", "other"] },
+        "applies_to":  { "type": "string" },
+        "order":       { "type": "integer" },
+        "source_file": { "type": "string" },
+        "linked_artifacts": { "$ref": "#/definitions/linked_artifacts" }
+      }
+    },
+
+    "external_function": {
+      "type": "object",
+      "required": ["id", "name", "kind"],
+      "properties": {
+        "id":            { "type": "string", "pattern": "^EXT-\\d{3,}$" },
+        "name":          { "type": "string", "minLength": 1 },
+        "kind":          { "type": "string", "enum": ["3rd-party-api", "webhook-out", "webhook-in", "cron", "queue", "cloud-function"] },
+        "provider":      { "type": "string" },
+        "auth_method":   { "type": "string" },
+        "called_by_apis": { "type": "array", "items": { "type": "string", "pattern": "^API-\\d{3,}$" } }
+      }
+    }
+  }
+}
