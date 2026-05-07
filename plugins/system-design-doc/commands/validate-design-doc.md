@@ -468,4 +468,29 @@ Additional validations:
 | `references/troubleshooting.md` | Common problem solutions |
 | `references/mermaid-patterns.md` | Correct Mermaid syntax |
 
+---
+
+## Sitemap Validation (R31-R35)
+
+If `.design-docs/sitemap.json` exists, also run:
+
+```bash
+/sitemap-validate
+```
+
+Append result to combined report:
+
+```
+─────────────────────────────────────
+sitemap.json (R31-R35):
+  R31 (DS membership):       ✓ pass
+  R32 (API mirror):          ✓ pass
+  R33 (source_file):         ⚠ N stale
+  R34 (orphan edge):         ✓ pass
+  R35 (cross-doc artifact):  ✓ pass
+─────────────────────────────────────
+```
+
+If sitemap.json is absent → skip with note `sitemap.json not present (run /sitemap-init to enable R31-R35)`.
+
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)
