@@ -1,0 +1,13 @@
+{
+  "schema_version": "2.2.0",
+  "documents": [
+    {
+      "id": "DOC-001",
+      "project_name": "Dummy Shop",
+      "filename": "system-design-dummy.md",
+      "status": "draft",
+      "created_at": "2026-05-07T12:00:00Z",
+      "updated_at": "2026-05-07T12:00:00Z"
+    }
+  ]
+}

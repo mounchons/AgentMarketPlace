@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0.0",
+  "design_doc_ref": "system-design-dummy.md",
+  "project_name": "Dummy Shop",
+  "generated_at": "2026-05-07T12:00:00Z",
+  "last_synced_at": "2026-05-07T12:00:00Z",
+  "last_modified_by": "claude",
+  "etag": "dummy001",
+  "workflow_stages": [
+    { "id": "design",  "name": "System Design",  "owner_plugin": "system-design-doc", "order": 1 },
+    { "id": "mockup",  "name": "UI Mockup",      "owner_plugin": "ui-mockup",         "order": 2 },
+    { "id": "code",    "name": "Implementation", "owner_plugin": "long-running",      "order": 3 },
+    { "id": "qa",      "name": "QA Testing",     "owner_plugin": "qa-ui-test",        "order": 4 },
+    { "id": "release", "name": "Release Gate",   "owner_plugin": "long-running",      "order": 5 }
+  ],
+  "design_system": {
+    "masters": [
+      { "id": "MP-001", "name": "AdminLayout", "description": "Sidebar + topbar", "source_file": ".mockups/html/master-page.js" }
+    ],
+    "templates": [
+      { "id": "TPL-001", "name": "ListPage", "uses_master": "MP-001" }
+    ],
+    "navs": [],
+    "components": []
+  },
+  "application": {
+    "pages": [
+      {
+        "id": "P-001",
+        "name": "Order List",
+        "url": "/orders",
+        "access_level": "User",
+        "uses_master": "MP-001",
+        "uses_template": "TPL-001",
+        "calls_apis": ["API-001", "API-002"],
+        "source_file": "src/Pages/OrderListPage.tsx",
+        "stage_status": [
+          { "stage": "design", "status": "done", "progress": 1.0 },
+          { "stage": "code",   "status": "in-progress", "progress": 0.5 }
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "API-001",
+        "method": "GET",
+        "path": "/api/orders",
+        "controller": "OrdersController.GetAll",
+        "auth_required": true,
+        "middlewares": ["MW-001"],
+        "called_by_pages": ["P-001"],
+        "source_file": "src/Controllers/OrdersController.cs"
+      },
+      {
+        "id": "API-002",
+        "method": "POST",
+        "path": "/api/orders",
+        "controller": "OrdersController.Create",
+        "auth_required": true,
+        "middlewares": ["MW-001"],
+        "calls_external": ["EXT-001"],
+        "called_by_pages": ["P-001"],
+        "source_file": "src/Controllers/OrdersController.cs"
+      }
+    ],
+    "middlewares": [
+      {
+        "id": "MW-001",
+        "name": "JwtAuth",
+        "type": "auth",
+        "applies_to": "all-api",
+        "order": 1,
+        "source_file": "src/Middlewares/JwtAuthMiddleware.cs"
+      }
+    ],
+    "external_functions": [
+      {
+        "id": "EXT-001",
+        "name": "Stripe Charge",
+        "kind": "3rd-party-api",
+        "provider": "Stripe",
+        "auth_method": "api-key",
+        "called_by_apis": ["API-002"]
+      }
+    ]
+  },
+  "edges": [
+    { "from": "P-001",   "to": "MP-001",  "type": "uses-master" },
+    { "from": "P-001",   "to": "TPL-001", "type": "uses-template" },
+    { "from": "P-001",   "to": "API-001", "type": "calls" },
+    { "from": "P-001",   "to": "API-002", "type": "calls" },
+    { "from": "API-001", "to": "MW-001",  "type": "guarded-by" },
+    { "from": "API-002", "to": "MW-001",  "type": "guarded-by" },
+    { "from": "API-002", "to": "EXT-001", "type": "calls-external" }
+  ],
+  "sync_status": {
+    "ui_mockup":    { "covered": 0, "gap": 1, "last_sync": "2026-05-07T12:00:00Z" },
+    "long_running": { "covered": 0, "gap": 5, "last_sync": "2026-05-07T12:00:00Z" },
+    "qa_tracker":   { "covered_acs": 0, "gap_acs": 0, "last_sync": "2026-05-07T12:00:00Z" }
+  }
+}
