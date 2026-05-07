@@ -606,6 +606,125 @@ flowchart TD
 
 ---
 
+### 9.4 Design System Inventory
+
+> **Source of truth**: `.design-docs/sitemap.json` `design_system` block.
+> **Sync command**: `/sync-sitemap`
+
+#### 9.4.1 Master Pages
+
+| ID | Name | Description | Source File |
+|----|------|-------------|-------------|
+| MP-001 | AdminLayout | Sidebar + topbar + profile chrome | `.mockups/html/master-page.js` |
+
+#### 9.4.2 Page Templates
+
+| ID | Name | Uses Master | Default Components |
+|----|------|-------------|--------------------|
+| TPL-001 | ListPage | MP-001 | CMP-001, CMP-002 |
+
+#### 9.4.3 Nav Templates
+
+| ID | Name | Type | Items |
+|----|------|------|-------|
+| NAV-001 | PrimarySidebar | sidebar | Dashboard, Orders, Reports |
+
+#### 9.4.4 Components
+
+| ID | Name | Category | Source File |
+|----|------|----------|-------------|
+| CMP-001 | DataTable | data-display | `src/Components/DataTable.tsx` |
+
+---
+
+### 9.5 API Inventory (flat unified list)
+
+> Mirror of `application.apis` in `sitemap.json`. Section 3.3 (Module APIs) groups APIs by module for human reading; this section is the flat machine-readable inventory.
+
+| ID | Method | Path | Controller | Auth | Middlewares |
+|----|--------|------|------------|------|-------------|
+| API-001 | GET | /api/orders | OrdersController.GetAll | ✓ | MW-001, MW-002 |
+
+---
+
+### 9.6 Middleware Inventory
+
+| ID | Name | Type | Applies To | Order |
+|----|------|------|------------|-------|
+| MW-001 | JwtAuth | auth | all-api-except-public | 1 |
+| MW-002 | RateLimit | rate-limit | all-api | 2 |
+
+---
+
+### 9.7 External Functions Inventory
+
+| ID | Name | Kind | Provider | Auth Method |
+|----|------|------|----------|-------------|
+| EXT-001 | Stripe Charge | 3rd-party-api | Stripe | api-key |
+
+---
+
+### 9.8 Node Relationships
+
+```mermaid
+flowchart LR
+    P001[P-001 Order List] -->|calls| API001[API-001 GET /api/orders]
+    API001 -->|guarded-by| MW001[MW-001 JwtAuth]
+    API001 -->|guarded-by| MW002[MW-002 RateLimit]
+    P001 -->|uses-master| MP001[MP-001 AdminLayout]
+    P001 -->|uses-template| TPL001[TPL-001 ListPage]
+    P001 -->|uses-component| CMP001[CMP-001 DataTable]
+```
+
+**Edge Table** (auto-extracted by `/sitemap-graph`):
+
+| From | To | Type |
+|------|-----|------|
+| P-001 | API-001 | calls |
+| API-001 | MW-001 | guarded-by |
+| API-001 | MW-002 | guarded-by |
+| P-001 | MP-001 | uses-master |
+| P-001 | TPL-001 | uses-template |
+| P-001 | CMP-001 | uses-component |
+
+---
+
+### 9.9 File Structure Map
+
+```mermaid
+flowchart TD
+    ROOT[project-root/]
+    ROOT --> DD[.design-docs/]
+    ROOT --> MK[.mockups/]
+    ROOT --> SRC[src/]
+
+    DD --> DDL[design_doc_list.json]
+    DD --> SM[sitemap.json]
+    DD --> MD[system-design-app.md]
+
+    MK --> HTML[html/]
+    HTML --> MP[master-page.js]
+    HTML --> P001H[001-order-list.html]
+
+    SRC --> Pages[Pages/ ◄ P-NNN]
+    SRC --> Ctrl[Controllers/ ◄ API-NNN]
+    SRC --> MW[Middlewares/ ◄ MW-NNN]
+    SRC --> Comp[Components/ ◄ CMP-NNN]
+    SRC --> Ext[Services/External/ ◄ EXT-NNN]
+```
+
+**File-to-Node Mapping** (auto-extracted from `source_file` fields):
+
+| Path | Node IDs |
+|------|----------|
+| `.mockups/html/master-page.js` | MP-001 |
+| `src/Pages/OrderListPage.tsx` | P-001 |
+| `src/Controllers/OrdersController.cs` | API-001 |
+| `src/Middlewares/JwtAuthMiddleware.cs` | MW-001 |
+| `src/Components/DataTable.tsx` | CMP-001 |
+
+---
+
 ## 10. User Roles & Permissions
 
 ### 10.1 Roles Definition
