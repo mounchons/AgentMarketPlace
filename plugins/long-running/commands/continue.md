@@ -36,6 +36,11 @@ Before completing your session, verify EVERY item:
   - [ ] qa_trace_coverage.fail_acs == [] (no failing scenarios)?
   - [ ] All nfr_compliance types with blocks_release=true have score >= required?
   - [ ] Bug-fix subtask "Verify BUG-XXX" only done when bug.status == "verified"?
+- [ ] **UI Control Manifest passed?** (v2.8.0 — for UI features)
+  - [ ] Step 5.4 emitted .agent/ui-controls/feature-<id>.json (if UI files touched)?
+  - [ ] Step 5.4.5 cross-validation has no error-level drift?
+  - [ ] Step 5.5.1 every control has binding_test + validation_test (unit_test_status)?
+  - [ ] Gate 4: gap_control_ids == [] AND fail_control_ids == []?
 - [ ] progress.md updated with verification + gate results?
 - [ ] Code builds successfully?
 
@@ -56,6 +61,10 @@ Your output will be REJECTED and you must REDO from scratch if:
 - (v2.6.0) Feature marked `passed` while `qa_trace_coverage.gap_acs` or `fail_acs` non-empty (without --force-coverage)
 - (v2.6.0) Feature marked `passed` while any `nfr_compliance.[*].blocks_release && score < required` (without --force-nfr)
 - (v2.6.0) Bug-fix subtask "Verify BUG-XXX" marked `done=true` while qa-tracker `bugs[BUG-XXX].status != "verified"` (without --force-bug-verify)
+- (v2.8.0) UI feature marked `passed` while `.agent/ui-controls/feature-<id>.json` does not exist (UI files were touched, skipped Step 5.4)
+- (v2.8.0) UI feature marked `passed` while manifest has any error-level drift in `drift_check.drift_findings[]` (not in acknowledged_findings)
+- (v2.8.0) UI feature marked `passed` while ANY control has `unit_test_status.binding_test=false` OR `validation_test=false` (without --skip-control-manifest)
+- (v2.8.0) UI feature marked `passed` while `qa_trace_coverage.control_coverage.gap_control_ids` or `fail_control_ids` non-empty (without --force-control-coverage)
 
 ### ⚠️ Penalty
 
@@ -751,6 +760,123 @@ git commit -m "feat: Feature #1 - create project structure"
 - [ ] Edge cases handled
 - [ ] UI implements all components and data requirements from mockup (visual does not need to match wireframe)
 
+### Step 5.4: UI Control Inventory + Manifest Emit (NEW v2.8.0 — MANDATORY for UI features)
+
+**Trigger condition:** This step runs if **any** subtask file matches UI extension whitelist:
+`.tsx | .jsx | .ts (with JSX) | .vue | .svelte | .razor | .cshtml | .html`
+
+**If no UI files touched** → skip this step (e.g., backend-only feature).
+
+📖 **Schema reference**: `skills/long-running/references/ui-control-manifest.md`
+
+**Process:**
+
+```
+1. Detect form controls in modified files:
+   - HTML form elements: <input>, <select>, <textarea>
+   - Component libs: Combobox, Listbox, RadioGroup, Switch, Checkbox,
+                     Autocomplete, DatePicker (any third-party form control)
+   - Form library wrappers: Controller (react-hook-form), <Field> (formik)
+
+2. For each control extract:
+   - id (precedence: data-testid > id > name > useState var > fallback)
+   - type + subtype (input/text, combobox, radio, etc.)
+   - binding source (state | api | derived | static)
+     → if api: extract endpoint from useQuery/axios/fetch/swr
+     → if cascade: detect querystring interpolation → record depends_on
+   - validation rules (zod/yup/joi/HTML attrs/manual onBlur checks)
+   - permission (role guards, useAuth checks, route-level inheritance)
+
+3. Classify confidence:
+   high   = explicit data-testid + clear binding/validation
+   medium = inferred from var name or implicit binding
+   low    = position-based fallback → flag needs_review: true
+
+4. Emit/update .agent/ui-controls/feature-<id>.json
+   - preserve existing unit_test_status[<control-id>]
+   - preserve acknowledged_findings (drift override)
+```
+
+**If `.agent/ui-controls/feature-<id>.json` does not exist:** create
+**If exists:** merge (preserve unit_test_status + acknowledged drift)
+
+**Equivalent to:** running `/emit-control-spec <feature-id>` automatically
+
+```bash
+# Auto-trigger
+/emit-control-spec $FEATURE_ID
+```
+
+**Output to user:**
+
+```
+🎛️ UI Control Inventory — Feature #N
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Detected: 5 controls (all high confidence)
+  + product-name-input  [input/text]
+  + category-combo      [combobox] api(GET /api/categories)
+  + supplier-select     [select]   api + depends_on: category-combo
+  + active-radio        [radio]
+  + tags-checkbox-group [checkbox-group]
+
+Manifest: .agent/ui-controls/feature-N.json
+```
+
+> ⚠️ ถ้า detect พลาด (false negative/positive) → user แก้ manifest แล้วเดิน Step 5.4.5 ต่อ
+
+---
+
+### Step 5.4.5: Cross-validate Manifest with Mockup (NEW v2.8.0 — Hybrid B)
+
+**Trigger condition:** Manifest มี `mockup_refs[]` non-empty (feature link `.mockups/*.mockup.md`)
+
+**If no mockup_refs** → skip this step.
+
+**Process:**
+
+```
+1. Read each .mockups/*.mockup.md referenced
+2. Parse component spec sections (if structured)
+3. Compare control-by-control:
+   - missing-implementation (mockup → manifest)         [error → BLOCK]
+   - undocumented-control (manifest → mockup)           [warn]
+   - type-mismatch                                       [error → BLOCK]
+   - permission-narrower (code stricter than mockup)    [warn]
+   - permission-wider (code looser than mockup)         [error → BLOCK security risk]
+   - binding-source-mismatch                             [warn]
+4. Update manifest.drift_check.drift_findings[]
+5. Skip findings already in acknowledged_findings[]
+```
+
+**If any error-level drift exists:**
+
+```
+🔴 Drift Errors (must resolve before passes=true):
+
+  [error] product-discount-input: missing-implementation
+      mockup says: input/number bound to product.discount
+      code says: (no control with this id)
+
+  [error] role-select: permission-wider
+      mockup says: visible_to_roles=[admin]
+      code says: visible_to_roles=[admin, manager, user]
+      → security risk: code allows more roles than designed
+
+📋 Resolutions:
+  [a] Implement missing controls in code
+  [b] Update mockup to match (if code is correct)
+  [c] Acknowledge drift in manifest (use sparingly)
+      → Add to drift_check.acknowledged_findings[] with reason
+
+⚠️ Cannot mark passes=true while error-level drift exists
+   (override: --skip-control-manifest, logged + audit)
+```
+
+**If only warn-level drift:** continue to Step 5.5, but list warnings in output.
+
+---
+
 ### Step 5.5: Run Verification Pipeline (NEW v2.3.0 — MANDATORY)
 
 **After acceptance criteria, run the full Verification Pipeline before marking passed.**
@@ -783,6 +909,27 @@ Verification Pipeline Results:
   Tests found: N (type: unit/integration/e2e)
   Minimum required: M
   Met: ✅ / ❌
+
+□ Step 5.1 (NEW v2.8.0) — Control-level Unit Test Coverage
+  (only if .agent/ui-controls/feature-N.json exists)
+  Total controls in manifest: N
+  Controls with binding_test:    X / N
+  Controls with validation_test: Y / N
+  Met: ✅ (X==N AND Y==N) / ❌ BLOCK passes=true
+
+  Required unit tests per control:
+    - binding_test: assert control renders + binds expected field
+                    (data-testid found, value reflects state, onChange updates)
+    - validation_test: assert validation rule triggers correctly
+                       (required → empty submit shows error,
+                        max:100 → 101 chars rejected, etc.)
+
+  After writing tests, update manifest.unit_test_status[<control-id>]:
+    {
+      "binding_test": true,
+      "validation_test": true,
+      "test_file": "<path>"
+    }
 
 □ Step 6 — Tech Stack Audit (per phase)
   Libraries from CLAUDE.md: [list]
@@ -849,6 +996,33 @@ For each subtask labeled "Verify BUG-XXX":
     - status in ["closed","wont_fix"] → mark subtask done=true (closed without verify)
 ```
 
+**Gate 4 — UI Control Coverage (NEW v2.8.0 — applies if .agent/ui-controls/feature-N.json exists)**
+
+```bash
+# Refresh control coverage data (read-only on qa-tracker)
+/qa-coverage-check --feature <FEATURE_ID> --include-controls --report-only
+```
+
+Read `feature.qa_trace_coverage.control_coverage`:
+
+```
+PASS  if  gap_control_ids[] == [] AND fail_control_ids[] == []
+FAIL  if  gap_control_ids[] non-empty   → BLOCK passes=true (release blocker)
+FAIL  if  fail_control_ids[] non-empty  → BLOCK passes=true (release blocker)
+```
+
+**Coverage logic:**
+- Each `control_id` ใน manifest ต้องมี **อย่างน้อย 1 scenario** ใน qa-tracker.json
+  ที่ `scenarios[].control_refs[]` มี control_id นั้น
+- ครอบทุก mandatory category (จาก `test_directives`):
+  - `render-binding` (เสมอ)
+  - `api-binding` (ถ้า binding.source == "api")
+  - `permission` (ถ้า permission != null)
+  - `validation` (ถ้า validation มี required/min/max/pattern/etc.)
+  - `cascade-loading-error` (ถ้า depends_on != null OR test_directives.must_test_loading)
+
+ถ้า control ใดขาด category mandatory → ใส่ใน `gap_control_ids[]`
+
 **Override mechanism (use sparingly)**:
 
 | Flag | Effect | Logged in |
@@ -856,7 +1030,9 @@ For each subtask labeled "Verify BUG-XXX":
 | `--force-coverage` | Bypass Gate 1 (AC coverage) | feature.notes + audit log |
 | `--force-nfr`      | Bypass Gate 2 (NFR compliance) | feature.notes + audit log |
 | `--force-bug-verify` | Bypass Gate 3 (bug verification) | feature.notes |
-| `--force-all`      | Bypass all 3 gates | feature.notes + audit log + alert |
+| `--force-control-coverage` | Bypass Gate 4 (control coverage) | feature.notes + audit log |
+| `--skip-control-manifest` | Skip Step 5.4 + Gate 4 entirely | feature.notes + audit log + alert |
+| `--force-all`      | Bypass all 4 gates | feature.notes + audit log + alert |
 
 **When override is acceptable**:
 - Pre-launch: ACs deferred to next sprint with explicit stakeholder sign-off
@@ -918,7 +1094,16 @@ Edit feature_list.json:
     "gap_acs": [],
     "fail_acs": [],
     "pending_acs": [],
-    "last_checked_at": "TIMESTAMP"
+    "last_checked_at": "TIMESTAMP",
+    "control_coverage": {                 // NEW v2.8.0 - if UI feature
+      "manifest_path": ".agent/ui-controls/feature-X.json",
+      "total_controls": 5,
+      "covered_control_ids": ["product-name-input", "category-combo", "supplier-select", "active-radio", "tags-checkbox-group"],
+      "gap_control_ids": [],
+      "fail_control_ids": [],
+      "missing_categories": {},           // e.g. { "category-combo": ["permission"] } — control_id → missing test categories
+      "last_checked_at": "TIMESTAMP"
+    }
   },
   "nfr_compliance": {                     // NEW v2.6.0 - if qa-tracker has NFR
     "performance":     { "score": 88, "required": 85, "blocks_release": false },

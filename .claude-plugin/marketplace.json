@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.12.0",
+    "version": "1.13.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -63,8 +63,8 @@
     {
       "name": "long-running",
       "source": "./plugins/long-running",
-      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development, qa-ui-test v2.5 release gates (Gate 1 AC coverage, Gate 2 NFR compliance, Gate 3 bug verification) ผ่าน /nfr-check + /qa-coverage-check, /continue Step 5.6 enforce gates ก่อน passes=true พร้อม --force-* overrides, design doc impact check ตอน add/edit feature, /scan-changes upstream traceability enforcer (v2.7.0 — detect orphan code changes/commits, reverse-map files to features via subtasks[].files[]; v2.7.1 — ignore patterns + .agent/scan-ignore + legacy commit cutoff via feature_list.created_at), /help command พร้อม mode-based guide อ้างอิงจาก Anthropic Engineering Blog",
-      "version": "2.7.1",
+      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development, v2.6 release gates (Gate 1 AC coverage, Gate 2 NFR compliance, Gate 3 bug verification) ผ่าน /nfr-check + /qa-coverage-check, **v2.8.0 Gate 4 UI Control Coverage** + /emit-control-spec command + .agent/ui-controls/feature-N.json manifest (Hybrid A+B with mockup cross-validation, drift severity policy, control-level unit-test enforcement at Step 5.5.1, --force-control-coverage / --skip-control-manifest overrides), /continue Step 5.4 auto-emit + 5.4.5 cross-validate + 5.6 enforce 4 gates ก่อน passes=true พร้อม --force-* overrides, design doc impact check ตอน add/edit feature, /scan-changes upstream traceability enforcer (v2.7.0 — detect orphan code changes/commits, reverse-map files to features via subtasks[].files[]; v2.7.1 — ignore patterns + .agent/scan-ignore + legacy commit cutoff via feature_list.created_at), /help command 11 modes พร้อม mode-based guide (รวม --controls + --gates) อ้างอิงจาก Anthropic Engineering Blog",
+      "version": "2.8.0",
       "category": "agent",
       "tags": [
         "long-running",
@@ -79,6 +79,15 @@
         "nfr-compliance",
         "ac-coverage",
         "bug-verification",
+        "control-coverage",
+        "ui-control-manifest",
+        "manifest-driven",
+        "hybrid-validation",
+        "drift-detection",
+        "form-controls",
+        "data-binding",
+        "permission-validation",
+        "emit-control-spec",
         "impact-check",
         "interactive-sync",
         "traceability",
@@ -182,8 +191,8 @@
     {
       "name": "qa-ui-test",
       "source": "./plugins/qa-ui-test",
-      "description": "QA UI Testing + Bug Management + NFR + Traceability — Playwright CLI test automation พร้อม **risk-based priority (P0-P3)** + 8 complexity factors + **3-tier model assignment** (opus/sonnet/haiku) with assigned_model_reason audit trail; bug lifecycle (triage → export → verify) ผูก scenario_risk_snapshot (frozen at fail-time) → factor-aware regression recommendations; **NFR Assessment** 4 categories (performance/security/reliability/maintainability) แต่ละ 0-100 + gate (PASS/CONCERNS/FAIL) — security < 75 = hard floor; **Traceability matrix** (AC ↔ scenarios) + GAP detection (release blocker); **Numeric review score 0-100** (4 dimensions × 25); auto-recompute risk on logic change with diff preview; integration กับ long-running plugin (auto-sync verify loop, factor-aware feature matching); 12-mode /qa-help (รวม --troubleshoot decision tree map symptom→command)",
-      "version": "2.5.0",
+      "description": "QA UI Testing + Bug Management + NFR + Traceability + Manifest-driven — Playwright CLI test automation พร้อม **risk-based priority (P0-P3)** + 8 complexity factors + **3-tier model assignment** (opus/sonnet/haiku) with assigned_model_reason audit trail; bug lifecycle (triage → export → verify) ผูก scenario_risk_snapshot (frozen at fail-time) → factor-aware regression recommendations; **NFR Assessment** 4 categories (performance/security/reliability/maintainability) แต่ละ 0-100 + gate (PASS/CONCERNS/FAIL) — security < 75 = hard floor; **Traceability matrix** (AC ↔ scenarios) + GAP detection (release blocker); **Numeric review score 0-100** (4 dimensions × 25); auto-recompute risk on logic change with diff preview; **v2.6 --from-control-spec flag** ใน qa-create-scenario (Mode C) + qa-edit-scenario (Mode B) อ่าน .agent/ui-controls/feature-N.json จาก long-running v2.8.0+ → gen 5 mandatory categories per control (render-binding/api-binding/permission/validation/cascade-loading-error) + control_refs[]/control_test_category ใน scenario schema สำหรับ Gate 4 control coverage tracking; integration กับ long-running plugin (bidirectional: bug flow + manifest flow + Gate 4 loop); 13-mode /qa-help (รวม --troubleshoot decision tree + --control-spec manifest workflow)",
+      "version": "2.6.0",
       "category": "testing",
       "tags": [
         "qa",
@@ -233,6 +242,13 @@
         "opus-review",
         "root-cause-analysis",
         "troubleshoot-decision-tree",
+        "manifest-driven",
+        "control-spec",
+        "form-controls",
+        "data-binding-tests",
+        "permission-tests",
+        "validation-tests",
+        "cascade-loading-error",
         "thai"
       ],
       "author": {

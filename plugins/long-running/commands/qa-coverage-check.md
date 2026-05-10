@@ -21,6 +21,8 @@ Sync AC traceability coverage from `qa-tracker.json` → `feature_list.json` to 
 /qa-coverage-check --feature 5           # Single feature
 /qa-coverage-check --gaps-only           # Only show features with gap_acs
 /qa-coverage-check --report-only         # Don't write — show report
+/qa-coverage-check --include-controls    # NEW v2.8.0: also check UI control coverage from .agent/ui-controls/*.json
+/qa-coverage-check --controls-only       # NEW v2.8.0: only run control coverage (skip AC coverage)
 ```
 
 ---
@@ -112,6 +114,68 @@ For each ac_id in qa-tracker.traceability.ac_inventory:
     - And ac.gate != "GAP" (covered by scenarios but not by feature):
       → warn: "AC-NNN has scenarios but no feature implements it"
 ```
+
+### Step 5.5: Build per-feature CONTROL coverage (NEW v2.8.0)
+
+**Trigger condition:** flag `--include-controls` OR `--controls-only` OR auto-detect manifest exists
+
+```bash
+# Detect manifests
+ls .agent/ui-controls/feature-*.json 2>/dev/null
+```
+
+For each feature with `.agent/ui-controls/feature-<id>.json` (or `qa_trace_coverage.control_coverage.manifest_path` set):
+
+```
+Initialize per feature:
+  covered_control_ids = []
+  gap_control_ids     = []
+  fail_control_ids    = []
+  missing_categories  = {}   # control_id → list of missing test categories
+
+Read manifest → get all control_ids + each control's mandatory categories:
+  - render-binding (always)
+  - api-binding (if binding.source == "api")
+  - permission (if permission != null)
+  - validation (if validation has any rule)
+  - cascade-loading-error (if depends_on != null OR test_directives.must_test_loading)
+
+For each control_id:
+  Look up qa-tracker.scenarios[] where scenarios[].control_refs[] includes control_id:
+
+  Compute covered_categories:
+    set of scenarios[].control_test_category for matched scenarios
+    where scenarios[].last_run_status in ("pass", "passed")
+
+  required_categories = mandatory categories for this control (from manifest)
+  missing            = required_categories - covered_categories
+
+  IF len(matched_scenarios) == 0:
+    → gap_control_ids.push(control_id)
+    → missing_categories[control_id] = required_categories
+  ELIF any matched scenario has last_run_status in ("fail", "failed"):
+    → fail_control_ids.push(control_id)
+  ELIF missing != []:
+    → gap_control_ids.push(control_id)
+    → missing_categories[control_id] = missing
+  ELSE:
+    → covered_control_ids.push(control_id)
+
+Update feature.qa_trace_coverage.control_coverage:
+  {
+    "manifest_path": ".agent/ui-controls/feature-<id>.json",
+    "total_controls": N,
+    "covered_control_ids": [...],
+    "gap_control_ids":     [...],
+    "fail_control_ids":    [...],
+    "missing_categories":  { "<control-id>": ["permission", "validation"] },
+    "last_checked_at":     "ISO8601"
+  }
+```
+
+**Orphan detection (control side):**
+- Manifest references control_id but no scenarios link → gap (already handled above)
+- qa-tracker scenarios reference control_id not in any manifest → warn `orphan-scenario-control`
 
 ### Step 6: Update integration timestamps
 
@@ -216,10 +280,15 @@ For each ac_id in qa-tracker.traceability.ac_inventory:
 `/continue` reads `feature.qa_trace_coverage` and refuses to mark `passes=true` when:
 
 ```
-gap_acs[] is non-empty   OR   fail_acs[] is non-empty
+gap_acs[]              is non-empty   (Gate 1)
+OR fail_acs[]          is non-empty   (Gate 1)
+OR gap_control_ids[]   is non-empty   (Gate 4 — v2.8.0)
+OR fail_control_ids[]  is non-empty   (Gate 4 — v2.8.0)
 ```
 
-To override: `/continue --force-coverage` (logged in `feature.notes`).
+To override:
+- `/continue --force-coverage` → bypass Gate 1 (logged in `feature.notes`)
+- `/continue --force-control-coverage` → bypass Gate 4 (logged + audit)
 
 `pending_acs[]` (CONCERNS gate) does NOT block but emits warning.
 
@@ -242,6 +311,8 @@ To override: `/continue --force-coverage` (logged in `feature.notes`).
 | `--gaps-only` | Only show features with gap_acs or fail_acs |
 | `--report-only` | Don't write feature_list.json — show report only |
 | `--strict-orphans` | Fail (exit non-zero) if any feature has empty acceptance_criteria_id[] |
+| `--include-controls` | (v2.8.0) Also check UI control coverage from .agent/ui-controls/*.json |
+| `--controls-only` | (v2.8.0) Skip AC coverage; only run control coverage |
 
 ---
 

@@ -68,6 +68,14 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-create-scenario --module [MODULE] --url [URL]
 /qa-create-scenario --master-data --url [URL]
 /qa-create-scenario --from-design-doc
+
+# 🆕 v2.6.0 — Generate from UI Control Manifest (long-running plugin)
+/qa-create-scenario --from-control-spec <feature-id>          # gen 5 categories per control
+/qa-create-scenario --from-control-spec <feature-id> --dry-run  # preview, no write
+/qa-create-scenario --from-control-spec <feature-id> --controls <id1,id2>
+/qa-create-scenario --from-control-spec <feature-id> --categories render-binding,validation
+/qa-create-scenario --from-control-spec <feature-id> --skip-low-confidence
+/qa-create-scenario --from-control-spec --all-features          # ทุก feature ที่มี manifest
 $ARGUMENTS
 ```
 
@@ -1665,6 +1673,285 @@ ELSE                                                    → sonnet (mid-complexi
 git add test-scenarios/ test-data/ tests/ qa-tracker.json .agent/qa-progress.md
 git commit -m "scenario(TS-{MODULE}): create N scenarios for {MODULE} module"
 ```
+
+---
+
+## 🆕 Mode C: From Control Spec (--from-control-spec) — v2.6.0
+
+**ใช้เมื่อ long-running plugin ส่ง UI Control Manifest มาให้** (จาก `/continue` Step 5.4 หรือ `/emit-control-spec`)
+
+📖 **Reference**: `references/control-spec-scenarios.md` — derivation rules ครบถ้วน
+
+**Why use this mode?**
+- Manifest ระบุ **dev intent** ที่ชัดเจน (binding source, permission, validation, cascade) — qa ไม่ต้องเดา
+- Generation ครอบ 5 mandatory categories: render-binding, api-binding, permission, validation, cascade-loading-error
+- ทุก scenario มี `control_refs[]` + `control_test_category` → /qa-coverage-check ตรวจ Gate 4 ได้ตรง
+
+---
+
+### Mode C Step 0: Read Manifest(s)
+
+```bash
+# Single feature
+FEATURE_ID="$1"
+MANIFEST=".agent/ui-controls/feature-$FEATURE_ID.json"
+
+test -f "$MANIFEST" || {
+  echo "❌ ไม่พบ manifest — รัน /long-running:emit-control-spec $FEATURE_ID ก่อน"
+  exit 1
+}
+
+cat "$MANIFEST"
+
+# All features
+ls .agent/ui-controls/feature-*.json
+```
+
+---
+
+### Mode C Step 1: Validate Manifest
+
+```
+Required fields:
+  - schema_version >= 1.0.0
+  - feature_id
+  - pages[].controls[].id
+  - pages[].controls[].type
+  - pages[].controls[].binding (with source)
+
+Warning if:
+  - any control has confidence: low (will skip unless --include-low-confidence)
+  - any control has needs_review: true
+  - drift_check.drift_findings has error-level entries
+  - manifest.last_updated_at > 7 days ago (suggest re-emit)
+```
+
+ถ้า drift error → block:
+```
+❌ Manifest มี error drift ที่ยังไม่ resolve
+   → fix code/mockup/acknowledge ก่อน gen scenarios
+   → /long-running:emit-control-spec <feature-id> เพื่อ re-validate
+```
+
+---
+
+### Mode C Step 2: Compute Required Categories per Control
+
+```python
+for control in manifest.pages[].controls[]:
+    cats = ["render-binding"]
+    if control.binding.source == "api":
+        cats.append("api-binding")
+    if control.permission is not None:
+        cats.append("permission")
+    if has_any_validation_rule(control.validation):
+        cats.append("validation")
+    if control.depends_on or page.test_directives.must_test_loading:
+        cats.append("cascade-loading-error")
+
+    control._required_categories = cats
+```
+
+แสดงสรุปก่อน:
+
+```
+🎛️ Manifest Analysis — Feature #7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Page: product-edit (5 controls)
+
+| Control               | Type     | Categories Required                              |
+|-----------------------|----------|--------------------------------------------------|
+| product-name-input    | input    | render-binding, validation                       |
+| category-combo        | combobox | render-binding, api-binding, permission, val.    |
+| supplier-select       | select   | render-binding, api-binding, cascade-loading-err |
+| active-radio          | radio    | render-binding, validation                       |
+| tags-checkbox-group   | check-grp| render-binding, api-binding, validation          |
+
+Estimated scenarios: ~22-28 (avg 4-5 per control)
+  - render-binding:        5
+  - api-binding:           3 × ~3 = ~9
+  - permission:            1 × 4 roles = 4
+  - validation:            ~6 (across required/min/max/etc.)
+  - cascade-loading-error: ~4 (cascade + loading + 2 errors)
+
+❓ Generate scenarios? (--dry-run to preview)
+```
+
+---
+
+### Mode C Step 3: Generate Scenarios per Category
+
+📖 **Apply patterns from** `references/control-spec-scenarios.md`:
+- Section 2 (render-binding)
+- Section 3 (api-binding)
+- Section 4 (permission)
+- Section 5 (validation)
+- Section 6 (cascade-loading-error)
+
+**Scenario ID convention** (Section 8):
+```
+TS-<MODULE>-<PAGE>-<CATEGORY-SHORT>-<INDEX>
+TS-<MODULE>-<PAGE>-<CATEGORY-SHORT>-<role-or-rule>-<INDEX>
+```
+
+**Example output (per scenario in qa-tracker.json):**
+
+```json
+{
+  "id": "TS-PRODUCT-EDIT-PERM-admin-001",
+  "title": "Category combo — visible + tenant-scoped for admin",
+  "feature_id": 7,
+  "module": "PRODUCT",
+  "page_url": "/admin/products/edit/:id",
+  "control_refs": ["category-combo"],
+  "control_test_category": "permission",
+  "manifest_path": ".agent/ui-controls/feature-7.json",
+  "manifest_emitted_at": "2026-05-10T...",
+  "test_steps": [
+    "Login as admin",
+    "Navigate to /admin/products/edit/123",
+    "Verify category combo visible",
+    "Open dropdown",
+    "Capture network: GET /api/categories should include tenantId=<admin.tenantId>"
+  ],
+  "expected_result": "Combo visible, options scoped to admin's tenant",
+  "priority": "P0",
+  "complexity_factors": ["permission-check", "data-scope"],
+  "risk_score": 8,
+  "assigned_model": "opus",
+  "status": "pending",
+  "created_in_pass": "control-spec-N",
+  "created_by_model": "<current>",
+  "created_at": "ISO8601"
+}
+```
+
+---
+
+### Mode C Step 4: Risk + Model Assignment
+
+ใช้ logic เดียวกับ Mode A — แต่ category ส่งผลต่อ priority/complexity:
+
+| Category | Default priority | Common factors |
+|---|---|---|
+| render-binding | P2 | basic-render |
+| api-binding | P1 | api-mock, async |
+| permission | **P0** | role-based, security-critical, multi-role |
+| validation | P1 | edge-case, boundary |
+| cascade-loading-error | P1 | dependency, async, error-path |
+
+**Permission scenarios → opus** (security-critical default)
+**Cascade scenarios → opus** (cross-control reasoning)
+**Validation/api-binding → sonnet** (mid-complexity)
+**Render-binding → haiku** (pattern-based)
+
+---
+
+### Mode C Step 5: Compute Diff (if scenarios เก่ามีอยู่)
+
+ถ้า qa-tracker.json มี scenarios ที่ `control_refs[]` มี control_id ของ manifest นี้แล้ว:
+
+```
+🔍 Diff Analysis
+
+Existing scenarios for these controls: 8
+  TS-PRODUCT-EDIT-001 → product-name-input (render-binding) ✓ keep
+  TS-PRODUCT-EDIT-002 → category-combo (api-binding) ✓ keep
+  TS-PRODUCT-EDIT-003 → category-combo (permission, role: admin) ✓ keep
+  ...
+
+New scenarios to add: 14
+  + TS-PRODUCT-EDIT-PERM-manager-001
+  + TS-PRODUCT-EDIT-PERM-user-001 (fallback: hide)
+  + TS-PRODUCT-EDIT-PERM-guest-001 (fallback: redirect)
+  + TS-PRODUCT-EDIT-VAL-required-001
+  + TS-PRODUCT-EDIT-CASCADE-001
+  + ... (9 more)
+
+Apply? [y/N]
+```
+
+**`--dry-run`** → แสดงสรุปเท่านั้น ไม่เขียน
+
+---
+
+### Mode C Step 6: Write to qa-tracker.json
+
+```json
+{
+  "scenarios": [
+    ...existing...,
+    ...new from manifest...
+  ],
+  "passes_history": [
+    ...,
+    {
+      "pass": "control-spec-1",
+      "model": "<current>",
+      "source": "control-spec",
+      "feature_id": 7,
+      "manifest_emitted_at": "2026-05-10T...",
+      "scenarios_added": 14,
+      "controls_covered": 5,
+      "categories_covered": ["render-binding", "api-binding", "permission", "validation", "cascade-loading-error"]
+    }
+  ]
+}
+```
+
+---
+
+### Mode C Step 7: Hint follow-up
+
+```
+✅ สร้าง 14 scenarios จาก manifest feature-7.json
+
+📋 Next steps:
+  1. /qa-continue --feature 7
+     → generate Playwright scripts จาก scenarios พร้อมรัน
+  2. /long-running:qa-coverage-check --feature 7 --include-controls
+     → verify Gate 4 control coverage (ควร gap_control_ids == [])
+  3. /qa-trace --feature 7
+     → update traceability matrix
+```
+
+---
+
+### Mode C — Multi-feature (`--all-features`)
+
+```bash
+for MANIFEST in .agent/ui-controls/feature-*.json; do
+  FID=$(jq -r .feature_id "$MANIFEST")
+  echo "Processing feature $FID..."
+  # Run Mode C Step 0-6 for each
+done
+```
+
+แสดงสรุปรวม:
+
+```
+🎛️ Multi-feature Generation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Feature #7  (Product edit):   14 new scenarios
+Feature #12 (User profile):    8 new scenarios
+Feature #15 (Admin settings): 22 new scenarios
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total: 44 new scenarios across 3 features
+```
+
+---
+
+### Mode C — Filter flags
+
+| Flag | Effect |
+|---|---|
+| `--controls <id1,id2>` | Generate เฉพาะ control_id ที่ระบุ |
+| `--categories <c1,c2>` | Generate เฉพาะ category ที่ระบุ |
+| `--skip-low-confidence` | ข้าม controls ที่ confidence: low |
+| `--include-low-confidence` | รวม low confidence (default: skip) |
+| `--dry-run` | preview ไม่เขียน |
+| `--all-features` | iterate ทุก manifest ใน .agent/ui-controls/ |
 
 ---
 

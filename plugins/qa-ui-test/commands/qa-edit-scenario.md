@@ -47,6 +47,11 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-edit-scenario TS-LOGIN-001 "เพิ่ม OTP verification หลัง login"
 /qa-edit-scenario --module LOGIN "เปลี่ยน validation rules ของ email"
 /qa-edit-scenario --impact "เพิ่ม field ใหม่ในฟอร์ม product"
+
+# 🆕 v2.6.0 — Manifest-driven edit (จาก long-running)
+/qa-edit-scenario --from-control-spec <feature-id>
+/qa-edit-scenario --from-control-spec <feature-id> --dry-run
+/qa-edit-scenario --from-control-spec --all-features
 $ARGUMENTS
 ```
 
@@ -468,6 +473,219 @@ export class LoginPage {
 ```bash
 git add test-scenarios/ test-data/ tests/ qa-tracker.json .agent/qa-progress.md
 git commit -m "qa-edit(TS-LOGIN): update scenarios for OTP verification logic change"
+```
+
+---
+
+## 🆕 Mode B: Manifest-driven edit (--from-control-spec) — v2.6.0
+
+**ใช้เมื่อ UI Control Manifest เปลี่ยน** (control add/remove/permission/binding/validation change)
+
+📖 **Reference**: `references/control-spec-scenarios.md` Section 10 (Drift handling)
+
+### Mode B Step 0: Detect manifest diff
+
+```bash
+FEATURE_ID="$1"
+MANIFEST=".agent/ui-controls/feature-$FEATURE_ID.json"
+
+test -f "$MANIFEST" || { echo "❌ ไม่พบ manifest"; exit 1; }
+```
+
+อ่าน manifest ปัจจุบัน + scenarios ใน qa-tracker ที่ link feature_id นี้:
+
+```bash
+cat "$MANIFEST" | jq '.pages[].controls[]' > /tmp/manifest-controls.json
+cat qa-tracker.json | jq ".scenarios[] | select(.feature_id == $FEATURE_ID and .control_refs != null)" > /tmp/linked-scenarios.json
+```
+
+---
+
+### Mode B Step 1: Build delta map
+
+เปรียบ controls ใน manifest กับ control_refs ใน scenarios:
+
+```
+For each control_id in manifest:
+  IF no scenario has this control_id in control_refs:
+    → DELTA: control-added (need new scenarios)
+
+For each control_id referenced by scenarios:
+  IF not in manifest:
+    → DELTA: control-removed (deprecate scenarios)
+
+For each control_id in BOTH:
+  Check field-level changes:
+    - type changed       → DELTA: type-change (rewrite render-binding)
+    - binding.source     → DELTA: binding-source-change (rewrite api-binding/render)
+    - binding.endpoint   → DELTA: endpoint-change (update mocks in scripts)
+    - permission.roles[] → DELTA: permission-change (add/remove role variants)
+    - validation rules   → DELTA: validation-change (add/remove validation scenarios)
+    - depends_on         → DELTA: cascade-change
+```
+
+---
+
+### Mode B Step 2: Map delta → scenario action
+
+| Delta type | Action |
+|---|---|
+| `control-added` | Generate new scenarios (call Mode C of `/qa-create-scenario` internally per control) |
+| `control-removed` | Mark all linked scenarios `status: "deprecated"`, `deprecated_reason: "control removed"` |
+| `type-change` | Mark old `render-binding` scenarios `deprecated`, generate new |
+| `binding-source-change` | Same as type-change |
+| `endpoint-change` | Update existing scenarios — change mocked endpoint URL, keep ID |
+| `permission-change` (role added) | Generate new permission scenario for that role |
+| `permission-change` (role removed) | Mark scenarios for removed role `deprecated` |
+| `validation-change` (rule added) | Generate new validation scenario |
+| `validation-change` (rule removed) | Mark scenario for that rule `deprecated` |
+| `cascade-change` (depends_on added) | Generate cascade scenario |
+| `cascade-change` (depends_on removed) | Mark cascade scenario `deprecated` |
+
+---
+
+### Mode B Step 3: Show delta summary (interactive)
+
+```
+🔍 Manifest Delta — Feature #7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Control changes since last edit:
+
+🆕 Added (1):
+   + discount-amount-input  [input/number]
+     → will generate: render-binding, validation (3-5 scenarios)
+
+🗑️ Removed (1):
+   - legacy-status-toggle
+     → 4 scenarios will be deprecated:
+        TS-PRODUCT-EDIT-RENDER-005 (deprecated)
+        TS-PRODUCT-EDIT-VAL-required-002 (deprecated)
+        ...
+
+🔄 Modified (2):
+   ~ category-combo
+     - permission.visible_to_roles: [admin] → [admin, manager]
+     - DELTA: permission-change (role added: manager)
+     → will generate: TS-PRODUCT-EDIT-PERM-manager-001
+     → will keep: TS-PRODUCT-EDIT-PERM-admin-001
+
+   ~ supplier-select
+     - binding.options_endpoint: /api/suppliers → /api/v2/suppliers
+     - DELTA: endpoint-change
+     → will update mock URL in: TS-PRODUCT-EDIT-API-002, TS-PRODUCT-EDIT-LOAD-001
+     → scenario IDs preserved
+
+Summary:
+  + Generate: 5 new scenarios
+  ~ Update:   2 scenarios (mock URL)
+  - Deprecate: 4 scenarios
+
+Apply? [y/N]
+```
+
+---
+
+### Mode B Step 4: Apply changes (preserve history)
+
+ห้ามลบ scenarios เก่า — mark deprecated:
+
+```json
+{
+  "id": "TS-PRODUCT-EDIT-RENDER-005",
+  "status": "deprecated",
+  "deprecated_at": "ISO8601",
+  "deprecated_reason": "control 'legacy-status-toggle' removed from manifest feature-7.json",
+  "superseded_by": null
+}
+```
+
+ใหม่ที่ replace:
+
+```json
+{
+  "id": "TS-PRODUCT-EDIT-RENDER-006",
+  "supersedes": "TS-PRODUCT-EDIT-RENDER-005",
+  "...": "..."
+}
+```
+
+---
+
+### Mode B Step 5: Recompute risk + model
+
+ทุก scenario ที่ generate/update ใหม่ → run **Step 1.5 logic เดิม** (Recompute Risk + Complexity Factors)
+
+ระบุ trigger เป็น "manifest delta" ใน rationale:
+
+```json
+{
+  "risk": {
+    "score": 8,
+    "priority": "P0",
+    "rationale": "Permission-narrower mitigation: role 'manager' added — multi-role security check"
+  }
+}
+```
+
+---
+
+### Mode B Step 6: Update qa-tracker
+
+```json
+{
+  "scenarios": [...],
+  "passes_history": [
+    ...,
+    {
+      "pass": "control-spec-edit-N",
+      "model": "<current>",
+      "source": "manifest-delta",
+      "feature_id": 7,
+      "deltas": {
+        "added": ["discount-amount-input"],
+        "removed": ["legacy-status-toggle"],
+        "modified": ["category-combo", "supplier-select"]
+      },
+      "scenarios_added": 5,
+      "scenarios_updated": 2,
+      "scenarios_deprecated": 4
+    }
+  ]
+}
+```
+
+---
+
+### Mode B Step 7: Commit
+
+```bash
+git add test-scenarios/ test-data/ tests/ qa-tracker.json .agent/qa-progress.md
+git commit -m "qa-edit(feature-7): manifest delta — 5 added, 2 updated, 4 deprecated"
+```
+
+---
+
+### Mode B — Output
+
+```
+🎛️ Manifest-driven edit complete — Feature #7
+
+Deltas applied:
+  + 5 new scenarios (discount-amount-input + manager role)
+  ~ 2 endpoint URLs updated (supplier-select)
+  - 4 scenarios deprecated (legacy-status-toggle removed)
+
+Files changed:
+  qa-tracker.json (5 new, 2 mod, 4 deprecated entries)
+  test-scenarios/ (5 new, 4 marked deprecated header)
+  tests/ (5 new spec, 2 modified)
+
+Next:
+  /qa-coverage-check --feature 7 --include-controls
+    → verify control_coverage.gap_control_ids == []
+  /qa-run --feature 7
+    → run new + updated tests
 ```
 
 ---

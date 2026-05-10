@@ -1,7 +1,7 @@
 {
   "name": "qa-ui-test",
-  "version": "2.5.0",
-  "description": "QA UI Testing + Bug Management + NFR + Traceability — Playwright CLI test automation พร้อม risk-based priority (P0-P3) + 8 complexity factors + 3-tier model assignment (opus/sonnet/haiku), bug lifecycle (triage → export → verify) ผูก scenario_risk_snapshot, NFR Assessment 4 categories (perf/security/reliability/maintainability) แต่ละ 0-100 + gate, traceability matrix (AC ↔ scenarios) + GAP detection, numeric review score 0-100 (4 dimensions), auto-recompute risk on logic change, integration กับ long-running plugin (auto-sync verify loop), 12-mode help system (รวม --troubleshoot decision tree)",
+  "version": "2.6.0",
+  "description": "QA UI Testing + Bug Management + NFR + Traceability — Playwright CLI test automation พร้อม risk-based priority (P0-P3) + 8 complexity factors + 3-tier model assignment (opus/sonnet/haiku), bug lifecycle (triage → export → verify) ผูก scenario_risk_snapshot, NFR Assessment 4 categories (perf/security/reliability/maintainability) แต่ละ 0-100 + gate, traceability matrix (AC ↔ scenarios) + GAP detection, numeric review score 0-100 (4 dimensions), auto-recompute risk on logic change, integration กับ long-running plugin (auto-sync verify loop), v2.6 --from-control-spec flag in qa-create-scenario + qa-edit-scenario for UI Control Manifest-driven generation (5 mandatory categories: render-binding, api-binding, permission, validation, cascade-loading-error) + control_refs[]/control_test_category in scenario schema for Gate 4 control coverage tracking, 12-mode help system (รวม --troubleshoot decision tree)",
   "author": {
     "name": "Mounchons"
   }
