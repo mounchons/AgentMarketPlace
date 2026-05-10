@@ -63,8 +63,8 @@
     {
       "name": "long-running",
       "source": "./plugins/long-running",
-      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development, qa-ui-test v2.5 release gates (Gate 1 AC coverage, Gate 2 NFR compliance, Gate 3 bug verification) ผ่าน /nfr-check + /qa-coverage-check, /continue Step 5.6 enforce gates ก่อน passes=true พร้อม --force-* overrides, design doc impact check ตอน add/edit feature, /help command พร้อม mode-based guide อ้างอิงจาก Anthropic Engineering Blog",
-      "version": "2.6.0",
+      "description": "Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ รองรับการทำงานต่อเนื่องหลาย sessions พร้อม feature tracking, progress logging, incremental development, qa-ui-test v2.5 release gates (Gate 1 AC coverage, Gate 2 NFR compliance, Gate 3 bug verification) ผ่าน /nfr-check + /qa-coverage-check, /continue Step 5.6 enforce gates ก่อน passes=true พร้อม --force-* overrides, design doc impact check ตอน add/edit feature, /scan-changes upstream traceability enforcer (v2.7.0 — detect orphan code changes/commits, reverse-map files to features via subtasks[].files[]; v2.7.1 — ignore patterns + .agent/scan-ignore + legacy commit cutoff via feature_list.created_at), /help command พร้อม mode-based guide อ้างอิงจาก Anthropic Engineering Blog",
+      "version": "2.7.1",
       "category": "agent",
       "tags": [
         "long-running",
@@ -81,6 +81,9 @@
         "bug-verification",
         "impact-check",
         "interactive-sync",
+        "traceability",
+        "scan-changes",
+        "orphan-detection",
         "help-guide",
         "thai"
       ],

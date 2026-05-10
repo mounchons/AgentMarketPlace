@@ -45,13 +45,14 @@ allowed-tools: Read(*), Bash(*)
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 Long-Running — คู่มือการใช้งาน v2.6.0
+📖 Long-Running — คู่มือการใช้งาน v2.7.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Harness สำหรับ AI Agent ทำงานข้าม context windows
 Multi-session continuity, feature tracking, design doc integration,
 verification pipeline, model assignment
 ⭐ v2.6.0: qa-ui-test release gates (Gate 1 AC + Gate 2 NFR + Gate 3 Bug verify)
+⭐ v2.7.0: /scan-changes — upstream traceability enforcer (orphan detection)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -86,7 +87,7 @@ verification pipeline, model assignment
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📋 FEATURE MANAGEMENT (2 commands) ⭐ v2.4.0 design doc check
+📋 FEATURE MANAGEMENT (3 commands) ⭐ v2.7.0 +scan-changes
 
   /add-feature                 เพิ่ม feature ใหม่ + design doc impact check
                                ตัวอย่าง: /add-feature เพิ่ม login page
@@ -95,6 +96,12 @@ verification pipeline, model assignment
   /edit-feature                แก้ feature ที่ผ่านแล้ว (สร้าง feature ใหม่อ้างอิง)
                                ตัวอย่าง: /edit-feature 5 - add OAuth
                                ตัวอย่าง: /edit-feature 7 - add pagination
+
+  /scan-changes ⭐ NEW          สแกน orphan code changes/commits → suggest action
+                               ตัวอย่าง: /scan-changes
+                               ตัวอย่าง: /scan-changes --uncommitted-only
+                               ตัวอย่าง: /scan-changes --since=HEAD~10
+                               ตัวอย่าง: /scan-changes --feature 5
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -145,10 +152,11 @@ verification pipeline, model assignment
 
   เพิ่งเริ่มใหม่?         → /help --quick      (Quick Start 3 ขั้นตอน)
   อยากเชื่อม design doc? → /help --integration
-  ⭐ qa-ui-test gates?    → /help --qa         (v2.6.0 — ใหม่)
+  ⭐ qa-ui-test gates?    → /help --qa         (v2.6.0)
   ⭐ /continue gate detail?→ /help --gates     (Step 5.6 deep-dive)
+  ⭐ traceability gap?    → /help scan-changes (v2.7.0 — ใหม่)
   ดูคำสั่งเฉพาะ?           → /help [command]   เช่น /help add-feature
-  อยากรู้ว่ามีอะไรใหม่?    → /help --new       (v2.6.0 changes)
+  อยากรู้ว่ามีอะไรใหม่?    → /help --new       (v2.7.0 changes)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -170,6 +178,12 @@ verification pipeline, model assignment
 🔧 When design changes:
    /edit-section [section]            # (system-design-doc) แก้ design
    /sync-with-features                # sync กลับ feature_list.json
+
+🔎 When code changes outside workflow (v2.7.0):
+   /scan-changes                      # ⭐ ตรวจ orphan changes/commits
+   /scan-changes --uncommitted-only   # ก่อน /continue ใหม่
+   /scan-changes --since=HEAD~10      # หลัง git pull / hot-fix
+   → suggests /add-feature, /edit-feature, /edit-section ตามผล
 
 🎯 Before release:
    /validate-coverage                 # ครอบคลุมหมดไหม?
@@ -517,16 +531,22 @@ $ /status                         # 100% pass?
 /edit-feature [id] - [change]    แก้ feature ที่ passed
                                   ⭐ v2.4.0: inherit design_doc_refs
 
+/scan-changes [flags]            ⭐ v2.7.0: สแกน orphan changes
+                                  → suggest /add-feature, /edit-feature
+                                  Flags: --uncommitted-only, --since=,
+                                         --feature, --report-only
+
 /continue [id?]                   หยิบ feature → implement
 /review [id?]                     opus review งานที่ผ่าน
 /status                           ดู progress + workload
 
 /dependencies                     graph + critical path
-/validate-coverage                ครอบคลุม mockup/design ไหม?
+/validate-coverage                ครอบคลุม mockup/design ไหม? (top-down)
 
 🔜 ดูตัวอย่าง:
    /help add-feature
    /help edit-feature
+   /help scan-changes
 ```
 
 ---
@@ -818,10 +838,45 @@ $ /status                         # 100% pass?
 
 ---
 
-### Mode 8: `--new` → What's new in v2.6.0
+### Mode 8: `--new` → What's new in v2.7.0
 
 ```
-✨ What's new in v2.6.0 (2026-05-05)
+✨ What's new in v2.7.0 (2026-05-10)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⭐ /scan-changes — Upstream traceability enforcer
+
+Long-running v2.6.0 มี enforcement ทาง downstream แล้ว (Verification Pipeline + 3 Release Gates)
+แต่ขาด upstream check — ถ้า user แก้ code นอก /continue (manual edit, hot-fix, UI tweak)
+feature_list.json จะ out-of-sync กับ codebase
+
+/scan-changes ปิด gap นี้:
+  • สแกน git status (uncommitted) + git log (orphan commits ไม่มี marker prefix)
+  • Reverse-map ไฟล์ที่เปลี่ยน → feature เดิม (ผ่าน subtasks[].files[])
+  • ตรวจ feature.design_doc_refs.pending_updates[]
+  • Classify ทุก change → suggest action (/add-feature, /edit-feature, /edit-section)
+  • คำนวณ traceability score (% ของ changes ที่ tracked)
+
+🔎 Use cases:
+  ก่อน start session ใหม่             — ตรวจว่า last session ทิ้ง orphan ไหม
+  หลัง git pull จาก teammate          — ดูว่ามี changes ที่ยังไม่ map
+  ก่อน /review                         — verify traceability ก่อน review
+  ก่อน release / merge to main         — ตรวจ release blocker
+  Hot-fix retroactive map              — link production fix กับ feature
+
+🔄 Complement กับ /validate-coverage:
+  /validate-coverage = top-down  (mockup/design ถูก feature ครอบคลุมไหม?)
+  /scan-changes      = bottom-up (code change ผูกกับ feature ไหม?)
+
+📌 ตอบคำถาม "แก้ UI ใช้ command อะไร?":
+  1. แก้ code ตรงๆ (เร็ว)
+  2. รัน /scan-changes
+  3. มันจะ map ให้ + suggest /edit-feature หรือ /add-feature
+  4. รันตาม suggestion → traceability ครบ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📜 Previous: v2.6.0 (2026-05-05)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⭐ qa-ui-test v2.5 Release Gates
@@ -899,6 +954,7 @@ Schema additions:
    /help --qa                   → qa-ui-test integration deep-dive
    /help --gates                → Step 5.6 enforcement details
    /help --integration          → cross-plugin overview
+   /help scan-changes           → ⭐ v2.7.0 detail
 ```
 
 ---
@@ -998,6 +1054,15 @@ Schema additions:
 - Special: ⭐ ตรวจ impact + inherit linkage + ถาม user
 - Time: 3-5 min
 - Next: /continue (ทำ feature ใหม่), /sync-with-features
+
+**scan-changes:** ⭐ v2.7.0
+- Prerequisites: feature_list.json + git repo
+- Output: รายงาน 4 หมวด (Tracked/Mapped/Orphan/Pending design) + suggested commands
+- Special: ⭐ Bottom-up traceability scan — ตรวจว่า code change ทุกอันผูกกับ feature ไหม
+- Flags: --uncommitted-only / --since=<ref> / --feature <id> / --report-only / --auto-suggest
+- Time: 1-3 min
+- Next: รัน suggested /add-feature, /edit-feature, /edit-section ตามผล
+- Use cases: ก่อน start session, หลัง git pull, ก่อน /review, ก่อน release, hot-fix retroactive map
 
 **generate-features-from-design:**
 - Prerequisites: design_doc_list.json (จาก /system-design-doc)

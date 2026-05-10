@@ -1,0 +1,306 @@
+{
+  "schema_version": "2.4.0",
+  "project": "AgentMarketPlace",
+  "description": "Plugin marketplace สำหรับ Claude Code — รวม 14 plugins (long-running, brain, bigbrain, qa-ui-test, ui-mockup, system-design-doc ฯลฯ)",
+  "technology": {
+    "framework": "Claude Code Plugin",
+    "language": "Markdown + JSON + Shell",
+    "database": null,
+    "other": ["bash", "powershell", "node"]
+  },
+  "created_at": "2026-05-10T00:00:00Z",
+
+  "integration": {
+    "design_doc_path": null,
+    "mockup_list_path": null,
+    "qa_tracker_path": null,
+    "last_synced_with_design_doc": null,
+    "last_synced_with_mockups": null,
+    "last_synced_with_qa_tracker": null,
+    "last_nfr_check": null,
+    "last_qa_coverage_check": null,
+    "auto_sync_enabled": false
+  },
+
+  "epics": [
+    {
+      "id": "long-running-improvements",
+      "name": "Long-Running Plugin Improvements",
+      "description": "ปรับปรุง long-running plugin ให้ครอบคลุม upstream traceability",
+      "bounded_context": "Plugin Development",
+      "features": [1, 2, 3],
+      "progress": { "total": 3, "passed": 3, "in_progress": 0 }
+    }
+  ],
+
+  "features": [
+    {
+      "id": 1,
+      "epic": "long-running-improvements",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
+      "module": "long-running",
+      "layer": "presentation",
+      "category": "feature",
+      "description": "เพิ่ม /scan-changes command — upstream traceability enforcer สำหรับ orphan code changes/commits",
+      "priority": "high",
+      "complexity": "medium",
+      "risk_level": "low",
+      "status": "passed",
+      "blocked_reason": null,
+      "subtasks": [
+        {
+          "id": "1.1",
+          "description": "ออกแบบ + เขียน commands/scan-changes.md",
+          "done": true,
+          "committed_at": null,
+          "commits": [],
+          "depends_on": [],
+          "files": ["plugins/long-running/commands/scan-changes.md"]
+        },
+        {
+          "id": "1.2",
+          "description": "อัพเดต commands/help.md เพิ่มรายการ + Mode 8 + workflow",
+          "done": true,
+          "committed_at": null,
+          "commits": [],
+          "depends_on": ["1.1"],
+          "files": ["plugins/long-running/commands/help.md"]
+        },
+        {
+          "id": "1.3",
+          "description": "Bump plugin.json v2.6.0 → v2.7.0 + อัพเดต description",
+          "done": true,
+          "committed_at": null,
+          "commits": [],
+          "depends_on": ["1.1"],
+          "files": ["plugins/long-running/.claude-plugin/plugin.json"]
+        },
+        {
+          "id": "1.4",
+          "description": "Dogfood: init feature_list.json + .agent/progress.md ที่ root",
+          "done": true,
+          "committed_at": null,
+          "commits": [],
+          "depends_on": ["1.1", "1.2", "1.3"],
+          "files": ["feature_list.json", ".agent/progress.md"]
+        },
+        {
+          "id": "1.5",
+          "description": "Manual smoke test: รัน /scan-changes บน AgentMarketPlace root (recursive dogfood)",
+          "done": true,
+          "committed_at": "2026-05-10T00:30:00Z",
+          "commits": [],
+          "depends_on": ["1.4"],
+          "files": []
+        }
+      ],
+      "last_committed_subtask": "1.5",
+      "acceptance_criteria": [
+        "scan-changes.md ครอบคลุม 4 หมวด: Tracked / Mapped / Orphan / Pending design",
+        "ตอบคำถาม user ว่าแก้ UI ใช้ command อะไร — ผ่าน /scan-changes หรือ /edit-feature ตามสถานะ",
+        "Reverse-map ผ่าน subtasks[].files[] ถูกต้อง",
+        "Commit prefix detection: task(#X.Y), feat: Feature #N, review-fix(#N)",
+        "AskUserQuestion เสนอ action 3 หมวด (Mapped / Orphan / Pending)",
+        "ไม่ลบ/แก้ git history",
+        "ไม่ auto-commit หรือ auto-create feature",
+        "Help.md อัพเดต: เพิ่มรายการ /scan-changes ใน Mode 1, --features, --new",
+        "plugin.json bump v2.7.0"
+      ],
+      "time_tracking": {
+        "estimated_time": "60min",
+        "actual_time": "30min",
+        "started_at": "2026-05-10T00:00:00Z",
+        "completed_at": "2026-05-10T00:30:00Z"
+      },
+      "dependencies": [],
+      "references": [
+        "plugins/long-running/commands/scan-changes.md",
+        "plugins/long-running/commands/help.md",
+        "plugins/long-running/.claude-plugin/plugin.json",
+        "plugins/long-running/commands/add-feature.md",
+        "plugins/long-running/commands/edit-feature.md",
+        "plugins/long-running/commands/continue.md"
+      ],
+      "design_doc_refs": {
+        "entity_ref": null,
+        "api_ref": null,
+        "section": null,
+        "diagram_refs": [],
+        "pending_updates": []
+      },
+      "mockup_validated": false,
+      "mockup_version": null,
+      "mockup_page_refs": [],
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
+      "sync_status": "n/a",
+      "passes": true,
+      "verification_results": {
+        "build_check": "n/a (markdown command)",
+        "design_doc_compliance": "n/a",
+        "crud_completeness": "n/a",
+        "api_integration": "n/a",
+        "test_coverage": { "unit": 0, "integration": 0, "e2e": 1 },
+        "tech_stack_audit": "n/a",
+        "config_flags": "n/a",
+        "pipeline_result": "passed (smoke test)",
+        "verified_at": "2026-05-10T00:30:00Z",
+        "smoke_test": {
+          "target": "AgentMarketPlace root (recursive dogfood)",
+          "uncommitted_total": 6,
+          "mapped": 5,
+          "orphan_uncommitted": 1,
+          "orphan_commits": 10,
+          "tracked_commits": 0,
+          "pending_design": 0,
+          "traceability_score": "31.2%",
+          "limitations_found": [
+            "false-positive on .claude/settings.local.json (need ignore patterns)",
+            "10 legacy commits flagged as orphan (need legacy-cutoff filter)"
+          ]
+        }
+      },
+      "tested_at": "2026-05-10T00:30:00Z",
+      "assigned_model": "opus",
+      "is_reference_impl": true,
+      "review": null,
+      "notes": "Markdown command (no build). Smoke test ran on AgentMarketPlace root — 5/5 mapped changes detected correctly via subtasks[].files[] reverse-lookup. 2 limitations found, captured as Features #2, #3."
+    },
+    {
+      "id": 2,
+      "epic": "long-running-improvements",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
+      "module": "long-running",
+      "layer": "presentation",
+      "category": "enhancement",
+      "description": "เพิ่ม ignore patterns ใน /scan-changes — ข้าม tooling/config files (.claude/, .gitignore, node_modules/)",
+      "priority": "medium",
+      "complexity": "simple",
+      "risk_level": "low",
+      "status": "passed",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "2.1", "description": "ออกแบบ default ignore list (.claude/, .vscode/, node_modules/, dist/, build/, .DS_Store)", "done": true, "committed_at": "2026-05-10T00:45:00Z", "commits": [], "depends_on": [], "files": [] },
+        { "id": "2.2", "description": "เพิ่ม section 'Ignore Patterns' ใน scan-changes.md (Step 2.4)", "done": true, "committed_at": "2026-05-10T00:45:00Z", "commits": [], "depends_on": ["2.1"], "files": ["plugins/long-running/commands/scan-changes.md"] },
+        { "id": "2.3", "description": "Support custom ignore via .agent/scan-ignore (gitignore-style)", "done": true, "committed_at": "2026-05-10T00:45:00Z", "commits": [], "depends_on": ["2.2"], "files": ["plugins/long-running/commands/scan-changes.md"] },
+        { "id": "2.4", "description": "Re-run smoke test verify .claude/ ถูก ignored", "done": true, "committed_at": "2026-05-10T00:50:00Z", "commits": [], "depends_on": ["2.3"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        ".claude/settings.local.json ไม่ถูก flag เป็น orphan (smoke test)",
+        "Default ignore list ครอบคลุม Claude Code, VS Code, Node, Python tooling",
+        "User customize ผ่าน .agent/scan-ignore (gitignore syntax) ได้",
+        "Backward compat: ถ้าไม่มี .agent/scan-ignore → ใช้ default list"
+      ],
+      "time_tracking": { "estimated_time": "20min", "actual_time": "15min", "started_at": "2026-05-10T00:35:00Z", "completed_at": "2026-05-10T00:50:00Z" },
+      "dependencies": [1],
+      "references": ["plugins/long-running/commands/scan-changes.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false,
+      "mockup_version": null,
+      "mockup_page_refs": [],
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
+      "sync_status": "n/a",
+      "passes": true,
+      "verification_results": {
+        "build_check": "n/a (markdown command)", "design_doc_compliance": "n/a", "crud_completeness": "n/a",
+        "api_integration": "n/a", "test_coverage": { "unit": 0, "integration": 0, "e2e": 1 },
+        "tech_stack_audit": "n/a", "config_flags": "n/a", "pipeline_result": "passed (smoke test)",
+        "verified_at": "2026-05-10T00:50:00Z",
+        "smoke_test": {
+          "ignored_count": 3,
+          "false_positives_eliminated": 1,
+          "all_acs_passed": true
+        }
+      },
+      "tested_at": "2026-05-10T00:50:00Z",
+      "assigned_model": "opus",
+      "is_reference_impl": false,
+      "review": null,
+      "notes": "Discovered via Feature #1 smoke test. Co-implemented with Feature #3 (touch same file scan-changes.md). v2.7.1 release."
+    },
+    {
+      "id": 3,
+      "epic": "long-running-improvements",
+      "flow_id": null,
+      "state_produces": [],
+      "state_consumes": [],
+      "module": "long-running",
+      "layer": "presentation",
+      "category": "enhancement",
+      "description": "เพิ่ม legacy commit cutoff ใน /scan-changes — แยก commits ก่อน feature_list.json มีอยู่",
+      "priority": "medium",
+      "complexity": "simple",
+      "risk_level": "low",
+      "status": "passed",
+      "blocked_reason": null,
+      "subtasks": [
+        { "id": "3.1", "description": "ใช้ feature_list.json.created_at เป็น cutoff (commits ก่อนหน้า = legacy)", "done": true, "committed_at": "2026-05-10T00:48:00Z", "commits": [], "depends_on": [], "files": ["plugins/long-running/commands/scan-changes.md"] },
+        { "id": "3.2", "description": "แยกหมวดใหม่: 'Legacy commits' (informational only, ไม่ขึ้น orphan)", "done": true, "committed_at": "2026-05-10T00:48:00Z", "commits": [], "depends_on": ["3.1"], "files": ["plugins/long-running/commands/scan-changes.md"] },
+        { "id": "3.3", "description": "Flag --include-legacy เพื่อ override cutoff", "done": true, "committed_at": "2026-05-10T00:48:00Z", "commits": [], "depends_on": ["3.2"], "files": ["plugins/long-running/commands/scan-changes.md"] },
+        { "id": "3.4", "description": "Re-run smoke test verify 10 legacy commits แยกออกจาก orphan", "done": true, "committed_at": "2026-05-10T00:50:00Z", "commits": [], "depends_on": ["3.3"], "files": [] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Commits ก่อน feature_list.json.created_at = 'legacy' ไม่ใช่ 'orphan'",
+        "Traceability score คำนวณจาก non-legacy เท่านั้น",
+        "Flag --include-legacy override cutoff",
+        "Smoke test: 10 commits ก่อน 2026-05-10 = legacy, 0 = orphan"
+      ],
+      "time_tracking": { "estimated_time": "20min", "actual_time": "15min", "started_at": "2026-05-10T00:35:00Z", "completed_at": "2026-05-10T00:50:00Z" },
+      "dependencies": [1],
+      "references": ["plugins/long-running/commands/scan-changes.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false,
+      "mockup_version": null,
+      "mockup_page_refs": [],
+      "required_components": [],
+      "design_tokens_used": [],
+      "responsive_breakpoints": null,
+      "interactions": [],
+      "version_history": [],
+      "sync_status": "n/a",
+      "passes": true,
+      "verification_results": {
+        "build_check": "n/a (markdown command)", "design_doc_compliance": "n/a", "crud_completeness": "n/a",
+        "api_integration": "n/a", "test_coverage": { "unit": 0, "integration": 0, "e2e": 1 },
+        "tech_stack_audit": "n/a", "config_flags": "n/a", "pipeline_result": "passed (smoke test)",
+        "verified_at": "2026-05-10T00:50:00Z",
+        "smoke_test": {
+          "legacy_commits_classified": 10,
+          "orphan_commits_after_filter": 0,
+          "all_acs_passed": true
+        }
+      },
+      "tested_at": "2026-05-10T00:50:00Z",
+      "assigned_model": "opus",
+      "is_reference_impl": false,
+      "review": null,
+      "notes": "Co-implemented with Feature #2 (same file scan-changes.md). 10 legacy commits properly classified, 0 orphan commits remaining. v2.7.1 release."
+    }
+  ],
+
+  "summary": {
+    "total": 3,
+    "passed": 3,
+    "in_progress": 0,
+    "blocked": 0,
+    "pending": 0,
+    "last_updated": "2026-05-10T00:50:00Z",
+    "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
+    "model_workload": {
+      "opus": { "assigned": 3, "done": 3, "in_progress": 0, "pending_review": 0 }
+    }
+  }
+}
