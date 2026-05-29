@@ -63,15 +63,16 @@ cat .design-docs/design_doc_list.json 2>/dev/null
 | 9 | Sitemap | sitemap, pages, navigation |
 | 10 | User Roles & Permissions | roles, permissions, access |
 
-### Step 3: Read the Current Document
+### Step 3: Resolve and Read ONLY the Target Section File
 
-```bash
-# Read the document
-cat .design-docs/system-design-[name].md
-
-# Or read only the specific section
-grep -A 100 "## 7. ER Diagram" .design-docs/system-design-[name].md
 ```
+1. Read .design-docs/design_doc_list.json
+2. Find the document; check documents[].doc_layout:
+   - "split": find the sections[] entry whose key matches the requested section
+     (intro→introduction, ER→er-diagram, DD→data-dictionary, …) and read ONLY sections[].file
+   - "single" / field absent: read the single file_path (legacy whole-file grep)
+```
+This avoids loading the whole document — open just `<slug>/NN-<key>.md`. After editing, set that section's `sections[].status` and `updated_at`, and (if the edit changed counts) the index `00-index.md` row.
 
 ### Step 4: Perform the Edit
 
@@ -122,7 +123,7 @@ erDiagram
 
 **Add Table:**
 ```markdown
-### Table: payments
+### 8.N Table: payments
 
 **Description**: Stores payment information
 
@@ -146,6 +147,8 @@ erDiagram
 **Foreign Keys**:
 - FK_payments_order: order_id → orders(id)
 ```
+
+> **Note:** DD table headings MUST be numbered `### 8.x Table: <name>` so the table-count grep `^### 8\.` matches (used by long-running Verification Pipeline Step 2).
 
 ### Section 6: Flow Diagrams
 
