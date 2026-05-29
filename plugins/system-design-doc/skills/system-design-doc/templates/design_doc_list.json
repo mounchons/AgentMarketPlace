@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "schema_version": "2.2.0",
+  "schema_version": "2.3.0",
   "project_name": "",
   "description": "",
   "technology_stack": {
@@ -100,7 +100,7 @@
   "diagrams": {
     "high_level_architecture": {
       "exists": false,
-      "file_path": null,
+      "file_path": "[project-slug]/01-introduction.md",
       "format": "mermaid",
       "version": null,
       "last_updated": null,
@@ -108,7 +108,7 @@
     },
     "er_diagram": {
       "exists": false,
-      "file_path": null,
+      "file_path": "[project-slug]/07-er-diagram.md",
       "format": "mermaid",
       "entities_mapped": [],
       "version": null,
@@ -118,7 +118,7 @@
       {
         "id": "FLOW-001",
         "name": "",
-        "file_path": null,
+        "file_path": "[project-slug]/06-flow-diagrams.md",
         "format": "mermaid",
         "related_features": [],
         "related_pages": [],
@@ -128,7 +128,7 @@
     "dfd": {
       "level_0": {
         "exists": false,
-        "file_path": null,
+        "file_path": "[project-slug]/05-dfd.md",
         "format": "mermaid",
         "version": null
       },
@@ -139,7 +139,7 @@
       {
         "id": "SEQ-001",
         "name": "",
-        "file_path": null,
+        "file_path": "[project-slug]/06-flow-diagrams.md",
         "format": "mermaid",
         "related_features": [],
         "related_apis": [],
@@ -148,7 +148,7 @@
     ],
     "sitemap": {
       "exists": false,
-      "file_path": null,
+      "file_path": "[project-slug]/09-sitemap.md",
       "format": "mermaid",
       "pages_mapped": [],
       "version": null,
@@ -162,7 +162,22 @@
     {
       "id": "DOC-001",
       "name": "System Design Document",
-      "file_path": "system-design-[project-name].md",
+      "doc_layout": "split",
+      "doc_dir": "[project-slug]",
+      "file_path": "[project-slug]/00-index.md",
+      "_layout_comment": "doc_layout: 'split' (default) writes per-section files under doc_dir; 'single' = legacy one-file at file_path. sections[] is the machine map consumers MUST use to locate a section.",
+      "sections": [
+        { "key": "introduction",    "number": 1,  "title": "Introduction & Overview",   "file": "[project-slug]/01-introduction.md",   "status": "draft", "anchors": ["### 1."],   "updated_at": null },
+        { "key": "requirements",     "number": 2,  "title": "System Requirements",       "file": "[project-slug]/02-requirements.md",   "status": "draft", "anchors": ["### 2.", "^AC-\\d+:", "^### Use Case \\(UC-\\d+\\):"], "updated_at": null },
+        { "key": "modules",          "number": 3,  "title": "Related Modules",           "file": "[project-slug]/03-modules.md",        "status": "draft", "anchors": ["### 3."],   "updated_at": null },
+        { "key": "data-model",       "number": 4,  "title": "Data Model",                "file": "[project-slug]/04-data-model.md",     "status": "draft", "anchors": ["### 4."],   "updated_at": null },
+        { "key": "dfd",              "number": 5,  "title": "Data Flow Diagram",         "file": "[project-slug]/05-dfd.md",            "status": "draft", "anchors": ["### 5."],   "updated_at": null },
+        { "key": "flow-diagrams",    "number": 6,  "title": "Flow Diagrams",             "file": "[project-slug]/06-flow-diagrams.md",  "status": "draft", "anchors": ["### 6."],   "updated_at": null },
+        { "key": "er-diagram",       "number": 7,  "title": "ER Diagram",                "file": "[project-slug]/07-er-diagram.md",     "status": "draft", "anchors": ["### 7."],   "updated_at": null },
+        { "key": "data-dictionary",  "number": 8,  "title": "Data Dictionary",           "file": "[project-slug]/08-data-dictionary.md","status": "draft", "anchors": ["### 8."],   "updated_at": null },
+        { "key": "sitemap",          "number": 9,  "title": "Sitemap",                   "file": "[project-slug]/09-sitemap.md",        "status": "draft", "anchors": ["### 9."],   "updated_at": null },
+        { "key": "permissions",      "number": 10, "title": "User Roles & Permissions",  "file": "[project-slug]/10-permissions.md",    "status": "draft", "anchors": ["### 10."],  "updated_at": null }
+      ],
       "status": "draft",
       "version": "1.0.0",
       "sections_completed": [],
@@ -170,11 +185,11 @@
         "introduction",
         "requirements",
         "modules",
-        "data_model",
+        "data-model",
         "dfd",
-        "flow_diagrams",
-        "er_diagram",
-        "data_dictionary",
+        "flow-diagrams",
+        "er-diagram",
+        "data-dictionary",
         "sitemap",
         "permissions"
       ],
@@ -264,6 +279,7 @@
     "api_must_have_feature": true,
     "page_must_have_feature": true,
     "diagram_file_must_exist": false,
+    "sections_must_match_disk": true,
     "layer_consistency": true,
     "crud_must_be_defined": true,
     "crud_default_delete_strategy": "soft"
@@ -306,8 +322,8 @@
   },
 
   "metadata": {
-    "schema_version": "2.2.0",
-    "plugin_version": "1.7.0",
+    "schema_version": "2.3.0",
+    "plugin_version": "2.1.0",
     "compatible_with": {
       "mockup_list_schema": ">=1.6.0",
       "feature_list_schema": ">=1.10.0",
@@ -315,6 +331,9 @@
     },
     "ac_id_format": "AC-NNN (flat, 3-digit zero-padded, e.g., AC-001)",
     "uc_id_format": "UC-NNN (flat, 3-digit zero-padded, e.g., UC-001)",
-    "uc_header_pattern": "^### Use Case \\(UC-\\d+\\):.*$"
+    "uc_header_pattern": "^### Use Case \\(UC-\\d+\\):.*$",
+    "doc_layout_default": "split",
+    "section_keys": ["introduction","requirements","modules","data-model","dfd","flow-diagrams","er-diagram","data-dictionary","sitemap","permissions"],
+    "section_file_pattern": "NN-<section-key>.md under .design-docs/<doc_dir>/ (NN = zero-padded number; index is 00-index.md)"
   }
 }
