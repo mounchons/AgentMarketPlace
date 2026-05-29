@@ -990,6 +990,8 @@ Before creating mockup:
 
 ## 🔗 Related Documents
 
+**Split design docs (system-design-doc ≥ 2.1.0):** read `.design-docs/design_doc_list.json` and branch on `documents[].doc_layout` — `"split"` resolves per-section files via `documents[].sections[]` (key → file, e.g. sitemap → `<doc_dir>/09-sitemap.md`); `"single"`/absent reads the one design `.md`. Prefer the machine-readable `design_doc_list.json` (`entities[]`, `diagrams.sitemap`) + `.design-docs/sitemap.json` — both layout-agnostic.
+
 Every page in mockup_list.json can have related_documents:
 
 ```json

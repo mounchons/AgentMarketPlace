@@ -379,6 +379,7 @@ $ /sync-mockups (long-running)
       • /init-mockup อ่าน design_doc_list.json:
         - diagrams.sitemap → page list
         - entities[] → field mapping
+        - สำหรับ split docs: section files resolved via documents[].sections[] (e.g. sitemap → <doc_dir>/09-sitemap.md); machine data (entities[], diagrams.sitemap) อ่านจาก JSON ตรงๆ ไม่ขึ้นกับ layout
       • /sync-with-mockups (system-design-doc) sync 2 ทาง
 
       Schema:

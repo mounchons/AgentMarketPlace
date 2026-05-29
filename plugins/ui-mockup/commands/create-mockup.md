@@ -147,14 +147,18 @@ cat .mockups/mockup_list.json 2>/dev/null
 # Search for system-design-doc
 ls -la *.md 2>/dev/null | grep -i "design\|system\|spec"
 
-# Search for Sitemap section
-grep -l "Sitemap\|sitemap" *.md 2>/dev/null
+# Resolve the Sitemap source (split-aware):
+#  prefer .design-docs/sitemap.json + design_doc_list.json (diagrams.sitemap)
+#  split md → .design-docs/<doc_dir>/09-sitemap.md (via documents[].sections[key="sitemap"])
+#  legacy → grep "Sitemap" *.md
+cat .design-docs/sitemap.json 2>/dev/null
+grep -l "Sitemap\|sitemap" .design-docs/*/09-sitemap.md *.md 2>/dev/null
 
 # Search for Screen Specifications
 grep -l "Screen Spec\|SCR-" *.md 2>/dev/null
 ```
 
-**If system-design-doc is found:**
+**If system-design-doc is found** (split docs: pass the design folder or resolve the section file via design_doc_list.json sections[]):
 - Read the Sitemap section
 - Read the Screen Specifications
 - Read User Roles & Permissions
