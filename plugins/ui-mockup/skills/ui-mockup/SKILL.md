@@ -1004,6 +1004,8 @@ Every page in mockup_list.json can have related_documents:
 }
 ```
 
+> For **split** design docs, point `system-design` refs at the section file `.design-docs/<slug>/NN-<key>.md` (resolve via `design_doc_list.json` `sections[]`). The `system-design.md#anchor` form above is the **legacy single-file** variant.
+
 **Supported Document Types:**
 - `system-design` - System Design Document
 - `api` - API Specification

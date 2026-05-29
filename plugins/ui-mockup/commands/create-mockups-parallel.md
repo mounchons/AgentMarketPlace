@@ -229,7 +229,7 @@ mkdir -p .mockups
 - If a list: `Login, Dashboard, User List` → `["Login", "Dashboard", "User List"]`
 - If from design doc: Read the Sitemap section and extract pages
 
-> **Split layout:** if `.design-docs/design_doc_list.json` has `doc_layout:"split"`, resolve sections via `documents[].sections[]` (sitemap → `<doc_dir>/09-sitemap.md`, entities → `entities[]` / `07-er-diagram.md`) instead of a top-level `system-design.md`. Prefer `entities[]` from the registry for CRUD page generation.
+> **Split layout:** if `.design-docs/design_doc_list.json` has `documents[].doc_layout:"split"`, resolve sections via `documents[].sections[]` (sitemap → `<doc_dir>/09-sitemap.md`, entities → `entities[]` / `07-er-diagram.md`) instead of a top-level `system-design.md`. Prefer `entities[]` from the registry for CRUD page generation.
 
 ### Step 5: Spawn Sub Agents in Parallel
 
