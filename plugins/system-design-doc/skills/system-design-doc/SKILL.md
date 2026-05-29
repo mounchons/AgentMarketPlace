@@ -412,6 +412,8 @@ Other plugins (long-running, qa-ui-test) MUST locate sections via the registry �
 2. documents[].doc_layout:
    - "split": sections[] maps key → file. Open ONLY the file you need.
               e.g. schema work → sections[key="data-dictionary"].file
+              keys: introduction, requirements, modules, data-model, dfd,
+                    flow-diagrams, er-diagram, data-dictionary, sitemap, permissions
    - "single" / absent: read the single file_path (legacy)
    - no JSON: fallback `find . -name "*design*.md"`
 3. Section numbering is preserved inside files, so existing greps
@@ -528,7 +530,7 @@ Data flowed back:
 ```
 ✅ สร้าง System Design Document สำเร็จ!
 
-📁 File: .design-docs/system-design-hr-management.md
+📁 Folder: .design-docs/hr-management/  (00-index.md + 10 section files)
 
 📊 Document Summary:
    • 10 sections completed

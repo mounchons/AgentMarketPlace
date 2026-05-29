@@ -44,7 +44,11 @@ ls -la .design-docs/*.md 2>/dev/null
 ### Step 2: Read the Document
 
 ```bash
-cat .design-docs/system-design-[name].md
+# Layout-aware — check doc_layout in design_doc_list.json first
+cat .design-docs/design_doc_list.json 2>/dev/null
+# doc_layout:"split"  → read <doc_dir>/00-index.md + the section files you need (via sections[])
+# doc_layout:"single" / absent → cat the single file:
+cat .design-docs/system-design-[name].md 2>/dev/null
 ```
 
 ### Step 3: Validation Checks
@@ -189,7 +193,10 @@ cat .design-docs/system-design-[name].md
 - [ ] No duplicate section numbers
 
 ```bash
-# Extract section numbers
+# Extract DD section numbers (layout-aware)
+# split  → resolve DD file via registry: <doc_dir>/08-data-dictionary.md
+grep "^### 8\." .design-docs/<doc_dir>/08-data-dictionary.md | sed 's/.*### \(8\.[0-9]*\).*/\1/' | sort -t. -k2 -n
+# single / no registry:
 grep "^### 8\." .design-docs/system-design-*.md | sed 's/.*### \(8\.[0-9]*\).*/\1/' | sort -t. -k2 -n
 ```
 
