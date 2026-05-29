@@ -66,9 +66,12 @@ If either is older:
 If `documents[].acceptance_criteria[]` is empty but the markdown file has AC lines, auto-populate:
 
 ```bash
-# Grep AC pattern from design doc files
-grep -nE '^AC-[0-9]+:' .design-docs/*.md
-grep -nE '\| AC-[0-9]+ \|' .design-docs/*.md   # table rows
+# AC/UC live in section 2 (requirements). Resolve that file via design_doc_list.json:
+#   split  → documents[].sections[key="requirements"].file  (e.g. .design-docs/<doc_dir>/02-requirements.md)
+#   single / no registry → glob .design-docs/*.md (legacy)
+grep -nE '^AC-[0-9]+:' .design-docs/<doc_dir>/02-requirements.md      # split
+grep -nE '\| AC-[0-9]+ \|' .design-docs/<doc_dir>/02-requirements.md  # split (table rows)
+# legacy single-file fallback: grep -nE '^AC-[0-9]+:' .design-docs/*.md
 ```
 
 For each match:
@@ -79,7 +82,8 @@ For each match:
 ### Step 4: Discover UCs in design doc markdown
 
 ```bash
-grep -nE '^### Use Case \(UC-[0-9]+\):' .design-docs/*.md
+# split → .design-docs/<doc_dir>/02-requirements.md ; single / no registry → .design-docs/*.md
+grep -nE '^### Use Case \(UC-[0-9]+\):' .design-docs/<doc_dir>/02-requirements.md
 ```
 
 For each match:
