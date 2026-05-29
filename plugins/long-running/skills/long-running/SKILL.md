@@ -6,6 +6,8 @@ description: Harness for AI Agents working across context windows — supports m
 
 # Long-Running Agent Skill
 
+> **Version 2.9.0** - system-design-doc split-layout awareness (resolve sections via registry; layout-aware Verification Pipeline Step 2 DD-count)
+>
 > **Version 2.6.0** - Added qa-ui-test v2.5 release gates: /nfr-check + /qa-coverage-check commands; /continue Step 5.6 enforces Gate 1 (AC coverage), Gate 2 (NFR compliance), Gate 3 (bug verification) before passes=true; schema 2.4.0 with acceptance_criteria_id[], complexity_tags[], linked_bug{}, nfr_compliance{}, qa_trace_coverage{}; --force-coverage / --force-nfr / --force-bug-verify overrides
 >
 > **Version 2.3.0** - Added Verification Pipeline (6 checks beyond build success), Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement
@@ -434,7 +436,9 @@ IF Design Document exists (.design-docs/):
 
   HOW TO CHECK:
   1. Count entities: find src/ -name "*.cs" -path "*/Entities/*" | wc -l (or equivalent)
-  2. Count DD tables: grep "### 8\." .design-docs/*.md | wc -l
+  2. Resolve the DD file via design_doc_list.json:
+     - split layout → documents[].sections[key="data-dictionary"].file, then: grep "^### 8\." <that file> | wc -l
+     - single layout / no registry → grep "### 8\." .design-docs/*.md | wc -l
   3. If mismatch → list missing entities → create backlog features
   4. DO NOT mark passed if entities are missing from DD
 ```
@@ -661,8 +665,9 @@ Files to check:
 │                SYSTEM DESIGN DOC INTEGRATION                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  1. Find Design Document                                           │
-│     find . -name "*design*.md" -o -name "*system*.md"              │
+│  1. Resolve via registry: design_doc_list.json → documents[].sections[]
+│     (doc_layout:"split" → open only the needed section file)
+│     fallback: find . -name "*design*.md" (single / no registry)
 │                                                                     │
 │  2. Read important sections:                                       │
 │     ├── ER Diagram      → Create Database Schema                   │
@@ -690,6 +695,7 @@ Recommended workflow:
 - If Design Doc found → **must** use ER Diagram for database
 - **Do not** create schema that differs from design without approval
 - **Must** use Data Dictionary for field specifications
+- If `design_doc_list.json` has `doc_layout:"split"` → resolve sections via `sections[]` and read ONLY the needed file (token-efficient); never `cat` the whole document
 
 ---
 
@@ -882,6 +888,7 @@ Recommended workflow:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.9.0 | 2026-05-29 | system-design-doc split-layout awareness: `/continue` (coding-agent-guide) resolves design sections via `design_doc_list.json` `documents[].sections[]` and reads only the needed file; Verification Pipeline Step 2 DD-count is layout-aware (greps the resolved `08-data-dictionary.md`). Requires `design_doc_list.json >= 2.3.0` for split; lower/absent falls back to single-file `find`. |
 | 2.3.0 | 2026-03-24 | Added Verification Pipeline (7 steps beyond build success): Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement. Added `partial`/`incomplete` status values. Fixed audit issues: build-only=passed, mock data=done, CRUD gaps, missing entities, ignored config flags |
 | 2.2.0 | 2026-03-13 | Added CRITICAL RULES with self-check checklist, output rejection criteria, and penalty enforcement to SKILL.md, /continue, /init, /review commands |
 | 2.1.0 | 2026-03-11 | Added model_config{}, assigned_model/is_reference_impl/review feature fields, /review command with hybrid auto-fix (Critical/High → opus fix, Medium/Low → send back), model workload & review status in /status, auto-assign in /continue, v2.0.0→v2.1.0 migration |

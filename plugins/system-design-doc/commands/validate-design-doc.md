@@ -44,7 +44,11 @@ ls -la .design-docs/*.md 2>/dev/null
 ### Step 2: Read the Document
 
 ```bash
-cat .design-docs/system-design-[name].md
+# Layout-aware — check doc_layout in design_doc_list.json first
+cat .design-docs/design_doc_list.json 2>/dev/null
+# doc_layout:"split"  → read <doc_dir>/00-index.md + the section files you need (via sections[])
+# doc_layout:"single" / absent → cat the single file:
+cat .design-docs/system-design-[name].md 2>/dev/null
 ```
 
 ### Step 3: Validation Checks
@@ -189,7 +193,10 @@ cat .design-docs/system-design-[name].md
 - [ ] No duplicate section numbers
 
 ```bash
-# Extract section numbers
+# Extract DD section numbers (layout-aware)
+# split  → resolve DD file via registry: <doc_dir>/08-data-dictionary.md
+grep "^### 8\." .design-docs/<doc_dir>/08-data-dictionary.md | sed 's/.*### \(8\.[0-9]*\).*/\1/' | sort -t. -k2 -n
+# single / no registry:
 grep "^### 8\." .design-docs/system-design-*.md | sed 's/.*### \(8\.[0-9]*\).*/\1/' | sort -t. -k2 -n
 ```
 
@@ -492,5 +499,31 @@ sitemap.json (R31-R35):
 ```
 
 If sitemap.json is absent → skip with note `sitemap.json not present (run /sitemap-init to enable R31-R35)`.
+
+---
+
+## Split-Layout Validation (doc_layout:"split")
+
+Determine layout from `design_doc_list.json` `documents[].doc_layout`. If `split`, additionally verify:
+
+- **R36 — Naming & marker contract**: every file in `<doc_dir>/` matches `NN-<section-key>.md` (or `00-index.md`); line 1 marker `<!-- sdd-section: <key> | doc: <slug> | schema: 2.3.0 -->` agrees with the filename's key and the doc's slug.
+- **R37 — Registry ↔ disk (bidirectional)**: every `sections[].file` exists on disk; every `NN-*.md` on disk appears in `sections[]`. Report orphans on either side.
+- **R38 — Index completeness**: `00-index.md` links every section file (one Markdown link per `sections[]` entry).
+- **ER ↔ DD across files**: read `07-er-diagram.md` + `08-data-dictionary.md`; every ER entity has a DD table and vice versa (bidirectional, as before — just across two files now).
+- **Numbering continuity within a file**: in `08-data-dictionary.md`, the `### 8.x` headings are sequential with no gaps; same idea per numbered section.
+
+```
+Split Validation Report
+───────────────────────────────────
+doc_layout: split   doc_dir: <slug>
+Section files on disk: N / 10
+Registry entries: N   orphans(disk): […]  orphans(registry): […]
+Index links: N / N
+Marker mismatches: […]
+ER↔DD: ok | mismatches […]
+───────────────────────────────────
+```
+
+For `doc_layout:"single"` (or absent), run the existing whole-file validation unchanged.
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

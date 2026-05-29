@@ -211,7 +211,9 @@ Wait for the user to respond proceed or add more information first.
 
 ## Step 5: Generate Design Document
 
-Create the file `.design-docs/system-design-[project-name].md`
+**Output: split layout (default).** Follow `create-design-doc.md` Step 6–7 exactly — write `.design-docs/<project-slug>/00-index.md` + `NN-<key>.md` (10 files), then populate `design_doc_list.json` `documents[].sections[]` (schema 2.3.0) with `doc_layout:"split"`, `doc_dir`, and `diagrams.*.file_path` pointing at the section files. Preserve `<!-- sdd-section -->` markers and `## N.`/`### N.x` headings.
+
+Create the file `.design-docs/system-design-[project-name].md` (legacy single-file fallback)
 
 ### 5.1 Generation Rules
 

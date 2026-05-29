@@ -35,6 +35,7 @@ Skill for creating enterprise-grade standardized system design documents with Me
 | `/sitemap-validate` | Run schema + R31-R35 validation |
 | `/sitemap-graph` | Render Mermaid graph from edges |
 | `/sitemap-export` | Export to Cytoscape / GraphML / DOT |
+| `/split-design-doc` | Migrate single-file doc → split layout |
 
 ---
 
@@ -319,6 +320,12 @@ The system design document consists of 10 main sections:
 34. **No orphan edges** — every `edges[].from` and `edges[].to` must reference an existing node ID
 35. **Cross-doc artifact integrity** — `linked_artifacts.{mockups, features, qa_scenarios}` paths/IDs must exist in their respective files
 
+### Split-Layout Rules (v2.1.0 — doc_layout:"split")
+
+36. **Naming & marker contract** — section files MUST be `NN-<section-key>.md`; line-1 marker `<!-- sdd-section: <key> | doc: <slug> | schema: 2.3.0 -->` must agree with filename + doc slug.
+37. **Registry ↔ disk bidirectional** — every `sections[].file` exists; every `NN-*.md` on disk is registered. No orphans on either side.
+38. **Index completeness** — `00-index.md` links every section file.
+
 ### 🔍 Self-Check Checklist (MANDATORY before submitting output)
 
 Before completing the design document, verify EVERY item:
@@ -396,6 +403,25 @@ Mismatches: [list or "none"]
 
 ---
 
+## Reading Protocol for Consumers (split layout)
+
+Other plugins (long-running, qa-ui-test) MUST locate sections via the registry — never `cat` the whole doc:
+
+```
+1. Read .design-docs/design_doc_list.json
+2. documents[].doc_layout:
+   - "split": sections[] maps key → file. Open ONLY the file you need.
+              e.g. schema work → sections[key="data-dictionary"].file
+              keys: introduction, requirements, modules, data-model, dfd,
+                    flow-diagrams, er-diagram, data-dictionary, sitemap, permissions
+   - "single" / absent: read the single file_path (legacy)
+   - no JSON: fallback `find . -name "*design*.md"`
+3. Section numbering is preserved inside files, so existing greps
+   (`### 8.`, `^AC-\d+:`, `^### Use Case \(UC-\d+\):`) match within the resolved file.
+```
+
+---
+
 ## Integration with Other Skills
 
 ### ui-mockup Integration
@@ -467,14 +493,23 @@ Data flowed back:
 
 ```
 .design-docs/
-├── design_doc_list.json          # Tracking file
-├── system-design-[project].md    # Main document
-├── diagrams/                     # (optional) Exported diagrams
-│   ├── er-diagram.png
-│   └── architecture.png
-└── exports/                      # (optional) Exported formats
-    ├── system-design.pdf
-    └── system-design.docx
+├── design_doc_list.json           # section registry (schema 2.3.0) — machine source of truth
+├── sitemap.json                   # unchanged
+└── <project-slug>/                # split layout (default)
+    ├── 00-index.md                # human TOC + status + links
+    ├── 01-introduction.md
+    ├── 02-requirements.md         # FR/NFR/BR/AC/UC
+    ├── 03-modules.md
+    ├── 04-data-model.md
+    ├── 05-dfd.md
+    ├── 06-flow-diagrams.md
+    ├── 07-er-diagram.md
+    ├── 08-data-dictionary.md
+    ├── 09-sitemap.md
+    └── 10-permissions.md
+
+# Legacy single-file layout (doc_layout:"single"):
+#   .design-docs/system-design-<slug>.md
 ```
 
 ### File Naming Convention
@@ -483,6 +518,8 @@ Data flowed back:
 |------|---------|---------|
 | Main Document | `system-design-[project-name].md` | `system-design-hr-management.md` |
 | Tracking File | `design_doc_list.json` | - |
+| Section file | NN-<section-key>.md | 08-data-dictionary.md |
+| Index | 00-index.md | - |
 
 ---
 
@@ -493,7 +530,7 @@ Data flowed back:
 ```
 ✅ สร้าง System Design Document สำเร็จ!
 
-📁 File: .design-docs/system-design-hr-management.md
+📁 Folder: .design-docs/hr-management/  (00-index.md + 10 section files)
 
 📊 Document Summary:
    • 10 sections completed
@@ -544,6 +581,8 @@ Data flowed back:
 | Node Types Reference | `references/node-types.md` | 8 node types reference |
 | Sitemap Validation Rules | `references/sitemap-validation-rules.md` | R31-R35 details |
 | Sitemap Template | `templates/sitemap-template.json` | Empty starter for sitemap.json |
+| Section Templates | `templates/sections/NN-*.md` | One template per section (split) |
+| Index Template | `templates/index-template.md` | 00-index.md generator |
 
 ---
 
@@ -563,6 +602,7 @@ Data flowed back:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.1.0 | 2026-05-29 | Split-doc layout: per-section files under `<slug>/` + `00-index.md`; `design_doc_list.json` schema 2.3.0 section registry (`doc_layout`, `doc_dir`, `sections[]`, meaningful `diagrams.*.file_path`); new `/split-design-doc`; per-section `/edit-section` + `/create-diagram`; cross-file `/validate-design-doc`; CRITICAL RULES 36-38; section + index templates; monolith template marked legacy. Backward compatible with single-file docs. |
 | 2.0.0 | 2026-05-07 | Major: introduce `.design-docs/sitemap.json` (machine-readable mirror) with 8 node types in 2 layers (Design System: Master/Template/Nav/Component + Application: Page/API/Middleware/External Function), 8 new commands (`/sitemap-init`, `/sitemap-add-node`, `/sitemap-link`, `/sitemap-scan`, `/sync-sitemap`, `/sitemap-validate`, `/sitemap-graph`, `/sitemap-export`), Section 9 expansion (9.4-9.9), 5 new cross-validation rules (R31-R35), JSON Schema draft-07 validator (`ajv-cli`), `workflow_stages` + `linked_artifacts` + `stage_status` schema features for downstream VS Code extension (sub-project B) |
 | 1.7.0 | 2026-05-05 | qa-ui-test v2.5 integration: Section 2.4 Acceptance Criteria + Section 2.5 Use Cases in template; flat AC-NNN / UC-NNN ID format; new `/sync-with-qa-tracker` command; expanded `/validate-integration` to 4 plugins (added qa-ui-test) with AC coverage + UC coverage + release-ready flag; schema bumped to 2.2.0 (added `documents[].acceptance_criteria[]`, `documents[].use_cases[]`, `integration.qa_tracker_path`, `sync_status.qa_tracker`); 7 new CRITICAL RULES (24-30) |
 | 1.6.0 | | (Skipped — internal version)  |

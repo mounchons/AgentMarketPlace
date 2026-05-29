@@ -368,6 +368,8 @@ classDiagram
 
 ## Output
 
+**Split layout:** write the diagram into its owning section file only — ER→`<slug>/07-er-diagram.md`, Sitemap→`<slug>/09-sitemap.md`, DFD→`<slug>/05-dfd.md`, Flow→`<slug>/06-flow-diagrams.md`, Sequence→`<slug>/06-flow-diagrams.md`. Then update that `sections[].status`/`updated_at` and the matching `diagrams.*.file_path` in `design_doc_list.json`. Resolve the file via the registry (same as edit-section Step 3).
+
 ### Success
 
 ```

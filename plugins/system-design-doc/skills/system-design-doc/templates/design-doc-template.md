@@ -1,3 +1,5 @@
+<!-- LEGACY single-file template. Used ONLY when doc_layout:"single". New docs default to doc_layout:"split" — see templates/sections/ + templates/index-template.md and the spec 2026-05-29-system-design-doc-split-files-design.md. -->
+
 # [Project Name] - System Design Document
 
 **Version**: 1.0.0
@@ -198,7 +200,7 @@ AC-005: Cancel button on order detail must show confirmation dialog before issui
 
 #### 2.5.2 Use Case Details
 
-##### Use Case (UC-001): Place Order
+### Use Case (UC-001): Place Order
 
 | Field | Value |
 |-------|-------|
@@ -226,7 +228,7 @@ AC-005: Cancel button on order detail must show confirmation dialog before issui
 
 - **E1: Network timeout to gateway** — auto-retry once after 5s; if still fails, show recoverable error
 
-##### Use Case (UC-002): [Title]
+### Use Case (UC-002): [Title]
 
 | Field | Value |
 |-------|-------|
