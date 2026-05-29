@@ -35,7 +35,15 @@ Guide for Coding Agent - use every time after Initialize is complete
 ls -la .mockups/ 2>/dev/null
 ls -la .mockups/*.mockup.md 2>/dev/null
 
-# 2. Check System Design Document (from system-design-doc skill)
+# 2. System Design Document — resolve via the registry (do NOT cat the whole doc)
+cat .design-docs/design_doc_list.json 2>/dev/null
+# doc_layout:"split" → use documents[].sections[] to open ONLY the needed file:
+#   schema work     → sections[key="data-dictionary"].file  (e.g. <slug>/08-data-dictionary.md)
+#   relationships   → sections[key="er-diagram"].file
+#   business logic  → sections[key="flow-diagrams"].file
+#   routes/pages    → sections[key="sitemap"].file
+# doc_layout:"single" or field absent → read the single file_path (legacy)
+# no design_doc_list.json → fallback:
 find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -5
 
 # 3. Check Technology Stack
@@ -66,6 +74,9 @@ ls -la package.json 2>/dev/null    # Node.js
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+**🎯 Resolving a design section (split layout):**
+`design_doc_list.json` → `documents[].sections[]` maps each section key to its file. Open only that file — never load the whole document. Keys: `introduction, requirements, modules, data-model, dfd, flow-diagrams, er-diagram, data-dictionary, sitemap, permissions`. For `single` layout (or no registry), fall back to reading the one design `.md`.
 
 **🎯 How to Use References:**
 
