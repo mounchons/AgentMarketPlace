@@ -493,4 +493,30 @@ sitemap.json (R31-R35):
 
 If sitemap.json is absent → skip with note `sitemap.json not present (run /sitemap-init to enable R31-R35)`.
 
+---
+
+## Split-Layout Validation (doc_layout:"split")
+
+Determine layout from `design_doc_list.json` `documents[].doc_layout`. If `split`, additionally verify:
+
+- **R36 — Naming & marker contract**: every file in `<doc_dir>/` matches `NN-<section-key>.md` (or `00-index.md`); line 1 marker `<!-- sdd-section: <key> | doc: <slug> | schema: 2.3.0 -->` agrees with the filename's key and the doc's slug.
+- **R37 — Registry ↔ disk (bidirectional)**: every `sections[].file` exists on disk; every `NN-*.md` on disk appears in `sections[]`. Report orphans on either side.
+- **R38 — Index completeness**: `00-index.md` links every section file (one Markdown link per `sections[]` entry).
+- **ER ↔ DD across files**: read `07-er-diagram.md` + `08-data-dictionary.md`; every ER entity has a DD table and vice versa (bidirectional, as before — just across two files now).
+- **Numbering continuity within a file**: in `08-data-dictionary.md`, the `### 8.x` headings are sequential with no gaps; same idea per numbered section.
+
+```
+Split Validation Report
+───────────────────────────────────
+doc_layout: split   doc_dir: <slug>
+Section files on disk: N / 10
+Registry entries: N   orphans(disk): […]  orphans(registry): […]
+Index links: N / N
+Marker mismatches: […]
+ER↔DD: ok | mismatches […]
+───────────────────────────────────
+```
+
+For `doc_layout:"single"` (or absent), run the existing whole-file validation unchanged.
+
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)
