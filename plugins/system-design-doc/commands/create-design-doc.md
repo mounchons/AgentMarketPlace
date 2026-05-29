@@ -119,9 +119,11 @@ ls -la .design-docs/brainstorm-*.md 2>/dev/null
 
 ### Step 2: Define Document Structure
 
-**Read templates:**
-- `templates/design-doc-template.md` - Main template
-- `references/document-sections.md` - Details for each section
+**Read templates (split layout — default):**
+- `templates/index-template.md` — index/TOC file (`00-index.md`)
+- `templates/sections/NN-<key>.md` — one template per section
+- `references/document-sections.md` — content spec per section
+- `templates/design-doc-template.md` — LEGACY single-file template (only if user asks for `doc_layout:"single"`)
 
 **Document Structure (10 Sections):**
 
@@ -175,57 +177,37 @@ ls -la .design-docs/brainstorm-*.md 2>/dev/null
 - Indexes
 - Business rules
 
-### Step 6: Create Document File
+### Step 6: Create Document Files (split layout)
 
-**File Naming:**
-```
-.design-docs/system-design-[project-name].md
-```
+1. Compute `<project-slug>` = kebab-case of the project name (e.g. "HR Management" → `hr-management`). If `.design-docs/<slug>/` already exists for a different doc, append `-2`, `-3`, … to keep it unique.
+2. Create folder `.design-docs/<project-slug>/`.
+3. For each section, copy `templates/sections/NN-<key>.md`, replace `__PROJECT_SLUG__`/`__PROJECT_NAME__` (and any `__…__` tokens), fill real content, and write to `.design-docs/<project-slug>/NN-<key>.md`. Keep the `<!-- sdd-section: … -->` marker on line 1 and the `## N.` / `### N.x` headings intact.
+4. Create `.design-docs/<project-slug>/00-index.md` from `templates/index-template.md` with the Sections table linking all 10 files and statuses set to ✅ for completed sections.
 
-**Examples:**
-- `system-design-hr-management.md`
-- `system-design-inventory-system.md`
-- `system-design-ecommerce.md`
+**Legacy single-file mode** (only when explicitly requested): write `.design-docs/system-design-<slug>.md` from `design-doc-template.md` and set `doc_layout:"single"` in Step 7.
 
-### Step 7: Update design_doc_list.json
+### Step 7: Update design_doc_list.json (schema 2.3.0)
 
+Set the `documents[]` entry to the **registry** shape (see `templates/design_doc_list.json`):
 ```json
 {
-  "documents": [
-    {
-      "id": "DOC-001",
-      "name": "HR Management System",
-      "file_path": "system-design-hr-management.md",
-      "status": "draft",
-      "sections_completed": [
-        "introduction",
-        "requirements",
-        "modules",
-        "data_model",
-        "er_diagram",
-        "dfd",
-        "flow_diagrams",
-        "data_dictionary",
-        "sitemap",
-        "permissions"
-      ],
-      "diagrams": {
-        "er_diagram": true,
-        "flow_diagrams": 3,
-        "dfd_levels": [0, 1],
-        "sequence_diagrams": 2,
-        "sitemap": true
-      },
-      "entities_count": 8,
-      "tables_count": 12,
-      "related_mockups": [],
-      "related_features": [],
-      "created_at": "2025-01-20T10:00:00Z",
-      "updated_at": "2025-01-20T10:00:00Z"
-    }
-  ]
+  "id": "DOC-001",
+  "name": "HR Management System",
+  "doc_layout": "split",
+  "doc_dir": "hr-management",
+  "file_path": "hr-management/00-index.md",
+  "sections": [
+    { "key": "introduction", "number": 1, "title": "Introduction & Overview", "file": "hr-management/01-introduction.md", "status": "completed", "anchors": ["### 1."], "updated_at": "<ISO8601>" }
+    // … all 10 sections; status "completed" for written sections, "draft" otherwise
+  ],
+  "sections_completed": ["introduction", "..."],
+  "sections_pending": [],
+  "statistics": { "entities_count": 8, "tables_count": 12, "...": "..." },
+  "created_at": "<ISO8601>",
+  "updated_at": "<ISO8601>"
 }
 ```
+Also set `diagrams.er_diagram.file_path` = `hr-management/07-er-diagram.md`, `diagrams.sitemap.file_path` = `hr-management/09-sitemap.md`, `diagrams.dfd.level_0.file_path` = `hr-management/05-dfd.md`, `diagrams.high_level_architecture.file_path` = `hr-management/01-introduction.md`. Keep `sections_completed/pending` (use hyphenated section keys) in sync with `sections[].status`.
 
 ---
 
@@ -250,7 +232,7 @@ Before considering the work complete, verify:
 ```
 ✅ สร้าง System Design Document สำเร็จ!
 
-📁 File: .design-docs/system-design-hr-management.md
+📁 Folder: .design-docs/hr-management/  (00-index.md + 10 section files)
 
 📊 Document Summary:
    • 10 sections completed
