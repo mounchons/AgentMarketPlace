@@ -55,27 +55,35 @@ Create a mockup tracking system by analyzing project documents and generating `m
 
 ## Steps to Follow
 
-### Step 1: Search for Source Documents
+### Step 1: Locate the Design Document (registry-first, split-aware)
 
+**Preferred — read the machine-readable sources (work for BOTH layouts, no .md parsing needed):**
 ```bash
-# Search for system-design-doc
-ls -la *.md 2>/dev/null | head -20
+cat .design-docs/design_doc_list.json 2>/dev/null   # entities[], diagrams.sitemap, documents[].sections[]
+cat .design-docs/sitemap.json 2>/dev/null            # machine-readable pages/nodes (if present)
+```
+If `design_doc_list.json` exists, branch on `documents[].doc_layout`:
+- **"split"** → resolve section files via `documents[].sections[]`, read ONLY what you need:
+  sitemap → `sections[key="sitemap"].file` (e.g. `.design-docs/<doc_dir>/09-sitemap.md`);
+  entities → `er-diagram` + `data-dictionary` files. (Tip: `entities[]` + `diagrams.sitemap` in the JSON are usually enough — prefer them over parsing markdown.)
+- **"single"** / field absent → the design doc is the single `documents[].file_path` (legacy).
 
-# Search for Sitemap
-grep -l -i "sitemap\|screen\|page" *.md 2>/dev/null
-
-# Search in subdirectories
+**Fallback — no registry: search the filesystem (split docs live in per-project folders):**
+```bash
+ls -la .design-docs/*/00-index.md 2>/dev/null   # split-layout design docs
+ls -la *.md .design-docs/*.md 2>/dev/null
 find . -name "*.md" -type f 2>/dev/null | head -30
 ```
-
 **Search priority:**
-1. `system-design*.md` - System design documents
-2. `*sitemap*.md` - Dedicated Sitemap
-3. `requirements*.md` - Requirements doc
-4. `README.md` - Project description
-5. `docs/*.md` - Documentation folder
+1. `.design-docs/<slug>/09-sitemap.md` (split) — Sitemap section
+2. `system-design*.md` (legacy single-file) — System design documents
+3. `*sitemap*.md` — Dedicated Sitemap
+4. `requirements*.md` — Requirements doc
+5. `README.md` — Project description
 
 ### Step 2: Analyze Documents to Find Pages
+
+> **Split layout:** the Sitemap section is in `<doc_dir>/09-sitemap.md` (resolve via the registry) — or use `.design-docs/sitemap.json` / `design_doc_list.json` `diagrams.sitemap` directly. The `## 9. Sitemap` / Page Inventory parsing below applies to that resolved file.
 
 **What to search for:**
 
@@ -113,6 +121,8 @@ find . -name "*.md" -type f 2>/dev/null | head -30
 ```
 
 ### Step 2.5: Find Entities for CRUD Pages
+
+> **Split layout:** ER is in `<doc_dir>/07-er-diagram.md`, Data Dictionary in `<doc_dir>/08-data-dictionary.md` (resolve via the registry) — or prefer `design_doc_list.json` `entities[]` directly.
 
 **What to search for:**
 
@@ -380,12 +390,14 @@ Accept all? [Y/n/edit]
 
 **Auto-link pattern:**
 
+> **Split layout:** point `system-design` refs at the section file `.design-docs/<slug>/NN-<key>.md` (resolve via `design_doc_list.json` `sections[]`); legacy single-file uses `system-design.md#<anchor>`.
+
 ```json
 {
   "related_documents": [
-    {"type": "system-design", "path": "[source_doc]#[entity-section]"},
+    {"type": "system-design", "path": ".design-docs/<slug>/03-modules.md"},
     {"type": "api", "path": "docs/api/[entity].md"},
-    {"type": "erd", "path": "[source_doc]#er-diagram"}
+    {"type": "erd", "path": ".design-docs/<slug>/07-er-diagram.md"}
   ]
 }
 ```
@@ -413,7 +425,7 @@ Accept all? [Y/n/edit]
       "ui_pattern": "page",
       "pages": ["004", "005", "006"],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "system-design", "path": ".design-docs/<slug>/03-modules.md"},
         {"type": "api", "path": "docs/api/users.md"}
       ],
       "crud_actions": {
@@ -431,7 +443,7 @@ Accept all? [Y/n/edit]
       "ui_pattern": "modal",
       "pages": ["010"],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#master-data"}
+        {"type": "system-design", "path": ".design-docs/<slug>/03-modules.md"}
       ],
       "crud_actions": {
         "list":   { "enabled": true, "ui_type": "page" },
@@ -460,7 +472,7 @@ Accept all? [Y/n/edit]
       "ui_pattern": null,
       "action_column_position": null,
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#authentication"}
+        {"type": "system-design", "path": ".design-docs/<slug>/03-modules.md"}
       ],
       "related_pages": ["002"],
       "status": "pending",
@@ -485,7 +497,7 @@ Accept all? [Y/n/edit]
       "ui_pattern": "page",
       "action_column_position": "first",
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "system-design", "path": ".design-docs/<slug>/03-modules.md"},
         {"type": "api", "path": "docs/api/users.md#list"}
       ],
       "related_pages": ["005", "006"],
