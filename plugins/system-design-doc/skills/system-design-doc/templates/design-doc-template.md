@@ -1,3 +1,5 @@
+<!-- LEGACY single-file template. Used ONLY when doc_layout:"single". New docs default to doc_layout:"split" — see templates/sections/ + templates/index-template.md and the spec 2026-05-29-system-design-doc-split-files-design.md. -->
+
 # [Project Name] - System Design Document
 
 **Version**: 1.0.0
