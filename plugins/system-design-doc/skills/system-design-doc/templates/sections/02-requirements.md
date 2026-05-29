@@ -94,7 +94,7 @@ AC-005: Cancel button on order detail must show confirmation dialog before issui
 
 #### 2.5.2 Use Case Details
 
-##### Use Case (UC-001): Place Order
+### Use Case (UC-001): Place Order
 
 | Field | Value |
 |-------|-------|
@@ -122,7 +122,7 @@ AC-005: Cancel button on order detail must show confirmation dialog before issui
 
 - **E1: Network timeout to gateway** — auto-retry once after 5s; if still fails, show recoverable error
 
-##### Use Case (UC-002): [Title]
+### Use Case (UC-002): [Title]
 
 | Field | Value |
 |-------|-------|
