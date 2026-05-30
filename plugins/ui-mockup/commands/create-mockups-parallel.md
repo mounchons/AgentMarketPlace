@@ -231,6 +231,26 @@ mkdir -p .mockups
 
 > **Split layout:** if `.design-docs/design_doc_list.json` has `documents[].doc_layout:"split"`, resolve sections via `documents[].sections[]` (sitemap → `<doc_dir>/09-sitemap.md`, entities → `entities[]` / `07-er-diagram.md`) instead of a top-level `system-design.md`. Prefer `entities[]` from the registry for CRUD page generation.
 
+### Step 4.5: Resolve design doc sources to absolute paths (orchestrator — resolve-then-inject)
+
+> Follow `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware).
+
+The orchestrator (this main session) resolves design-doc sources **once** and injects pre-resolved
+**absolute paths** into each sub-agent prompt. Sub-agents MUST NOT re-resolve the registry themselves.
+
+```bash
+REG=.design-docs/design_doc_list.json
+DOC_DIR=$(jq -r '.documents[0].doc_dir // empty' "$REG" 2>/dev/null)
+SITEMAP=$(jq -r '.documents[0].sections[]|select(.key=="sitemap")|.file' "$REG" 2>/dev/null)
+ER=$(jq -r '.documents[0].sections[]|select(.key=="er-diagram")|.file' "$REG" 2>/dev/null)
+DATADICT=$(jq -r '.documents[0].sections[]|select(.key=="data-dictionary")|.file' "$REG" 2>/dev/null)
+# Resolve each non-empty result to an absolute path (prefix the repo's .design-docs/ root) for injection.
+```
+
+For each page, build the design-sources block shown in the prompt templates below (see
+`## Design Doc Sources` heading) with the absolute paths + the relevant `entities[]` JSON slice for that page/entity.
+If no registry exists, set every value to `n/a` and omit the entities slice.
+
 ### Step 5: Spawn Sub Agents in Parallel
 
 **Use the Task tool multiple times in the same message:**
@@ -248,6 +268,12 @@ Create a UI Mockup for the page: [PAGE_NAME]
 
 ## UI Mockup Knowledge
 [Insert knowledge block from Step 2]
+
+## Design Doc Sources (pre-resolved — DO NOT re-resolve)
+- sitemap:         [ABS_SITEMAP or n/a]
+- er-diagram:      [ABS_ER or n/a]
+- data-dictionary: [ABS_DATADICT or n/a]
+- entities:        [inline JSON slice from registry entities[] for this page/entity, or n/a]
 
 ## Output Format
 Create file .mockups/[page-name].mockup.md using this format:
@@ -392,6 +418,15 @@ If ANY breakpoint wireframe is missing, your output will be REJECTED.
 Violating these rules means your output is INVALID and will be REJECTED entirely. You must redo from scratch.
 
 ---
+
+## Design Doc Sources (pre-resolved — DO NOT re-resolve)
+- sitemap:         {{ABS_SITEMAP|n/a}}
+- er-diagram:      {{ABS_ER|n/a}}
+- data-dictionary: {{ABS_DATADICT|n/a}}
+- entities:        {{ENTITIES_JSON|n/a}}
+
+These paths are already resolved by the orchestrator. Read them directly if you need design content.
+Do NOT open design_doc_list.json yourself.
 
 ## Task
 Create a UI Mockup for the page: **{{PAGE_NAME}}**
