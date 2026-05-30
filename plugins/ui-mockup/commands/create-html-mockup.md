@@ -168,6 +168,26 @@ Find the page directly by ID (e.g., `003`) or name (e.g., `user-list`, `User Lis
 
 ---
 
+### Step 1b: Resolve design doc sources (registry-aware)
+
+> To resolve system-design-doc sources, follow `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware, JSON-preferred).
+
+After reading the page's `related_documents` (Step 1), resolve the actual design-doc files:
+
+```bash
+# Prefer the registry — works for BOTH split and single layouts
+cat .design-docs/design_doc_list.json 2>/dev/null
+```
+
+- **If a `related_documents[].path` is empty/missing OR `design_doc_list.json` exists** → resolve via the registry:
+  - branch on `documents[].doc_layout`: `"split"` → resolve section files through `documents[].sections[]` (by `key`); `"single"`/absent → use `documents[].file_path`.
+  - **Prefer structured JSON:** read `entities[]` (field mapping) and `diagrams.sitemap` (page metadata) directly from `design_doc_list.json`; only Read a section `.md` when you need prose/diagram content.
+- **If no registry exists** → keep following `related_documents[].path` as-is (legacy behavior).
+
+This feeds the `frontend-design` invocation (Step 4) with accurate field/entity data regardless of design-doc layout.
+
+---
+
 ### Step 2: Query Brain for Navigation Data
 
 Use brain MCP tools to search for navigation, topbar, and profile dropdown data:
