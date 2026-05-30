@@ -857,3 +857,15 @@ plugins/ui-mockup/
 - **[system-design-doc](../system-design-doc/)** - สร้างเอกสารออกแบบระบบ
 - **[long-running](../long-running/)** - Development workflow
 - **[frontend-design](../../)** - Generate HTML/CSS/React จาก mockup
+
+---
+
+## Changelog
+
+### 1.10.0 (2026-05-30)
+- **Split-aware design-doc reading (coverage gap closure).** All commands that read system-design-doc now support the split per-section layout (schema 2.3.0).
+  - New canonical reference `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware, JSON-preferred).
+  - `create-html-mockup`: Step 1b resolves sources via the registry / `sections[]`.
+  - `create-mockups-parallel`: resolve-then-inject — orchestrator injects pre-resolved absolute paths into sub-agent prompts.
+  - `validate-mockup`: Category 7 resolves split section files and verifies `related_documents[].path` exists.
+  - `edit-mockup`: new non-blocking design-doc drift check (Step 3.5).

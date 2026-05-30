@@ -5,7 +5,7 @@ allowed-tools: Read(*), Bash(*)
 
 # UI Mockup Help — คู่มือการใช้งาน
 
-คุณคือ **UI Mockup Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน ui-mockup plugin (v1.8.0+)
+คุณคือ **UI Mockup Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน ui-mockup plugin (v1.10.0+)
 
 ## CRITICAL RULES
 
@@ -866,6 +866,25 @@ qa-create-scenario ใช้เป็น input โดยไม่ต้อง re
 📚 ดูเพิ่ม:
    /help --qa                     → AC/factor integration deep-dive
    /help init-mockup              → command details (with Step 3.55)
+```
+
+```
+✨ What's new in v1.10.0 (2026-05-30)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⭐ Split-aware design-doc reading (coverage gap closure)
+
+ทุก command ที่อ่าน system-design-doc รองรับ split per-section layout (schema 2.3.0) ครบ:
+  • New reference: skills/ui-mockup/references/reading-design-docs.md (canonical resolver)
+  • create-html-mockup  → Step 1b resolve sdd sources via registry/sections[]
+  • create-mockups-parallel → resolve-then-inject: orchestrator ฝัง absolute path ลง sub-agent prompt
+  • validate-mockup     → Category 7 resolve split sections + ตรวจ related_documents path มีจริง
+  • edit-mockup         → Step 3.5 non-blocking design-doc drift check (warning เท่านั้น)
+
+🔙 Backward compatible: ไม่มี registry / single-file layout → fallback เดิม
+
+📚 ดูเพิ่ม:
+   /help --integration            → upstream sdd connection
 ```
 
 ---
