@@ -69,6 +69,32 @@ cat .mockups/[NNN]-[page-name].mockup.md
 - CRUD Group and UI Pattern (if applicable)
 - Action column position (if List page)
 
+### Step 3.5: Design-doc consistency check (non-blocking)
+
+> Resolve design-doc sources per `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware).
+
+If the mockup's `related_documents` (in `.mockups/mockup_list.json`) point to system-design-doc sections,
+read the resolved section(s) and compare against the current mockup BEFORE applying edits:
+
+```bash
+# locate the page entry + its related_documents
+cat .mockups/mockup_list.json | jq '.pages[] | select(.name|test("[page-name]";"i")) | .related_documents'
+# resolve a section path from the registry (split layout)
+jq -r --arg k "data-dictionary" '.documents[0].sections[]|select(.key==$k)|.file' .design-docs/design_doc_list.json 2>/dev/null
+```
+
+Surface drift as a **WARNING only** (do NOT auto-rewrite):
+
+```
+⚠️ Design-doc drift detected (informational):
+   • Entity "User" now has field "phone_number" (not in mockup form)
+   • Page renamed in sitemap: "User List" → "Members List"
+   Proceeding with your requested edit. Re-sync via /sync-with-mockups if needed.
+```
+
+If the mockup has no `related_documents` OR no `design_doc_list.json` exists → **skip this step silently**
+and continue to Step 4.
+
 ### Step 4: Analyze Change Request
 
 **Edit types:**
