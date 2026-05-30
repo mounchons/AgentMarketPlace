@@ -166,20 +166,26 @@ Required sections:
 
 **Status: FAIL if any required section missing**
 
-### Category 7: Cross-Reference Validation (NEW)
+### Category 7: Cross-Reference Validation (split-aware)
 
-**Check that mockup references match design_doc_list.json.**
+> Resolve design-doc sources per `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware). Branch on `documents[].doc_layout`: `"split"` → resolve section files via `documents[].sections[]`; `"single"`/absent → single `documents[].file_path`.
 
 ```
-Checks (if design_doc_list.json exists):
-- [ ] Entities referenced in mockup exist in design doc
-- [ ] Pages referenced in mockup exist in sitemap
-- [ ] API endpoints referenced match design doc's sequence diagrams
-- [ ] Field names in forms match Data Dictionary columns
-- [ ] CRUD operations match design doc entity configurations
+Checks (if .design-docs/design_doc_list.json exists):
+- [ ] Entities referenced in mockup exist in registry `entities[]` (or the resolved er-diagram file)
+- [ ] Pages referenced in mockup exist in `diagrams.sitemap` (or resolved sections[key="sitemap"].file)
+- [ ] Field names in forms match the resolved data-dictionary file (sections[key="data-dictionary"].file)
+- [ ] API endpoints referenced match registry `api_endpoints[]` (or sequence diagrams)
+- [ ] CRUD operations match registry `entities[].crud_operations`
+- [ ] Each mockup `related_documents[].path` EXISTS on disk AND matches a registry `sections[].file` (split) or `documents[].file_path` (single)
 ```
 
-**Status: WARN if references don't match, FAIL in strict mode**
+**Resolver example:**
+```bash
+jq -r --arg k "data-dictionary" '.documents[0].sections[]|select(.key==$k)|.file' .design-docs/design_doc_list.json
+```
+
+**Status: WARN if references don't match or a `related_documents` path is missing/stale, FAIL in strict mode**
 
 ### Category 8: Accessibility Check (NEW)
 
