@@ -310,7 +310,7 @@
       "name": "brain",
       "source": "./plugins/brain",
       "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "category": "knowledge",
       "tags": [
         "graph-brain",
