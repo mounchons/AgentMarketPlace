@@ -13,7 +13,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ## CRITICAL RULES
 
 1. **AC ต้อง trace ได้** — รองรับทั้ง manual mapping (`acceptance_criteria_id[]` ใน scenario) และ auto-discover (จาก system-design-doc files)
-2. **GAP detection ต้องชัด** — AC ที่ไม่มี scenario covered = release blocker (default)
+1b. **UC ต้อง trace ได้ด้วย** — consume `scenario.use_case_id` เป็น first-class UC link (คู่ขนานกับ AC) → ปิด 3-way traceability design-doc UC ↔ scenario ↔ feature (อย่าปล่อยให้ field นี้ write-only)
+2. **GAP detection ต้องชัด** — AC/UC ที่ไม่มี scenario covered = release blocker (default)
 3. **Gate decision ตาม coverage + pass rate** — ไม่ใช่แค่ scenario.status
 4. **Save matrix to file** — `traceability-matrix.md` (sharable artifact)
 5. **Don't fabricate AC IDs** — ถ้า design doc ไม่มี AC pattern → แจ้ง user + fall back to scenario-only view
@@ -23,9 +24,10 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 - [ ] qa-tracker.json read?
 - [ ] AC sources discovered (system-design-doc files)?
 - [ ] All scenarios scanned for `acceptance_criteria_id[]` field?
+- [ ] All scenarios scanned for `use_case_id` field (UC direct mapping)?
 - [ ] Auto-discover patterns checked (AC-XXX, ## Use case, etc.)?
-- [ ] Matrix populated for all ACs?
-- [ ] GAPs identified?
+- [ ] Matrix populated for all ACs + UCs?
+- [ ] GAPs identified (AC GAPs + UC GAPs)?
 - [ ] Gate decision applied per AC?
 - [ ] traceability-matrix.md saved?
 
@@ -95,6 +97,18 @@ ls *.md | grep -iE "design|spec|requirement" 2>/dev/null
 
 → ถ้ามี field นี้ ใช้ direct mapping
 
+#### Source 1b: Inline `use_case_id` field ใน scenarios (UC first-class link)
+
+```json
+{
+  "id": "TS-CHECKOUT-008",
+  "use_case_id": "UC-007",
+  ...
+}
+```
+
+→ `scenario.use_case_id` (เขียนโดย system-design-doc `/sync-with-qa-tracker`, หรือ seed จาก mockup hint) คือ **UC link โดยตรง** — ใช้สร้าง UC ↔ scenario matrix คู่ขนานกับ AC (ดู Step 3 **A2**). ชื่อ/module ของ UC resolve จาก `design_doc_list.json use_cases[]` (registry) หรือ regex `### Use Case (UC-NNN)` ใน design docs. **ปิด dead UC leg** — field นี้เคยถูกเขียนแต่ไม่เคยถูกอ่าน
+
 #### Source 2: AC-pattern in design docs (auto-discover)
 
 Patterns ที่ scan:
@@ -151,6 +165,21 @@ grep -rE "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" .design-docs/ docs/ --include="*.md" 2>/
 }
 ```
 
+**UC inventory (คู่ขนาน — ปิด dead UC leg):** resolve UC จาก `design_doc_list.json use_cases[]` (registry) หรือ regex `### Use Case (UC-NNN)` ใน design docs + union กับ UC ที่ปรากฏใน `scenario.use_case_id` (เผื่อ design doc ยังไม่มี UC นั้น)
+
+```json
+{
+  "uc_inventory": [
+    {
+      "id": "UC-007",
+      "title": "Cancel order within 10 minutes",
+      "module": "CHECKOUT",
+      "source": ".design-docs/shop/02-requirements.md (use_cases[]) | scenario.use_case_id"
+    }
+  ]
+}
+```
+
 ---
 
 ### Step 3: Link Scenarios to ACs
@@ -163,6 +192,19 @@ for scenario in qa-tracker.scenarios:
     for ac_id in scenario.acceptance_criteria_id:
       matrix[ac_id].scenarios.push(scenario.id)
 ```
+
+#### A2. Direct UC mapping (จาก `scenario.use_case_id`) — ปิด dead UC leg
+
+```
+for scenario in qa-tracker.scenarios:
+  if scenario.use_case_id:
+    uc_matrix[scenario.use_case_id].scenarios.push(scenario.id)
+    # ถ้า UC ยังไม่อยู่ใน uc_inventory → เพิ่มเข้า inventory (source = scenario.use_case_id)
+```
+
+> เดิม `use_case_id` ถูก *เขียน* (system-design-doc `/sync-with-qa-tracker`) แต่ qa-trace ไม่เคย *อ่าน* → UC coverage หาย.
+> ตอนนี้ qa-trace consume field นี้เป็น **first-class** เช่นเดียวกับ `acceptance_criteria_id` ทำให้ 3-way link
+> **design-doc UC ↔ scenario ↔ feature** ครบวง. UC ที่อยู่ใน `uc_inventory` แต่ไม่มี scenario ใด link → **UC GAP**
 
 #### B. Auto-link (เมื่อ `--auto-link` flag)
 
@@ -232,6 +274,8 @@ for ac_id, mapping in matrix:
     gate = "FAIL"
 ```
 
+**UC gate (คู่ขนาน):** ใช้ตรรกะเดียวกันกับ `uc_matrix` — UC ที่ไม่มี scenario link = `UC GAP` (traceability release blocker); UC ที่ทุก scenario ผ่าน = PASS; มี P0 scenario fail = FAIL. รายงานแยกส่วนจาก AC แต่ใช้เกณฑ์ gate เดียวกัน
+
 ---
 
 ### Step 5: Build Traceability Matrix
@@ -248,6 +292,10 @@ AC Source: .design-docs/design_doc_list.json (registry) → .design-docs/shop/02
 | Total ACs | Covered | GAPs | Pass Rate |
 |-----------|---------|------|-----------|
 | 24        | 21      | 3    | 87%       |
+
+| Total UCs | Covered | UC GAPs | Pass Rate |
+|-----------|---------|---------|-----------|
+| 12        | 11      | 1       | 91%       |
 
 🚨 **Release Status: NOT READY** — 3 ACs ไม่มี scenario covered + 2 ACs FAIL
 
@@ -288,6 +336,21 @@ AC Source: .design-docs/design_doc_list.json (registry) → .design-docs/shop/02
 | AC-009 | TS-CASCADE-001 | Step 4: Cascade delete didn't trigger restrict |
 
 → /qa-bug-triage → /qa-bug-export to long-running
+
+## UC Matrix (Use Case ↔ Scenarios)
+
+> สร้างจาก `scenario.use_case_id` (Step 3 A2) + `uc_inventory` — ปิด dead UC leg ของ 3-way traceability
+
+| UC ID  | Title                        | Module   | Scenarios (via use_case_id) | Pass Rate | Gate    |
+|--------|------------------------------|----------|-----------------------------|-----------|---------|
+| UC-007 | Cancel order within 10 min   | CHECKOUT | TS-CHECKOUT-008             | 1/1 100%  | ✅ PASS |
+| UC-003 | Bulk delete cascade          | PRODUCT  | TS-CASCADE-001              | 0/1 0%    | ❌ FAIL |
+| UC-011 | Approve refund request       | FINANCE  | (no scenario.use_case_id)   | —         | ❌ UC GAP |
+
+## UC GAPs (use case ไม่มี scenario link) 🚨
+
+1. **UC-011** (FINANCE): Approve refund request
+   → ไม่มี scenario ใดมี `use_case_id: "UC-011"` → เพิ่ม scenario แล้ว set `use_case_id`, หรือให้ system-design-doc `/sync-with-qa-tracker` เชื่อมให้
 
 ## Release Sign-off Checklist
 
