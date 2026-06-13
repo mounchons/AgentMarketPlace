@@ -1,7 +1,21 @@
 ---
 name: long-running
 version: 2.10.0
-description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, Verification Pipeline, qa-ui-test release gates (NFR + AC coverage + bug verification + Gate 4 UI control coverage), /scan-changes upstream traceability, /emit-control-spec UI Control Manifest, split-layout design-doc resolution, and integration with ui-mockup, system-design-doc, qa-ui-test, dotnet-dev skills. USE THIS SKILL when the user mentions: continue from previous session, feature list, feature tracking, coding agent, release gate, AC coverage, NFR check, bug verification, control manifest, multi-session development, progress log. Thai triggers: "ทำต่อจาก session ก่อน", "สร้าง feature list", "feature tracking", "release gate", "ตรวจ coverage", "ตรวจ NFR", "verify bug", "scan changes", "ทำงานข้าม session"
+description: |
+  Harness for AI Agents working across context windows — multi-session continuity, feature tracking,
+  progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria,
+  model assignment + opus review system, flows, state contracts, component requirements,
+  CRITICAL RULES enforcement, Verification Pipeline, qa-ui-test release gates (NFR + AC coverage +
+  bug verification + Gate 4 UI control coverage), /scan-changes upstream traceability,
+  /emit-control-spec UI Control Manifest, split-layout design-doc resolution, and integration with
+  ui-mockup, system-design-doc, qa-ui-test, dotnet-dev skills.
+
+  USE THIS SKILL when the user mentions: continue from previous session, feature list, feature tracking,
+  coding agent, release gate, AC coverage, NFR check, bug verification, control manifest,
+  multi-session development, progress log.
+
+  Thai triggers: "ทำต่อจาก session ก่อน", "สร้าง feature list", "feature tracking", "release gate",
+  "ตรวจ coverage", "ตรวจ NFR", "verify bug", "scan changes", "ทำงานข้าม session"
 ---
 
 # Long-Running Agent Skill
