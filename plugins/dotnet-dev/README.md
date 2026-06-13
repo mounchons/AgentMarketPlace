@@ -1,6 +1,6 @@
 # .NET Core Development Expert Skill
 
-**Version: 1.4.0**
+**Version: 1.5.0**
 
 Expert-level .NET Core development skill สำหรับ Claude Code พร้อม Microsoft Learn MCP integration
 
@@ -56,9 +56,14 @@ Tools ที่ได้: `microsoft_docs_search`, `microsoft_code_sample_search
 - Best practices checklist
 
 ### References
-- `ef-core-patterns.md` - Advanced EF Core patterns (PostgreSQL + SQL Server)
+- `clean-architecture-templates.md` - โค้ด template เต็ม (BaseEntity, Repository/UoW, DbContext, DI, Aspire AppHost)
+- `ef-core-patterns.md` - Advanced EF Core patterns + EF Core 10 (PostgreSQL + SQL Server)
 - `aspire-setup.md` - .NET Aspire 13 / .NET 10 configuration (Aspire CLI, Enrich*DbContext, WaitFor, built-in OpenAPI)
-- `testing-patterns.md` - Testing strategies (xUnit + Testcontainers + Respawn)
+- `dependency-injection.md` - TimeProvider, keyed services, options pattern, HybridCache, IExceptionHandler + ProblemDetails
+- `auth-security.md` - JWT bearer, ASP.NET Core Identity API endpoints, authorization policies (.NET 10 401/403)
+- `react-integration.md` - CORS, Vite proxy, Aspire AddViteApp, openapi-typescript client, cookie vs JWT, BFF
+- `testing-patterns.md` - Testing (xunit.v3, Testcontainers 4.x dual-DB Postgres+MsSql, Respawn, FakeTimeProvider, IAsyncLifetime)
+- `deployment.md` - aspire publish / azd up, EF migration bundles + dedicated migration service
 - `microsoft-learn-mcp.md` - MCP usage guide
 
 ## 🚀 Usage Examples
@@ -105,6 +110,12 @@ Based on user's development patterns:
 7. **MVC Controllers** - default ของทีม (Minimal APIs สำหรับ service เล็ก)
 
 ## 📝 Changelog
+
+### v1.5.0 (2026-06-13)
+- ✨ **4 references ใหม่** (verify-then-write vs Microsoft Learn): `dependency-injection.md` (TimeProvider/keyed services/options ValidateOnStart/HybridCache/IExceptionHandler+ProblemDetails), `auth-security.md` (JWT bearer/MapIdentityApi/.NET 10 401/403/auth policies), `react-integration.md` (CORS/Vite proxy/Aspire AddViteApp/openapi-typescript/BFF), `deployment.md` (aspire publish/azd up/migration bundles + dedicated migration service)
+- 🔧 **testing-patterns.md overhaul**: xunit.v3, Testcontainers 4.x + **MsSql fixture** (dual-DB Postgres+SQL Server), Respawn SqlServer adapter, FakeTimeProvider, IAsyncLifetime (เลิก sync-over-async), licensing notes (FluentAssertions 8+/MediatR 13+/AutoMapper 15+ commercial → Shouldly/Mapperly alternatives)
+- 🧹 **SKILL.md progressive disclosure**: ย้ายโค้ด template 8 ชุด → `clean-architecture-templates.md` (SKILL.md 556 → 254 บรรทัด), เหลือ principles + decision tables + pattern summary + routing
+- 📝 Reference Files index ครบ 9 ไฟล์ (SKILL.md + README) + bump 1.5.0
 
 ### v1.4.0 (2026-06-13)
 - 📝 Rewrite **`references/aspire-setup.md` → Aspire 13 / .NET 10** (ทุก API verified vs Microsoft Learn): Aspire CLI (`aspire new`/`run`/`update`), AppHost `Sdk="Aspire.AppHost.Sdk/13.0.0"` (net10.0), `WaitFor` + `WithLifetime(ContainerLifetime.Persistent)` + `WithHttpHealthCheck`
