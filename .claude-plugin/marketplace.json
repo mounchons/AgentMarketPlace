@@ -13,7 +13,7 @@
     {
       "name": "system-design-doc",
       "source": "./plugins/system-design-doc",
-      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน 10 sections (22 commands) — split per-section layout (default) + registry design_doc_list.json schema 2.3.0, รองรับ Reverse Engineering, Import Plan, Brainstorming 8 phases, Mermaid diagrams 7 ประเภท, sitemap.json graph 8 node types + 8 commands /sitemap-* (R31-R35 validation), AC/UC source of truth (flat AC-NNN/UC-NNN) สำหรับ qa-ui-test traceability, sync กับ ui-mockup / long-running / qa-tracker, /validate-integration ครอบ 4 plugins พร้อม release-ready flag. v2.2.0: docs sync ครบ 22 commands + main entry split-aware + qa-trace registry contract fix + ${CLAUDE_PLUGIN_ROOT} paths",
+      "description": "สร้างเอกสารออกแบบระบบมาตรฐาน 10 sections (22 commands) — split per-section layout (default) + registry design_doc_list.json schema 2.3.0, รองรับ Reverse Engineering, Import Plan, Brainstorming 8 phases, Mermaid diagrams 8 ประเภท, sitemap.json graph 8 node types + 8 commands /sitemap-* (R31-R35 validation), AC/UC source of truth (flat AC-NNN/UC-NNN) สำหรับ qa-ui-test traceability, sync กับ ui-mockup / long-running / qa-tracker, /validate-integration ครอบ 4 plugins พร้อม release-ready flag. v2.2.0: docs sync ครบ 22 commands + main entry split-aware + qa-trace registry contract fix + ${CLAUDE_PLUGIN_ROOT} paths",
       "version": "2.2.0",
       "category": "documentation",
       "tags": [

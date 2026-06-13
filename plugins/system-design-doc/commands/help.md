@@ -50,7 +50,7 @@ allowed-tools: Read(*), Bash(*)
 
 สร้างเอกสารออกแบบระบบมาตรฐาน (Standardized System Design Doc)
 รองรับ Reverse Engineering, Import Plan, Brainstorming
-มี Mermaid diagrams ครบ 7 ประเภท + integration กับ ui-mockup, long-running, qa-ui-test
+มี Mermaid diagrams ครบ 8 ประเภท + integration กับ ui-mockup, long-running, qa-ui-test
 ⭐ v2.1: split per-section layout (default) — .design-docs/<slug>/00-index.md + NN-<key>.md + registry schema 2.3.0
 ⭐ v2.0: sitemap.json machine-readable graph + 8 commands /sitemap-*
 ⭐ v1.7: AC + UC source-of-truth สำหรับ qa-ui-test traceability
@@ -149,6 +149,15 @@ allowed-tools: Read(*), Bash(*)
 
   /sitemap-export              Export เป็น Cytoscape JSON / GraphML / DOT
                                ตัวอย่าง: /sitemap-export cytoscape
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🛠️  UTILITY (1 command)
+
+  /help                        คู่มือใช้งาน plugin (read-only)
+                               ตัวอย่าง: /help
+                               ตัวอย่าง: /help --new
+                               ตัวอย่าง: /help create-diagram
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -479,7 +488,7 @@ $ /validate-integration        # ตรวจ cross-plugin
 📐 Diagram Types Reference
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-7 ประเภท diagram ที่ /create-diagram รองรับ:
+8 ประเภท diagram ที่ /create-diagram รองรับ:
 
 ┌────────────┬────────────────────────────────────────────────────┐
 │ Type       │ เมื่อใช้                                            │
@@ -504,6 +513,9 @@ $ /validate-integration        # ตรวจ cross-plugin
 ├────────────┼────────────────────────────────────────────────────┤
 │ class      │ Class diagram — DDD/OOP design                      │
 │            │ /create-diagram class                               │
+├────────────┼────────────────────────────────────────────────────┤
+│ architecture│ System architecture — layers, microservices, DDD  │
+│            │ /create-diagram architecture                        │
 └────────────┴────────────────────────────────────────────────────┘
 
 🎯 Recommended Combinations:

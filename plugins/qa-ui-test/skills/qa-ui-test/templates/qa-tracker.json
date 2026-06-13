@@ -177,13 +177,13 @@
     "_comment": "Reference schema for AC-to-test traceability. Populated by /qa-trace (v2.5). Remove this key in production.",
     "schema_version": "1.0",
     "last_traced_at": "ISO8601",
-    "ac_sources": ["docs/design/checkout.md", "docs/design/auth.md"],
+    "ac_sources": [".design-docs/shop/02-requirements.md"],
     "ac_inventory": [
       {
-        "id": "AC-1.1",
+        "id": "AC-001",
         "title": "User can place order with valid payment",
         "module": "CHECKOUT",
-        "source": "docs/design/checkout.md:23",
+        "source": ".design-docs/shop/02-requirements.md:23",
         "type": "functional|non-functional|business-rule",
         "linked_scenarios": ["TS-CHECKOUT-001", "TS-CHECKOUT-002"],
         "auto_linked": false,

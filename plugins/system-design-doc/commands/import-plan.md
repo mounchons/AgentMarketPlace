@@ -86,10 +86,12 @@ Read these files from the plugin directory to use as templates:
 
 | File | Purpose |
 |------|---------|
-| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | Standard 10-section structure |
-| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Standard Mermaid diagram syntax |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` | Index/TOC template (`00-index.md`) — split layout (default) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/NN-<key>.md` | Per-section templates (split layout — default) |
 | `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Details for each section |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Standard Mermaid diagram syntax |
 | `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` | Supported architecture patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
 
 ### 2.2 Extract from Implementation Plan (Type A)
 
@@ -140,7 +142,8 @@ cat .design-docs/design_doc_list.json 2>/dev/null
 Ask the user:
 ```
 📁 พบ design docs ที่มีอยู่แล้ว:
-   • .design-docs/system-design-[name].md
+   • .design-docs/[project-slug]/00-index.md (split layout)  หรือ
+     .design-docs/system-design-[name].md (legacy single-file)
    • .design-docs/design_doc_list.json
 
 เลือกการดำเนินการ:
@@ -219,7 +222,7 @@ Legacy single-file `.design-docs/system-design-[project-name].md` — only when 
 
 - **ALWAYS reformat every section** — do NOT copy verbatim from source
 - Use Mermaid syntax per `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md`
-- Use structure per `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md`
+- Use split-layout structure: `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` + `templates/sections/NN-<key>.md` (default). Legacy `templates/design-doc-template.md` only when `doc_layout:"single"`
 - Include content for all 10 sections even if some sections are minimal
 - Do NOT create actual code (implementation code)
 
@@ -408,11 +411,17 @@ Use the structure from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates
     {
       "id": "DOC-001",
       "name": "[Project] System Design",
-      "file_path": "system-design-[project-name].md",
+      "doc_layout": "split",
+      "doc_dir": "[project-slug]",
+      "file_path": "[project-slug]/00-index.md",
       "source": "imported",
       "source_file": "[original-file-path]",
       "status": "draft",
-      "sections_completed": ["introduction", "requirements", "modules", "data_model", "dfd", "flow_diagrams", "er_diagram", "data_dictionary", "sitemap", "permissions"]
+      "sections": [
+        { "key": "introduction",   "file": "[project-slug]/01-introduction.md",   "status": "completed" },
+        { "key": "requirements",   "file": "[project-slug]/02-requirements.md",   "status": "completed" }
+      ],
+      "sections_completed": ["introduction", "requirements", "modules", "data-model", "dfd", "flow-diagrams", "er-diagram", "data-dictionary", "sitemap", "permissions"]
     }
   ]
 }
@@ -466,9 +475,10 @@ Display results on success:
 📄 Source: [source-file-path]
    Type: [Implementation Plan / Free-form Design Doc]
 
-📁 Output files:
-   • .design-docs/system-design-[project-name].md
-   • .design-docs/design_doc_list.json
+📁 Output files (split layout — default):
+   • .design-docs/[project-slug]/00-index.md + 01..10-<key>.md (10 section files)
+   • .design-docs/design_doc_list.json (schema 2.3.0)
+   (legacy single-file mode: .design-docs/system-design-[project-name].md)
 
 📊 Sections generated:
    ✅ Section 1: Introduction
@@ -538,7 +548,8 @@ git commit -m "docs: import design doc from [source-filename]
 | `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Standard 10-section details |
 | `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Mermaid syntax patterns for diagrams |
 | `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` | Supported architecture patterns |
-| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | Design document structure template |
-| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design_doc_list.json` | Design doc registry template |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` + `templates/sections/NN-<key>.md` | Split-layout templates (default) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design_doc_list.json` | Design doc registry template (schema 2.3.0) |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

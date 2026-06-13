@@ -1,5 +1,5 @@
 ---
-description: Create a specific diagram type (ER, Flow, DFD, Sequence, Sitemap, State, Class)
+description: Create a specific diagram type (ER, Flow, DFD, Sequence, Sitemap, State, Class, Architecture)
 allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 ---
 
@@ -363,6 +363,50 @@ classDiagram
     User "1" --> "*" Order : places
     Order "1" --> "*" OrderItem : contains
 ```
+
+---
+
+## Architecture Diagram
+
+### Input Required
+- System name / bounded contexts
+- Architecture style (Microservices, Event-driven, Clean Architecture, DDD)
+- Major components and their dependencies
+
+### Pattern
+
+```mermaid
+flowchart TB
+    subgraph Client["Client Layer"]
+        Web[Web App]
+        Mobile[Mobile App]
+    end
+
+    subgraph API["API Layer"]
+        GW[API Gateway]
+        Auth[Auth Service]
+    end
+
+    subgraph Domain["Domain Services"]
+        Order[Order Service]
+        Payment[Payment Service]
+    end
+
+    subgraph Data["Data Layer"]
+        DB[(PostgreSQL)]
+        Cache[(Redis)]
+    end
+
+    Web --> GW
+    Mobile --> GW
+    GW --> Auth
+    GW --> Order
+    Order --> Payment
+    Order --> DB
+    Order --> Cache
+```
+
+> Pattern reference: `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` (Microservices / Event-driven / Clean Architecture / DDD)
 
 ---
 

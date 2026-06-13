@@ -99,10 +99,10 @@ ls *.md | grep -iE "design|spec|requirement" 2>/dev/null
 
 Patterns ที่ scan:
 ```
-^AC-\d{3}:\s+(.*)$                    # AC-001: User can place order (มาตรฐาน registry — flat AC-NNN)
-^AC-\d+(\.\d+)?:\s+(.*)$              # legacy docs เท่านั้น (AC-1.1 — เอกสารจาก system-design-doc ใช้ flat AC-NNN เสมอ)
+^AC-\d{3}:\s+(.*)$                    # มาตรฐาน registry — flat AC-NNN (เช่น AC-001: User can place order)
+^AC-\d+(\.\d+)?:\s+(.*)$              # เผื่อ legacy docs ที่ใช้ dotted (AC-1.1) — เอกสารจาก system-design-doc ใช้ flat AC-NNN เสมอ
 ^## Acceptance Criteria.*$            # ## Acceptance Criteria
-^- AC-\d+:.*$                          # - AC-5: System logs all actions
+^- AC-\d+:.*$                          # - AC-005: System logs all actions
 ^### Use Case (UC-\d+):.*$             # ### Use Case (UC-003): Cancel order
 ```
 
@@ -187,7 +187,7 @@ for ac in ac_inventory:
 ถ้าไม่ใช้ `--auto-link` แต่มี AC ที่ไม่ link → ถาม user:
 
 ```
-🔗 Link suggestion สำหรับ AC-1.1:
+🔗 Link suggestion สำหรับ AC-001:
    "User can place order with valid payment"
 
 Top candidate scenarios (by keyword overlap):
@@ -195,7 +195,7 @@ Top candidate scenarios (by keyword overlap):
    2. TS-CHECKOUT-002: Place order with invalid card (overlap: order, place)
    3. TS-PAYMENT-001: Payment success         (overlap: payment, valid)
 
-❓ Link AC-1.1 → ?
+❓ Link AC-001 → ?
    1,2  — link multiple
    none — ยัง undefined (จะกลายเป็น GAP)
    skip — ทำต่อภายหลัง
@@ -257,35 +257,35 @@ AC Source: .design-docs/design_doc_list.json (registry) → .design-docs/shop/02
 
 | AC ID  | Title                          | Module   | Tests              | Pass Rate | Gate     |
 |--------|--------------------------------|----------|--------------------|-----------|----------|
-| AC-1.1 | Place order valid payment      | CHECKOUT | TS-CHECKOUT-001,002| 2/2 100%  | ✅ PASS  |
-| AC-1.2 | Cancel order within 10 min     | CHECKOUT | TS-CHECKOUT-008    | 1/1 100%  | ✅ PASS  |
-| AC-1.3 | VAT calculation correct        | CHECKOUT | (no test)          | —         | ❌ GAP   |
-| AC-1.4 | Payment retry on timeout       | CHECKOUT | TS-CHECKOUT-MOCK-3 | 0/1 0%    | ❌ FAIL  |
-| AC-2.1 | Login + remember me            | LOGIN    | TS-LOGIN-001       | 1/1 100%  | ✅ PASS  |
-| AC-2.2 | MFA on suspicious activity     | LOGIN    | (no test)          | —         | ❌ GAP   |
-| AC-3.1 | Product list pagination        | PRODUCT  | TS-PRODUCT-011     | 1/1 100%  | ✅ PASS  |
-| AC-3.2 | Product search filters         | PRODUCT  | TS-PRODUCT-009,010 | 2/2 100%  | ✅ PASS  |
-| AC-3.3 | Bulk delete with cascade       | PRODUCT  | TS-CASCADE-001     | 0/1 0%    | ❌ FAIL  |
+| AC-001 | Place order valid payment      | CHECKOUT | TS-CHECKOUT-001,002| 2/2 100%  | ✅ PASS  |
+| AC-002 | Cancel order within 10 min     | CHECKOUT | TS-CHECKOUT-008    | 1/1 100%  | ✅ PASS  |
+| AC-003 | VAT calculation correct        | CHECKOUT | (no test)          | —         | ❌ GAP   |
+| AC-004 | Payment retry on timeout       | CHECKOUT | TS-CHECKOUT-MOCK-3 | 0/1 0%    | ❌ FAIL  |
+| AC-005 | Login + remember me            | LOGIN    | TS-LOGIN-001       | 1/1 100%  | ✅ PASS  |
+| AC-006 | MFA on suspicious activity     | LOGIN    | (no test)          | —         | ❌ GAP   |
+| AC-007 | Product list pagination        | PRODUCT  | TS-PRODUCT-011     | 1/1 100%  | ✅ PASS  |
+| AC-008 | Product search filters         | PRODUCT  | TS-PRODUCT-009,010 | 2/2 100%  | ✅ PASS  |
+| AC-009 | Bulk delete with cascade       | PRODUCT  | TS-CASCADE-001     | 0/1 0%    | ❌ FAIL  |
 
 ## GAPs (no test coverage) 🚨
 
 3 ACs ไม่มี test ครอบ — release blocker:
 
-1. **AC-1.3** (CHECKOUT): VAT calculation correct
+1. **AC-003** (CHECKOUT): VAT calculation correct
    → Add scenario: `/qa-edit-scenario --module CHECKOUT "VAT calculation across order types"`
 
-2. **AC-2.2** (LOGIN): MFA on suspicious activity
+2. **AC-006** (LOGIN): MFA on suspicious activity
    → Add scenario: `/qa-edit-scenario --module LOGIN "MFA trigger on unusual location"`
 
-3. **AC-5.1** (REPORT): Export to CSV/PDF
+3. **AC-010** (REPORT): Export to CSV/PDF
    → Add scenario: `/qa-create-scenario http://localhost:3000/reports/export`
 
 ## FAILs (test exists but failing)
 
 | AC | Scenario | Last Error |
 |---|---|---|
-| AC-1.4 | TS-CHECKOUT-MOCK-3 | Step 5: Retry sequence stuck after 3 attempts |
-| AC-3.3 | TS-CASCADE-001 | Step 4: Cascade delete didn't trigger restrict |
+| AC-004 | TS-CHECKOUT-MOCK-3 | Step 5: Retry sequence stuck after 3 attempts |
+| AC-009 | TS-CASCADE-001 | Step 4: Cascade delete didn't trigger restrict |
 
 → /qa-bug-triage → /qa-bug-export to long-running
 
@@ -387,18 +387,18 @@ git commit -m "qa-trace: 24 ACs traced — 19 PASS, 2 FAIL, 3 GAP"
 📋 Matrix saved: traceability-matrix.md
 
 🚨 GAPs (3 — must add scenarios):
-├── AC-1.3: VAT calculation correct (CHECKOUT)
+├── AC-003: VAT calculation correct (CHECKOUT)
 │   → /qa-edit-scenario --module CHECKOUT "VAT across order types"
-├── AC-2.2: MFA on suspicious activity (LOGIN)
+├── AC-006: MFA on suspicious activity (LOGIN)
 │   → /qa-edit-scenario --module LOGIN "MFA trigger"
-└── AC-5.1: Export to CSV/PDF (REPORT)
+└── AC-010: Export to CSV/PDF (REPORT)
     → /qa-create-scenario http://localhost:3000/reports/export
 
 ❌ FAILs (2 — must fix):
-├── AC-1.4: Payment retry timeout
+├── AC-004: Payment retry timeout
 │   TS-CHECKOUT-MOCK-3 fail at Step 5
 │   → /qa-bug-triage TS-CHECKOUT-MOCK-3
-└── AC-3.3: Bulk delete cascade
+└── AC-009: Bulk delete cascade
     TS-CASCADE-001 fail at Step 4
     → /qa-bug-triage TS-CASCADE-001
 
