@@ -95,7 +95,8 @@
       "rationale": "Why this risk level (e.g. 'money-flow + cascade depth 3')"
     },
     "complexity_factors": ["state-machine", "cascade-deep"],
-    "acceptance_criteria_id": ["AC-1.1", "AC-1.2", "_v2.5: link to system-design-doc ACs (manual or auto via /qa-trace --auto-link). Empty array = unlinked (will appear as GAP candidate)."],
+    "acceptance_criteria_id": ["AC-001", "AC-002", "_v2.5: link to system-design-doc ACs — flat AC-NNN format ตาม design_doc_list.json registry (ห้าม AC-X.Y). Manual or auto via /qa-trace --auto-link. Empty array = unlinked (will appear as GAP candidate)."],
+    "use_case_id": "UC-NNN | null — linked Use Case จาก design_doc_list.json (เขียนโดย system-design-doc /sync-with-qa-tracker Step 5)",
     "status": "pending|running|passed|failed|deprecated",
     "assigned_model": "sonnet|opus|haiku (haiku reserved for P3 + no factors)",
     "assigned_model_reason": "Rule that matched (e.g. 'state-machine factor present')",

@@ -44,7 +44,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
 /qa-trace --module CHECKOUT                 # เฉพาะ module
 /qa-trace --gaps-only                       # แสดงเฉพาะ GAPs (release blockers)
 /qa-trace --auto-link                       # auto-link AC ↔ scenarios จาก keyword match
-/qa-trace --source docs/design/             # custom AC source path
+/qa-trace --source path/to/design/          # custom AC source path (override registry)
 /qa-trace --save                            # save matrix to traceability-matrix.md
 $ARGUMENTS
 ```
@@ -59,8 +59,13 @@ $ARGUMENTS
 # 1. Read qa-tracker.json
 cat qa-tracker.json
 
-# 2. Find design docs (auto-discover)
-find docs/ -name "*.md" -type f 2>/dev/null
+# 2. Find design docs — registry first (system-design-doc v2.1+)
+cat .design-docs/design_doc_list.json 2>/dev/null
+# ถ้ามี registry → resolve AC/UC source ตาม doc_layout:
+#   "split"  → sections[key="requirements"].file (เช่น .design-docs/<doc_dir>/02-requirements.md)
+#   "single" → documents[].file_path
+# Fallback (ไม่มี registry):
+find .design-docs/ docs/ -name "*.md" -type f 2>/dev/null
 ls docs/design/ docs/system-design/ 2>/dev/null
 ls *.md | grep -iE "design|spec|requirement" 2>/dev/null
 ```
@@ -83,7 +88,7 @@ ls *.md | grep -iE "design|spec|requirement" 2>/dev/null
 ```json
 {
   "id": "TS-CHECKOUT-001",
-  "acceptance_criteria_id": ["AC-1.1", "AC-1.2"],
+  "acceptance_criteria_id": ["AC-001", "AC-002"],
   ...
 }
 ```
@@ -94,20 +99,22 @@ ls *.md | grep -iE "design|spec|requirement" 2>/dev/null
 
 Patterns ที่ scan:
 ```
-^AC-\d+(\.\d+)?:\s+(.*)$              # AC-1.1: User can place order
+^AC-\d{3}:\s+(.*)$                    # AC-001: User can place order (มาตรฐาน registry — flat AC-NNN)
+^AC-\d+(\.\d+)?:\s+(.*)$              # legacy docs เท่านั้น (AC-1.1 — เอกสารจาก system-design-doc ใช้ flat AC-NNN เสมอ)
 ^## Acceptance Criteria.*$            # ## Acceptance Criteria
 ^- AC-\d+:.*$                          # - AC-5: System logs all actions
-^### Use Case (UC-\d+):.*$             # ### Use Case (UC-3): Cancel order
+^### Use Case (UC-\d+):.*$             # ### Use Case (UC-003): Cancel order
 ```
 
 ```bash
-# Auto-discover AC IDs
-grep -rE "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" docs/ --include="*.md"
+# Auto-discover AC IDs — สแกนไฟล์ที่ resolve จาก registry ก่อน แล้วค่อย fallback
+grep -E "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" [resolved-requirements-file]
+grep -rE "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" .design-docs/ docs/ --include="*.md" 2>/dev/null   # fallback
 
 # Output:
-# docs/design/checkout.md:23: AC-1.1: User can place order with valid payment
-# docs/design/checkout.md:25: AC-1.2: User can cancel order within 10 min
-# docs/design/checkout.md:27: AC-1.3: System calculates VAT correctly
+# .design-docs/shop/02-requirements.md:23: AC-001: User can place order with valid payment
+# .design-docs/shop/02-requirements.md:25: AC-002: User can cancel order within 10 min
+# .design-docs/shop/02-requirements.md:27: AC-003: System calculates VAT correctly
 ```
 
 #### Source 3: Section-based extraction (fallback)
@@ -127,17 +134,17 @@ grep -rE "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" docs/ --include="*.md"
 {
   "ac_inventory": [
     {
-      "id": "AC-1.1",
+      "id": "AC-001",
       "title": "User can place order with valid payment",
       "module": "CHECKOUT",
-      "source": "docs/design/checkout.md:23",
+      "source": ".design-docs/shop/02-requirements.md:23",
       "type": "functional"
     },
     {
-      "id": "AC-1.2",
+      "id": "AC-002",
       "title": "User can cancel order within 10 min",
       "module": "CHECKOUT",
-      "source": "docs/design/checkout.md:25",
+      "source": ".design-docs/shop/02-requirements.md:25",
       "type": "functional"
     }
   ]
@@ -234,7 +241,7 @@ for ac_id, mapping in matrix:
 
 Project: [Project Name]
 Generated: [ISO8601]
-AC Source: docs/design/
+AC Source: .design-docs/design_doc_list.json (registry) → .design-docs/shop/02-requirements.md
 
 ## Summary
 
@@ -320,7 +327,7 @@ EOF
   "traceability": {
     "schema_version": "1.0",
     "last_traced_at": "ISO8601",
-    "ac_sources": ["docs/design/checkout.md", "docs/design/auth.md"],
+    "ac_sources": [".design-docs/shop/02-requirements.md"],
     "ac_inventory": [...],
     "summary": {
       "total_acs": 24,
@@ -342,9 +349,8 @@ EOF
 ## QA Session N - TRACE
 
 ### AC Sources discovered:
-- docs/design/checkout.md (8 ACs)
-- docs/design/auth.md (6 ACs)
-- docs/design/products.md (10 ACs)
+- .design-docs/design_doc_list.json (registry, doc_layout: split)
+- .design-docs/shop/02-requirements.md (24 ACs)
 
 ### Linking results:
 - Direct (from scenario field): 12
