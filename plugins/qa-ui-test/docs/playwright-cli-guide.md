@@ -331,7 +331,7 @@ AI จะ:
 /qa-create-scenario --from-design-doc
 ```
 
-AI อ่าน docs/system-design.md → แปลง requirements → scenarios
+AI อ่าน `.design-docs/design_doc_list.json` (registry) → resolve section requirements (split-aware) → แปลง AC/requirements → scenarios (fallback: `docs/system-design.md`)
 
 ---
 

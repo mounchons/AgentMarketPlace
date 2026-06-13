@@ -383,8 +383,50 @@
       "tested_at": "2026-06-13T02:12:26Z",
       "assigned_model": "sonnet",
       "is_reference_impl": false,
-      "review": null,
-      "notes": "Cross-plugin fix (system-design-doc v2.1.0→v2.2.0 + qa-ui-test v2.6.0→v2.6.1). 6 subtasks + 4 review-fix commits (adversarial verification 2 rounds). ผลวิเคราะห์ verdicts (#9,#11,#14,#15,#17) ตรงกับที่แก้. assigned_model=sonnet → ยัง await /review (opus) ถ้าต้องการ second pass; adversarial Opus-subagent verification ทำแล้ว 2 รอบ. Note: qa-create-scenario.md ยังสร้าง scenario โดยไม่มี acceptance_criteria_id/use_case_id field — เป็น follow-up นอก scope (template + qa-trace contract แก้แล้ว)."
+      "review": {
+        "reviewed_by": "opus",
+        "reviewed_at": "2026-06-13T08:41:49Z",
+        "result": "pass",
+        "score": 92,
+        "scores_by_dimension": {
+          "pattern_adherence": 92,
+          "acceptance_criteria": 95,
+          "code_correctness": 93,
+          "design_doc_compliance": 92,
+          "test_coverage": 85,
+          "coding_standards": 90
+        },
+        "pattern_adherence": "excellent",
+        "reference_feature_id": 1,
+        "method": "opus main-loop review (deep-review workflow ชน session limit → ทำ manual): accuracy + staleness sweep + cross-plugin contract + pattern adherence + quality. ต่อยอดจาก adversarial verification 2 รอบก่อนหน้า",
+        "auto_fixed": null,
+        "review_polish": {
+          "count": 2,
+          "note": "ไม่มี Critical/High. แก้ Low doc-consistency 2 จุดระหว่าง review (zero-risk, ผู้เขียนเดียวกัน)",
+          "items": [
+            "SKILL.md version-history เพิ่ม row 2.2.0 (เดิมหยุดที่ 2.1.0)",
+            "qa-ui-test/docs/playwright-cli-guide.md:334 path เก่า docs/system-design.md → registry-aware (.design-docs/design_doc_list.json)"
+          ]
+        },
+        "remaining_issues": [
+          {
+            "severity": "Medium",
+            "category": "crud-completeness",
+            "description": "qa-create-scenario.md / qa-edit-scenario.md / qa-create-advanced.md สร้าง scenario object โดยไม่มี field use_case_id (และมักไม่มี acceptance_criteria_id) — scenario เกิดมาแบบ unlinked. Template + qa-trace + sync-with-qa-tracker contract แก้แล้ว แต่ creation-time injection ยังขาด",
+            "file": "plugins/qa-ui-test/commands/qa-create-scenario.md",
+            "suggestion": "เพิ่ม use_case_id (+ acceptance_criteria_id) ตอน create/edit scenario — สร้างเป็น feature ใหม่ผ่าน /add-feature (out of Feature #4 scope)"
+          },
+          {
+            "severity": "Info",
+            "category": "coding-standards",
+            "description": "sync-with-qa-tracker.md:55 require design_doc_list schema >= 2.2.0 ขณะที่ registry ปัจจุบัน 2.3.0 — backward-compat ถูกต้อง แต่ระบุ 2.3.0 เป็น current จะชัดกว่า",
+            "file": "plugins/system-design-doc/commands/sync-with-qa-tracker.md",
+            "suggestion": "อัปเดตเป็น '>= 2.2.0 (current 2.3.0)' — ไม่เร่งด่วน"
+          }
+        ],
+        "notes": "PASS 92/100 (excellent). Cross-plugin contract writer(sync-with-qa-tracker)↔reader(qa-trace) consistent end-to-end: registry-first, flat AC-NNN, use_case_id, split-aware. ไม่พบ stale current-version banner (v1.7.0/v2.0.0/v2.1.0 ที่เจอเป็น feature-introduction labels + changelog ถูกต้อง). 22 commands + frontmatter + ${CLAUDE_PLUGIN_ROOT} paths + JSON valid + plugin validate ผ่าน. remaining_issues เป็น follow-up นอก scope (Medium) + Info — ไม่ block."
+      },
+      "notes": "Cross-plugin fix (system-design-doc v2.1.0→v2.2.0 + qa-ui-test v2.6.0→v2.6.1). 6 subtasks + 4 review-fix commits (adversarial verification 2 rounds) + opus review PASS 92/100 (review-polish 2 Low items). ผลวิเคราะห์ verdicts (#9,#11,#14,#15,#17) ตรงกับที่แก้. Follow-up นอก scope: qa-create-scenario/qa-edit-scenario creation-time use_case_id/acceptance_criteria_id injection (ดู review.remaining_issues)."
     },
     {
       "id": 5,
@@ -595,11 +637,11 @@
     "in_progress": 0,
     "blocked": 0,
     "pending": 4,
-    "last_updated": "2026-06-13T02:12:26Z",
+    "last_updated": "2026-06-13T08:41:49Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": { "assigned": 7, "done": 3, "in_progress": 0, "pending_review": 0 },
-      "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 1 }
+      "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
 }

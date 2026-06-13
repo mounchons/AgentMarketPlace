@@ -193,3 +193,31 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - Follow-up (นอก scope #4): qa-create-scenario.md ยังสร้าง scenario โดยไม่มี acceptance_criteria_id/use_case_id field — เพิ่มผ่าน /add-feature ภายหลังได้
 
 ---
+
+## Session 4 — Model Policy (opus ทุก feature) + Opus Review Feature #4
+**Date**: 2026-06-13
+**Type**: Config + Review
+
+### What was done:
+- ✅ Model policy: `model_config.force_opus_all=true` — ทุก feature ใหม่ assign opus (override complexity downgrade). #5-#8 → opus. #4 คง sonnet เป็น review candidate (commit `763b7a8`). บันทึก memory `feedback_opus_all_features.md`
+- ✅ **Opus review Feature #4 → PASS 92/100** (excellent pattern adherence)
+  - Deep-review workflow (5 dimensions × adversarial verify) ชน session limit → ทำ manual review ใน opus main-loop แทน
+  - Dimensions: accuracy (docs↔commands), staleness sweep, cross-plugin contract, pattern adherence, quality
+  - **Cross-plugin contract SOLID**: writer (sync-with-qa-tracker) ↔ reader (qa-trace) ตรงกัน end-to-end — registry-first, flat AC-NNN, use_case_id, split-aware
+  - ไม่พบ stale current-version banner (v1.7.0/v2.0.0/v2.1.0 ที่เจอ = feature-introduction labels + changelog ถูกต้อง)
+  - ไม่มี Critical/High → review-polish 2 Low items: SKILL.md +row 2.2.0, playwright-cli-guide.md path เก่า → registry-aware
+
+### Score breakdown (weighted):
+- Pattern Adherence 92 (×0.25) | Acceptance Criteria 95 (×0.25) | Code Correctness 93 (×0.20)
+- Design Doc Compliance 92 (×0.15) | Test Coverage 85 (×0.10) | Coding Standards 90 (×0.05) = **92/100**
+
+### Remaining issues (non-blocking, ใน review.remaining_issues):
+- [Medium] qa-create-scenario/qa-edit-scenario สร้าง scenario โดยไม่มี use_case_id/acceptance_criteria_id (creation-time injection) — follow-up /add-feature
+- [Info] sync-with-qa-tracker.md require schema >= 2.2.0 (current 2.3.0)
+
+### Current status:
+- Features passed: **4/8** | reviewed: 1 (Feature #4 ✅ PASS)
+- Build: ✅ plugin validate ผ่านทั้ง system-design-doc + qa-ui-test
+- Next: Feature #5 (opus) — long-running plugin fixes
+
+---
