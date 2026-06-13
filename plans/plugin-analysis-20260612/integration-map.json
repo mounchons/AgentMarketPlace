@@ -18,8 +18,8 @@
       "from": "ui-mockup",
       "to": "qa-ui-test",
       "mechanism": "ui-mockup writes pages[].complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps into mockup_list.json explicitly so qa-create-scenario does not have to re-scan code (stated intent). qa-create-scenario is the intended consumer.",
-      "status": "broken",
-      "evidence": "grep mockup_list/.mockups across plugins/qa-ui-test/ = 0 matches; qa-create-scenario.md:1549 derives complexity_factors from its OWN scan ('คำนวณ risk + complexity_factors'), never reads mockup hints; intent stated in plugins/ui-mockup/commands/init-mockup.md:293 + mockup_list.json template:398"
+      "status": "working",
+      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): qa-create-scenario.md 'Auto Step 0.6: Seed QA hints จาก ui-mockup (.mockups/mockup_list.json)' reads pages[].complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps as seed hints before code-scan; Auto Step 2 merges (union factors, baseline risk). grep '.mockups/mockup_list.json' in qa-create-scenario.md = 6 matches (was 0). --no-mockup-hints opt-out; graceful skip when file absent. Prior intent at ui-mockup init-mockup.md + mockup_list.json template now has a reciprocal reader."
     },
     {
       "from": "ui-mockup",
@@ -101,16 +101,16 @@
     {
       "from": "qa-ui-test",
       "to": "system-design-doc",
-      "mechanism": "UC structured-field leg: qa-tracker reserves scenarios[].use_case_id (written by SDD /sync-with-qa-tracker Step 5), but qa-trace.md never READS scenario.use_case_id — UC linkage is derived from regex only, not the structured field. The reserved field is stored but unconsumed downstream within qa-ui-test.",
-      "status": "partial",
-      "evidence": "plugins/qa-ui-test/commands/qa-trace.md has zero 'use_case_id' matches (field never read); qa-tracker.json:99 'use_case_id ... เขียนโดย system-design-doc /sync-with-qa-tracker Step 5'"
+      "mechanism": "UC structured-field leg: qa-tracker reserves scenarios[].use_case_id (written by SDD /sync-with-qa-tracker Step 5), and qa-trace.md now READS it as a first-class UC source (Feature #11), building a UC matrix + UC GAP report alongside the AC matrix.",
+      "status": "working",
+      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): qa-trace.md Source 1b reads scenario.use_case_id, Step 3 A2 direct UC mapping (uc_matrix[scenario.use_case_id]), Step 4 UC gate, Step 5 UC Matrix + UC GAPs output, uc_inventory resolves UC title/module from design_doc_list use_cases[]. grep 'use_case_id' in qa-trace.md = 14 matches (was 0). Field no longer write-only."
     },
     {
       "from": "qa-ui-test",
       "to": "ui-mockup",
-      "mechanism": "No direct integration. qa-ui-test does not read mockup_list.json or .mockups/ in any command or skill. ui-mockup independently writes seed hints intended for qa-create-scenario but the reciprocal read is absent.",
-      "status": "missing",
-      "evidence": "grep mockup_list/.mockups across plugins/qa-ui-test/ = 0 matches"
+      "mechanism": "qa-create-scenario reads .mockups/mockup_list.json pages[] seed hints (Auto Step 0.6, Feature #11) — reciprocal of ui-mockup's writer. Closes the previously one-sided contract.",
+      "status": "working",
+      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): grep '.mockups/mockup_list.json' in qa-create-scenario.md = 6 matches (was 0); see also the ui-mockup→qa-ui-test edge above"
     },
     {
       "from": "system-design-doc",
