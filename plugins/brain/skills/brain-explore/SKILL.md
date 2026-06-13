@@ -2,7 +2,7 @@
 name: brain-explore
 description: "Interactive graph traversal — navigate knowledge by walking through relationships node by node"
 user_invocable: true
-args: "<keyword, note title, or tag> — starting point for exploration"
+argument-hint: "<keyword, note title, or tag> — starting point for exploration"
 ---
 
 # Brain Explore — Interactive Graph Traversal

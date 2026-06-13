@@ -2,7 +2,7 @@
 name: brain-howto
 description: "Interactive Thai tutorial — teaches how to use brain commands step-by-step with real examples"
 user_invocable: true
-args: "[topic] — optional: specific command to learn about"
+argument-hint: "[topic] — optional: specific command to learn about"
 ---
 
 # Brain How-To — Thai Tutorial

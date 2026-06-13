@@ -1,15 +1,17 @@
 ---
 name: brain-save
-description: "Save new knowledge to Graph Brain from current conversation analysis or specified topic"
+description: "Save new knowledge to Graph Brain from current conversation analysis or specified topic.
+  USE THIS SKILL when the user wants to persist findings, decisions, or learnings into the knowledge graph.
+  Thai triggers: 'บันทึกความรู้', 'เซฟเข้า brain', 'จดไว้ใน brain', 'เก็บ knowledge', 'บันทึกสิ่งที่คุยกัน'"
 user_invocable: true
-args: "[topic] — if omitted, auto-detect from recent conversation"
+argument-hint: "[topic] — if omitted, auto-detect from recent conversation"
 ---
 
 # Brain Save
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow rules in `GRAPH_PROTOCOL.md` for all save operations.
+**Graph Protocol:** Follow rules in `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` for all save operations.
 
 ## Steps
 
@@ -56,7 +58,7 @@ ALL responses MUST be in Thai language.
    - Report result in Thai with title, tags, links, relationships created
 
 4a. **Update with Versioning** (when updating existing note)
-   Follow Versioning Protocol from `GRAPH_PROTOCOL.md`:
+   Follow Versioning Protocol from `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`:
    1. Call `mcp__graph-brain__get-knowledge` noteId="{existing-note-id}" → snapshot current content
    2. Determine changelog number: search existing changelogs for this note
    3. Create changelog note with diff summary

@@ -1,15 +1,17 @@
 ---
 name: brain-update
-description: "Update existing Graph Brain knowledge to match current codebase state"
+description: "Update existing Graph Brain knowledge to match current codebase state.
+  USE THIS SKILL when existing brain notes are outdated and need to reflect recent code or design changes.
+  Thai triggers: 'อัปเดตความรู้', 'update brain', 'ความรู้ใน brain เก่าแล้ว', 'แก้ note ใน brain'"
 user_invocable: true
-args: "<note-title or keyword>"
+argument-hint: "<note-title or keyword>"
 ---
 
 # Brain Update
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow rules in `GRAPH_PROTOCOL.md` — especially Versioning Protocol for all updates.
+**Graph Protocol:** Follow rules in `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` — especially Versioning Protocol for all updates.
 
 ## Steps
 
@@ -26,7 +28,7 @@ ALL responses MUST be in Thai language.
    - Identify: changed parts, outdated info, missing new info
 
 4. **Create changelog** (Versioning Protocol)
-   Follow Versioning Protocol from `GRAPH_PROTOCOL.md`:
+   Follow Versioning Protocol from `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`:
    1. Determine changelog number: `mcp__graph-brain__search-knowledge` query="{note-title} — Changelog" limit=20 → count + 1
    2. Create changelog note:
       - title: `"{Original Title} — Changelog #{N} ({YYYY-MM-DD})"`

@@ -2,7 +2,7 @@
 name: brain-projects
 description: "View all projects in Brain — tech stacks, cross-project connections, and technology overview"
 user_invocable: true
-args: "[project-name | --tech | --compare] — view specific project, tech overview, or compare projects"
+argument-hint: "[project-name | --tech | --compare] — view specific project, tech overview, or compare projects"
 ---
 
 # Brain Projects — Project Management & Cross-Project View

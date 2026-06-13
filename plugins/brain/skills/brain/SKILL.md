@@ -1,8 +1,10 @@
 ---
 name: brain
-description: "Brain First — ask any question about the project. Searches brain first, reads codebase if incomplete, offers to save new findings back. This is the PRIMARY command for querying project knowledge."
+description: "Brain First — ask any question about the project. Searches brain first, reads codebase if incomplete, offers to save new findings back. This is the PRIMARY command for querying project knowledge.
+  USE THIS SKILL when the user asks about project structure, architecture, workflows, dependencies, permissions, or any how-does-X-work question — BEFORE exploring the codebase manually.
+  Thai triggers: 'โปรเจกต์นี้ทำอะไร', 'ระบบนี้ทำงานยังไง', 'อธิบายระบบ', 'หา dependency', 'permission ของ role', 'ถาม brain', 'มีความรู้เรื่อง...ไหม'"
 user_invocable: true
-args: "<question or topic> — any question about the project in any language"
+argument-hint: "<question or topic> — any question about the project in any language"
 ---
 
 # Brain First — Primary Knowledge Query

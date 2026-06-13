@@ -2,7 +2,7 @@
 name: brain-history
 description: "View version history and changelogs of a knowledge note — track what changed, when, and why"
 user_invocable: true
-args: "<note-title or keyword> — search for a note to view its history"
+argument-hint: "<note-title or keyword> — search for a note to view its history"
 ---
 
 # Brain History — Knowledge Version History
@@ -83,7 +83,7 @@ ALL responses MUST be in Thai language.
    - Load the original note + target changelog
    - Create a NEW changelog (N+1) with content: "Restored from v{target}"
    - Update original note with restored content + new Version History entry
-   - Follow Versioning Protocol from `GRAPH_PROTOCOL.md`
+   - Follow Versioning Protocol from `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`
    - Report in Thai
 
 6. **No history found**

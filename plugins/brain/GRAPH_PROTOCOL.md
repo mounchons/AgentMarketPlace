@@ -56,7 +56,7 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
   - type: `permanent`
 
 ### Step 3: Update Original Note
-- เรียก `mcp__graph-brain__save-knowledge` ด้วย content ใหม่ที่:
+- เรียก `mcp__graph-brain__save-knowledge` ด้วย **title เดิม** + content ใหม่ที่:
   - เพิ่ม `[[{Changelog Title}]]` link ใน content
   - เพิ่ม/อัพเดท Version History section ท้าย note:
     ```markdown
@@ -64,6 +64,12 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
     - v{N} ({YYYY-MM-DD}): {summary} → [[{Original Title} — Changelog #{N} ({YYYY-MM-DD})]]
     - v{N-1} ({date}): {summary} → [[{Original Title} — Changelog #{N-1} ({date})]]
     ```
+
+> **Upsert semantics (สำคัญ):** `save-knowledge` ด้วย **title เดิม** = update note เดิม (server upsert by title
+> และเก็บ content เก่าเป็น version snapshot อัตโนมัติ) — **ไม่สร้าง note ซ้ำ** ห้ามเปลี่ยน title ตอน update
+> ทางเลือกที่ตรงกว่า: `mcp__graph-brain__update-knowledge` (ระบุ noteId) ให้ผลเดียวกันแบบ explicit
+> ฝั่ง history: server มี `get-note-history` / `restore-note-version` ใช้ดู/ย้อน version ได้โดยตรง —
+> changelog notes ในโปรโตคอลนี้เป็น layer เสริมที่ search ได้และ link ใน graph (ตั้งใจให้มีทั้งสองชั้น)
 
 ### Step 4: Determine Changelog Number
 - Search existing changelogs: `mcp__graph-brain__search-knowledge` query="{Original Title} — Changelog" limit=20

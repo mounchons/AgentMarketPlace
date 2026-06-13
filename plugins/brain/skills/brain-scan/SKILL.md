@@ -1,15 +1,17 @@
 ---
 name: brain-scan
-description: "Deep codebase scanner — traces cross-layer dependencies (Page→Function→API→Entity), scans documents (.md, .docx), and saves interconnected knowledge to Graph Brain with relationship maps"
+description: "Deep codebase scanner — traces cross-layer dependencies (Page→Function→API→Entity), scans documents (.md, .docx), and saves interconnected knowledge to Graph Brain with relationship maps.
+  USE THIS SKILL when the user wants to index a codebase or documents into the knowledge graph, or refresh stale knowledge after big changes.
+  Thai triggers: 'สแกนโค้ดเข้า brain', 'สแกนโปรเจกต์', 'index codebase', 'อัปเดต brain จากโค้ด', 'สแกนเอกสาร'"
 user_invocable: true
-args: "[folder-path | --docs | --deps | --full] — scan specific folder, docs only, dependencies only, or everything"
+argument-hint: "[folder-path | --docs | --deps | --full] — scan specific folder, docs only, dependencies only, or everything"
 ---
 
 # Brain Scan — Deep Codebase Scanner with Dependency Tracing
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow rules in `GRAPH_PROTOCOL.md` for all save operations.
+**Graph Protocol:** Follow rules in `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` for all save operations.
 
 ## Scan Modes
 
@@ -315,7 +317,7 @@ Output notes:
 ### Phase 10.5: Versioning (NEW — runs before Report)
 
 For each note that was **updated** (not created new):
-1. Follow Versioning Protocol from `GRAPH_PROTOCOL.md`:
+1. Follow Versioning Protocol from `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`:
    - Snapshot was already taken in Phase 3d (update existing notes)
    - Determine changelog number for each updated note
    - Create changelog note with diff summary

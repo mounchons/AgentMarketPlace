@@ -2,14 +2,14 @@
 name: brain-search
 description: "Search Graph Brain by keyword or tags with multi-strategy fallback and graph traversal"
 user_invocable: true
-args: "<keyword or question>"
+argument-hint: "<keyword or question>"
 ---
 
 # Brain Search
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow Search Rules in `GRAPH_PROTOCOL.md`.
+**Graph Protocol:** Follow Search Rules in `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`.
 
 ## Steps
 

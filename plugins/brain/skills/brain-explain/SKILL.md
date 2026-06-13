@@ -2,14 +2,14 @@
 name: brain-explain
 description: "Deep explanation of a system, feature, or workflow from brain knowledge + codebase if needed"
 user_invocable: true
-args: "<topic> — e.g., 'checker workflow', 'billing system', 'data import'"
+argument-hint: "<topic> — e.g., 'checker workflow', 'billing system', 'data import'"
 ---
 
 # Brain Explain
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow Search Rules in `GRAPH_PROTOCOL.md`.
+**Graph Protocol:** Follow Search Rules in `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`.
 
 ## Difference from `/brain`
 - `/brain` = quick answer, concise

@@ -2,7 +2,7 @@
 name: brain-log
 description: "View brain activity logs — track scan, save, update operations across sessions with filtering by date, command, and session"
 user_invocable: true
-args: "[today | week | --command scan|save|update | --session <id> | --last N] — filter log entries"
+argument-hint: "[today | week | --command scan|save|update | --session <id> | --last N] — filter log entries"
 ---
 
 # Brain Log — Activity History Viewer

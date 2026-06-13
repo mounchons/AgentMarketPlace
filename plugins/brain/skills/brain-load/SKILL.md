@@ -2,7 +2,7 @@
 name: brain-load
 description: "Load project knowledge from Graph Brain at session start. Auto-runs via hook, but can be called manually."
 user_invocable: true
-args: "[project-name or keyword] — default: current working directory name"
+argument-hint: "[project-name or keyword] — default: current working directory name"
 ---
 
 # Brain Load
