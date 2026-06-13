@@ -1,4 +1,4 @@
-# QA UI Test Plugin v2.2.0 — คู่มือการใช้งาน
+# QA UI Test Plugin v2.7.0 — คู่มือการใช้งาน
 
 > AI-powered QA UI Testing + **Bug Management System** —
 > auto-scan codebase สร้าง scenarios, multi-agent brainstorm, cascade testing,
@@ -19,7 +19,7 @@
 2. [การติดตั้ง](#2-การติดตั้ง)
 3. [ต้องรันเว็บหรือไม่?](#3-ต้องรันเว็บหรือไม่)
 4. [Quick Start — 3 ขั้นตอน](#4-quick-start--3-ขั้นตอน)
-5. [คำสั่งทั้งหมด (13 คำสั่ง — รวม /qa-help)](#5-คำสั่งทั้งหมด)
+5. [คำสั่งทั้งหมด (18 คำสั่ง — รวม /qa-help)](#5-คำสั่งทั้งหมด)
    - **Test workflow:**
    - [/qa-create-scenario](#51-qa-create-scenario--สร้าง-scenarios)
    - [/qa-continue](#52-qa-continue--เลือก-module-สร้าง-scripts-รัน-test)
@@ -34,6 +34,13 @@
    - [/qa-bug-export](#510-qa-bug-export--ส่ง-bug--feature-ใหม่)
    - [/qa-bug-export-subtask](#511-qa-bug-export-subtask--ส่ง-bug--subtask-ของ-feature-เดิม)
    - [/qa-bug-verify](#512-qa-bug-verify--ยืนยัน-fix-และปิด-bug)
+   - **Traceability & NFR (v2.4–2.6):**
+   - [/qa-trace](#514-qa-trace--traceability-matrix-ac--scenarios)
+   - [/qa-nfr-assess](#515-qa-nfr-assess--nfr-assessment-4-มิติ--release-gate)
+   - **Advanced testing (v2.3):**
+   - [/qa-create-advanced](#516-qa-create-advanced--advanced-scenarios)
+   - [/qa-continue-advanced](#517-qa-continue-advanced--รัน-advanced-scenarios)
+   - [/qa-advanced-howto](#518-qa-advanced-howto--คู่มือ-advanced-patterns)
    - **Help:**
    - [/qa-help](#513-qa-help--ดูคู่มือการใช้งาน)
 6. [Multi-Agent Brainstorm](#6-multi-agent-brainstorm)
@@ -44,6 +51,7 @@
 11. [qa-tracker.json — หัวใจของระบบ](#11-qa-trackerjson)
 12. [Bug Management Workflow](#12-bug-management-workflow)
 13. [FAQ — คำถามที่พบบ่อย](#13-faq)
+14. [Changelog](#14-changelog)
 
 ---
 
@@ -507,7 +515,7 @@ Agent จะ:
 **ไม่ต้องรันเว็บ** — แสดงคำสั่งทั้งหมด, workflow, ตัวอย่าง พร้อม mode สำหรับ bug management
 
 ```bash
-/qa-help                          # ทั้งหมด (12 คำสั่ง + workflows)
+/qa-help                          # ทั้งหมด (18 คำสั่ง + workflows)
 /qa-help bug-export               # คำสั่งเฉพาะ
 /qa-help --quick                  # Quick Start 3 ขั้นตอน
 /qa-help --bugs                   # Bug Management ละเอียด
@@ -520,6 +528,55 @@ Agent จะ:
 - `--bugs` — Bug lifecycle, states, types, severity mapping
 - `--workflow` — End-to-end ตัวอย่าง 3 วัน (Day 1 setup → Day 2 fix → Day 3 verify)
 - `--integration` — อธิบาย data flow qa-tracker.json ↔ feature_list.json + auto-sync loop
+
+---
+
+### 5.14 `/qa-trace` — Traceability Matrix (AC ↔ Scenarios)
+
+**ไม่ต้องรันเว็บ** — เชื่อม Acceptance Criteria (จาก system-design-doc) ↔ test scenarios + gate decision + GAP detection
+
+```bash
+/qa-trace                          # full matrix (all ACs + scenarios)
+/qa-trace --module CHECKOUT        # เฉพาะ module
+/qa-trace --gaps-only              # เฉพาะ GAPs (release blockers)
+/qa-trace --auto-link              # auto-link AC ↔ scenarios จาก keyword
+/qa-trace --save                   # save → traceability-matrix.md
+```
+> อ่าน AC จาก `.design-docs/design_doc_list.json` registry (split-aware, flat `AC-NNN`) — ดู §11 + system-design-doc /sync-with-qa-tracker
+
+### 5.15 `/qa-nfr-assess` — NFR Assessment (4 มิติ + release gate)
+
+**บางส่วนต้องรันเว็บ** (Lighthouse) — ประเมิน performance / security / reliability / maintainability (0-100 ต่อ category) + release readiness gate
+
+```bash
+/qa-nfr-assess                     # ประเมินทั้ง 4 มิติ
+/qa-nfr-assess --module CHECKOUT   # เฉพาะ module
+```
+> ป้อน `qa-tracker.nfr_results` → long-running `/nfr-check` Gate 2 (security < 75 = hard floor)
+
+### 5.16 `/qa-create-advanced` — Advanced Scenarios
+
+**ไม่ต้องรันเว็บ** — state-machine flows, data-driven (parameterized variants), network mocking (API error/timeout), serial test orchestration
+
+```bash
+/qa-create-advanced                # ต่อยอดจาก scenarios เดิม หรือ scan codebase
+```
+
+### 5.17 `/qa-continue-advanced` — รัน Advanced Scenarios
+
+**ต้องรันเว็บ** — generate Playwright scripts จาก advanced scenarios + run ด้วย CLI
+
+```bash
+/qa-continue-advanced              # ทำทีละ module เหมือน /qa-continue
+```
+
+### 5.18 `/qa-advanced-howto` — คู่มือ Advanced patterns
+
+**ไม่ต้องรันเว็บ** — command reference ครบทุก flags + ตัวอย่างทุก pattern (state machine / data-driven / network mock / serial)
+
+```bash
+/qa-advanced-howto
+```
 
 ---
 
@@ -714,11 +771,11 @@ dotnet run
 
 ## 11. qa-tracker.json
 
-### โครงสร้าง v1.3.0
+### โครงสร้าง (schema v1.7.0)
 
 ```json
 {
-  "schema_version": "1.3.0",
+  "schema_version": "1.7.0",
   "project": "MyApp",
   "base_url": "http://localhost:5000",
   "technology": "ASP.NET Core MVC",
@@ -1004,7 +1061,7 @@ $ /qa-bug-verify --regression              # รี-รัน verified bugs
 
 ได้ — มี GitHub Actions template:
 ```bash
-cp plugins/qa-ui-test/skills/qa-ui-test/templates/github-actions-ui-test.yml \
+cp ${CLAUDE_PLUGIN_ROOT}/skills/qa-ui-test/templates/github-actions-ui-test.yml \
    .github/workflows/ui-test.yml
 ```
 
@@ -1036,3 +1093,29 @@ cp plugins/qa-ui-test/skills/qa-ui-test/templates/github-actions-ui-test.yml \
 | Vue.js / Nuxt | ✅ |
 | Django / Flask | ✅ |
 | Static HTML | ⚠️ (ต้องใช้ manual mode) |
+
+---
+
+## 14. Changelog
+
+> ประวัติเวอร์ชันย่อ — รายละเอียดเต็มดูที่ `/qa-help --new` และ `.claude-plugin/plugin.json`
+
+### v2.7.0 (เอกสาร + tool fix)
+- 🐛 **Tool fix:** แก้ `allowed-tools` ของ 13 action commands ที่ dispatch subagent ให้ใช้ `Task` (เดิมระบุ tool ชื่อที่ไม่มีอยู่จริงใน Claude Code → subagent dispatch อาจถูก block/prompt)
+- 📖 **README sync:** ปรับจาก v2.2.0 → v2.7.0 — เพิ่มคำสั่งที่ขาด 5 ตัว (`/qa-trace`, `/qa-nfr-assess`, `/qa-create-advanced`, `/qa-continue-advanced`, `/qa-advanced-howto`) ครบ 18 คำสั่ง + อัปเดต schema เป็น 1.7.0
+- 🔧 **Version sync:** plugin.json / marketplace.json / SKILL.md / qa-help.md ใช้เลขเดียวกัน (2.7.0) + mode count ตรงกัน (13-mode)
+- 🗂️ **Portable paths:** เปลี่ยน intra-plugin path เป็น `${CLAUDE_PLUGIN_ROOT}/...` (รองรับการติดตั้งจาก marketplace)
+- 📝 **Schema ref refresh:** `references/scenario-template.md` อัปเดตตรงกับ qa-tracker schema 1.7.0 (risk / complexity_factors / acceptance_criteria_id / use_case_id / control_refs)
+
+### v2.6.x (control-spec testing)
+- `/qa-create-scenario --from-control-spec <feature-id>` (Mode C): อ่าน `.agent/ui-controls/feature-N.json` (จาก long-running) → derive 5 mandatory control categories + stamp `control_refs[]`/`control_test_category` → ป้อน Gate 4 control-coverage
+- qa-trace registry-first: อ่าน `.design-docs/design_doc_list.json` (split-aware) + flat `AC-NNN`/`UC-NNN`
+
+### v2.5.0 (traceability)
+- `/qa-trace` — AC ↔ scenario matrix + GAP gate (release blocker) ป้อน long-running Gate 1 (AC coverage)
+
+### v2.4.0 (NFR)
+- `/qa-nfr-assess` — ประเมิน 4 มิติ (performance / security / reliability / maintainability) + security hard-floor < 75 = overall FAIL → ป้อน long-running Gate 2
+
+### v2.3.0 (advanced testing)
+- `/qa-create-advanced`, `/qa-continue-advanced`, `/qa-advanced-howto` — state-machine flows, data-driven variants, network mocking, serial orchestration
