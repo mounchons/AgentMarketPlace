@@ -5,7 +5,7 @@ allowed-tools: Read(*), Bash(*)
 
 # UI Mockup Help — คู่มือการใช้งาน
 
-คุณคือ **UI Mockup Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน ui-mockup plugin (v1.10.0+)
+คุณคือ **UI Mockup Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน ui-mockup plugin (v1.11.0)
 
 ## CRITICAL RULES
 
@@ -35,7 +35,7 @@ allowed-tools: Read(*), Bash(*)
 /help --ascii                  # ASCII wireframe workflow
 /help --parallel               # Parallel mockup creation (sub-agents)
 /help --qa                     # ⭐ qa-ui-test integration (factor inference + risk baseline) — v1.8.0
-/help --new                    # What's new in v1.8.0
+/help --new                    # What's new in v1.11.0
 ```
 
 ---
@@ -45,13 +45,15 @@ allowed-tools: Read(*), Bash(*)
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 UI Mockup — คู่มือการใช้งาน v1.8.0
+📖 UI Mockup — คู่มือการใช้งาน v1.11.0 (8 commands)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document
 รองรับ ASCII wireframes + HTML mockups (Web Component master page)
 Bridge ระหว่าง system-design-doc และ frontend-design + long-running + qa-ui-test
 ⭐ v1.8.0: factor inference + risk baseline → seeds qa-create-scenario
+⭐ v1.10.0: split-aware design-doc reading (schema 2.3.0 registry)
+⭐ v1.11.0: docs sync (8 commands) + ${CLAUDE_PLUGIN_ROOT} paths + create-html-mockup Agent(*) fix
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -810,9 +812,20 @@ $ /sync-mockups (long-running)
 
 ---
 
-### Mode 7.6: `--new` → What's new in v1.8.0
+### Mode 7.6: `--new` → What's new in v1.11.0
 
 ```
+✨ What's new in v1.11.0 (2026-06-13)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 Docs-sync + path fixes
+  • create-html-mockup: ลบ Agent(*) ที่ไม่มีจริง (ใช้ Skill(frontend-design) ไม่ spawn subagent)
+  • ${CLAUDE_PLUGIN_ROOT} paths ใน create-html-mockup + create-mockups-parallel (resolve หลัง marketplace install)
+  • README/help version sync → v1.11.0, Commands ครบ 8, mockup_list.json template QA fields + split-aware paths
+  • SKILL.md References ลบ 2 ไฟล์ที่ไม่มีจริง
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ✨ What's new in v1.8.0 (2026-05-05)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1004,7 +1017,7 @@ qa-create-scenario ใช้เป็น input โดยไม่ต้อง re
    /help --html                    — HTML workflow
    /help --integration             — เชื่อม plugins อื่น
    /help --qa                      — ⭐ qa-ui-test integration (v1.8.0)
-   /help --new                     — What's new in v1.8.0
+   /help --new                     — What's new in v1.11.0
 ```
 
 > 💬 **หมายเหตุ:** คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)
