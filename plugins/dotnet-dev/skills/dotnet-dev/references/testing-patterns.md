@@ -145,8 +145,8 @@ public class CreateOrderHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        await _unitOfWork.Orders.Received(1)
-            .AddAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+        _unitOfWork.Orders.Received(1)
+            .Add(Arg.Any<Order>());
         await _unitOfWork.Received(1)
             .SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -169,8 +169,8 @@ public class CreateOrderHandlerTests
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("Customer not found");
-        await _unitOfWork.Orders.DidNotReceive()
-            .AddAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+        _unitOfWork.Orders.DidNotReceive()
+            .Add(Arg.Any<Order>());
     }
 }
 ```

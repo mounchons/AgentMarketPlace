@@ -8,38 +8,37 @@ Microsoft Learn MCP Server ให้ access ไปยัง official Microsoft d
 - หา best practices จาก Microsoft
 - ค้นหา configuration options
 
+## Tools ที่มีให้ใช้ (ชื่อจริง)
+
+| Tool | หน้าที่ | ใช้เมื่อ |
+|------|---------|---------|
+| `microsoft_docs_search` | ค้นหา docs — คืน chunks สั้นๆ สูงสุด 10 รายการ (title + URL + excerpt) | เริ่มต้นทุกครั้ง — ได้ภาพรวมเร็ว |
+| `microsoft_code_sample_search` | ค้นหาตัวอย่างโค้ดจริง สูงสุด 20 ชิ้น (กรองด้วย `language` ได้) | ต้องการ code snippet จริง |
+| `microsoft_docs_fetch` | ดึงทั้งหน้าเป็น markdown | ต้องการ tutorial/troubleshooting เต็มๆ จาก URL ที่ search เจอ |
+
+> **ชื่อเต็มเมื่อติดตั้งผ่าน plugin นี้:** `mcp__plugin_dotnet-dev_microsoft-learn__microsoft_docs_search` ฯลฯ
+> ถ้า tools ยังไม่โหลดใน session ให้ใช้ ToolSearch ค้นด้วย "microsoft docs" ก่อน
+> **Workflow:** search ให้ breadth → code_sample_search ให้ตัวอย่าง → fetch ให้ depth
+
 ## Configuration
 
-### Claude Code CLI
+Plugin นี้ bundle server ไว้ใน `.claude-plugin/plugin.json` แล้ว (HTTP transport ตรง ไม่ต้องพึ่ง Node):
+
+```json
+{
+  "mcpServers": {
+    "microsoft-learn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    }
+  }
+}
+```
+
+ถ้าต้องการ add เองนอก plugin:
+
 ```bash
-# Add Microsoft Learn MCP
-claude mcp add microsoft-learn --transport streamable-http \
-  --url "https://learn.microsoft.com/api/mcp"
-```
-
-### settings.json
-```json
-{
-  "mcpServers": {
-    "microsoft-learn": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
-    }
-  }
-}
-```
-
-### Plugin Bundle
-```json
-// .mcp.json
-{
-  "mcpServers": {
-    "microsoft-learn": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
-    }
-  }
-}
+claude mcp add microsoft-learn --transport http "https://learn.microsoft.com/api/mcp"
 ```
 
 ---
@@ -175,7 +174,9 @@ claude mcp add microsoft-learn --transport streamable-http \
 
 3. **เรียกใช้ MCP**
    ```
-   Use microsoft-learn MCP to search: "your query here"
+   microsoft_docs_search query:"your query here"
+   # ต้องการตัวอย่างโค้ด → microsoft_code_sample_search query:"..." language:"csharp"
+   # ต้องการรายละเอียดเต็ม → microsoft_docs_fetch url:"https://learn.microsoft.com/..."
    ```
 
 4. **วิเคราะห์ผลลัพธ์**
@@ -204,41 +205,16 @@ Step 4: Look for security best practices
 
 ---
 
-## Alternative: mcporter CLI
+## Fallback เมื่อ MCP ใช้ไม่ได้
 
-ถ้าไม่ได้ configure MCP ไว้ ใช้ mcporter แทนได้:
+ถ้า server ไม่ตอบ (network/firewall) ให้ fallback ตามลำดับ:
 
-```bash
-# Install mcporter
-npm install -g mcporter
+1. **WebFetch/WebSearch** ไปที่ `https://learn.microsoft.com/search/?terms=your+search+terms`
+2. ใช้ความรู้ใน references/ ของ skill นี้ (ef-core-patterns, aspire-setup, testing-patterns)
+3. แจ้งผู้ใช้ว่าข้อมูลอาจไม่ใช่ version ล่าสุด
 
-# Search Microsoft Learn
-npx mcporter call --stdio \
-  "streamable-http https://learn.microsoft.com/api/mcp" \
-  search query:"entity framework core migrations"
-```
-
-### ใช้ใน Skill Instructions
-
-```markdown
-## ค้นหา Documentation
-
-ถ้าต้องการข้อมูลล่าสุดจาก Microsoft Learn:
-
-Option 1 - MCP Tool (ถ้า configure ไว้):
-- ใช้ tool: mcp__microsoft-learn__search
-- query: "your search terms"
-
-Option 2 - mcporter CLI:
-```bash
-npx mcporter call --stdio \
-  "streamable-http https://learn.microsoft.com/api/mcp" \
-  search query:"your search terms"
-```
-
-Option 3 - Direct fetch:
-- ไปที่ https://learn.microsoft.com/search/?terms=your+search+terms
-```
+> ❌ อย่าใช้ `mcporter` CLI หรือ tool ชื่อ `mcp__microsoft-learn__search` — ไม่มีอยู่จริง
+> (เอกสารเก่าของ skill นี้เคยแนะนำผิด — แก้แล้วใน v1.3.0)
 
 ---
 

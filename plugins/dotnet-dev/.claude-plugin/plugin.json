@@ -1,14 +1,15 @@
 {
   "name": "dotnet-dev",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Expert .NET Core development skill for ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns, and .NET Aspire. Supports PostgreSQL and SQL Server. Integrates with Microsoft Learn MCP for latest documentation.",
   "author": {
     "name": "Mounchons"
   },
+  "license": "MIT",
   "mcpServers": {
     "microsoft-learn": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://learn.microsoft.com/api/mcp"]
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
     }
   }
 }

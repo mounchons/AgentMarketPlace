@@ -1,6 +1,14 @@
 ---
 name: dotnet-dev
-description: Expert .NET Core development - ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns, .NET Aspire รองรับ PostgreSQL และ SQL Server
+description: Expert .NET Core development skill for ASP.NET Core MVC, Entity Framework Core, Clean Architecture,
+  Repository/Unit of Work patterns, and .NET Aspire. Supports both PostgreSQL and SQL Server.
+  Use when creating .NET projects, writing C# code, designing Entity Framework models, implementing APIs,
+  setting up dependency injection, database migrations, or any .NET Core development task.
+  Triggers - .NET, C#, Entity Framework, ASP.NET, EF Core, migration, repository pattern,
+  unit of work, Clean Architecture, Aspire, Web API, MVC, dependency injection, DbContext,
+  LINQ, Blazor, SQL Server, PostgreSQL.
+  Thai triggers - "สร้างโปรเจกต์ .NET", "เขียน C#", "ออกแบบ entity", "ทำ migration",
+  "ต่อฐานข้อมูล", "สร้าง API", "ทำ Web API", "วาง architecture"
 ---
 
 # .NET Core Development Expert Skill
@@ -21,11 +29,14 @@ description: Expert .NET Core development - ASP.NET Core MVC, Entity Framework C
 - Dependency Injection ทุกที่
 
 ### 3. Technology Stack
-- .NET 8+ (Latest LTS)
-- Entity Framework Core (Code First)
+- .NET 10 (LTS ปัจจุบัน — support ถึง Nov 2028; .NET 8 จะหมด support Nov 2026)
+- Entity Framework Core 10 (Code First)
 - **PostgreSQL** หรือ **SQL Server** เป็น Primary Database
-- Redis สำหรับ Caching
+- Redis สำหรับ Caching (ผ่าน HybridCache — L1 in-memory + L2 Redis)
 - ASP.NET Core MVC / Web API / Minimal APIs
+
+> **กันล้าสมัย:** ก่อนเริ่มโปรเจกต์ใหม่ ให้ตรวจ LTS version ล่าสุดด้วย `microsoft_docs_search`
+> query: "dotnet releases and support" — ใช้ LTS ล่าสุดเสมอ
 
 ---
 
@@ -48,18 +59,30 @@ description: Expert .NET Core development - ASP.NET Core MVC, Entity Framework C
 
 ---
 
+## 🧭 Minimal APIs vs MVC Controllers
+
+| เลือก | เมื่อ |
+|-------|------|
+| **MVC Controllers** (default ของทีมนี้) | Enterprise app, ต้องการ filters/model binding ขั้นสูง, OData, ทีมถนัด MVC |
+| **Minimal APIs** | Microservice เล็ก, endpoint ไม่กี่ตัว — Microsoft แนะนำเป็น default สำหรับ project ใหม่ |
+
+> ทั้งคู่ supported เต็มที่ใน .NET 10 — ทีมนี้ default = **Controllers** ตามความถนัด
+> แต่ service ใหม่ขนาดเล็กควรพิจารณา Minimal APIs + route groups + endpoint filters
+
+---
+
 ## 📚 เมื่อต้องการข้อมูลล่าสุดจาก Microsoft Learn
 
-ใช้ MCP Server `microsoft-learn` เพื่อค้นหา documentation ล่าสุด:
+Plugin นี้ bundle MCP server `microsoft-learn` มาให้แล้ว — เรียก tools ได้โดยตรง (ไม่ต้องใช้ CLI อื่น):
 
-```bash
-# ค้นหา documentation
-npx mcporter call --stdio "streamable-http https://learn.microsoft.com/api/mcp" \
-  search query:"Entity Framework Core SQL Server"
+| Tool | ใช้เมื่อ |
+|------|---------|
+| `microsoft_docs_search` | ค้นหา docs — ได้ chunks สั้นๆ สูงสุด 10 รายการ (เริ่มจากตัวนี้ก่อน) |
+| `microsoft_code_sample_search` | หาตัวอย่างโค้ดจริงจาก Microsoft Learn (กรองด้วย `language` ได้) |
+| `microsoft_docs_fetch` | ดึงทั้งหน้าเป็น markdown เมื่อต้องการ tutorial/รายละเอียดเต็ม |
 
-# หรือใช้ผ่าน mcp tool โดยตรงถ้า configure ไว้แล้ว
-# mcp__microsoft-learn__search query:"ASP.NET Core authentication"
-```
+> ชื่อเต็มเมื่อติดตั้งผ่าน plugin: `mcp__plugin_dotnet-dev_microsoft-learn__microsoft_docs_search` ฯลฯ
+> ถ้า tools ยังไม่โหลด ให้ใช้ ToolSearch ค้น "microsoft docs" ก่อน
 
 **เมื่อไหร่ควรใช้ Microsoft Learn MCP:**
 - ต้องการ syntax หรือ API ล่าสุด
@@ -122,49 +145,87 @@ Solution/
 
 ### 1. Base Entity
 ```csharp
-public abstract class BaseEntity
+// Generic เป็นตัวหลัก — ห้ามใช้ `new TKey Id` ซ่อน property ฐาน (property hiding ทำให้ EF map ผิด)
+public abstract class BaseEntity<TKey>
 {
-    public long Id { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public TKey Id { get; set; } = default!;
+    // Audit fields ถูก stamp โดย AuditableEntityInterceptor — อย่า set ค่าใน entity เอง
+    public DateTime CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
-    public bool IsDeleted { get; set; } = false;
+    public bool IsDeleted { get; set; }
 }
 
-public abstract class BaseEntity<TKey> : BaseEntity
+public abstract class BaseEntity : BaseEntity<long>
 {
-    public new TKey Id { get; set; } = default!;
 }
 ```
 
 ### 2. Repository Interface
+
+> **Trade-off ที่ต้องรู้ (ตรงไปตรงมา):** Microsoft ระบุว่า `DbContext` เป็น Repository + Unit of Work
+> ในตัวอยู่แล้ว และ repository "ไม่ใช่ข้อบังคับ" — ทีมนี้เลือกใช้เพราะถนัด, ทำ contract ชัด, และ mock ง่าย
+> **ข้อควรระวัง:** `Query()` ที่ return `IQueryable` ทำให้ mock repository ไม่ได้จริง (EF testing docs)
+> ถ้าจะใช้ ให้ยอมรับว่า test ของ query นั้นต้องเป็น integration test (Testcontainers)
+> ทางที่ดีกว่า: ทำ **per-aggregate repository** (`ICustomerRepository : IRepository<Customer>`)
+> ใส่ query เฉพาะทางที่ return ผลลัพธ์จริง (`IReadOnlyList<T>` / DTO / paged result)
+
 ```csharp
 public interface IRepository<T> where T : BaseEntity
 {
     Task<T?> GetByIdAsync(long id, CancellationToken ct = default);
-    Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default);
-    Task<T> AddAsync(T entity, CancellationToken ct = default);
+    Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default);
+    T Add(T entity);
     void Update(T entity);
     void Delete(T entity);
     Task<bool> ExistsAsync(long id, CancellationToken ct = default);
-    IQueryable<T> Query();
+    IQueryable<T> Query(); // ใช้เท่าที่จำเป็น — ดู trade-off ด้านบน
+}
+
+// ตัวอย่าง per-aggregate repository — query เฉพาะทางอยู่ที่นี่ ไม่ leak IQueryable ออกนอก Infrastructure
+public interface ICustomerRepository : IRepository<Customer>
+{
+    Task<IReadOnlyList<Customer>> GetActiveWithOrdersAsync(CancellationToken ct = default);
 }
 ```
 
 ### 3. Unit of Work
+
+> **Bug ที่เจอบ่อย:** เมื่อเปิด `EnableRetryOnFailure` (pattern #6) การเรียก `BeginTransactionAsync` ตรงๆ
+> จะ throw `InvalidOperationException` — retrying execution strategy ไม่รองรับ user-initiated transaction
+> ต้อง wrap ด้วย `CreateExecutionStrategy().ExecuteAsync(...)` เสมอ
+> **Note:** `SaveChangesAsync` ครั้งเดียวเป็น atomic อยู่แล้ว — เปิด transaction เพิ่มเฉพาะเมื่อมี
+> หลาย SaveChanges หรือ operation นอก EF ที่ต้อง atomic ด้วยกัน
+
 ```csharp
 public interface IUnitOfWork : IDisposable
 {
     // Repositories
     IRepository<Customer> Customers { get; }
     IRepository<Order> Orders { get; }
-    
-    // Transaction management
+
     Task<int> SaveChangesAsync(CancellationToken ct = default);
-    Task BeginTransactionAsync(CancellationToken ct = default);
-    Task CommitAsync(CancellationToken ct = default);
-    Task RollbackAsync(CancellationToken ct = default);
+
+    // Execution-strategy-safe transaction (ใช้ได้กับ EnableRetryOnFailure)
+    Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken ct = default);
+}
+
+// Implementation (ส่วน transaction)
+public async Task ExecuteInTransactionAsync(
+    Func<CancellationToken, Task> operation,
+    CancellationToken ct = default)
+{
+    var strategy = _context.Database.CreateExecutionStrategy();
+    await strategy.ExecuteAsync(async () =>
+    {
+        await using var tx = await _context.Database.BeginTransactionAsync(ct);
+        await operation(ct);
+        await _context.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+    });
 }
 ```
 
@@ -181,36 +242,36 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         _dbSet = context.Set<T>();
     }
 
+    // Soft delete ถูกกรองโดย global query filter ใน DbContext แล้ว (pattern #5)
+    // — ห้าม filter !IsDeleted ซ้ำที่นี่ (ซ้ำซ้อน + สับสนว่ากลไกไหนเป็น authority)
+    // ถ้าต้องการเห็นแถวที่ถูกลบ (admin/report) ใช้ _dbSet.IgnoreQueryFilters()
+
     public virtual async Task<T?> GetByIdAsync(long id, CancellationToken ct = default)
-        => await _dbSet.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);
+        => await _dbSet.FirstOrDefaultAsync(e => e.Id == id, ct);
 
-    public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default)
-        => await _dbSet.Where(e => !e.IsDeleted).ToListAsync(ct);
+    public virtual async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default)
+        => await _dbSet.AsNoTracking().ToListAsync(ct);
 
-    public virtual async Task<T> AddAsync(T entity, CancellationToken ct = default)
+    public virtual T Add(T entity)
     {
-        await _dbSet.AddAsync(entity, ct);
+        _dbSet.Add(entity); // AddAsync จำเป็นเฉพาะ HiLo value generator — กรณีทั่วไปใช้ Add ปกติ
         return entity;
     }
 
     public virtual void Update(T entity)
-    {
-        entity.UpdatedAt = DateTime.UtcNow;
-        _dbSet.Update(entity);
-    }
+        => _dbSet.Update(entity); // audit fields ถูก stamp โดย interceptor ตอน SaveChanges
 
     public virtual void Delete(T entity)
     {
-        entity.IsDeleted = true;
-        entity.UpdatedAt = DateTime.UtcNow;
-        Update(entity);
+        entity.IsDeleted = true; // soft delete
+        _dbSet.Update(entity);
     }
 
     public virtual async Task<bool> ExistsAsync(long id, CancellationToken ct = default)
-        => await _dbSet.AnyAsync(e => e.Id == id && !e.IsDeleted, ct);
+        => await _dbSet.AnyAsync(e => e.Id == id, ct);
 
     public virtual IQueryable<T> Query()
-        => _dbSet.Where(e => !e.IsDeleted).AsQueryable();
+        => _dbSet; // global query filter ใช้กับ IQueryable นี้อัตโนมัติ
 }
 ```
 
@@ -218,28 +279,31 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 ```csharp
 public class ApplicationDbContext : DbContext
 {
-    private readonly ICurrentUserService _currentUser;
-
     public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options,
-        ICurrentUserService currentUser) : base(options)
+        DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        _currentUser = currentUser;
     }
 
     // DbSets
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Order> Orders => Set<Order>();
 
+    // Audit stamping (CreatedAt/CreatedBy/UpdatedAt/UpdatedBy) ทำใน AuditableEntityInterceptor
+    // (โค้ดเต็ม: references/ef-core-patterns.md, register ใน DI — pattern #6)
+    // ⚠️ เลือกกลไกเดียว — ห้าม override SaveChangesAsync stamp ซ้ำ ไม่งั้น timestamp ถูกเขียนสองชั้น
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         // Apply all configurations from assembly
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);
-        
-        // Global query filter for soft delete
+
+        // Global query filter for soft delete — เป็น authority เดียว
+        // (repository ห้าม filter !IsDeleted ซ้ำ; ปิดชั่วคราวด้วย IgnoreQueryFilters())
+        // EF Core 10: แนะนำ named filter — HasQueryFilter("SoftDelete", e => !e.IsDeleted)
+        // แล้วปิดเฉพาะตัวด้วย IgnoreQueryFilters(["SoftDelete"]) — จำเป็นเมื่อใช้ร่วมกับ tenant filter
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
@@ -249,25 +313,6 @@ public class ApplicationDbContext : DbContext
                         GenerateSoftDeleteFilter(entityType.ClrType));
             }
         }
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
-    {
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
-        {
-            switch (entry.State)
-            {
-                case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
-                    entry.Entity.CreatedBy = _currentUser.UserId;
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
-                    entry.Entity.UpdatedBy = _currentUser.UserId;
-                    break;
-            }
-        }
-        return await base.SaveChangesAsync(ct);
     }
 
     private static LambdaExpression GenerateSoftDeleteFilter(Type type)
@@ -290,9 +335,14 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var dbProvider = configuration.GetValue<string>("DatabaseProvider") ?? "PostgreSQL";
-        
-        services.AddDbContext<ApplicationDbContext>(options =>
+
+        // Audit interceptor — กลไกเดียวสำหรับ stamp audit fields (โค้ด: references/ef-core-patterns.md)
+        services.AddScoped<AuditableEntityInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
+            options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
+
             switch (dbProvider)
             {
                 case "SqlServer":
@@ -330,12 +380,16 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Caching
+        // Caching — HybridCache (L1 in-memory + stampede protection) ใช้ Redis เป็น L2 อัตโนมัติ
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = configuration.GetConnectionString("Redis");
             options.InstanceName = "App_";
         });
+        services.AddHybridCache(); // inject HybridCache แทน IDistributedCache ตรงๆ
+
+        // เวลา — ใช้ TimeProvider แทน DateTime.UtcNow ตรงๆ (test ได้ด้วย FakeTimeProvider)
+        services.AddSingleton(TimeProvider.System);
 
         return services;
     }
@@ -376,6 +430,7 @@ IResourceBuilder<IResourceWithConnectionString> database;
 if (usePostgres)
 {
     var postgres = builder.AddPostgres("postgres")
+        .WithLifetime(ContainerLifetime.Persistent) // container ไม่ถูก recreate ทุกครั้งที่ F5
         .WithPgAdmin()
         .AddDatabase("appdb");
     database = postgres;
@@ -383,6 +438,7 @@ if (usePostgres)
 else
 {
     var sqlserver = builder.AddSqlServer("sqlserver")
+        .WithLifetime(ContainerLifetime.Persistent)
         .AddDatabase("appdb");
     database = sqlserver;
 }
@@ -390,14 +446,18 @@ else
 var redis = builder.AddRedis("redis")
     .WithRedisCommander();
 
-// API Project
+// API Project — WaitFor: ไม่ start จนกว่า database/redis พร้อมรับ request
 var api = builder.AddProject<Projects.WebApi>("api")
-    .WithReference(database)
-    .WithReference(redis)
+    .WithReference(database).WaitFor(database)
+    .WithReference(redis).WaitFor(redis)
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();
 ```
+
+> ⚠️ `references/aspire-setup.md` ยังเป็น Aspire 8.x — Aspire ปัจจุบันคือ 13.x
+> (ติดตั้งผ่าน Aspire CLI: `aspire new` / `aspire run` / `aspire update`,
+> AppHost ใช้ `Sdk="Aspire.AppHost.Sdk"`) — ตรวจ version ล่าสุดด้วย `microsoft_docs_search` ก่อนใช้
 
 ---
 
@@ -420,36 +480,51 @@ dotnet ef migrations remove -p Infrastructure -s WebApi
 
 ### NuGet Packages
 
+> **Licensing note (ตัดสินใจเอง):** MediatR v13+, AutoMapper v15+ และ FluentAssertions v8+
+> เปลี่ยนเป็น commercial license แล้ว — version ที่ pin ด้านล่างยังเป็น OSS ใช้ฟรี แต่จะไม่ได้
+> feature ใหม่ ทางเลือกฟรี: **Mapperly** (source-gen) แทน AutoMapper, manual mapping ใน projection,
+> custom mediator/Wolverine แทน MediatR
+
 #### Common Packages
 ```xml
 <!-- Domain/Application -->
-<PackageReference Include="MediatR" Version="12.*" />
-<PackageReference Include="FluentValidation" Version="11.*" />
-<PackageReference Include="AutoMapper" Version="13.*" />
+<PackageReference Include="MediatR" Version="12.*" />          <!-- v13+ commercial — 12.x ฟรี -->
+<PackageReference Include="FluentValidation" Version="12.*" />
+<PackageReference Include="AutoMapper" Version="13.*" />       <!-- v15+ commercial — พิจารณา Mapperly -->
 
 <!-- Infrastructure - Core -->
-<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
-<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.*" />
+<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.*" />
+<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.*" />
+<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.*" />
 
-<!-- WebApi -->
-<PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
-<PackageReference Include="Serilog.AspNetCore" Version="8.*" />
+<!-- WebApi — .NET 9+ ใช้ built-in OpenAPI แทน Swashbuckle (ถูกถอดจาก templates แล้ว) -->
+<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
+<PackageReference Include="Serilog.AspNetCore" Version="9.*" />
+```
+
+```csharp
+// Program.cs — built-in OpenAPI (.NET 9+)
+builder.Services.AddOpenApi();
+// ...
+app.MapOpenApi(); // /openapi/v1.json
+// UI (optional): Scalar.AspNetCore → app.MapScalarApiReference();
+// ⚠️ .WithOpenApi() ต่อ endpoint ถูก deprecate ใน .NET 10 (ASPDEPR002) — ใช้ AddOpenApiOperationTransformer แทน
 ```
 
 #### PostgreSQL Packages
 ```xml
-<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
+<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
 
-<!-- Aspire -->
-<PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
+<!-- Aspire client integration (Aspire 13.x) -->
+<PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.*" />
 ```
 
 #### SQL Server Packages
 ```xml
-<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.*" />
 
-<!-- Aspire -->
-<PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+<!-- Aspire client integration (Aspire 13.x) -->
+<PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.*" />
 ```
 
 ---
@@ -470,11 +545,11 @@ dotnet ef migrations remove -p Infrastructure -s WebApi
 2. **Use CancellationToken** - ทุก async method
 3. **Validate inputs** - FluentValidation ก่อน process
 4. **Log appropriately** - Structured logging with Serilog
-5. **Handle exceptions** - Global exception handler + Result pattern
-6. **Write tests** - Unit tests for business logic, Integration tests for APIs
+5. **Handle exceptions** - `IExceptionHandler` + ProblemDetails (.NET 8+) แทน custom middleware
+6. **Write tests** - Unit tests for business logic, Integration tests (Testcontainers) for data access + APIs
 7. **Use DTOs** - ไม่ expose Entities ตรงๆ
-8. **Soft delete** - ใช้ IsDeleted flag แทน hard delete
-9. **Audit trail** - CreatedAt, UpdatedAt, CreatedBy, UpdatedBy
-10. **Use transactions** - สำหรับ operations ที่ต้อง atomic
-11. **Enable retry on failure** - สำหรับ database connections
-12. **Use connection resiliency** - ทั้ง PostgreSQL และ SQL Server
+8. **Soft delete** - IsDeleted flag + global query filter เป็น authority เดียว (ห้าม filter ซ้ำใน repository)
+9. **Audit trail** - CreatedAt/UpdatedAt/CreatedBy/UpdatedBy stamp ผ่าน interceptor ที่เดียว
+10. **Use TimeProvider** - แทน DateTime.UtcNow ตรงๆ — test ได้ด้วย FakeTimeProvider
+11. **Transactions + retry** - เมื่อเปิด EnableRetryOnFailure ต้อง wrap transaction ด้วย execution strategy (ดู pattern #3)
+12. **Use connection resiliency** - EnableRetryOnFailure ทั้ง PostgreSQL และ SQL Server
