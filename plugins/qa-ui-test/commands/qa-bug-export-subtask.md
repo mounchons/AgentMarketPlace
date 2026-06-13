@@ -1,6 +1,6 @@
 ---
 description: Export bug → subtask ของ feature ที่มีอยู่ — agent ค้นหา feature ที่ตรงให้เอง (ไม่ต้องระบุ feature-id)
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Bug Export-Subtask — Bug → Subtask of Existing Feature

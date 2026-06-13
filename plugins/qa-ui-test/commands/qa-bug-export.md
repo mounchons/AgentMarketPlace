@@ -1,6 +1,6 @@
 ---
 description: Export bug → long-running feature_list.json เป็น new feature (epic="bug-fix") — ให้ /continue หยิบไป fix ได้เลย
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Bug Export — Bug → New Feature in long-running

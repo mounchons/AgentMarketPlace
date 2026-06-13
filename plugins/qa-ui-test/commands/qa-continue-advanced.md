@@ -1,6 +1,6 @@
 ---
 description: generate Playwright scripts จาก advanced scenarios + run ด้วย CLI
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Continue Advanced — Generate Scripts + Run Tests

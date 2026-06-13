@@ -1,6 +1,6 @@
 ---
 description: ประเมิน NFR (Non-Functional Requirements) — performance, security, reliability, maintainability พร้อม score 0-100 และ release readiness gate
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA NFR Assess — 4-Category Score + Gate Decision

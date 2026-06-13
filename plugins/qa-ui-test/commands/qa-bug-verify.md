@@ -1,6 +1,6 @@
 ---
 description: รีเทส scenarios ที่ link กับ bug — ถ้าผ่าน → mark bug verified + sync long-running feature ปิด subtask/feature ให้เอง
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Bug Verify — Verify Fix + Sync long-running

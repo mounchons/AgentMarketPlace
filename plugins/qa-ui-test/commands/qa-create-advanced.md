@@ -1,6 +1,6 @@
 ---
 description: สร้าง advanced test scenarios — ต่อยอดจาก qa-ui-test หรือ scan codebase สร้างใหม่
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Create Advanced — Advanced Scenario Generation

@@ -1,6 +1,6 @@
 ---
 description: Traceability Matrix — เชื่อม acceptance criteria (จาก system-design-doc) ↔ test scenarios พร้อม gate decision และ GAP detection
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Trace — Requirements Traceability Matrix

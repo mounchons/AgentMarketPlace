@@ -1,6 +1,6 @@
 ---
 description: แปลง failed scenarios → bug entries — auto-classify (app-defect/test-issue/flaky/env), auto-derive severity, generate reproduction steps
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Bug Triage — Convert Failed Tests → Bug Entries

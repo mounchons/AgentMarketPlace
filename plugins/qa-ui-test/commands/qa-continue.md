@@ -1,6 +1,6 @@
 ---
 description: เลือก scenarios จาก qa-tracker.json ไปสร้าง Playwright scripts แล้วรัน test — ทำทีละ module เหมือน long-running /continue
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Continue — Pick Scenarios + Generate Scripts + Test

@@ -1,6 +1,6 @@
 ---
 description: สร้าง test scenarios — auto-scan codebase สร้างทีเดียว หรือ brainstorm ทีละหน้า
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Create Scenario — Auto-generate + Brainstorm

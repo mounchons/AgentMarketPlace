@@ -1,6 +1,6 @@
 ---
 description: แก้ไข test scenarios เมื่อ business logic เปลี่ยน — สร้างเคสใหม่อ้างอิงเคสเดิม, ปรับ scripts, update qa-tracker
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # QA Edit Scenario — Logic Changed, Update Tests
