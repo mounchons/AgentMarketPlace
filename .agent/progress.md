@@ -330,3 +330,35 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - Feature #8 (opus): dotnet-dev v1.5.0 — references ใหม่ 4 ไฟล์ (react-integration, auth-security, dependency-injection, deployment) + testing-patterns overhaul + SKILL.md progressive-disclosure split → `dotnet-deepdive.json` recommendations ที่เหลือ
 
 ---
+
+## Session 8 — Feature #8: dotnet-dev v1.4.0 → v1.5.0 (4 references ใหม่ + testing overhaul + SKILL split)
+**Date**: 2026-06-13
+**Type**: Coding (Feature #8) — epic `plugin-suite-improvements`
+**Model**: opus + Workflow fan-out (5 agents verify-then-write) + adversarial verification
+
+### What was done (6 subtasks + 1 review-fix):
+- ✅ 8.1 `react-integration.md` (373) — CORS, Vite proxy, Aspire AddViteApp, openapi-typescript, cookie vs JWT, BFF (`623523a`)
+- ✅ 8.2 `auth-security.md` (437) — JWT bearer, MapIdentityApi, .NET 10 401/403, authorization policies (`4c3dab9`)
+- ✅ 8.3 `dependency-injection.md` (378) — TimeProvider, keyed services, options ValidateOnStart, HybridCache, IExceptionHandler+ProblemDetails (`7341059`)
+- ✅ 8.4 `testing-patterns.md` overhaul (863) — xunit.v3, Testcontainers 4.x **+ MsSql fixture** (dual-DB), Respawn SqlServer adapter, FakeTimeProvider, IAsyncLifetime, licensing notes (`2da24f4`)
+- ✅ 8.5 `deployment.md` (367) + extract templates → `clean-architecture-templates.md` (324); **SKILL.md 556 → 254 บรรทัด** (`88546ab`)
+- ✅ 8.6 bump 1.5.0 + Reference Files index (9 refs) + marketplace sync (`64b899e`)
+- 🔧 review-fix: Key Vault least-priv role + TryWriteAsync/WriteAsync coexist (`509a327`)
+
+### Verification (verify-then-write + adversarial):
+- Workflow fan-out: 5 agents, แต่ละตัว verify APIs กับ MS Learn ก่อนเขียน (698k tokens)
+- adversarial re-verify (3 verifiers): auth+di / react+deploy / consistency → **refuted=0, hallucinated Microsoft APIs=0**
+- third-party tools (openapi-typescript/Respawn/xunit.v3/commercial licensing) caveat ในไฟล์ถูกต้อง (ไม่ใช่ hallucination)
+- `claude plugin validate dotnet-dev` ผ่าน + version triad 1.5.0 + references/ 9 ไฟล์
+
+### Opus Review: **PASS 95/100** (excellent — 0 hallucinated APIs, progressive-disclosure split)
+
+### Current status:
+- Features passed: **8/11** | epic plugin-suite-improvements: 5/8 | reviewed: 5 (#4–#8)
+- **dotnet-dev deep-dive recommendations เสร็จครบ** (Feature #7 + #8)
+- pending: 3 (#9 ui-mockup, #10 qa-ui-test, #11 cross-plugin contract)
+
+### Next feature:
+- Feature #9 (opus): ui-mockup v1.11.0 — Agent(*)→Task(*), ${CLAUDE_PLUGIN_ROOT} paths, README/help version drift, mockup_list.json QA fields → `analysis-ui-mockup.json`
+
+---

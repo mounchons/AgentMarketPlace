@@ -50,7 +50,7 @@
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8, 9, 10, 11],
-      "progress": { "total": 8, "passed": 4, "in_progress": 0 }
+      "progress": { "total": 8, "passed": 5, "in_progress": 0 }
     }
   ],
 
@@ -686,15 +686,15 @@
       "priority": "medium",
       "complexity": "complex",
       "risk_level": "low",
-      "status": "pending",
+      "status": "passed",
       "blocked_reason": null,
       "subtasks": [
-        { "id": "8.1", "description": "references/react-integration.md: CORS, Vite proxy, Aspire AddViteApp/AddNpmApp, openapi-typescript client gen, cookie vs JWT สำหรับ SPA, BFF pattern", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/react-integration.md"] },
-        { "id": "8.2", "description": "references/auth-security.md: JWT bearer, ASP.NET Core Identity + API endpoints, .NET 10 behavior (401/403 ไม่ redirect), authorization policies", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/auth-security.md"] },
-        { "id": "8.3", "description": "references/dependency-injection.md: TimeProvider, keyed services, options pattern (ValidateDataAnnotations + ValidateOnStart), HybridCache, IExceptionHandler + ProblemDetails", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/dependency-injection.md"] },
-        { "id": "8.4", "description": "testing-patterns.md overhaul: xunit.v3, Testcontainers 4.x + MsSqlContainer fixture + Respawn SqlServer adapter, FakeTimeProvider, IAsyncLifetime แทน sync-over-async", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/testing-patterns.md"] },
-        { "id": "8.5", "description": "references/deployment.md (aspire publish/azd up/migration bundles + dedicated migration service) + ย้าย code templates จาก SKILL.md → references/clean-architecture-templates.md", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/deployment.md", "plugins/dotnet-dev/skills/dotnet-dev/references/clean-architecture-templates.md", "plugins/dotnet-dev/skills/dotnet-dev/SKILL.md"] },
-        { "id": "8.6", "description": "อัปเดต Reference Files index ใน SKILL.md + README + bump 1.5.0 + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["8.1", "8.2", "8.3", "8.4", "8.5"], "files": ["plugins/dotnet-dev/skills/dotnet-dev/SKILL.md", "plugins/dotnet-dev/README.md", "plugins/dotnet-dev/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+        { "id": "8.1", "description": "references/react-integration.md: CORS, Vite proxy, Aspire AddViteApp/AddNpmApp, openapi-typescript client gen, cookie vs JWT สำหรับ SPA, BFF pattern", "done": true, "committed_at": "2026-06-13T09:53:45Z", "commits": ["623523a"], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/react-integration.md"] },
+        { "id": "8.2", "description": "references/auth-security.md: JWT bearer, ASP.NET Core Identity + API endpoints, .NET 10 behavior (401/403 ไม่ redirect), authorization policies", "done": true, "committed_at": "2026-06-13T09:53:45Z", "commits": ["4c3dab9"], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/auth-security.md"] },
+        { "id": "8.3", "description": "references/dependency-injection.md: TimeProvider, keyed services, options pattern (ValidateDataAnnotations + ValidateOnStart), HybridCache, IExceptionHandler + ProblemDetails", "done": true, "committed_at": "2026-06-13T09:53:45Z", "commits": ["7341059"], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/dependency-injection.md"] },
+        { "id": "8.4", "description": "testing-patterns.md overhaul: xunit.v3, Testcontainers 4.x + MsSqlContainer fixture + Respawn SqlServer adapter, FakeTimeProvider, IAsyncLifetime แทน sync-over-async", "done": true, "committed_at": "2026-06-13T09:53:45Z", "commits": ["2da24f4"], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/testing-patterns.md"] },
+        { "id": "8.5", "description": "references/deployment.md (aspire publish/azd up/migration bundles + dedicated migration service) + ย้าย code templates จาก SKILL.md → references/clean-architecture-templates.md", "done": true, "committed_at": "2026-06-13T09:53:45Z", "commits": ["88546ab"], "depends_on": [], "files": ["plugins/dotnet-dev/skills/dotnet-dev/references/deployment.md", "plugins/dotnet-dev/skills/dotnet-dev/references/clean-architecture-templates.md", "plugins/dotnet-dev/skills/dotnet-dev/SKILL.md"] },
+        { "id": "8.6", "description": "อัปเดต Reference Files index ใน SKILL.md + README + bump 1.5.0 + marketplace sync", "done": true, "committed_at": "2026-06-13T09:53:45Z", "commits": ["64b899e"], "depends_on": ["8.1", "8.2", "8.3", "8.4", "8.5"], "files": ["plugins/dotnet-dev/skills/dotnet-dev/SKILL.md", "plugins/dotnet-dev/README.md", "plugins/dotnet-dev/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
       ],
       "last_committed_subtask": null,
       "acceptance_criteria": [
@@ -704,7 +704,7 @@
         "Licensing notes ครบ (FluentAssertions 8+ commercial → ทางเลือก Shouldly/AwesomeAssertions)",
         "claude plugin validate ผ่าน + marketplace sync"
       ],
-      "time_tracking": { "estimated_time": "150min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "150min", "actual_time": "95min", "started_at": "2026-06-13T09:45:23Z", "completed_at": "2026-06-13T10:03:00Z" },
       "dependencies": [7],
       "references": ["plans/plugin-analysis-20260612/dotnet-deepdive.json", "plans/plugin-analysis-20260612/PENDING.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
@@ -717,13 +717,13 @@
       "interactions": [],
       "version_history": [],
       "sync_status": "n/a",
-      "passes": false,
-      "verification_results": null,
-      "tested_at": null,
+      "passes": true,
+      "verification_results": {"build_check": "n/a (markdown references) \u2014 claude plugin validate dotnet-dev = passed", "tech_stack_audit": "5 reference files verified vs Microsoft Learn MCP (verify-then-write); Aspire 13/EF Core 10/.NET 10/ASP.NET Core 10", "test_coverage": {"unit": 0, "integration": 0, "e2e": 0, "ms_learn_verification": "verify-then-write (5 agents) + adversarial re-verify 3 verifiers"}, "config_flags": "n/a (max_features_per_session=1 honored: only Feature #8)", "pipeline_result": "passed", "verified_at": "2026-06-13T10:03:00Z", "deliverables": {"new_references": ["react-integration.md (373 lines)", "auth-security.md (437)", "dependency-injection.md (378)", "deployment.md (367)", "clean-architecture-templates.md (324, extracted from SKILL.md)"], "overhauled": ["testing-patterns.md (863, +MsSql dual-DB fixture, xunit.v3, Respawn SqlServer, FakeTimeProvider)"], "skill_split": "SKILL.md 556 \u2192 254 lines (templates \u2192 clean-architecture-templates.md, progressive disclosure)"}, "acceptance_criteria_checked": ["\u0e04\u0e23\u0e1a 4 references \u0e43\u0e2b\u0e21\u0e48 + testing-patterns dual-DB (MsSql fixture + Respawn SqlServer) \u2713", "SKILL.md lean (principles + decision tables + routing); templates \u0e2d\u0e22\u0e39\u0e48\u0e43\u0e19 references \u2713", "\u0e17\u0e38\u0e01 doc claim verify vs MS Learn (0 hallucinated Microsoft APIs, adversarial 3 verifiers) \u2713", "Licensing notes \u0e04\u0e23\u0e1a (FluentAssertions/MediatR/AutoMapper commercial \u2192 Shouldly/Mapperly/manual) \u2713", "claude plugin validate \u0e1c\u0e48\u0e32\u0e19 + marketplace sync 1.5.0 \u2713"]},
+      "tested_at": "2026-06-13T10:03:00Z",
       "assigned_model": "opus",
       "is_reference_impl": false,
-      "review": null,
-      "notes": "ทำหลัง Feature #7 (อยู่ไฟล์เดียวกันบางส่วน) — สอง feature นี้รวมกันคือ deep-dive recommendations ที่เหลือทั้งหมด"
+      "review": {"reviewed_by": "opus", "reviewed_at": "2026-06-13T10:03:00Z", "result": "pass", "score": 95, "method": "workflow fan-out 5 agents verify-then-write (MS Learn) + adversarial re-verify 3 verifiers + main-loop SKILL split", "adversarial_verification": {"verifiers": 3, "refuted": 0, "hallucinated_apis": 0, "note": "auth+di / react+deploy / consistency \u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 refuted=false. 2 doc-accuracy nits \u0e41\u0e01\u0e49\u0e41\u0e25\u0e49\u0e27 (509a327): Key Vault least-priv role, TryWriteAsync/WriteAsync coexist"}, "remaining_issues": [], "reference_feature_id": 1, "pattern_adherence": "excellent", "notes": "PASS 95/100. 0 hallucinated Microsoft APIs (verify-then-write \u0e1c\u0e48\u0e32\u0e19 MS Learn). third-party tools (openapi-typescript/Respawn/xunit.v3/commercial licensing) caveat \u0e43\u0e19\u0e44\u0e1f\u0e25\u0e4c\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07. dotnet-dev deep-dive recommendations \u0e04\u0e23\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 (Feature #7 + #8). epic plugin-suite-improvements dotnet-dev \u0e2a\u0e48\u0e27\u0e19 = \u0e40\u0e2a\u0e23\u0e47\u0e08"},
+      "notes": "dotnet-dev v1.4.0 → v1.5.0. 6 subtasks (workflow fan-out 5 agents) + 1 review-fix. 4 references ใหม่ + testing overhaul + SKILL split. ทุก API verified vs MS Learn (0 hallucinated). dotnet-dev deep-dive recommendations ครบ (#7+#8)"
     },
     {
       "id": 9,
@@ -821,14 +821,14 @@
 
   "summary": {
     "total": 11,
-    "passed": 7,
+    "passed": 8,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 4,
-    "last_updated": "2026-06-13T09:41:20Z",
+    "pending": 3,
+    "last_updated": "2026-06-13T10:03:00Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 10, "done": 6, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 10, "done": 7, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
