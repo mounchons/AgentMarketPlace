@@ -1,6 +1,6 @@
 ---
 description: Create an HTML Mockup page using Web Component master page and frontend-design skill
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), Skill(frontend-design)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Skill(frontend-design)
 ---
 
 # Create HTML Mockup Command
@@ -284,8 +284,8 @@ ls .mockups/html/master-page.js 2>/dev/null
 
 ```bash
 # Read master page templates
-cat plugins/ui-mockup/skills/ui-mockup/templates/master-page-template.js
-cat plugins/ui-mockup/skills/ui-mockup/templates/master-page-template.css
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/master-page-template.js
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/master-page-template.css
 ```
 
 2. Replace placeholders in the template:
@@ -376,7 +376,7 @@ Per Page Type Guidance:
 1. Read the HTML mockup template:
 
 ```bash
-cat plugins/ui-mockup/skills/ui-mockup/templates/html-mockup-template.html
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/html-mockup-template.html
 ```
 
 2. Replace placeholders in the template:
@@ -418,7 +418,7 @@ write .mockups/html/NNN-page-name.html
 1. Read the index template:
 
 ```bash
-cat plugins/ui-mockup/skills/ui-mockup/templates/index-template.html
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/index-template.html
 ```
 
 2. Scan `.mockups/html/` for all `NNN-*.html` files:

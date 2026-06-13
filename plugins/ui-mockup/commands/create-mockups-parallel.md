@@ -121,13 +121,13 @@ cat .mockups/mockup_list.json 2>/dev/null
 
 ```bash
 # 1. Read SKILL.md
-cat plugins/ui-mockup/skills/ui-mockup/SKILL.md
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/SKILL.md
 
 # 2. Read template
-cat plugins/ui-mockup/skills/ui-mockup/templates/mockup-template.md
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/mockup-template.md
 
 # 3. Read ASCII patterns
-cat plugins/ui-mockup/skills/ui-mockup/references/ascii-patterns.md
+cat ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/references/ascii-patterns.md
 ```
 
 ### Step 2: Prepare Mockup Knowledge for Sub Agents
