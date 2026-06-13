@@ -37,7 +37,7 @@
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8],
-      "progress": { "total": 5, "passed": 0, "in_progress": 0 }
+      "progress": { "total": 5, "passed": 1, "in_progress": 0 }
     }
   ],
 
@@ -310,15 +310,15 @@
       "priority": "high",
       "complexity": "medium",
       "risk_level": "low",
-      "status": "pending",
+      "status": "passed",
       "blocked_reason": null,
       "subtasks": [
-        { "id": "4.1", "description": "Rewrite README.md เป็น v2.1.0 — ครบ 21 commands, schema ปัจจุบัน, output layout, changelog", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/system-design-doc/README.md"] },
-        { "id": "4.2", "description": "Refresh help.md เป็น v2.1.0 — เพิ่ม 9 commands v2.x ที่หายไป", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/system-design-doc/commands/help.md"] },
-        { "id": "4.3", "description": "Migrate main entry system-design-doc.md → v2.1 split layout + แก้ contradictions ใน reverse-engineer.md, import-plan.md", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/system-design-doc/commands/system-design-doc.md", "plugins/system-design-doc/commands/reverse-engineer.md", "plugins/system-design-doc/commands/import-plan.md"] },
-        { "id": "4.4", "description": "เพิ่ม frontmatter ให้ sync-with-features/sync-with-mockups/validate-integration + แก้ brainstorm-design allowed-tools (ขาด Write/Bash) + sitemap-scan 'Agent(*)' ที่ไม่มีจริง", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/system-design-doc/commands/sync-with-features.md", "plugins/system-design-doc/commands/sync-with-mockups.md", "plugins/system-design-doc/commands/validate-integration.md", "plugins/system-design-doc/commands/brainstorm-design.md", "plugins/system-design-doc/commands/sitemap-scan.md"] },
-        { "id": "4.5", "description": "แก้ qa-ui-test ฝั่ง AC/UC contract: qa-trace.md ใช้ registry แทน find docs/design, ตัด ID format ต้องห้ามใน template, เพิ่ม use_case_id field", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-trace.md"] },
-        { "id": "4.6", "description": "Standardize ${CLAUDE_PLUGIN_ROOT} intra-plugin paths + registry path + bump plugin.json 2.2.0 + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["4.1", "4.2", "4.3", "4.4", "4.5"], "files": ["plugins/system-design-doc/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+        { "id": "4.1", "description": "Rewrite README.md เป็น v2.2.0 — ครบ 22 commands (จริง 22 ไม่ใช่ 21 ตาม verdict correction), schema ปัจจุบัน, output layout, changelog", "done": true, "committed_at": "2026-06-13T01:48:51Z", "commits": ["644666f"], "depends_on": [], "files": ["plugins/system-design-doc/README.md"] },
+        { "id": "4.2", "description": "Refresh help.md เป็น v2.2.0 — เพิ่ม 9 commands v2.x ที่หายไป", "done": true, "committed_at": "2026-06-13T01:52:04Z", "commits": ["c6d5546"], "depends_on": [], "files": ["plugins/system-design-doc/commands/help.md"] },
+        { "id": "4.3", "description": "Migrate main entry system-design-doc.md → v2.1 split layout + แก้ contradictions ใน reverse-engineer.md, import-plan.md", "done": true, "committed_at": "2026-06-13T01:42:32Z", "commits": ["43190b3"], "depends_on": [], "files": ["plugins/system-design-doc/commands/system-design-doc.md", "plugins/system-design-doc/commands/reverse-engineer.md", "plugins/system-design-doc/commands/import-plan.md"] },
+        { "id": "4.4", "description": "เพิ่ม frontmatter ให้ sync-with-features/sync-with-mockups/validate-integration + แก้ brainstorm-design allowed-tools (ขาด Write/Bash) + sitemap-scan 'Agent(*)' ที่ไม่มีจริง", "done": true, "committed_at": "2026-06-13T01:43:41Z", "commits": ["089deb2"], "depends_on": [], "files": ["plugins/system-design-doc/commands/sync-with-features.md", "plugins/system-design-doc/commands/sync-with-mockups.md", "plugins/system-design-doc/commands/validate-integration.md", "plugins/system-design-doc/commands/brainstorm-design.md", "plugins/system-design-doc/commands/sitemap-scan.md"] },
+        { "id": "4.5", "description": "แก้ qa-ui-test ฝั่ง AC/UC contract: qa-trace.md ใช้ registry แทน find docs/design, ตัด ID format ต้องห้ามใน template, เพิ่ม use_case_id field", "done": true, "committed_at": "2026-06-13T01:46:11Z", "commits": ["c906897"], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-trace.md", "plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json", "plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] },
+        { "id": "4.6", "description": "Standardize ${CLAUDE_PLUGIN_ROOT} intra-plugin paths + registry path + bump plugin.json 2.2.0 + marketplace sync", "done": true, "committed_at": "2026-06-13T01:54:22Z", "commits": ["da95453"], "depends_on": ["4.1", "4.2", "4.3", "4.4", "4.5"], "files": ["plugins/system-design-doc/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "plugins/system-design-doc/commands"] }
       ],
       "last_committed_subtask": null,
       "acceptance_criteria": [
@@ -328,7 +328,7 @@
         "ทุก command มี YAML frontmatter (description + allowed-tools ตรงกับ steps จริง)",
         "claude plugin validate ผ่าน + marketplace.json version ตรงกับ plugin.json"
       ],
-      "time_tracking": { "estimated_time": "90min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "90min", "actual_time": "35min", "started_at": "2026-06-13T01:37:30Z", "completed_at": "2026-06-13T02:12:26Z" },
       "dependencies": [],
       "references": ["plans/plugin-analysis-20260612/PENDING.md", "plans/plugin-analysis-20260612/analysis-system-design-doc.json", "plans/plugin-analysis-20260612/salvaged-verdicts-run2.json"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
@@ -341,13 +341,37 @@
       "interactions": [],
       "version_history": [],
       "sync_status": "n/a",
-      "passes": false,
-      "verification_results": null,
-      "tested_at": null,
+      "passes": true,
+      "verification_results": {
+        "build_check": "n/a (markdown/json plugin — no compile); claude plugin validate system-design-doc + qa-ui-test = passed",
+        "design_doc_compliance": "n/a",
+        "crud_completeness": "n/a",
+        "api_integration": "n/a",
+        "test_coverage": { "unit": 0, "integration": 0, "e2e": 0, "adversarial_verify_rounds": 2 },
+        "tech_stack_audit": "n/a",
+        "config_flags": "n/a (max_features_per_session=1 honored: only Feature #4 this session)",
+        "qa_nfr_gates": "n/a (acceptance_criteria_id=[] ไม่ link AC IDs; ไม่มี qa-tracker.json ที่ root)",
+        "pipeline_result": "passed",
+        "verified_at": "2026-06-13T02:12:26Z",
+        "adversarial_verification": {
+          "method": "Workflow (Opus subagents) — 2 rounds refuting verifiers vs files on disk",
+          "round1": { "claims": 5, "passed": 3, "refuted": 2, "note": "AC2 import-plan migrate ไม่ครบ (high), AC3 qa-tracker AC-1.1 ค้าง (major) — แก้ใน review-fix c801804" },
+          "round2": { "claims": 4, "passed_after_round1_fixes": 3, "refuted": 1, "note": "cross-contradictions: diagram count 7-vs-8 ไม่ครบ (medium) — แก้ใน b4ce6b1 + 8a33069" },
+          "final_state": "ทั้ง 5 acceptance_criteria PASS, zero literal dotted AC/UC ใน qa-ui-test, 3 sources ตรงกันที่ 8 diagram types"
+        },
+        "acceptance_criteria_checked": [
+          "README.md + help.md = v2.2.0 ตรง plugin.json + ครบ 22 commands ✓",
+          "system-design-doc.md/reverse-engineer.md/import-plan.md อ้าง split layout สอดคล้องไม่มี contradiction ✓ (verify round2)",
+          "qa-trace.md อ่าน .design-docs/design_doc_list.json registry (registry-first, docs/ = fallback) ✓",
+          "ทุก 22 command มี YAML frontmatter (description + allowed-tools ตรง steps) ✓",
+          "claude plugin validate ผ่าน + marketplace.json sync 2.2.0/2.6.1 ✓"
+        ]
+      },
+      "tested_at": "2026-06-13T02:12:26Z",
       "assigned_model": "sonnet",
       "is_reference_impl": false,
       "review": null,
-      "notes": "ผลวิเคราะห์ + verdicts verify แล้ว (verdicts #9, #11, #14, #15, #17 ใน salvaged-verdicts-run2.json) — เริ่มแก้ได้เลย"
+      "notes": "Cross-plugin fix (system-design-doc v2.1.0→v2.2.0 + qa-ui-test v2.6.0→v2.6.1). 6 subtasks + 4 review-fix commits (adversarial verification 2 rounds). ผลวิเคราะห์ verdicts (#9,#11,#14,#15,#17) ตรงกับที่แก้. assigned_model=sonnet → ยัง await /review (opus) ถ้าต้องการ second pass; adversarial Opus-subagent verification ทำแล้ว 2 รอบ. Note: qa-create-scenario.md ยังสร้าง scenario โดยไม่มี acceptance_criteria_id/use_case_id field — เป็น follow-up นอก scope (template + qa-trace contract แก้แล้ว)."
     },
     {
       "id": 5,
@@ -554,15 +578,15 @@
 
   "summary": {
     "total": 8,
-    "passed": 3,
+    "passed": 4,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 5,
-    "last_updated": "2026-06-12T03:29:00Z",
+    "pending": 4,
+    "last_updated": "2026-06-13T02:12:26Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": { "assigned": 6, "done": 3, "in_progress": 0, "pending_review": 0 },
-      "sonnet": { "assigned": 2, "done": 0, "in_progress": 0, "pending_review": 0 }
+      "sonnet": { "assigned": 2, "done": 1, "in_progress": 0, "pending_review": 1 }
     }
   }
 }

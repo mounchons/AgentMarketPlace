@@ -149,3 +149,47 @@ self-validation ที่จะ catch bugs ก่อน user เจอ จริ
 ### Next session (/continue):
 - Feature #4 (sonnet): แก้ system-design-doc — เริ่มจาก `plans/plugin-analysis-20260612/analysis-system-design-doc.json`
 - หมายเหตุ: ยังไม่ commit งาน session นี้
+
+---
+
+## Session 3 — Feature #4: system-design-doc v2.1.0 → v2.2.0 (+ qa-ui-test v2.6.1)
+**Date**: 2026-06-13
+**Type**: Coding (Feature #4) — epic `plugin-suite-improvements`
+**Model**: sonnet-assigned; adversarial verification via Opus subagent workflows
+
+### What was done:
+ก่อนเริ่ม: commit งานค้างจาก Session 2 (dotnet-dev v1.3.0 `59883c3`, brain v3.1.0 `f0ac84a`, marketplace+epic `02c3fbe`)
+
+Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง adversarial verification:
+- ✅ 4.1 README → v2.2.0: ครบ 22 commands 6 หมวด, split layout, schema 2.3.0, changelog 1.0.0→2.2.0 (`644666f`)
+- ✅ 4.2 help.md → v2.2.0: เพิ่ม 9 commands v2.x (SITEMAP GRAPH 6 + split-design-doc + sitemap-validate + sync-sitemap) (`c6d5546`)
+- ✅ 4.3 migrate main entry split layout + แก้ contradictions reverse-engineer/import-plan (`43190b3`)
+- ✅ 4.4 frontmatter 3 commands ที่ขาด + แก้ allowed-tools (brainstorm-design +Write/Bash, sitemap-scan Agent→Task) (`089deb2`)
+- ✅ 4.5 qa-ui-test contract: qa-trace registry-first + flat AC-NNN + scenario.use_case_id (qa-ui-test v2.6.1) (`c906897`)
+- ✅ 4.6 ${CLAUDE_PLUGIN_ROOT} paths ทุก command + registry path + bump 2.2.0 + marketplace sync (`da95453`)
+
+### Verification Pipeline (v2.3.0):
+- Build: n/a (markdown/json) — `claude plugin validate` system-design-doc + qa-ui-test = **passed**
+- Test Coverage: adversarial verification 2 รอบ (Opus subagent workflows)
+- QA+NFR Gates: n/a (acceptance_criteria_id=[], ไม่มี qa-tracker.json ที่ root)
+- Config Flags: max_features_per_session=1 honored
+- **Pipeline Result: PASSED**
+
+### Adversarial Verification (2 รอบ — refuting verifiers vs files):
+- รอบ 1 (5 claims): 3 pass, 2 refuted → AC2 import-plan migrate ไม่ครบ (high), AC3 qa-tracker `AC-1.1` ค้าง (major) → review-fix `c801804`
+- รอบ 2 (4 claims): 3 pass, 1 refuted → cross-contradictions: diagram count 7-vs-8 ไม่ครบ (medium) → review-fix `b4ce6b1`, `8a33069`
+- Final: ทั้ง 5 AC PASS, zero literal dotted AC/UC ใน qa-ui-test, README+help+create-diagram ตรงกันที่ 8 diagram types
+
+### Current status:
+- Features passed: **4/8** (epic plugin-suite-improvements: 1/5)
+- Build: ✅ (plugin validate passed)
+- Versions: system-design-doc 2.2.0, qa-ui-test 2.6.1 (plugin.json = marketplace.json)
+
+### Next feature:
+- Feature #5 (sonnet): แก้ long-running — README frozen v2.0.0 (จริง v2.9.0), split-layout ไม่ wire เข้า continue.md, 17 จุดอ้าง /test-runner & /ai-ui-test ที่ไม่มีจริง → เริ่มจาก `plans/plugin-analysis-20260612/analysis-long-running.json`
+
+### หมายเหตุ:
+- Feature #4 assigned_model=sonnet → ยัง await `/review` (opus) ถ้าต้องการ second pass; adversarial Opus-subagent verification ทำแล้ว 2 รอบ
+- Follow-up (นอก scope #4): qa-create-scenario.md ยังสร้าง scenario โดยไม่มี acceptance_criteria_id/use_case_id field — เพิ่มผ่าน /add-feature ภายหลังได้
+
+---
