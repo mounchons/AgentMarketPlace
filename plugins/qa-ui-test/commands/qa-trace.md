@@ -121,14 +121,18 @@ Patterns ที่ scan:
 ```
 
 ```bash
-# Auto-discover AC IDs — สแกนไฟล์ที่ resolve จาก registry ก่อน แล้วค่อย fallback
+# Auto-discover AC/UC IDs — สแกนไฟล์ที่ resolve จาก registry ก่อน แล้วค่อย fallback
 grep -E "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" [resolved-requirements-file]
 grep -rE "^(AC-|UC-)[0-9]+(\.[0-9]+)?:" .design-docs/ docs/ --include="*.md" 2>/dev/null   # fallback
+
+# ⭐ UC headers ในรูป '### Use Case (UC-NNN): Title' ไม่ขึ้นต้นด้วย UC- → ต้อง scan แยก
+grep -rE "^### Use Case \(UC-[0-9]+\):" .design-docs/ docs/ --include="*.md" 2>/dev/null
 
 # Output:
 # .design-docs/shop/02-requirements.md:23: AC-001: User can place order with valid payment
 # .design-docs/shop/02-requirements.md:25: AC-002: User can cancel order within 10 min
 # .design-docs/shop/02-requirements.md:27: AC-003: System calculates VAT correctly
+# .design-docs/shop/02-requirements.md:40: ### Use Case (UC-007): Cancel order within 10 min
 ```
 
 #### Source 3: Section-based extraction (fallback)
@@ -399,10 +403,21 @@ EOF
       "pass_rate": 0.87,
       "by_gate": { "PASS": 19, "CONCERNS": 0, "FAIL": 2, "GAP": 3 }
     },
+    "uc_sources": [".design-docs/shop/02-requirements.md (use_cases[])", "scenario.use_case_id"],
+    "uc_inventory": [...],
+    "uc_summary": {
+      "total_ucs": 12,
+      "covered": 11,
+      "uc_gaps": 1,
+      "pass_rate": 0.91,
+      "by_gate": { "PASS": 10, "CONCERNS": 0, "FAIL": 1, "UC_GAP": 1 }
+    },
     "release_ready": false
   }
 }
 ```
+
+> **persist UC ด้วย** — saved artifact ต้อง mirror UC matrix ที่ render ใน Step 5 (ไม่ใช่ markdown-only) เพื่อให้ downstream (เช่น long-running gates / future UC coverage check) อ่าน `uc_inventory`/`uc_summary` ได้
 
 ---
 
@@ -411,19 +426,21 @@ EOF
 ```markdown
 ## QA Session N - TRACE
 
-### AC Sources discovered:
+### AC/UC Sources discovered:
 - .design-docs/design_doc_list.json (registry, doc_layout: split)
-- .design-docs/shop/02-requirements.md (24 ACs)
+- .design-docs/shop/02-requirements.md (24 ACs, 12 UCs from use_cases[])
 
 ### Linking results:
-- Direct (from scenario field): 12
-- Auto-linked (keyword): 9
-- Manual confirmed: 3
-- GAPs: 3
+- AC direct (scenario.acceptance_criteria_id): 12
+- AC auto-linked (keyword): 9
+- AC manual confirmed: 3
+- UC direct (scenario.use_case_id): 11
+- AC GAPs: 3 | UC GAPs: 1
 
 ### Release readiness:
-- ✅ 19 PASS | ⚠️ 0 CONCERNS | ❌ 2 FAIL | 🚨 3 GAP
-- Release: NOT READY (5 ACs need attention)
+- AC: ✅ 19 PASS | ⚠️ 0 CONCERNS | ❌ 2 FAIL | 🚨 3 GAP
+- UC: ✅ 10 PASS | ❌ 1 FAIL | 🚨 1 UC GAP
+- Release: NOT READY (5 ACs + 1 UC need attention)
 ```
 
 ```bash
