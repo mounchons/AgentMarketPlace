@@ -25,7 +25,7 @@
       "pages": ["004", "005", "006"],
       "design_doc_entity_ref": "ENT-001",
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"},
         {"type": "api", "path": "docs/api/users.md"}
       ],
       "crud_actions": {
@@ -45,7 +45,7 @@
       "pages": ["007"],
       "design_doc_entity_ref": null,
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#master-data"}
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"}
       ],
       "crud_actions": {
         "list":   { "enabled": true, "ui_type": "page" },
@@ -77,8 +77,11 @@
       "design_doc_section": "authentication",
       "design_doc_api_refs": [],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#authentication"}
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"}
       ],
+      "complexity_factors": ["form-validation"],
+      "acceptance_criteria_ids": ["AC-001"],
+      "risk_baseline": "P2",
       "related_pages": ["002"],
       "status": "pending",
       "mockup_file": null,
@@ -108,7 +111,7 @@
       "design_doc_section": "authentication",
       "design_doc_api_refs": [],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#authentication"}
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"}
       ],
       "related_pages": ["001"],
       "status": "pending",
@@ -139,7 +142,7 @@
       "design_doc_section": "dashboard",
       "design_doc_api_refs": [],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#dashboard"}
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"}
       ],
       "related_pages": [],
       "status": "pending",
@@ -170,7 +173,7 @@
       "design_doc_section": "user-management",
       "design_doc_api_refs": ["API-001"],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"},
         {"type": "api", "path": "docs/api/users.md#list"}
       ],
       "related_pages": ["005", "006"],
@@ -202,7 +205,7 @@
       "design_doc_section": "user-management",
       "design_doc_api_refs": ["API-002", "API-003"],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"},
         {"type": "api", "path": "docs/api/users.md#create"},
         {"type": "api", "path": "docs/api/users.md#update"}
       ],
@@ -235,7 +238,7 @@
       "design_doc_section": "user-management",
       "design_doc_api_refs": ["API-004"],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#user-management"},
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"},
         {"type": "api", "path": "docs/api/users.md#get"}
       ],
       "related_pages": ["004", "005"],
@@ -267,7 +270,7 @@
       "design_doc_section": "master-data",
       "design_doc_api_refs": [],
       "related_documents": [
-        {"type": "system-design", "path": "system-design.md#master-data"}
+        {"type": "system-design", "path": ".design-docs/<project-slug>/00-index.md"}
       ],
       "related_pages": [],
       "status": "pending",
@@ -388,7 +391,9 @@
 
   "metadata": {
     "schema_version": "1.8.0",
-    "plugin_version": "1.8.0",
+    "plugin_version": "1.11.0",
+    "_related_documents_note": "related_documents[].path: split layout (schema 2.3.0) → .design-docs/<slug>/00-index.md หรือ NN-<key>.md (resolve ผ่าน design_doc_list.json registry); legacy single-file = .design-docs/system-design-<slug>.md#anchor",
+    "_v1.8_qa_fields_note": "complexity_factors[]/acceptance_criteria_ids[]/risk_baseline ถูก auto-derive โดย /init-mockup Step 3.55 และ qa-create-scenario อ่านเป็น hint (ดูตัวอย่างใน page 001)",
     "compatible_with": {
       "design_doc_list_schema": ">=2.2.0",
       "feature_list_schema": ">=2.4.0",
