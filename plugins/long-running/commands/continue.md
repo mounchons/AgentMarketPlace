@@ -200,7 +200,7 @@ cat .mockups/mockup_list.json 2>/dev/null
 
 4. **If brain has no nav data:**
    - Generate navigation from mockup_list.json pages grouped by category
-   - Use default design tokens from component_library.json
+   - Use default design tokens from `${CLAUDE_PLUGIN_ROOT}/skills/long-running/templates/component_library.json`
    - Store generated nav structure in brain for future use
 
 5. **Component hierarchy:**

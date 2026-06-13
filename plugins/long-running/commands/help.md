@@ -172,7 +172,7 @@ verification pipeline, model assignment
   ⭐ UI Control Manifest? → /help --controls   (v2.8.0 — Gate 4 + emit-control-spec)
   ⭐ traceability gap?    → /help scan-changes (v2.7.0)
   ดูคำสั่งเฉพาะ?           → /help [command]   เช่น /help emit-control-spec
-  อยากรู้ว่ามีอะไรใหม่?    → /help --new       (v2.8.0 changes)
+  อยากรู้ว่ามีอะไรใหม่?    → /help --new       (v2.10.0 changes)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -238,7 +238,7 @@ verification pipeline, model assignment
    /help --qa              ⭐ qa-ui-test integration (v2.6.0 + v2.8.0)
    /help --gates           ⭐ /continue Step 5.6 gate details (4 gates)
    /help --controls        ⭐ UI Control Manifest workflow (v2.8.0)
-   /help --new             v2.8.0 changes
+   /help --new             v2.10.0 changes
 ```
 
 ---
@@ -1712,7 +1712,7 @@ Schema additions:
    /help --qa                      — ⭐ qa-ui-test release gates (v2.6.0 + v2.8.0)
    /help --gates                   — ⭐ Step 5.4-5.6 deep-dive (4 gates)
    /help --controls                — ⭐ UI Control Manifest workflow (v2.8.0)
-   /help --new                     — ดูที่เพิ่มใน v2.8.0
+   /help --new                     — ดูที่เพิ่มใน v2.10.0
 ```
 
 > 💬 **หมายเหตุ:** คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)

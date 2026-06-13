@@ -32,7 +32,7 @@ description: |
 >
 > **Version 2.4.0** - Design-doc impact check in /add-feature + /edit-feature (entities[]/api_endpoints[]/crud_operations against design_doc_list.json; design_doc_refs.pending_updates[] + route to /sync-with-features)
 >
-> **Version 2.3.0** - Added Verification Pipeline (6 checks beyond build success), Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement
+> **Version 2.3.0** - Added Verification Pipeline (7 steps beyond build success): Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement
 
 > **Response Language**: Always respond to users in Thai (ภาษาไทย)
 
