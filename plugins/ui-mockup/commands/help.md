@@ -171,7 +171,7 @@ Bridge ระหว่าง system-design-doc และ frontend-design + long-
    /help --parallel        Parallel creation
    /help --integration     Cross-plugin integration (incl. qa-ui-test)
    /help --qa              ⭐ qa-ui-test integration (v1.8.0)
-   /help --new             What's new in v1.8.0
+   /help --new             What's new in v1.11.0
 ```
 
 ---
