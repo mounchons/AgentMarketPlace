@@ -661,3 +661,130 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 2. **Configure work_mem** - For complex sorts/joins
 3. **Use partial indexes** - For filtered queries
 4. **Consider partitioning** - For large tables
+
+---
+
+## 13. EF Core 10 Features (Latest — verified vs Microsoft Learn 2026-06)
+
+> .NET 10 LTS (support ถึง Nov 2028) + EF Core 10. ทุก pattern ด้านล่างตรวจกับ https://learn.microsoft.com/ef/core/what-is-new/ef-core-10.0/whatsnew แล้ว
+
+### 13.1 Named Query Filters — soft delete + multitenancy พร้อมกัน
+
+ก่อน EF 10 มี global query filter ได้ **ตัวเดียว** ต่อ entity (เรียก `HasQueryFilter` ซ้ำ = ทับ). EF 10 ตั้งชื่อ filter ได้ และปิดเฉพาะตัวที่ต้องการ:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Blog>()
+        .HasQueryFilter("SoftDeletionFilter", b => !b.IsDeleted)
+        .HasQueryFilter("TenantFilter", b => b.TenantId == _tenantId);
+}
+
+// ปิด "เฉพาะ" soft-delete filter (tenant filter ยังทำงาน) — เช่น admin ดู record ที่ลบแล้ว
+var deleted = await context.Blogs
+    .IgnoreQueryFilters(["SoftDeletionFilter"])
+    .ToListAsync();
+
+// IgnoreQueryFilters() เปล่าๆ = ปิดทุก filter (เหมือนเดิม)
+```
+
+> ✅ **เลิก** สร้าง expression-tree query filter เอง + **เลิก** filter `!e.IsDeleted` ซ้ำใน repository ทุก method (named filter จัดการให้ ปิดเลือกได้). pre-EF10 ทำได้แค่ `HasQueryFilter(b => !b.IsDeleted && b.TenantId == t)` ซึ่งปิดทีละตัวไม่ได้
+
+### 13.2 Complex Types + ToJson() — แทน OwnsOne สำหรับ Value Objects
+
+EF 10 แนะนำ **complex types** (value semantics) แทน owned entity types สำหรับ value objects (ดูsection 5). Complex types map ลง column ในตารางหลัก (table splitting) หรือ **JSON column เดียว**:
+
+```csharp
+public class Customer
+{
+    public int Id { get; set; }
+    public Address ShippingAddress { get; set; } = null!;
+    public Address? BillingAddress { get; set; }   // EF 10 รองรับ optional complex type
+}
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Customer>(b =>
+    {
+        b.ComplexProperty(c => c.ShippingAddress, a => a.ToJson());   // → JSON column
+        b.ComplexProperty(c => c.BillingAddress, a => a.ToJson());
+    });
+}
+```
+
+> ทำไมเลิก `OwnsOne`: owned types ยังมี identity + reference semantics → `customer.BillingAddress = customer.ShippingAddress` พัง, เทียบใน LINQ ด้วย identity ไม่ใช่ค่า, และ `ExecuteUpdateAsync` กับ owned types ไม่ได้. Complex types เป็น value semantics — assign = copy ค่า, เทียบด้วยค่า, รองรับ `ExecuteUpdateAsync` เต็มที่. รองรับ struct ด้วย (`public struct Address {...}`)
+
+### 13.3 ExecuteUpdateAsync — รับ regular lambda (conditional updates ง่ายขึ้น)
+
+EF 10 เปลี่ยน `ExecuteUpdateAsync` จาก expression tree → **regular `Func`** (breaking change, low impact) ทำ conditional `SetProperty` ได้โดยไม่ต้องสร้าง expression tree เอง:
+
+```csharp
+await context.Blogs
+    .Where(b => b.Id == id)
+    .ExecuteUpdateAsync(s =>
+    {
+        s.SetProperty(b => b.Views, b => b.Views + 1);
+        if (nameChanged)                                  // conditional — ก่อน EF 10 ทำแบบนี้ไม่ได้
+            s.SetProperty(b => b.Name, newName);
+    });
+```
+
+> ถ้าโค้ดเดิมสร้าง expression tree เพื่อ dynamic setters → rewrite เป็น lambda ธรรมดา (ง่ายกว่ามาก)
+
+### 13.4 SQL Server 2025 / Azure SQL `json` data type — ปิด gap dual-DB
+
+EF 10 รองรับ **json data type** ของ SQL Server 2025 / Azure SQL (แทน `nvarchar(max)` แบบเดิม) — ได้ประสิทธิภาพเทียบเท่า JSONB ของ Postgres (section 9):
+
+```csharp
+// เปิดใช้ json type อัตโนมัติเมื่อ UseAzureSql หรือ compatibility level >= 170 (SQL Server 2025)
+builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+    opt.UseAzureSql(connectionString));   // หรือ UseSqlServer(...) ที่ compat level 170+
+
+// model: primitive collection + complex type → json columns อัตโนมัติ
+public class Blog
+{
+    public int Id { get; set; }
+    public List<string> Tags { get; set; } = [];     // → json
+    public BlogDetails Details { get; set; } = null!; // ComplexProperty → json
+}
+```
+
+```sql
+-- EF 10 สร้าง (SQL Server 2025): Tags + Details เป็น json column
+CREATE TABLE [Blogs] ([Id] int NOT NULL IDENTITY, [Tags] json NOT NULL, [Details] json NOT NULL, ...);
+```
+
+```csharp
+// LINQ query เข้าถึง property ใน JSON ได้ + bulk update ด้วย ExecuteUpdateAsync
+var hot = await context.Blogs.Where(b => b.Details.Viewers > 3).ToListAsync();
+await context.Blogs.ExecuteUpdateAsync(s => s.SetProperty(b => b.Details.Views, b => b.Details.Views + 1));
+```
+
+> ⚠️ ถ้า migrate จาก app ที่ใช้ JSON ผ่าน `nvarchar` columns → column จะถูกเปลี่ยนเป็น `json` ใน migration แรกอัตโนมัติ. opt-out ได้ด้วยการ set column type เป็น `nvarchar(max)` เอง หรือใช้ compat level < 170. **dual-DB**: Postgres ใช้ JSONB (section 9.2), SQL Server 2025 ใช้ json type — โมเดลเดียวกัน provider ต่างกัน
+
+### 13.5 PostgreSQL Concurrency — `xmin` system column (คู่กับ RowVersion ของ SQL Server)
+
+section 4 มีแต่ `[Timestamp] RowVersion` (SQL Server). ฝั่ง PostgreSQL ใช้ system column **`xmin`** เป็น optimistic concurrency token (ไม่ต้องเพิ่ม column เอง):
+
+```csharp
+// Npgsql provider API — ใน OnModelCreating
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Product>().UseXminAsConcurrencyToken();
+}
+
+// dual-DB: เลือก concurrency token ตาม provider
+if (Database.IsNpgsql())
+    modelBuilder.Entity<Product>().UseXminAsConcurrencyToken();
+else if (Database.IsSqlServer())
+    modelBuilder.Entity<Product>().Property(p => p.RowVersion).IsRowVersion();
+```
+
+> `UseXminAsConcurrencyToken()` เป็น API ของ Npgsql EF Core provider (ไม่ใช่ EF core แกน) — ตรวจล่าสุดที่ npgsql.org/efcore (concurrency tokens). `DbUpdateConcurrencyException` handling เหมือน section 4
+
+### 13.6 อื่นๆ ที่ EF 10 เพิ่ม (สรุปสั้น)
+
+- **Parameterized collection translation**: default เป็น multiple scalar parameters (เลิก inline เป็น constants / เลิก JSON array param ของ EF 8-9) → plan cache ดีขึ้น. ปรับได้ด้วย `UseParameterizedCollectionMode(...)`
+- **LeftJoin / RightJoin** เป็น LINQ operators ตรงๆ (ไม่ต้องเขียน `GroupJoin...SelectMany...DefaultIfEmpty`)
+- **Custom default constraint names** ผ่าน `HasDefaultValueSql(..., name: ...)`
+- LINQ/SQL: optimize `MIN`/`MAX` over `DISTINCT`, parameter names อ่านง่ายขึ้น (`@city` แทน `@__city_0`)
