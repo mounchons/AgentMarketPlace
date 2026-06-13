@@ -631,7 +631,7 @@ git commit -m "chore: Add Feature #13 - [description]"
 ### v2.10.0 (2026-06-13)
 - 📚 Documentation-sync + contract hardening: README 2.0.0 → 2.10.0, SKILL.md frontmatter 2.6.0 → 2.10.0, help.md headers → 2.10.0; เอกสารครบทั้ง **19 commands**
 - 🔗 Wire split-layout registry resolution เข้า `/continue` (Step 0.5 + Verification Pipeline Step 2) — headline v2.9.0 feature เดิม unreachable จาก command จริง
-- 🔧 แทน `/test-runner` + `/ai-ui-test` (17 refs, skill ที่ไม่มีจริง) ด้วย `/qa-ui-test`
+- 🔧 นำ 2 universal skills ที่ไม่มีจริงออก (17 refs — QA test runner + UI-test) → ใช้ `/qa-ui-test`
 - 🔧 frontmatter ครบทุก command (เพิ่มให้ 6 v1.5-era), `${CLAUDE_PLUGIN_ROOT}` paths, `$ARGUMENTS` บน flag-taking commands
 - 🔧 template `control_coverage` (v2.8) + `compatible_with.design_doc_list_schema >=2.3.0` + แก้ Anthropic blog URL (404)
 

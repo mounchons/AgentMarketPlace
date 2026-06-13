@@ -58,7 +58,7 @@ verification pipeline, model assignment
 ⭐ v2.7.0: /scan-changes — upstream traceability enforcer (orphan detection)
 ⭐ v2.8.0: Gate 4 UI Control Coverage + /emit-control-spec (manifest-driven QA)
 ⭐ v2.9.0: split-layout design-doc resolution (registry-aware /continue)
-⭐ v2.10.0: docs sync (19 commands) + split-layout wired into /continue + /qa-ui-test (เลิก /test-runner,/ai-ui-test)
+⭐ v2.10.0: docs sync (19 commands) + split-layout wired into /continue + ใช้ /qa-ui-test (เลิกอ้าง 2 universal skills ที่ไม่มีจริง)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1078,7 +1078,7 @@ $ /status                         # 100% pass?
   • เอกสารครบทั้ง 19 commands (เดิม README แสดงแค่ 12)
   • split-layout registry resolution wired เข้า /continue Step 0.5 + Verification Pipeline Step 2
     (เดิม v2.9.0 ทำแค่ใน coding-agent-guide — /continue ยังใช้ find เก่า)
-  • /test-runner + /ai-ui-test (17 จุด, skill ที่ไม่มีจริง) → /qa-ui-test
+  • นำ 2 universal skills ที่ไม่มีจริงออก (17 จุด — QA runner/UI-test) → ใช้ /qa-ui-test
   • frontmatter ครบทุก command (เพิ่มให้ 6 v1.5-era commands) + ${CLAUDE_PLUGIN_ROOT} paths + $ARGUMENTS
   • template control_coverage (v2.8) + compat design_doc_list >=2.3.0 + แก้ Anthropic blog URL (404)
 
