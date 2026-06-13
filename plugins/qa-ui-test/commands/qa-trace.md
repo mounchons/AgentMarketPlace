@@ -100,7 +100,7 @@ ls *.md | grep -iE "design|spec|requirement" 2>/dev/null
 Patterns ที่ scan:
 ```
 ^AC-\d{3}:\s+(.*)$                    # มาตรฐาน registry — flat AC-NNN (เช่น AC-001: User can place order)
-^AC-\d+(\.\d+)?:\s+(.*)$              # เผื่อ legacy docs ที่ใช้ dotted (AC-1.1) — เอกสารจาก system-design-doc ใช้ flat AC-NNN เสมอ
+^AC-\d+(\.\d+)?:\s+(.*)$              # เผื่อ legacy docs ที่ใช้ dotted format — เอกสารจาก system-design-doc ใช้ flat AC-NNN เสมอ
 ^## Acceptance Criteria.*$            # ## Acceptance Criteria
 ^- AC-\d+:.*$                          # - AC-005: System logs all actions
 ^### Use Case (UC-\d+):.*$             # ### Use Case (UC-003): Cancel order
