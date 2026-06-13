@@ -83,6 +83,10 @@
 - help.md 80KB + SKILL.md 42KB monolith → ต้อง split
 
 ### 5. dotnet-dev งานใหญ่ที่เลื่อน (deep-dive recommendations ที่ยังไม่ได้ทำ)
+
+> ✅ **Feature #7 เสร็จ (2026-06-13, opus, PASS 95/100):** aspire-setup.md rewrite → Aspire 13/.NET 10 + EF Core 10 patterns (section 13) ใน ef-core-patterns.md — ทุก API verified vs MS Learn (0 hallucinated, adversarial 3 verifiers). bump dotnet-dev 1.4.0.
+> ⬇️ ที่เหลือด้านล่าง = **Feature #8** (references ใหม่ 4 ไฟล์ + testing overhaul + SKILL split)
+
 - เขียน references/aspire-setup.md ใหม่เป็น Aspire 13 (ปัจจุบันเป็น 8.x ทั้งไฟล์ + มี API ที่ไม่มีจริง)
 - เพิ่ม EF Core 10 patterns (named query filters, ComplexProperty+ToJson, SQL Server json type, xmin concurrency)
 - references ใหม่: react-integration.md, auth-security.md, dependency-injection.md (TimeProvider/keyed services/HybridCache/IExceptionHandler), deployment.md

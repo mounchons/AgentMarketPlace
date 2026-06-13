@@ -302,3 +302,31 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - dotnet-dev↔shared-artifacts (by-design), qa-ui-test→brain (auto-save QA), graph-brain MCP bundling — บันทึกใน PENDING.md
 
 ---
+
+## Session 7 — Feature #7: dotnet-dev v1.3.0 → v1.4.0 (Aspire 13 + EF Core 10)
+**Date**: 2026-06-13
+**Type**: Coding (Feature #7) — epic `plugin-suite-improvements`
+**Model**: opus + Microsoft Learn MCP (verify-then-write) + adversarial verification
+
+### What was done (4 subtasks + 1 review-fix):
+- ✅ 7.1 rewrite `aspire-setup.md` → **Aspire 13 / .NET 10** (Aspire CLI, `Sdk="Aspire.AppHost.Sdk/13.0.0"`, `Enrich*DbContext` แก้ double-register, `WaitFor`/`WithLifetime(ContainerLifetime.Persistent)`/`WithHttpHealthCheck`, ลบ `AddDockerComposeEnvironment` ผิด, built-in OpenAPI) (`f6b9c6d`)
+- ✅ 7.2 `ef-core-patterns.md` **section 13 EF Core 10** (named query filters, ComplexProperty+ToJson, ExecuteUpdateAsync regular lambda, SQL Server 2025 json type+UseAzureSql, Npgsql xmin) (`03cf559`)
+- ✅ 7.3 verify ทุก section กับ MS Learn **ก่อนเขียน** (inline gate — verify-then-write)
+- ✅ 7.4 ลบ warning '8.x' + bump 1.4.0 + marketplace sync (`df17a6c`)
+- 🔧 review-fix: EF10 optional complex type required-property note (`546c002`)
+
+### Verification (MS Learn verify-then-write + adversarial):
+- **subtask 7.3 = gate**: ค้น `microsoft_docs_search`/`microsoft_code_sample_search` ก่อนเขียนทุก section → "Aspire 13" (เลขกระโดด 9.x→13) ยืนยันจริง, `Sdk=Aspire.AppHost.Sdk/13.0.0`, `EnrichNpgsqlDbContext`/`EnrichSqlServerDbContext` v13.1.0, `WithLifetime(ContainerLifetime.Persistent)`, EF Core 10 named filters/ComplexProperty+ToJson/ExecuteUpdateAsync/json type — ทุกตัวมีจริง
+- adversarial verify (3 verifiers re-check vs MS Learn): **refuted=0, hallucinated APIs=0** → verify-then-write กัน hallucinate สำเร็จแม้ content หลัง model cutoff
+- `claude plugin validate dotnet-dev` ผ่าน + version triad 1.4.0
+
+### Opus Review: **PASS 95/100** (excellent — 0 hallucinated APIs)
+
+### Current status:
+- Features passed: **7/11** | epic plugin-suite-improvements: 4/8 | reviewed: 4 (#4, #5, #6, #7)
+- pending: 4 (#8 dotnet-dev + #9 ui-mockup + #10 qa-ui-test + #11 cross-plugin)
+
+### Next feature:
+- Feature #8 (opus): dotnet-dev v1.5.0 — references ใหม่ 4 ไฟล์ (react-integration, auth-security, dependency-injection, deployment) + testing-patterns overhaul + SKILL.md progressive-disclosure split → `dotnet-deepdive.json` recommendations ที่เหลือ
+
+---
