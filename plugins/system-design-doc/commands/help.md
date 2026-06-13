@@ -80,7 +80,7 @@ allowed-tools: Read(*), Bash(*)
 📐 DIAGRAMS & EDITING (3 commands)
 
   /create-diagram              สร้าง diagram เฉพาะประเภท
-                               รองรับ: ER, Flow, DFD, Sequence, Sitemap, State, Class
+                               รองรับ: ER, Flow, DFD, Sequence, Sitemap, State, Class, Architecture
                                ตัวอย่าง: /create-diagram er
                                ตัวอย่าง: /create-diagram sequence
 
@@ -973,7 +973,7 @@ system-design-doc กลายเป็น source of truth สำหรับ AC
 **create-diagram:**
 - Prerequisites: design_doc_list.json
 - Output: diagram file (Mermaid format) + อัปเดต design_doc_list.json
-- รองรับ: er, flow, dfd, sequence, sitemap, state, class
+- รองรับ: er, flow, dfd, sequence, sitemap, state, class, architecture
 - Time: 2-5 min ต่อ diagram
 - Next: /create-diagram (next type), /validate-design-doc
 
