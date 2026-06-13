@@ -343,7 +343,7 @@ Every generated scenario MUST include:
 }
 ```
 
-→ `/qa-coverage-check --include-controls` ใช้ `control_refs[]` + `control_test_category` มา map กับ manifest
+→ `/long-running:qa-coverage-check --include-controls` ใช้ `control_refs[]` + `control_test_category` มา map กับ manifest
 
 ---
 

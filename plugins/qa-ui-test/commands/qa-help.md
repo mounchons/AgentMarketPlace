@@ -616,7 +616,7 @@ $ /qa-bug-export BUG-001      # ส่งให้ dev fix
    Build Playwright scripts + run
 
 
-   Step D (long-running): /qa-coverage-check --feature N --include-controls
+   Step D (long-running): /long-running:qa-coverage-check --feature N --include-controls
    ─────────────────────────────────────
    For each control_id in manifest:
      check qa-tracker.scenarios where control_refs[] contains control_id

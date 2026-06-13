@@ -682,7 +682,7 @@ Files changed:
   tests/ (5 new spec, 2 modified)
 
 Next:
-  /qa-coverage-check --feature 7 --include-controls
+  /long-running:qa-coverage-check --feature 7 --include-controls
     → verify control_coverage.gap_control_ids == []
   /qa-run --feature 7
     → run new + updated tests

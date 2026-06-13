@@ -1685,7 +1685,7 @@ git commit -m "scenario(TS-{MODULE}): create N scenarios for {MODULE} module"
 **Why use this mode?**
 - Manifest ระบุ **dev intent** ที่ชัดเจน (binding source, permission, validation, cascade) — qa ไม่ต้องเดา
 - Generation ครอบ 5 mandatory categories: render-binding, api-binding, permission, validation, cascade-loading-error
-- ทุก scenario มี `control_refs[]` + `control_test_category` → /qa-coverage-check ตรวจ Gate 4 ได้ตรง
+- ทุก scenario มี `control_refs[]` + `control_test_category` → /long-running:qa-coverage-check ตรวจ Gate 4 ได้ตรง
 
 ---
 
