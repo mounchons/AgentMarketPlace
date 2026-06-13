@@ -213,7 +213,7 @@ Wait for the user to respond proceed or add more information first.
 
 **Output: split layout (default).** Follow `create-design-doc.md` Step 6–7 exactly — write `.design-docs/<project-slug>/00-index.md` + `NN-<key>.md` (10 files), then populate `design_doc_list.json` `documents[].sections[]` (schema 2.3.0) with `doc_layout:"split"`, `doc_dir`, and `diagrams.*.file_path` pointing at the section files. Preserve `<!-- sdd-section -->` markers and `## N.`/`### N.x` headings.
 
-Create the file `.design-docs/system-design-[project-name].md` (legacy single-file fallback)
+Legacy single-file `.design-docs/system-design-[project-name].md` — only when the user explicitly requests `doc_layout:"single"`
 
 ### 5.1 Generation Rules
 
@@ -337,15 +337,15 @@ Permission matrix:
 
 Create or update the file `.design-docs/design_doc_list.json`
 
-### Schema v2.1.0
+### Schema v2.3.0
 
-Use the structure from `templates/design_doc_list.json` (schema v2.1.0)
+Use the structure from `templates/design_doc_list.json` (schema v2.3.0)
 
 **Example of key fields to include:**
 
 ```json
 {
-  "schema_version": "2.1.0",
+  "schema_version": "2.3.0",
   "project_name": "[project-name]",
   "description": "[project description/goal]",
   "technology_stack": {
@@ -501,7 +501,8 @@ Display results on success:
 Create a commit for the created/modified files:
 
 ```bash
-git add .design-docs/system-design-*.md .design-docs/design_doc_list.json
+git add .design-docs/[project-slug]/ .design-docs/design_doc_list.json
+# legacy single-file mode: git add .design-docs/system-design-*.md แทนบรรทัดแรก
 git commit -m "docs: import design doc from [source-filename]
 
 - Source: [source-file-path]

@@ -108,13 +108,15 @@ cat go.mod 2>/dev/null | head -10
 
 **Output: split layout (default).** Follow `create-design-doc.md` Step 6–7 exactly — write `.design-docs/<project-slug>/00-index.md` + `NN-<key>.md` (10 files), then populate `design_doc_list.json` `documents[].sections[]` (schema 2.3.0) with `doc_layout:"split"`, `doc_dir`, and `diagrams.*.file_path` pointing at the section files. Preserve `<!-- sdd-section -->` markers and `## N.`/`### N.x` headings.
 
-**File Output (legacy single-file):**
+**File Output (split — default):**
 ```
-.design-docs/system-design-[project-name].md
+.design-docs/<project-slug>/00-index.md + NN-<key>.md (10 section files)
+.design-docs/design_doc_list.json (registry, schema 2.3.0)
 ```
 
-**Use template from:**
-- `templates/design-doc-template.md`
+**Use templates from:**
+- `templates/index-template.md` + `templates/sections/NN-<key>.md`
+- `templates/design-doc-template.md` — LEGACY, only when user asks for `doc_layout:"single"` (output `.design-docs/system-design-<slug>.md`)
 
 ### Step 6: Validate Against Code
 
@@ -194,7 +196,8 @@ class Order(models.Model):
 ```
 ✅ Reverse Engineering สำเร็จ!
 
-📁 File: .design-docs/system-design-ecommerce-api.md
+📁 Output: .design-docs/ecommerce-api/ (00-index.md + 10 section files)
+📋 Registry: .design-docs/design_doc_list.json (schema 2.3.0)
 
 🔍 Analysis Summary:
    • Technology: Node.js + Express + Prisma
@@ -230,7 +233,7 @@ class Order(models.Model):
 ```
 ⚠️ Reverse Engineering สำเร็จบางส่วน
 
-📁 File: .design-docs/system-design-legacy-app.md
+📁 Output: .design-docs/legacy-app/ (00-index.md + 10 section files)
 
 ⚠️ Issues Found:
    • Missing migrations - Data types may be incomplete
@@ -300,6 +303,7 @@ sql = "SELECT u.Id, u.Username FROM Users u INNER JOIN Roles r ON u.RoleId = r.I
 | `references/codebase-analysis.md` | Detailed analysis guide for each framework |
 | `references/mermaid-patterns.md` | Diagram patterns |
 | `references/troubleshooting.md` | Common problem solutions |
-| `templates/design-doc-template.md` | Document template |
+| `templates/index-template.md` + `templates/sections/` | Split-layout templates (default) |
+| `templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

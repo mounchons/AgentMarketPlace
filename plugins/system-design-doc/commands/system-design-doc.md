@@ -40,9 +40,10 @@ Create a comprehensive standardized system design document. Supports both creati
    - Identify technology stack (if available)
    - Define main modules
 
-2. **Create Document Structure**
-   - Use template from `templates/design-doc-template.md`
+2. **Create Document Structure (split layout — default)**
+   - Use `templates/index-template.md` (→ `00-index.md`) + `templates/sections/NN-<key>.md` (one per section)
    - Fill in data per sections in `references/document-sections.md`
+   - `templates/design-doc-template.md` is LEGACY — use only when user asks for `doc_layout:"single"`
 
 3. **Create Diagrams**
    - Use patterns from `references/mermaid-patterns.md`
@@ -51,8 +52,10 @@ Create a comprehensive standardized system design document. Supports both creati
 4. **Create Data Dictionary**
    - Use template from `references/data-dictionary-template.md`
 
-5. **Save File**
-   - Create file `system-design-[project-name].md`
+5. **Save Files + Register Document**
+   - Follow `create-design-doc.md` Step 6–7 exactly: write `.design-docs/<project-slug>/00-index.md` + `NN-<key>.md` (10 files) — keep the `<!-- sdd-section -->` marker on line 1 of every section file
+   - Update `.design-docs/design_doc_list.json` (schema 2.3.0): `doc_layout:"split"`, `doc_dir`, `sections[]`, `diagrams.*.file_path`
+   - Legacy single-file `.design-docs/system-design-<slug>.md` only when the user explicitly requests `doc_layout:"single"`
 
 ---
 
@@ -97,6 +100,7 @@ cat *.csproj 2>/dev/null | head -20
 | **Database** | `migrations/`, `schema.prisma` | Data Dictionary |
 
 4. **Extract Data and Create Document**
+   - **Output: split layout (default)** — follow `create-design-doc.md` Step 6–7: write `.design-docs/<project-slug>/00-index.md` + `NN-<key>.md` then register in `.design-docs/design_doc_list.json` (schema 2.3.0)
 
 5. **Validate Against Code**
 
@@ -234,7 +238,8 @@ The system design document consists of 10 main sections:
 ```
 ✅ สร้าง System Design Document สำเร็จ!
 
-📁 File: system-design-hr-system.md
+📁 Output: .design-docs/hr-system/ (00-index.md + 10 section files, split layout)
+📋 Registry: .design-docs/design_doc_list.json (schema 2.3.0)
 
 📊 Document Summary:
    • 10 sections completed
@@ -287,6 +292,8 @@ Read these files for additional details:
 | `references/mermaid-patterns.md` | All diagram patterns |
 | `references/document-sections.md` | Details for each document section |
 | `references/data-dictionary-template.md` | Data Dictionary format |
-| `templates/design-doc-template.md` | Full document template |
+| `templates/index-template.md` | Index/TOC template (`00-index.md`) |
+| `templates/sections/NN-<key>.md` | Per-section templates (split layout — default) |
+| `templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)
