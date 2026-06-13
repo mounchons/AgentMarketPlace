@@ -1,4 +1,4 @@
-# QA UI Test Plugin v2.7.0 — คู่มือการใช้งาน
+# QA UI Test Plugin v2.7.1 — คู่มือการใช้งาน
 
 > AI-powered QA UI Testing + **Bug Management System** —
 > auto-scan codebase สร้าง scenarios, multi-agent brainstorm, cascade testing,
@@ -1099,6 +1099,11 @@ cp ${CLAUDE_PLUGIN_ROOT}/skills/qa-ui-test/templates/github-actions-ui-test.yml 
 ## 14. Changelog
 
 > ประวัติเวอร์ชันย่อ — รายละเอียดเต็มดูที่ `/qa-help --new` และ `.claude-plugin/plugin.json`
+
+### v2.7.1 (cross-plugin contract)
+- 🔗 **Consumer hook:** `/qa-create-scenario` Auto Step 0.6 อ่าน `.mockups/mockup_list.json` page hints (`complexity_factors` / `risk_baseline` / `acceptance_criteria_ids` / `cascade_chain` / `wizard_steps`) มา seed ก่อน code-scan — ปิด BROKEN edge `ui-mockup → qa-ui-test` (`--no-mockup-hints` เพื่อข้าม)
+- 🔗 **UC traceability:** `/qa-trace` consume `scenario.use_case_id` เป็น first-class UC source (UC Matrix + UC GAP คู่ขนานกับ AC) — ปิด dead UC leg ของ 3-way link design-doc UC ↔ scenario ↔ feature
+- 🔧 **Version sync:** plugin / marketplace / SKILL / qa-help / README → 2.7.1
 
 ### v2.7.0 (เอกสาร + tool fix)
 - 🐛 **Tool fix:** แก้ `allowed-tools` ของ 13 action commands ที่ dispatch subagent ให้ใช้ `Task` (เดิมระบุ tool ชื่อที่ไม่มีอยู่จริงใน Claude Code → subagent dispatch อาจถูก block/prompt)

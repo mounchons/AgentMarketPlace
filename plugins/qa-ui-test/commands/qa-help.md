@@ -5,7 +5,7 @@ allowed-tools: Read(*)
 
 # QA Help — อธิบายวิธีใช้งาน qa-ui-test
 
-คุณคือ **QA Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน qa-ui-test plugin (**v2.7.0**) ครอบคลุม:
+คุณคือ **QA Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน qa-ui-test plugin (**v2.7.1**) ครอบคลุม:
 - Test workflow (สร้าง scenario, รัน, retest)
 - Bug management (triage, export, verify) — v2.2
 - **Risk-based priority + 3-tier model assignment (P0-P3 + opus/sonnet/haiku)** — v2.3
@@ -67,7 +67,7 @@ $ARGUMENTS
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 QA UI Test — คู่มือการใช้งาน v2.7.0
+📖 QA UI Test — คู่มือการใช้งาน v2.7.1
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 AI-powered QA UI Testing + Bug Management + NFR + Traceability + Manifest-driven

@@ -19,7 +19,7 @@
       "to": "qa-ui-test",
       "mechanism": "ui-mockup writes pages[].complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps into mockup_list.json explicitly so qa-create-scenario does not have to re-scan code (stated intent). qa-create-scenario is the intended consumer.",
       "status": "working",
-      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): qa-create-scenario.md 'Auto Step 0.6: Seed QA hints จาก ui-mockup (.mockups/mockup_list.json)' reads pages[].complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps as seed hints before code-scan; Auto Step 2 merges (union factors, baseline risk). grep '.mockups/mockup_list.json' in qa-create-scenario.md = 6 matches (was 0). --no-mockup-hints opt-out; graceful skip when file absent. Prior intent at ui-mockup init-mockup.md + mockup_list.json template now has a reciprocal reader."
+      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): qa-create-scenario.md 'Auto Step 0.6: Seed QA hints จาก ui-mockup (.mockups/mockup_list.json)' reads pages[].complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps as seed hints before code-scan; Auto Step 2 merges (union factors, baseline risk). grep 'mockup_list.json' in qa-create-scenario.md = 6 (literal '.mockups/mockup_list.json' = 5), was 0. --no-mockup-hints opt-out; graceful skip when file absent. Prior intent at ui-mockup init-mockup.md + mockup_list.json template now has a reciprocal reader."
     },
     {
       "from": "ui-mockup",
@@ -103,14 +103,14 @@
       "to": "system-design-doc",
       "mechanism": "UC structured-field leg: qa-tracker reserves scenarios[].use_case_id (written by SDD /sync-with-qa-tracker Step 5), and qa-trace.md now READS it as a first-class UC source (Feature #11), building a UC matrix + UC GAP report alongside the AC matrix.",
       "status": "working",
-      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): qa-trace.md Source 1b reads scenario.use_case_id, Step 3 A2 direct UC mapping (uc_matrix[scenario.use_case_id]), Step 4 UC gate, Step 5 UC Matrix + UC GAPs output, uc_inventory resolves UC title/module from design_doc_list use_cases[]. grep 'use_case_id' in qa-trace.md = 14 matches (was 0). Field no longer write-only."
+      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): qa-trace.md Source 1b reads scenario.use_case_id, Step 3 A2 direct UC mapping (uc_matrix[scenario.use_case_id]), Step 4 UC gate, Step 5 UC Matrix + UC GAPs output, uc_inventory resolves UC title/module from design_doc_list use_cases[]. grep 'use_case_id' in qa-trace.md = 18 matches (was 0); persisted in qa-tracker.traceability.uc_inventory/uc_summary. Field no longer write-only."
     },
     {
       "from": "qa-ui-test",
       "to": "ui-mockup",
       "mechanism": "qa-create-scenario reads .mockups/mockup_list.json pages[] seed hints (Auto Step 0.6, Feature #11) — reciprocal of ui-mockup's writer. Closes the previously one-sided contract.",
       "status": "working",
-      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): grep '.mockups/mockup_list.json' in qa-create-scenario.md = 6 matches (was 0); see also the ui-mockup→qa-ui-test edge above"
+      "evidence": "FIXED in Feature #11 (qa-ui-test v2.7.1): grep 'mockup_list.json' in qa-create-scenario.md = 6 (literal '.mockups/mockup_list.json' = 5), was 0; see also the ui-mockup→qa-ui-test edge above"
     },
     {
       "from": "system-design-doc",
