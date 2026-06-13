@@ -866,7 +866,7 @@ plugins/ui-mockup/
 ## Changelog
 
 ### 1.11.0 (2026-06-13)
-- 🔧 `create-html-mockup`: ลบ `Agent(*)` ใน allowed-tools (tool ไม่มีจริง — command ใช้ `Skill(frontend-design)` ไม่ spawn subagent) + intra-plugin template paths → `${CLAUDE_PLUGIN_ROOT}` (master-page/html/index templates)
+- 🔧 `create-html-mockup`: ลบ tool ที่ไม่มีจริงใน allowed-tools (command ใช้ `Skill(frontend-design)` ไม่ spawn subagent) + intra-plugin template paths → `${CLAUDE_PLUGIN_ROOT}` (master-page/html/index templates)
 - 🔧 `create-mockups-parallel`: SKILL/mockup-template/ascii-patterns paths → `${CLAUDE_PLUGIN_ROOT}`
 - 📝 README version sync (header 1.6.0 / footer 1.0.0 → 1.11.0) + Commands table ครบ 8 commands (เพิ่ม create-html-mockup, validate-mockup, help)
 - 📝 help.md version sync v1.8.0 → v1.11.0

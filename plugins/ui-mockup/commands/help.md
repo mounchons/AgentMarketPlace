@@ -53,7 +53,7 @@ allowed-tools: Read(*), Bash(*)
 Bridge ระหว่าง system-design-doc และ frontend-design + long-running + qa-ui-test
 ⭐ v1.8.0: factor inference + risk baseline → seeds qa-create-scenario
 ⭐ v1.10.0: split-aware design-doc reading (schema 2.3.0 registry)
-⭐ v1.11.0: docs sync (8 commands) + ${CLAUDE_PLUGIN_ROOT} paths + create-html-mockup Agent(*) fix
+⭐ v1.11.0: docs sync (8 commands) + ${CLAUDE_PLUGIN_ROOT} paths + create-html-mockup allowed-tools fix
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -819,7 +819,7 @@ $ /sync-mockups (long-running)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🔧 Docs-sync + path fixes
-  • create-html-mockup: ลบ Agent(*) ที่ไม่มีจริง (ใช้ Skill(frontend-design) ไม่ spawn subagent)
+  • create-html-mockup: ลบ tool ที่ไม่มีจริงใน allowed-tools (ใช้ Skill(frontend-design) ไม่ spawn subagent)
   • ${CLAUDE_PLUGIN_ROOT} paths ใน create-html-mockup + create-mockups-parallel (resolve หลัง marketplace install)
   • README/help version sync → v1.11.0, Commands ครบ 8, mockup_list.json template QA fields + split-aware paths
   • SKILL.md References ลบ 2 ไฟล์ที่ไม่มีจริง
