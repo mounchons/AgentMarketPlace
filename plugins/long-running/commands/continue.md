@@ -115,19 +115,25 @@ cat README.md 2>/dev/null | head -50
 **Before starting feature development, check reference documents from other skills:**
 
 ```bash
-# 1. Check System Design Document (from system-design-doc skill)
-ls -la *.design-doc.md 2>/dev/null || ls -la docs/*.md 2>/dev/null
-# Or search for design document
-find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -10
+# 1. System Design Document — resolve via the registry, split-aware (v2.9.0; do NOT cat the whole doc)
+cat .design-docs/design_doc_list.json 2>/dev/null
+# doc_layout:"split" → open ONLY the needed file via documents[].sections[]:
+#   schema work     → sections[key="data-dictionary"].file  (e.g. <slug>/08-data-dictionary.md)
+#   relationships   → sections[key="er-diagram"].file
+#   business logic  → sections[key="flow-diagrams"].file
+#   routes/pages    → sections[key="sitemap"].file
+# doc_layout:"single" or field absent → read the single documents[].file_path (legacy)
+# no design_doc_list.json → fallback: find . -name "*design*.md" -o -name "*system*.md" 2>/dev/null | head -10
 
 # 2. Check UI Mockups (from ui-mockup skill)
 ls -la .mockups/ 2>/dev/null
-# List all mockups
 ls -la .mockups/*.mockup.md 2>/dev/null
 
 # 3. Check mockup_list.json (if exists)
 cat .mockups/mockup_list.json 2>/dev/null
 ```
+
+> 📖 **Design-doc resolution detail**: see `${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/coding-agent-guide.md` Step 0 — split-layout registry resolution (requires `design_doc_list.json` schema >= 2.3.0). Resolve a section to its file via `documents[].sections[key].file`; never `cat` the whole document.
 
 **📁 Reference Documents from Other Skills:**
 
@@ -136,8 +142,9 @@ cat .mockups/mockup_list.json 2>/dev/null
 | `.mockups/` | ui-mockup | **UI Structural Spec** — describes components, data flow, layout structure (not a visual blueprint) |
 | `.mockups/*.mockup.md` | ui-mockup | Component specs + data requirements (ASCII wireframe is only a structural reference) |
 | `.mockups/_design-tokens.yaml` | ui-mockup | Design tokens (colors, spacing, typography) |
-| `*design-doc.md` | system-design-doc | **System Architecture** — ER Diagram, Flow, DFD |
-| `docs/` | system-design-doc | System design documents |
+| `.design-docs/design_doc_list.json` | system-design-doc | **Registry** (schema 2.3.0) — `documents[].sections[]` maps section key → file (split-aware resolution) |
+| `.design-docs/<slug>/NN-<key>.md` | system-design-doc | Per-section design doc (split layout — default since sdd v2.1.0) |
+| `.design-docs/system-design-*.md` | system-design-doc | Legacy single-file design doc (`doc_layout:"single"`) |
 
 **🎯 How to Use Reference Documents:**
 
@@ -888,9 +895,10 @@ Verification Pipeline Results:
   Backend: dotnet build → ✅ 0 errors
   Frontend: npm run build → ✅ 0 errors
 
-□ Step 2 — Design Doc Compliance (if .design-docs/ exists)
+□ Step 2 — Design Doc Compliance (if .design-docs/design_doc_list.json exists)
+  Resolve entities via registry (split-aware): doc_layout:"split" → read documents[].sections[key="data-dictionary"].file (e.g. <slug>/08-data-dictionary.md); doc_layout:"single"/absent → read documents[].file_path
   Entity count in code: N
-  Entity count in DD: M
+  Entity count in DD: M (counted from the resolved section file, NOT the whole doc)
   Match: ✅ / ❌ Missing: [list]
 
 □ Step 3 — CRUD Completeness (if CRUD feature)
