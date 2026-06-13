@@ -1,6 +1,6 @@
 # Long-Running Agent Skill
 
-> **Version 2.0.0** - เพิ่ม Flows, State Contracts, Component Requirements
+> **Version 2.10.0** - 19 commands; qa-ui-test release gates (Gate 1 AC / Gate 2 NFR / Gate 3 bug-verify / Gate 4 UI control coverage), /scan-changes traceability, /emit-control-spec UI Control Manifest, split-layout design-doc resolution. ดู [Changelog](#-changelog) ด้านล่าง
 
 Harness สำหรับ AI Agent ที่ทำงานข้าม context windows ได้อย่างมีประสิทธิภาพ
 
@@ -126,14 +126,17 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 
 | Command | Description |
 |---------|-------------|
-| `/init [description]` | Initialize agent environment สำหรับโปรเจคใหม่ |
-| `/continue` | ทำงานต่อจาก session ก่อน |
-| `/status` | ดูความคืบหน้าของโปรเจค |
+| `/init-project` | สร้าง CLAUDE.md + config เริ่มต้นของโปรเจค |
+| `/init [description]` | Initialize agent environment + feature_list.json สำหรับโปรเจคใหม่ |
 | `/init-existing` | เพิ่ม agent environment ให้โปรเจคที่มีอยู่ |
-| `/add-feature` | เพิ่ม feature ใหม่เข้าไปใน feature_list.json |
+| `/continue` | ทำงานต่อจาก session ก่อน (Coding Agent mode) |
+| `/status` | ดูความคืบหน้าของโปรเจค + model workload + review status |
+| `/add-feature [description]` | เพิ่ม feature ใหม่เข้าไปใน feature_list.json |
 | `/edit-feature [id] - [changes]` | แก้ไข feature ที่ pass แล้ว (สร้าง feature ใหม่) |
+| `/review [#id]` | Opus review งานของ model อื่น (hybrid auto-fix Critical/High) |
+| `/help [mode]` | คู่มือใช้งาน (modes: --quick/--workflow/--qa/--controls/--gates/--new) |
 
-### 🆕 New Commands (v1.5.0)
+### Feature Generation & Sync
 
 | Command | Description |
 |---------|-------------|
@@ -141,8 +144,17 @@ Harness สำหรับ AI Agent ที่ทำงานข้าม context
 | `/generate-features-from-design` | สร้าง features จาก design doc + mockups |
 | `/sync-mockups` | Sync status ระหว่าง features และ mockups |
 | `/validate-coverage` | ตรวจสอบ coverage ของ mockups, design, criteria |
-| `/dependencies` | แสดง dependency graph (Mermaid) |
-| `/migrate` | Migrate จาก schema เก่าเป็น v1.5.0 |
+| `/dependencies` | แสดง dependency graph + critical path (Mermaid) |
+| `/migrate` | Migrate จาก schema เก่าสู่ schema ปัจจุบัน (2.4.0) |
+
+### QA Release Gates & Traceability (v2.6+)
+
+| Command | Description |
+|---------|-------------|
+| `/nfr-check` | Sync NFR compliance จาก qa-tracker → features[].nfr_compliance (Gate 2) |
+| `/qa-coverage-check` | Sync AC + control coverage จาก qa-tracker → qa_trace_coverage (Gate 1 + Gate 4) |
+| `/scan-changes` | ตรวจ orphan code/commits เทียบ feature_list (upstream traceability) — v2.7 |
+| `/emit-control-spec [feature-id]` | Emit UI Control Manifest (.agent/ui-controls/feature-N.json) ส่งต่อ qa-ui-test — v2.8 |
 
 ## 📎 Feature References (v1.4.0)
 
@@ -577,15 +589,25 @@ git commit -m "chore: Add Feature #13 - [description]"
 
 ### Quick Reference: Feature Template
 
-```json
+> ⚠️ The minimal snippet below is **illustrative only** (legacy flat fields). The **canonical schema is 2.4.0** — see `${CLAUDE_PLUGIN_ROOT}/skills/long-running/templates/feature_list.json` for the full shape with `status`, `epic`, `subtasks[]`, `acceptance_criteria`/`acceptance_criteria_id[]`, `time_tracking{}`, `assigned_model`/`review{}`, `verification_results{}`, `nfr_compliance{}`, `qa_trace_coverage{}` (incl. `control_coverage{}`). Always copy from the template, not from this snippet.
+
+```jsonc
 {
   "id": 0,
+  "epic": "epic-id",
+  "module": "module-name",
   "category": "feature|bugfix|enhancement|refactor",
   "description": "Short description",
   "priority": "high|medium|low",
-  "steps": ["Step 1", "Step 2", "Step 3"],
+  "complexity": "simple|medium|complex",
+  "status": "pending|in_progress|passed|partial|incomplete|blocked",
+  "subtasks": [{ "id": "0.1", "description": "...", "done": false, "files": [] }],
+  "acceptance_criteria": ["criterion 1", "criterion 2"],
+  "acceptance_criteria_id": [],
+  "time_tracking": { "estimated_time": "30min", "started_at": null, "completed_at": null },
   "dependencies": [],
-  "estimated_time": "30min",
+  "assigned_model": "opus|sonnet|haiku",
+  "review": null,
   "passes": false,
   "tested_at": null,
   "notes": ""
@@ -605,6 +627,39 @@ git commit -m "chore: Add Feature #13 - [description]"
 | `docs` | documentation |
 
 ## 📝 Changelog
+
+### v2.10.0 (2026-06-13)
+- 📚 Documentation-sync + contract hardening: README 2.0.0 → 2.10.0, SKILL.md frontmatter 2.6.0 → 2.10.0, help.md headers → 2.10.0; เอกสารครบทั้ง **19 commands**
+- 🔗 Wire split-layout registry resolution เข้า `/continue` (Step 0.5 + Verification Pipeline Step 2) — headline v2.9.0 feature เดิม unreachable จาก command จริง
+- 🔧 แทน `/test-runner` + `/ai-ui-test` (17 refs, skill ที่ไม่มีจริง) ด้วย `/qa-ui-test`
+- 🔧 frontmatter ครบทุก command (เพิ่มให้ 6 v1.5-era), `${CLAUDE_PLUGIN_ROOT}` paths, `$ARGUMENTS` บน flag-taking commands
+- 🔧 template `control_coverage` (v2.8) + `compatible_with.design_doc_list_schema >=2.3.0` + แก้ Anthropic blog URL (404)
+
+### v2.9.0 (2026-05-29)
+- ✨ system-design-doc split-layout awareness: resolve design sections ผ่าน `design_doc_list.json` `documents[].sections[]` (อ่านเฉพาะไฟล์ที่ต้องใช้); Verification Pipeline Step 2 DD-count เป็น layout-aware
+
+### v2.8.0 (2026-05-22)
+- ✨ UI Control Manifest + **Gate 4**: `/emit-control-spec` emit `.agent/ui-controls/feature-N.json`; `/continue` Step 5.4 + Gate 4 block passes=true เมื่อ `gap_control_ids`/`fail_control_ids` ไม่ว่าง
+- ✨ `qa_trace_coverage.control_coverage{}`; mandatory categories (render-binding/api-binding/permission/validation/cascade-loading-error) ตรงกับ qa-ui-test; `--force-control-coverage`
+
+### v2.7.0 (2026-05-10)
+- ✨ `/scan-changes` — upstream traceability enforcer: 4-category classification (Tracked/Mapped/Orphan/Pending) ผ่าน `subtasks[].files[]` reverse-map; ignore patterns + legacy-commit cutoff (v2.7.1)
+
+### v2.6.0 (2026-04-20)
+- ✨ qa-ui-test release gates: `/nfr-check` + `/qa-coverage-check`; `/continue` Step 5.6 Gate 1 (AC coverage) / Gate 2 (NFR) / Gate 3 (bug verify)
+- ✨ schema 2.4.0: `acceptance_criteria_id[]`, `complexity_tags[]`, `linked_bug{}`, `nfr_compliance{}`, `qa_trace_coverage{}`; `--force-coverage`/`--force-nfr`/`--force-bug-verify`
+
+### v2.4.0 (2026-04-05)
+- ✨ Design-doc impact check ใน `/add-feature` + `/edit-feature` (entities/api_endpoints/crud_operations เทียบ `design_doc_list.json`); `design_doc_refs.pending_updates[]` + route ไป `/sync-with-features`
+
+### v2.3.0 (2026-03-24)
+- ✨ Verification Pipeline (7 steps เกินกว่า build success): Design Doc compliance, CRUD completeness, mock-data detection, test coverage minimum, tech stack audit, config flag enforcement; เพิ่ม status `partial`/`incomplete`
+
+### v2.2.0 (2026-03-13)
+- ✨ CRITICAL RULES + self-check checklist + output rejection criteria + penalty enforcement (SKILL.md, /continue, /init, /review)
+
+### v2.1.0 (2026-03-11)
+- ✨ `model_config{}` + `assigned_model`/`is_reference_impl`/`review` fields; `/review` command (hybrid auto-fix: Critical/High → opus fix, Medium/Low → send back); model workload + review status ใน `/status`; auto-assign ใน `/continue`
 
 ### v2.0.0 (2026-03-08)
 - ✨ เพิ่ม `flows[]` — จัดกลุ่ม features เป็น user journeys (wizard, crud-group, parallel)

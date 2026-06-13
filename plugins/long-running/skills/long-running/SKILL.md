@@ -1,14 +1,22 @@
 ---
 name: long-running
-version: 2.6.0
-description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, Verification Pipeline, qa-ui-test v2.5 release gates (NFR + AC coverage + bug verification), and integration with ui-mockup, system-design-doc, qa-ui-test, dotnet-dev skills
+version: 2.10.0
+description: Harness for AI Agents working across context windows — supports multi-session, feature tracking, progress logging, incremental development, epic grouping, subtask tracking, acceptance criteria, model assignment, review system, flows, state contracts, component requirements, CRITICAL RULES enforcement, Verification Pipeline, qa-ui-test release gates (NFR + AC coverage + bug verification + Gate 4 UI control coverage), /scan-changes upstream traceability, /emit-control-spec UI Control Manifest, split-layout design-doc resolution, and integration with ui-mockup, system-design-doc, qa-ui-test, dotnet-dev skills. USE THIS SKILL when the user mentions: continue from previous session, feature list, feature tracking, coding agent, release gate, AC coverage, NFR check, bug verification, control manifest, multi-session development, progress log. Thai triggers: "ทำต่อจาก session ก่อน", "สร้าง feature list", "feature tracking", "release gate", "ตรวจ coverage", "ตรวจ NFR", "verify bug", "scan changes", "ทำงานข้าม session"
 ---
 
 # Long-Running Agent Skill
 
+> **Version 2.10.0** - Documentation-sync + contract-hardening release: README/SKILL/help aligned to v2.10.0 across all 19 commands; split-layout registry resolution wired into /continue (Step 0.5 + Verification Pipeline Step 2); /test-runner + /ai-ui-test replaced by /qa-ui-test; frontmatter added to 6 v1.5-era commands; ${CLAUDE_PLUGIN_ROOT} on intra-plugin paths; $ARGUMENTS on flag-taking commands; template control_coverage (v2.8) + compat design_doc_list >=2.3.0
+>
+> **Version 2.8.0** - UI Control Manifest + Gate 4: /emit-control-spec emits .agent/ui-controls/feature-N.json (binding/permission/validation/cascade handoff to qa-ui-test); /continue Step 5.4 + Gate 4 block passes=true on gap_control_ids/fail_control_ids; qa_trace_coverage.control_coverage{}; --force-control-coverage override
+>
+> **Version 2.7.0/2.7.1** - /scan-changes upstream traceability enforcer (orphan code/commit detection via subtasks[].files[] reverse-map; ignore patterns + legacy-commit cutoff)
+>
 > **Version 2.9.0** - system-design-doc split-layout awareness (resolve sections via registry; layout-aware Verification Pipeline Step 2 DD-count)
 >
-> **Version 2.6.0** - Added qa-ui-test v2.5 release gates: /nfr-check + /qa-coverage-check commands; /continue Step 5.6 enforces Gate 1 (AC coverage), Gate 2 (NFR compliance), Gate 3 (bug verification) before passes=true; schema 2.4.0 with acceptance_criteria_id[], complexity_tags[], linked_bug{}, nfr_compliance{}, qa_trace_coverage{}; --force-coverage / --force-nfr / --force-bug-verify overrides
+> **Version 2.6.0** - Added qa-ui-test release gates: /nfr-check + /qa-coverage-check commands; /continue Step 5.6 enforces Gate 1 (AC coverage), Gate 2 (NFR compliance), Gate 3 (bug verification) before passes=true; schema 2.4.0 with acceptance_criteria_id[], complexity_tags[], linked_bug{}, nfr_compliance{}, qa_trace_coverage{}; --force-coverage / --force-nfr / --force-bug-verify overrides
+>
+> **Version 2.4.0** - Design-doc impact check in /add-feature + /edit-feature (entities[]/api_endpoints[]/crud_operations against design_doc_list.json; design_doc_refs.pending_updates[] + route to /sync-with-features)
 >
 > **Version 2.3.0** - Added Verification Pipeline (6 checks beyond build success), Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement
 
@@ -46,8 +54,12 @@ Based on [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effe
 
 | What you need | Example command |
 |---------------|----------------|
-| **Start a new project** | `/init สร้าง Todo API ด้วย .NET Core` |
+| **Initialize new project (CLAUDE.md + config)** | `/init-project` |
+| **Start a new project (feature list)** | `/init สร้าง Todo API ด้วย .NET Core` |
+| **Add long-running to an existing project** | `/init-existing` |
 | **Continue working** | `/continue` or "continue from previous session" |
+| **Add a feature to the backlog** | `/add-feature <description>` |
+| **Edit a passed feature** | `/edit-feature <id>` |
 | **View status** | `/status` or "view project progress" |
 | **Review another model's work** | `/review` or `/review #6` |
 | **Generate features from mockups** | `/generate-features-from-mockups` |
@@ -56,8 +68,11 @@ Based on [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effe
 | **Sync mockups** | `/sync-mockups` |
 | **NFR compliance check** (v2.6) | `/nfr-check` |
 | **QA AC coverage check** (v2.6) | `/qa-coverage-check` |
+| **Scan orphan code/commits** (v2.7) | `/scan-changes` |
+| **Emit UI Control Manifest** (v2.8) | `/emit-control-spec <feature-id>` |
 | **View dependencies** | `/dependencies` |
 | **Migrate schema** | `/migrate` |
+| **Help / command reference** | `/help` |
 
 ## 🏗️ Architecture
 
@@ -601,13 +616,19 @@ Violating these rules means your session output is INVALID. The feature will be 
 
 ## 📚 Reference Files
 
+> Paths are relative to `${CLAUDE_PLUGIN_ROOT}/skills/long-running/`.
+
 | File | Description |
 |------|-------------|
 | `references/initializer-guide.md` | Initializer Agent Guide |
-| `references/coding-agent-guide.md` | Coding Agent Guide |
+| `references/coding-agent-guide.md` | Coding Agent Guide (incl. split-layout design-doc resolution, Step 0) |
 | `references/feature-patterns.md` | Patterns for feature breakdown |
+| `references/module-decomposition.md` | Module/bounded-context decomposition guidance |
+| `references/ui-control-manifest.md` | UI Control Manifest schema (v2.8 Gate 4 — binding/permission/validation/cascade handoff to qa-ui-test) |
 | `references/troubleshooting.md` | Troubleshooting common issues |
-| `templates/feature_list.json` | Template for feature list |
+| `templates/feature_list.json` | Template for feature list (schema 2.4.0) |
+| `templates/modules.json` | Template for module/bounded-context registry |
+| `templates/component_library.json` | Template for shared component library |
 | `templates/progress.md` | Template for progress log |
 
 ---
@@ -888,7 +909,12 @@ Recommended workflow:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.10.0 | 2026-06-13 | Documentation-sync + contract hardening: README 2.0.0→2.10.0, SKILL.md frontmatter 2.6.0→2.10.0, help.md headers→2.10.0, all 19 commands documented; split-layout registry wired into `/continue` Step 0.5 + Verification Pipeline Step 2; `/test-runner` + `/ai-ui-test` (17 refs) → `/qa-ui-test`; frontmatter added to 6 v1.5-era commands; `${CLAUDE_PLUGIN_ROOT}` on intra-plugin paths; `$ARGUMENTS` on 7 flag-taking commands; template `control_coverage` (v2.8) + `compatible_with.design_doc_list_schema >=2.3.0`; fixed Anthropic blog URL |
 | 2.9.0 | 2026-05-29 | system-design-doc split-layout awareness: `/continue` (coding-agent-guide) resolves design sections via `design_doc_list.json` `documents[].sections[]` and reads only the needed file; Verification Pipeline Step 2 DD-count is layout-aware (greps the resolved `08-data-dictionary.md`). Requires `design_doc_list.json >= 2.3.0` for split; lower/absent falls back to single-file `find`. |
+| 2.8.0 | 2026-05-22 | UI Control Manifest + Gate 4: `/emit-control-spec` emits `.agent/ui-controls/feature-N.json`; `/continue` Step 5.4 + Gate 4 block passes=true on `gap_control_ids`/`fail_control_ids`; `qa_trace_coverage.control_coverage{}`; mandatory categories (render-binding/api-binding/permission/validation/cascade-loading-error) mirror qa-ui-test; `--force-control-coverage` override |
+| 2.7.0 | 2026-05-10 | `/scan-changes` upstream traceability enforcer: 4-category classification (Tracked/Mapped/Orphan/Pending) via `subtasks[].files[]` reverse-map; ignore patterns + legacy-commit cutoff (v2.7.1) |
+| 2.6.0 | 2026-04-20 | qa-ui-test release gates: `/nfr-check` + `/qa-coverage-check`; `/continue` Step 5.6 Gate 1 (AC coverage) / Gate 2 (NFR) / Gate 3 (bug verify); schema 2.4.0 (`acceptance_criteria_id[]`, `complexity_tags[]`, `linked_bug{}`, `nfr_compliance{}`, `qa_trace_coverage{}`); `--force-coverage`/`--force-nfr`/`--force-bug-verify` |
+| 2.4.0 | 2026-04-05 | Design-doc impact check in `/add-feature` + `/edit-feature` (entities/api_endpoints/crud_operations vs `design_doc_list.json`); `design_doc_refs.pending_updates[]` + route to `/sync-with-features` |
 | 2.3.0 | 2026-03-24 | Added Verification Pipeline (7 steps beyond build success): Design Doc compliance, CRUD completeness, mock data detection, test coverage minimum, tech stack audit, config flag enforcement. Added `partial`/`incomplete` status values. Fixed audit issues: build-only=passed, mock data=done, CRUD gaps, missing entities, ignored config flags |
 | 2.2.0 | 2026-03-13 | Added CRITICAL RULES with self-check checklist, output rejection criteria, and penalty enforcement to SKILL.md, /continue, /init, /review commands |
 | 2.1.0 | 2026-03-11 | Added model_config{}, assigned_model/is_reference_impl/review feature fields, /review command with hybrid auto-fix (Critical/High → opus fix, Medium/Low → send back), model workload & review status in /status, auto-assign in /continue, v2.0.0→v2.1.0 migration |

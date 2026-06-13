@@ -37,7 +37,7 @@ allowed-tools: Read(*), Bash(*)
 /help --features               # Feature management commands
 /help --qa                     # ⭐ qa-ui-test release gates (NFR + AC + bug verify) — v2.6.0
 /help --gates                  # ⭐ /continue Step 5.6 gate enforcement details
-/help --new                    # What's new in v2.8.0
+/help --new                    # What's new in v2.10.0
 /help --controls               # ⭐ v2.8.0 UI Control Manifest + Gate 4
 ```
 
@@ -48,7 +48,7 @@ allowed-tools: Read(*), Bash(*)
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 Long-Running — คู่มือการใช้งาน v2.8.0
+📖 Long-Running — คู่มือการใช้งาน v2.10.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Harness สำหรับ AI Agent ทำงานข้าม context windows
@@ -57,6 +57,8 @@ verification pipeline, model assignment
 ⭐ v2.6.0: qa-ui-test release gates (Gate 1 AC + Gate 2 NFR + Gate 3 Bug verify)
 ⭐ v2.7.0: /scan-changes — upstream traceability enforcer (orphan detection)
 ⭐ v2.8.0: Gate 4 UI Control Coverage + /emit-control-spec (manifest-driven QA)
+⭐ v2.9.0: split-layout design-doc resolution (registry-aware /continue)
+⭐ v2.10.0: docs sync (19 commands) + split-layout wired into /continue + /qa-ui-test (เลิก /test-runner,/ai-ui-test)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1065,9 +1067,27 @@ $ /status                         # 100% pass?
 
 ---
 
-### Mode 8: `--new` → What's new in v2.8.0
+### Mode 8: `--new` → What's new in v2.10.0
 
 ```
+✨ What's new in v2.10.0 (2026-06-13)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 Documentation-sync + contract hardening
+  • README 2.0.0 → 2.10.0, SKILL.md frontmatter 2.6.0 → 2.10.0, help.md → 2.10.0
+  • เอกสารครบทั้ง 19 commands (เดิม README แสดงแค่ 12)
+  • split-layout registry resolution wired เข้า /continue Step 0.5 + Verification Pipeline Step 2
+    (เดิม v2.9.0 ทำแค่ใน coding-agent-guide — /continue ยังใช้ find เก่า)
+  • /test-runner + /ai-ui-test (17 จุด, skill ที่ไม่มีจริง) → /qa-ui-test
+  • frontmatter ครบทุก command (เพิ่มให้ 6 v1.5-era commands) + ${CLAUDE_PLUGIN_ROOT} paths + $ARGUMENTS
+  • template control_coverage (v2.8) + compat design_doc_list >=2.3.0 + แก้ Anthropic blog URL (404)
+
+✨ v2.9.0 (2026-05-29) — split-layout design-doc resolution
+  • /continue resolve design sections ผ่าน design_doc_list.json documents[].sections[] (อ่านเฉพาะไฟล์ที่ต้องใช้)
+  • Verification Pipeline Step 2 DD-count เป็น layout-aware (grep 08-data-dictionary.md ที่ resolve แล้ว)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ✨ What's new in v2.8.0 (2026-05-10)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
