@@ -328,8 +328,7 @@ cat .agent/config.json 2>/dev/null | grep -A 5 "recommended_skills"
 │  /system-design-doc  │ Create system design documents              │
 │  /ui-mockup          │ Create UI wireframes                        │
 │  /code-review        │ Review code before commit                   │
-│  /test-runner        │ Run tests                                   │
-│  /ai-ui-test         │ Test UI automation                          │
+│  /qa-ui-test         │ QA UI testing (Playwright) — scenarios/run   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -347,8 +346,8 @@ If `.csproj` or `.sln` files found → **must use `/dotnet-dev` skill** to:
 
 If no specialized skill available → use best practices for that language and:
 - Use `/code-review` for code review
-- Use `/test-runner` for running tests
-- Use `/ai-ui-test` for UI testing
+- Use the project's own test command for running tests (e.g. `npm test`, `dotnet test`)
+- Use `/qa-ui-test:qa-create-scenario` + `/qa-ui-test:qa-run` for UI test automation
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -377,8 +376,7 @@ If no specialized skill available → use best practices for that language and:
 │              ▼                                                      │
 │          ┌─────────────────┐                                       │
 │          │ /code-review    │ ← review before commit                │
-│          │ /test-runner    │ ← run tests                           │
-│          │ /ai-ui-test     │ ← test UI                             │
+│          │ /qa-ui-test     │ ← QA UI tests (scenarios/run)          │
 │          └─────────────────┘                                       │
 │                                                                     │
 │  Found .mockups/ folder?                                           │

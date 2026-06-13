@@ -328,8 +328,9 @@ find . -name "*design*.md" -o -name "*system*.md"
 | `/system-design-doc` | สร้างเอกสารออกแบบระบบ |
 | `/ui-mockup` | สร้าง UI wireframes |
 | `/code-review` | Review code ก่อน commit |
-| `/test-runner` | รัน tests |
-| `/ai-ui-test` | Test UI automation |
+| `/qa-ui-test` | QA UI testing (Playwright) — scenarios, run, trace, NFR |
+
+> หมายเหตุ: สำหรับ unit/integration tests ใช้คำสั่งทดสอบของโปรเจคเอง (เช่น `npm test`, `dotnet test`)
 
 ## 🏗️ Architecture
 
@@ -392,7 +393,7 @@ project-root/
   "recommended_skills": [
     "/dotnet-dev",
     "/code-review",
-    "/test-runner"
+    "/qa-ui-test"
   ],
   "settings": {
     "auto_commit": true,

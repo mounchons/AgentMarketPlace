@@ -192,8 +192,7 @@ ls -la pom.xml build.gradle 2>/dev/null && echo "→ Java detected"
 │  /system-design-doc  │ Create system design documents              │
 │  /ui-mockup          │ Create UI wireframes                        │
 │  /code-review        │ Review code before commit                   │
-│  /test-runner        │ Run tests                                   │
-│  /ai-ui-test         │ Test UI automation                          │
+│  /qa-ui-test         │ QA UI testing (Playwright) — scenarios/run   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -303,7 +302,7 @@ mkdir -p .agent
   "recommended_skills": [
     "/dotnet-dev",
     "/code-review",
-    "/test-runner"
+    "/qa-ui-test"
   ],
   "settings": {
     "auto_commit": true,
@@ -490,7 +489,7 @@ git commit -m "chore: Initialize long-running agent environment"
 ## Recommended Skills
 - `/dotnet-dev` - for .NET Core development
 - `/code-review` - for code review
-- `/test-runner` - for running tests
+- `/qa-ui-test` - for QA UI testing (scenarios + Playwright run); use the project's own test command for unit/integration tests
 
 ## Files Created
 - `.agent/config.json` (includes design references & recommended skills)
