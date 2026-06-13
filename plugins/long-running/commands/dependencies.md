@@ -1,3 +1,8 @@
+---
+description: Visualize feature dependencies และวิเคราะห์ critical path จาก feature_list.json
+allowed-tools: Bash(*), Read(*), Glob(*), Grep(*)
+---
+
 # /dependencies
 
 Create dependency visualization and analyze the critical path of features.

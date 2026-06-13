@@ -1,3 +1,8 @@
+---
+description: ตรวจสอบและ sync ข้อมูลระหว่าง feature_list.json กับ .mockups/mockup_list.json
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
+---
+
 # /sync-mockups
 
 Validate and synchronize data between `feature_list.json` and `.mockups/mockup_list.json`.

@@ -1,8 +1,15 @@
+---
+description: Migrate feature_list.json / mockup_list.json จาก schema เก่าสู่ schema ปัจจุบัน (2.4.0) — มี migration chain + idempotent
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
+---
+
 # /migrate
 
-Migrate existing feature_list.json and mockup_list.json from old schema to schema v1.5.0.
+Migrate existing feature_list.json and mockup_list.json from an old schema up to the current schema (**2.4.0**). The migration chain below documents each step; runs are idempotent (checks `schema_version` first). Schema bumps 2.1.0 → 2.4.0 are **additive** (new optional fields: `acceptance_criteria_id[]`, `nfr_compliance{}`, `qa_trace_coverage{}`, `control_coverage{}`) — existing files keep working and fields are added on demand, no destructive migration required.
 
 ---
+
+**Input**: `$ARGUMENTS` — optional target file path (default: auto-detect `feature_list.json` + `mockup_list.json` at project root).
 
 ## Usage
 
@@ -27,7 +34,7 @@ The `/continue` command automatically checks `schema_version` and recommends run
 
 ```
 ⚠️ Detected old schema (no version)
-   Current schema: v1.5.0
+   Current schema: v2.4.0
 
    Run /migrate to update:
    - Add epics grouping

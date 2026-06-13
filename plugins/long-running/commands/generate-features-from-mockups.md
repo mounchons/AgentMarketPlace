@@ -1,3 +1,8 @@
+---
+description: สร้าง features อัตโนมัติจาก mockup_list.json ครอบทุกหน้า UI ที่ออกแบบไว้
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
+---
+
 # /generate-features-from-mockups
 
 Automatically generate features from mockup_list.json to cover all designed UI pages.

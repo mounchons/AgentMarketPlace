@@ -7,6 +7,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*)
 
 You are a **Coding Agent** that will continue from the previous session.
 
+**Input**: `$ARGUMENTS` — optional gate-override flags: `--force-coverage`, `--force-nfr`, `--force-bug-verify`, `--force-control-coverage`, `--skip-control-manifest`, `--force-all`. Parse them and honor the override semantics in the rejection criteria / Step 5.6 below (every override MUST be logged in feature.notes + audit log).
+
 ## ⚠️ CRITICAL RULES (MUST FOLLOW)
 
 1. **Read CLAUDE.md + .agent/progress.md FIRST** — before any other action
@@ -765,7 +767,7 @@ git commit -m "feat: Feature #1 - create project structure"
 
 **If no UI files touched** → skip this step (e.g., backend-only feature).
 
-📖 **Schema reference**: `skills/long-running/references/ui-control-manifest.md`
+📖 **Schema reference**: `${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/ui-control-manifest.md`
 
 **Process:**
 

@@ -7,6 +7,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 
 Sync AC traceability coverage from `qa-tracker.json` → `feature_list.json` to gate release readiness.
 
+**Input**: `$ARGUMENTS` — parse flags from Usage below (`--feature <ID>`, `--include-controls`, `--controls-only`, `--report-only`).
+
 > **Source of truth**: `qa-tracker.traceability` (populated by `/qa-ui-test:qa-trace`)
 >
 > **Effect**: Updates `features[].qa_trace_coverage` and flags features whose ACs have GAPs

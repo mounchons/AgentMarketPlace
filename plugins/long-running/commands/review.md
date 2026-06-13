@@ -7,6 +7,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 
 Opus reviews work done by other models against the reference implementation.
 
+**Input**: `$ARGUMENTS` — optional feature id (e.g. `#6`); if empty, auto-select the first feature awaiting review.
+
 ## ⚠️ CRITICAL RULES (MUST FOLLOW)
 
 1. **Read ALL source files** — read every file the feature modified before scoring

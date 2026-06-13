@@ -238,7 +238,7 @@ ls -la pom.xml build.gradle 2>/dev/null && echo "→ Java detected"
 }
 ```
 
-**See Schema details in:** `references/feature-patterns.md` and `templates/feature_list.json`
+**See Schema details in:** `${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/feature-patterns.md` and `${CLAUDE_PLUGIN_ROOT}/skills/long-running/templates/feature_list.json`
 
 ### 2.5. Auto-generate Features (If Design Docs/Mockups Exist)
 

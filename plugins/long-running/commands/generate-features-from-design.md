@@ -1,3 +1,8 @@
+---
+description: สร้าง features อัตโนมัติจาก System Design Document (+ UI Mockups) ครอบทุก layer ของระบบ
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
+---
+
 # /generate-features-from-design
 
 Automatically generate features from System Design Document and UI Mockups combined, to cover all layers of the system.

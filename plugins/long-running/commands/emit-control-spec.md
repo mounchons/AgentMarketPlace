@@ -7,12 +7,14 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Grep(*), Glob(*)
 
 สแกน source files ของ feature → ตรวจหา form controls (input, select, combobox, radio, checkbox, data-bound) → emit/update manifest ที่ `.agent/ui-controls/feature-<id>.json`
 
+**Input**: `$ARGUMENTS` — `<feature-id>` ของ feature ที่จะ emit manifest (จำเป็น เมื่อรัน manual).
+
 > **เมื่อไหร่ใช้?**
 > - `/continue` Step 5.4 เรียก auto (ไม่ต้องรันแยก) — แต่ถ้า manifest หาย/พัง → manual rerun
 > - หลัง refactor ใหญ่ที่กระทบ form ทุกครั้ง
 > - ก่อน `/qa-create-scenario --from-control-spec` ถ้าไม่แน่ใจว่า manifest ทันสมัย
 
-📖 **Schema reference**: `skills/long-running/references/ui-control-manifest.md`
+📖 **Schema reference**: `${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/ui-control-manifest.md`
 
 ---
 
@@ -285,7 +287,7 @@ for MOCKUP in $(jq -r '.mockup_refs[]' "$MANIFEST"); do
 done
 ```
 
-**Compare rules** (ดู `references/ui-control-manifest.md` Section 4):
+**Compare rules** (ดู `${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/ui-control-manifest.md` Section 4):
 
 | Check | Drift Type | Severity |
 |---|---|---|

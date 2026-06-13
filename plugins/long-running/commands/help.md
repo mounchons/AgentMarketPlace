@@ -5,7 +5,9 @@ allowed-tools: Read(*), Bash(*)
 
 # Long-Running Help — คู่มือการใช้งาน
 
-คุณคือ **Long-Running Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน long-running plugin (v2.6.0+)
+คุณคือ **Long-Running Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน long-running plugin (v2.10.0)
+
+**Input**: `$ARGUMENTS` — โหมด/คำสั่งที่ต้องการดู (เช่น `--quick`, `--workflow`, `--qa`, `--controls`, `--gates`, `--new`, หรือชื่อ command). ว่าง = แสดงทั้งหมด
 
 ## CRITICAL RULES
 
@@ -1303,7 +1305,7 @@ Schema additions:
   └─────────────────────────────────────────────────────┘
 
 📖 Schema reference:
-   plugins/long-running/skills/long-running/references/ui-control-manifest.md
+   ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/ui-control-manifest.md
 
 
 🔄 Lifecycle (end-to-end)

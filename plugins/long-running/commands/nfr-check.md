@@ -7,6 +7,8 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 
 Sync NFR (Non-Functional Requirements) compliance from `qa-tracker.json` → `feature_list.json` for release gating.
 
+**Input**: `$ARGUMENTS` — parse flags from Usage below (`--module <NAME>`, `--feature <ID>`, `--strict`, `--report-only`).
+
 > **Source of truth**: `qa-tracker.nfr_results` (populated by `/qa-ui-test:qa-nfr-assess`)
 >
 > **Effect**: Updates `features[].nfr_compliance` and flags features that block release

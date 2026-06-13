@@ -1,3 +1,8 @@
+---
+description: ตรวจ feature coverage ว่าครบถ้วนเทียบกับ mockups, design docs และ requirements
+allowed-tools: Bash(*), Read(*), Glob(*), Grep(*)
+---
+
 # /validate-coverage
 
 Validate feature coverage to ensure completeness against mockups, design docs, and requirements.
