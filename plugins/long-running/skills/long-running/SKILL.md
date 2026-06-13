@@ -15,7 +15,7 @@ description: Harness for AI Agents working across context windows — supports m
 > **Response Language**: Always respond to users in Thai (ภาษาไทย)
 
 Skill for managing AI Agents that work effectively across context windows.
-Based on [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-harnesses-for-long-runnings)
+Based on [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
 
 ## 🎯 Problems Solved
 

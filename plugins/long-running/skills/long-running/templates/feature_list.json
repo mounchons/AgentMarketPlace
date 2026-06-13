@@ -988,7 +988,7 @@
     "schema_version": "2.4.0",
     "plugin_version": "2.6.0",
     "compatible_with": {
-      "design_doc_list_schema": ">=2.2.0",
+      "design_doc_list_schema": ">=2.3.0",
       "mockup_list_schema": ">=1.7.0",
       "qa_tracker_schema": ">=1.7.0"
     },
@@ -1034,14 +1034,24 @@
       },
       "qa_trace_coverage": {
         "type": "object",
-        "description": "AC coverage for this feature's acceptance_criteria_id[]. Populated by /qa-coverage-check.",
+        "description": "AC coverage for this feature's acceptance_criteria_id[]. Populated by /qa-coverage-check. control_coverage (v2.8.0) populated by /qa-coverage-check --include-controls from the UI Control Manifest (.agent/ui-controls/feature-N.json emitted by /emit-control-spec).",
         "schema": {
           "covered_acs": ["AC-001", "AC-002"],
           "gap_acs": [],
           "fail_acs": [],
-          "last_checked_at": "ISO8601"
+          "pending_acs": [],
+          "last_checked_at": "ISO8601",
+          "control_coverage": {
+            "manifest_path": ".agent/ui-controls/feature-N.json",
+            "total_controls": 0,
+            "covered_control_ids": [],
+            "gap_control_ids": [],
+            "fail_control_ids": [],
+            "missing_categories": {},
+            "last_checked_at": null
+          }
         },
-        "release_gate": "gap_acs[] non-empty → blocks /continue from marking passes=true (override with --force)"
+        "release_gate": "gap_acs[]/fail_acs[] non-empty → blocks /continue from marking passes=true (override --force-coverage). control_coverage.gap_control_ids[]/fail_control_ids[] non-empty → blocks Gate 4 (override --force-control-coverage). missing_categories maps control_id → missing mandatory test categories (render-binding/api-binding/permission/validation/cascade-loading-error)."
       }
     }
   }
