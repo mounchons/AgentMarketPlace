@@ -356,7 +356,7 @@ app.UseStatusCodePages();    // เติม ProblemDetails ให้ status cod
 > });
 > ```
 >
-> หมายเหตุ: `DefaultProblemDetailsWriter` รองรับ `Accept`: `application/json`, `application/problem+json`, wildcard (`*/*`); media type อื่น (xml/html) จะ fallback. signature `TryWriteAsync` ของ `IProblemDetailsService` ตรวจกับ net-10.0 (เวอร์ชันเก่ามีชื่อ `WriteAsync`).
+> หมายเหตุ: `DefaultProblemDetailsWriter` รองรับ `Accept`: `application/json`, `application/problem+json`, wildcard (`*/*`); media type อื่น (xml/html) จะ fallback. `IProblemDetailsService` มีทั้ง `TryWriteAsync` (เพิ่มใน .NET 8 — คืน bool) และ `WriteAsync` บน net-10.0; ตัวอย่างนี้ใช้ `TryWriteAsync`.
 
 ---
 
@@ -375,4 +375,4 @@ app.UseStatusCodePages();    // เติม ProblemDetails ให้ status cod
 | HybridCache | `AddHybridCache`, `GetOrCreateAsync<T>` + `<TState,T>` overload, `HybridCacheEntryOptions` (Expiration/LocalCacheExpiration/Flags), `RemoveAsync`, `RemoveByTagAsync` (single + IEnumerable + `"*"`); package `Microsoft.Extensions.Caching.Hybrid` (introduced .NET 9) | ✅ aspnetcore-10.0 / net-10.0 |
 | IExceptionHandler | `IExceptionHandler.TryHandleAsync(HttpContext, Exception, CancellationToken) → ValueTask<bool>`, `AddExceptionHandler<T>` (singleton), `AddProblemDetails`, `UseExceptionHandler`, `IProblemDetailsService`, `ExceptionHandlerOptions.SuppressDiagnosticsCallback` (.NET 10) | ✅ aspnetcore-10.0 |
 
-> หมายเหตุ uncertainty: หน้า API reference บางตัว (เช่น `AddKeyedScoped`, `GetOrCreateAsync`) ใน Learn แสดง package เป็น `net-11.0-pp` (preview) — แต่ API surface เหล่านี้ stable มาตั้งแต่ .NET 8/9 และมีใน aspnetcore-10.0 docs จึงใช้งานได้บน .NET 10 LTS แน่นอน. `IProblemDetailsService` method ชื่อ `TryWriteAsync` (net-10.0); เวอร์ชัน .NET 7 ใช้ `WriteAsync` — โค้ดนี้ targets .NET 10.
+> หมายเหตุ uncertainty: หน้า API reference บางตัว (เช่น `AddKeyedScoped`, `GetOrCreateAsync`) ใน Learn แสดง package เป็น `net-11.0-pp` (preview) — แต่ API surface เหล่านี้ stable มาตั้งแต่ .NET 8/9 และมีใน aspnetcore-10.0 docs จึงใช้งานได้บน .NET 10 LTS แน่นอน. `IProblemDetailsService` มีทั้ง `TryWriteAsync` (since .NET 8) และ `WriteAsync` บน net-10.0 — โค้ดนี้ใช้ `TryWriteAsync`.

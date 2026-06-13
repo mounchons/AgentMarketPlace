@@ -324,7 +324,7 @@ var secret = builder.AddParameter("db-password", secret: true);
 vault.AddSecret("db-password", secret);                 // เก็บ parameter ลง vault
 
 var api = builder.AddProject<Projects.MyApp_Api>("api")
-    .WithReference(vault);                               // grant access (default: KeyVaultAdministrator role)
+    .WithReference(vault);                               // grant access (Aspire 9.2+ default: least-privilege KeyVaultSecretsUser; override ด้วย .WithRoleAssignments(...))
 ```
 
 ```csharp
