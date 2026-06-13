@@ -766,13 +766,16 @@ Violating these rules means the task is FAILED. Your output will be REJECTED and
 
 ## 📚 References
 
+> Paths relative to `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/`.
+
 | File | Description |
 |------|-------------|
 | `references/ascii-patterns.md` | Additional ASCII wireframe patterns |
-| `references/component-library.md` | Full component library |
-| `references/responsive-patterns.md` | Responsive design patterns |
-| `templates/mockup-template.md` | Template for mockup files |
-| `templates/mockup_list.json` | Template for mockup tracking |
+| `references/reading-design-docs.md` | Split-aware design-doc reading protocol (registry-first, schema 2.3.0) |
+| `templates/mockup-template.md` | Template for ASCII mockup files |
+| `templates/mockup_list.json` | Template for mockup tracking (schema 1.8.0, QA fields) |
+| `templates/master-page-template.js` + `.css` | Web Component master page (HTML mockups) |
+| `templates/html-mockup-template.html` + `index-template.html` | HTML mockup + index templates |
 
 ---
 

@@ -103,8 +103,8 @@
     {
       "name": "ui-mockup",
       "source": "./plugins/ui-mockup",
-      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document — bridge ระหว่าง system-design-doc และ frontend-design รองรับ ASCII wireframes, HTML mockups (Web Component master page), component specs, design tokens, CLAUDE.md-aware alert library, field mapping, framework-aware URL syntax, parallel sub-agents, qa-ui-test v2.5 integration: auto-derive complexity_factors + risk_baseline + acceptance_criteria_ids ใน /init-mockup Step 3.55 (factor inference heuristics ลด re-scan code) /help command พร้อม mode-based guide. v1.10.0: split-aware design-doc reading — canonical references/reading-design-docs.md + registry/sections[] resolution across create-html-mockup (Step 1b), create-mockups-parallel (resolve-then-inject), validate-mockup (Category 7 path-exists), edit-mockup (Step 3.5 non-blocking drift check)",
-      "version": "1.10.0",
+      "description": "สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document — bridge ระหว่าง system-design-doc และ frontend-design รองรับ ASCII wireframes, HTML mockups (Web Component master page), component specs, design tokens, CLAUDE.md-aware alert library, field mapping, framework-aware URL syntax, parallel sub-agents, qa-ui-test v2.5 integration: auto-derive complexity_factors + risk_baseline + acceptance_criteria_ids ใน /init-mockup Step 3.55 (factor inference heuristics ลด re-scan code) /help command พร้อม mode-based guide. v1.10.0: split-aware design-doc reading — canonical references/reading-design-docs.md + registry/sections[] resolution across create-html-mockup (Step 1b), create-mockups-parallel (resolve-then-inject), validate-mockup (Category 7 path-exists), edit-mockup (Step 3.5 non-blocking drift check). v1.11.0: docs sync (8 commands ครบใน README/help), create-html-mockup ลบ Agent(*) ที่ไม่มีจริง + ${CLAUDE_PLUGIN_ROOT} paths, mockup_list.json template QA fields + split-aware paths, SKILL.md References ลบ 2 ไฟล์ที่ไม่มีจริง",
+      "version": "1.11.0",
       "category": "design",
       "tags": [
         "ui",
