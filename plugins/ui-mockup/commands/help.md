@@ -888,7 +888,7 @@ qa-create-scenario ใช้เป็น input โดยไม่ต้อง re
 ⭐ Split-aware design-doc reading (coverage gap closure)
 
 ทุก command ที่อ่าน system-design-doc รองรับ split per-section layout (schema 2.3.0) ครบ:
-  • New reference: skills/ui-mockup/references/reading-design-docs.md (canonical resolver)
+  • New reference: ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/references/reading-design-docs.md (canonical resolver)
   • create-html-mockup  → Step 1b resolve sdd sources via registry/sections[]
   • create-mockups-parallel → resolve-then-inject: orchestrator ฝัง absolute path ลง sub-agent prompt
   • validate-mockup     → Category 7 resolve split sections + ตรวจ related_documents path มีจริง

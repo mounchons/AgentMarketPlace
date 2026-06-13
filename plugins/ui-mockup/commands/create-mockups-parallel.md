@@ -233,7 +233,7 @@ mkdir -p .mockups
 
 ### Step 4.5: Resolve design doc sources to absolute paths (orchestrator — resolve-then-inject)
 
-> Follow `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware).
+> Follow `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware).
 
 The orchestrator (this main session) resolves design-doc sources **once** and injects pre-resolved
 **absolute paths** into each sub-agent prompt. Sub-agents MUST NOT re-resolve the registry themselves.

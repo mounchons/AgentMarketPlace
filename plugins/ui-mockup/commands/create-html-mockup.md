@@ -170,7 +170,7 @@ Find the page directly by ID (e.g., `003`) or name (e.g., `user-list`, `User Lis
 
 ### Step 1b: Resolve design doc sources (registry-aware)
 
-> To resolve system-design-doc sources, follow `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware, JSON-preferred).
+> To resolve system-design-doc sources, follow `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware, JSON-preferred).
 
 After reading the page's `related_documents` (Step 1), resolve the actual design-doc files:
 

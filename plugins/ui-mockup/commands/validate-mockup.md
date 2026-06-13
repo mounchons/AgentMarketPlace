@@ -168,7 +168,7 @@ Required sections:
 
 ### Category 7: Cross-Reference Validation (split-aware)
 
-> Resolve design-doc sources per `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware). Branch on `documents[].doc_layout`: `"split"` → resolve section files via `documents[].sections[]`; `"single"`/absent → single `documents[].file_path`.
+> Resolve design-doc sources per `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware). Branch on `documents[].doc_layout`: `"split"` → resolve section files via `documents[].sections[]`; `"single"`/absent → single `documents[].file_path`.
 
 ```
 Checks (if .design-docs/design_doc_list.json exists):

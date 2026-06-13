@@ -71,7 +71,7 @@ cat .mockups/[NNN]-[page-name].mockup.md
 
 ### Step 3.5: Design-doc consistency check (non-blocking)
 
-> Resolve design-doc sources per `skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware).
+> Resolve design-doc sources per `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/references/reading-design-docs.md` (registry-first, split-aware).
 
 If the mockup's `related_documents` (in `.mockups/mockup_list.json`) point to system-design-doc sections,
 read the resolved section(s) and compare against the current mockup BEFORE applying edits:
