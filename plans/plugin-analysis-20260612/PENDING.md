@@ -38,6 +38,13 @@
   - **ผ่าน adversarial verification 2 รอบ** (Opus subagents) — commits ราย subtask + review-fix ใน main
   - ⚠️ ข้อ 2 ที่เหลือ (integration map ครบ 6 ตัว) ยังค้าง — รอ Feature #6 (วิเคราะห์ ui-mockup + qa-ui-test ก่อน)
 
+- [x] **ข้อ 4 (Feature #5) → long-running v2.9.0 → v2.10.0** (opus + adversarial verification 6 verifiers, PASS 93/100):
+  - README 2.0.0→2.10.0 (changelog v2.1-v2.10, 19 commands), SKILL.md frontmatter 2.6.0→2.10.0 (block scalar + trigger phrases), help.md headers→2.10.0
+  - split-layout registry wired เข้า continue.md (Step 0.5 + Verification Pipeline Step 2) — headline v2.9.0 feature เดิม unreachable
+  - `/test-runner`+`/ai-ui-test` (17 จุด) → `/qa-ui-test`; frontmatter ครบ 19 commands; `${CLAUDE_PLUGIN_ROOT}` paths; `$ARGUMENTS` 7 commands
+  - template control_coverage (v2.8) + compat 2.3.0; แก้ broken blog URL; bump 2.10.0 + marketplace sync
+  - ⚠️ เหลือ (out of scope, follow-up ผ่าน /add-feature): help.md/SKILL.md progressive-disclosure split (งานใหญ่), INTEGRATION_TEST Scenario 7, extract project-specific nav block จาก continue.md
+
 ## 📋 ค้างทำครั้งหน้า (เรียงตามความสำคัญ)
 
 > ✅ **Wired เข้า long-running แล้ว (2026-06-12):** งานทั้งหมดด้านล่างถูกแปลงเป็น epic

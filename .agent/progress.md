@@ -221,3 +221,45 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - Next: Feature #5 (opus) — long-running plugin fixes
 
 ---
+
+## Session 5 — Feature #5: long-running v2.9.0 → v2.10.0
+**Date**: 2026-06-13
+**Type**: Coding (Feature #5) — epic `plugin-suite-improvements`
+**Model**: opus (force_opus_all policy) + adversarial verification workflow
+
+### What was done (6 subtasks + 5 review-fix commits):
+- ✅ 5.3 แทน dead skills `/test-runner`+`/ai-ui-test` (17 จุด) → `/qa-ui-test` (`7b7ae4a`)
+- ✅ 5.4 frontmatter 6 v1.5-era commands + `${CLAUDE_PLUGIN_ROOT}` paths (5) + `$ARGUMENTS` (7) (`364215b`)
+- ✅ 5.2 wire v2.9.0 split-layout registry เข้า continue.md (Step 0.5 + Verification Pipeline Step 2) (`93c5c12`)
+- ✅ 5.5 template control_coverage (v2.8) + compat 2.3.0 + แก้ broken Anthropic blog URL (`0c41618`)
+- ✅ 5.1 version sync README/SKILL/help → v2.10.0 + changelog v2.1-v2.10 + trigger phrases (`b4b9271`)
+- ✅ 5.6 bump plugin.json 2.10.0 + trim desc + marketplace sync (`eba61e7`)
+- 🔧 review-fix: SKILL.md YAML block scalar (`9f53f68`), AC grep=0 reword (`afd37b9`), verifier findings (`fdb167c`)
+
+### Verification Pipeline (v2.3.0):
+- Build: n/a (markdown/json) — `claude plugin validate long-running` = **passed**
+- Test Coverage: adversarial verification 1 รอบ (6 opus verifiers)
+- QA+NFR Gates: n/a (acceptance_criteria_id=[], ไม่มี qa-tracker.json ที่ root)
+- Config Flags: max_features_per_session=1 honored
+- **Pipeline Result: PASSED**
+
+### Adversarial Verification (6 verifiers, refuted 1 low):
+- AC1 version / AC2 split-registry / AC3 dead-skills / AC4 plugin-root / AC5 frontmatter+args → ทั้งหมด refuted=false (ผ่าน)
+- CROSS (refuted, low): help.md `/help --new` labels พูด 'v2.8.0 changes' แต่ content v2.10.0 → แก้ `fdb167c`
+- bonus fixes: SKILL.md 'Verification Pipeline (6 checks)' → '7 steps' (pre-existing v2.3.0); continue.md component_library.json qualify
+
+### Opus Review: **PASS 93/100** (excellent pattern adherence)
+
+### Current status:
+- Features passed: **5/8** | epic plugin-suite-improvements: 2/5 | reviewed: 2 (#4, #5)
+- Build: ✅ plugin validate ผ่าน (long-running 2.10.0, system-design-doc 2.2.0, qa-ui-test 2.6.1)
+
+### Next feature:
+- Feature #6 (opus): วิเคราะห์ ui-mockup + qa-ui-test (workflow-script.js) + integration map ครบ 6 plugins → เริ่มจาก `plans/plugin-analysis-20260612/workflow-script.js`
+
+### Follow-ups นอก scope #5 (บันทึกใน review.notes):
+- help.md 80KB + SKILL.md 42KB progressive-disclosure split (PENDING ข้อ 4 — งานใหญ่แยก)
+- INTEGRATION_TEST Scenario 7 (sync-with-features pending_updates round-trip) ยังไม่รัน
+- project-specific nav block ใน continue.md Step 0.5 ยังไม่ extract เป็น CLAUDE.md/brain
+
+---

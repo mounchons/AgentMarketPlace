@@ -50,7 +50,7 @@
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8],
-      "progress": { "total": 5, "passed": 1, "in_progress": 0 }
+      "progress": { "total": 5, "passed": 2, "in_progress": 0 }
     }
   ],
 
@@ -441,15 +441,15 @@
       "priority": "high",
       "complexity": "medium",
       "risk_level": "medium",
-      "status": "pending",
+      "status": "passed",
       "blocked_reason": null,
       "subtasks": [
-        { "id": "5.1", "description": "Version sync ครั้งเดียวจบ: README 2.0.0→2.9.0 (เพิ่ม changelog v2.1-v2.9), SKILL.md frontmatter 2.6.0→2.9.0 + เพิ่ม v2.7/v2.8 content, help.md headers", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/long-running/README.md", "plugins/long-running/skills/long-running/SKILL.md", "plugins/long-running/commands/help.md"] },
-        { "id": "5.2", "description": "Wire v2.9.0 split-layout registry resolution เข้า continue.md (อ่าน design_doc_list.json registry แบบ split-aware)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/long-running/commands/continue.md"] },
-        { "id": "5.3", "description": "แทน /test-runner และ /ai-ui-test (17 จุด) ด้วย qa-ui-test commands ที่มีจริง", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/long-running/commands/continue.md", "plugins/long-running/commands/init.md", "plugins/long-running/commands/help.md"] },
-        { "id": "5.4", "description": "ใช้ ${CLAUDE_PLUGIN_ROOT} ทุก intra-plugin reference + เพิ่ม frontmatter 6 commands เก่า + $ARGUMENTS ใน flag-taking commands", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/long-running/commands"] },
-        { "id": "5.5", "description": "อัปเดต templates/feature_list.json เป็น v2.8 contract (control_coverage) + แก้ broken blog URL", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/long-running/skills/long-running/templates/feature_list.json"] },
-        { "id": "5.6", "description": "Bump plugin.json 2.10.0 + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["5.1", "5.2", "5.3", "5.4", "5.5"], "files": ["plugins/long-running/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+        { "id": "5.1", "description": "Version sync ครั้งเดียวจบ: README 2.0.0→2.10.0 (เพิ่ม changelog v2.1-v2.10), SKILL.md frontmatter 2.6.0→2.10.0 (block scalar + trigger phrases) + v2.4-v2.10 content, help.md headers", "done": true, "committed_at": "2026-06-13T08:57:30Z", "commits": ["b4b9271", "9f53f68"], "depends_on": [], "files": ["plugins/long-running/README.md", "plugins/long-running/skills/long-running/SKILL.md", "plugins/long-running/commands/help.md"] },
+        { "id": "5.2", "description": "Wire v2.9.0 split-layout registry resolution เข้า continue.md (อ่าน design_doc_list.json registry แบบ split-aware)", "done": true, "committed_at": "2026-06-13T08:51:55Z", "commits": ["93c5c12"], "depends_on": [], "files": ["plugins/long-running/commands/continue.md"] },
+        { "id": "5.3", "description": "แทน /test-runner และ /ai-ui-test (17 จุด) ด้วย qa-ui-test commands ที่มีจริง", "done": true, "committed_at": "2026-06-13T08:47:24Z", "commits": ["7b7ae4a"], "depends_on": [], "files": ["plugins/long-running/commands/continue.md", "plugins/long-running/commands/init.md", "plugins/long-running/commands/init-existing.md", "plugins/long-running/README.md"] },
+        { "id": "5.4", "description": "ใช้ ${CLAUDE_PLUGIN_ROOT} ทุก intra-plugin reference + เพิ่ม frontmatter 6 commands เก่า + $ARGUMENTS ใน flag-taking commands", "done": true, "committed_at": "2026-06-13T08:51:05Z", "commits": ["364215b"], "depends_on": [], "files": ["plugins/long-running/commands"] },
+        { "id": "5.5", "description": "อัปเดต templates/feature_list.json เป็น v2.8 contract (control_coverage) + compat 2.3.0 + แก้ broken blog URL", "done": true, "committed_at": "2026-06-13T08:52:50Z", "commits": ["0c41618"], "depends_on": [], "files": ["plugins/long-running/skills/long-running/templates/feature_list.json", "plugins/long-running/README.md", "plugins/long-running/skills/long-running/SKILL.md"] },
+        { "id": "5.6", "description": "Bump plugin.json 2.10.0 + marketplace sync", "done": true, "committed_at": "2026-06-13T08:58:11Z", "commits": ["eba61e7"], "depends_on": ["5.1", "5.2", "5.3", "5.4", "5.5"], "files": ["plugins/long-running/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
       ],
       "last_committed_subtask": null,
       "acceptance_criteria": [
@@ -459,7 +459,7 @@
         "Intra-plugin paths ใช้ ${CLAUDE_PLUGIN_ROOT} ทั้งหมด",
         "claude plugin validate ผ่าน + marketplace sync"
       ],
-      "time_tracking": { "estimated_time": "120min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "120min", "actual_time": "80min", "started_at": "2026-06-13T08:45:12Z", "completed_at": "2026-06-13T09:06:03Z" },
       "dependencies": [],
       "references": ["plans/plugin-analysis-20260612/PENDING.md", "plans/plugin-analysis-20260612/analysis-long-running.json"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
@@ -472,13 +472,50 @@
       "interactions": [],
       "version_history": [],
       "sync_status": "n/a",
-      "passes": false,
-      "verification_results": null,
-      "tested_at": null,
+      "passes": true,
+      "verification_results": {
+        "build_check": "n/a (markdown/json plugin) — claude plugin validate long-running = passed",
+        "design_doc_compliance": "n/a",
+        "crud_completeness": "n/a",
+        "api_integration": "n/a",
+        "test_coverage": { "unit": 0, "integration": 0, "e2e": 0, "adversarial_verify_rounds": 1 },
+        "tech_stack_audit": "n/a",
+        "config_flags": "n/a (max_features_per_session=1 honored: only Feature #5 this session)",
+        "qa_nfr_gates": "n/a (acceptance_criteria_id=[] ไม่ link AC IDs; ไม่มี qa-tracker.json ที่ root)",
+        "pipeline_result": "passed",
+        "verified_at": "2026-06-13T09:06:03Z",
+        "acceptance_criteria_checked": [
+          "AC1 version sync: plugin.json/marketplace/SKILL/README/help = 2.10.0 ✓",
+          "AC2 continue.md split-aware: registry resolution (design_doc_list.json documents[].sections[]) Step 0.5 + Verification Pipeline Step 2 ✓",
+          "AC3 grep test-runner|ai-ui-test ใน plugins/long-running = 0 ✓ (รวม changelog mentions reword แล้ว)",
+          "AC4 intra-plugin paths ใช้ ${CLAUDE_PLUGIN_ROOT} ทั้งหมด ✓ (continue/emit-control-spec/init/help + component_library.json)",
+          "AC5 claude plugin validate ผ่าน + marketplace sync 2.10.0 ✓; frontmatter 19/19 + $ARGUMENTS 7/7"
+        ]
+      },
+      "tested_at": "2026-06-13T09:06:03Z",
       "assigned_model": "opus",
       "is_reference_impl": false,
-      "review": null,
-      "notes": "[2026-06-13 model policy → opus] help.md 80KB + SKILL.md 42KB split เป็น progressive disclosure = งานใหญ่แยกต่างหาก ยังไม่รวมใน feature นี้ (ดู PENDING.md ข้อ 4)"
+      "review": {
+        "reviewed_by": "opus",
+        "reviewed_at": "2026-06-13T09:06:03Z",
+        "result": "pass",
+        "score": 93,
+        "method": "opus implementation + adversarial verification workflow (6 refuting verifiers vs files on disk)",
+        "adversarial_verification": {
+          "verifiers": 6,
+          "refuted": 1,
+          "refuted_summary": "CROSS (low): help.md /help --new labels (lines 175/241/1715) พูด 'v2.8.0 changes' แต่ content จริง v2.10.0 — contradiction ที่ v2.10.0 introduce → แก้ใน fdb167c",
+          "bonus_fixes": [
+            "SKILL.md:35 'Verification Pipeline (6 checks)' → '7 steps' (pre-existing v2.3.0 inconsistency, สอดคล้อง body/changelog/README)",
+            "continue.md:203 component_library.json → ${CLAUDE_PLUGIN_ROOT}/skills/long-running/templates/ (ambiguous bare path)"
+          ]
+        },
+        "remaining_issues": [],
+        "reference_feature_id": 1,
+        "pattern_adherence": "excellent",
+        "notes": "PASS 93/100. ทั้ง 5 AC ผ่าน (mechanical + adversarial). 1 refuted finding (low) แก้แล้ว + 2 bonus low fixes. Out-of-scope (ตาม PENDING ข้อ 4): help.md 80KB + SKILL.md 42KB progressive-disclosure split = งานใหญ่แยก; INTEGRATION_TEST Scenario 7 (sync-with-features pending_updates round-trip) ยังไม่รัน; project-specific nav block ใน continue.md Step 0.5 ยังไม่ extract — ทั้งหมดเป็น follow-up นอก scope #5"
+      },
+      "notes": "[2026-06-13 model policy → opus] long-running v2.9.0 → v2.10.0. 6 subtasks + 4 review-fix commits (adversarial verification 1 รอบ, 6 verifiers). help.md 80KB + SKILL.md 42KB progressive-disclosure split ยังเป็นงานใหญ่แยก (PENDING ข้อ 4). Follow-ups นอก scope บันทึกใน review.notes"
     },
     {
       "id": 6,
@@ -633,14 +670,14 @@
 
   "summary": {
     "total": 8,
-    "passed": 4,
+    "passed": 5,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 4,
-    "last_updated": "2026-06-13T08:41:49Z",
+    "pending": 3,
+    "last_updated": "2026-06-13T09:06:03Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 7, "done": 3, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 7, "done": 4, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
