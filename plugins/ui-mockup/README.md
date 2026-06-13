@@ -1,6 +1,6 @@
 # UI Mockup Plugin
 
-> **Version 1.6.0** - เพิ่ม Cross-Plugin Integration กับ system-design-doc และ long-running
+> **Version 1.11.0** - 8 commands (ASCII + HTML/Web-Component mockups), split-aware design-doc reading (schema 2.3.0), qa-ui-test factor-hint integration, Cross-Plugin Integration กับ system-design-doc + long-running. ดู [Changelog](#changelog)
 
 สร้างและแก้ไข UI Mockup/Wireframe จาก System Design Document รองรับ ASCII wireframes, component specifications และ design tokens
 
@@ -52,11 +52,14 @@ Plugin สำหรับสร้าง UI Mockup/Wireframe โดยใช้ 
 
 | Command | Description |
 |---------|-------------|
-| `/init-mockup` | Initialize และสร้าง mockup_list.json |
-| `/create-mockup [page]` | สร้าง mockup หน้าใหม่ |
-| `/create-mockups-parallel` | สร้างหลาย mockups พร้อมกัน |
-| `/edit-mockup [page] - [changes]` | แก้ไข mockup ที่มีอยู่ |
+| `/init-mockup` | Initialize และสร้าง mockup_list.json จากเอกสารโปรเจค |
+| `/create-mockup [page]` | สร้าง ASCII wireframe mockup หน้าใหม่ |
+| `/create-html-mockup [page]` | สร้าง HTML mockup ด้วย Web Component master page + frontend-design |
+| `/create-mockups-parallel` | สร้างหลาย mockups พร้อมกัน (sub-agents) |
+| `/edit-mockup [page] - [changes]` | แก้ไข mockup ที่มีอยู่ (split-aware drift check) |
 | `/list-mockups` | ดูรายการ mockups ทั้งหมด |
+| `/validate-mockup` | ตรวจความครบถ้วน/สอดคล้องของ mockups (7 categories) |
+| `/help [mode]` | คู่มือใช้งาน (modes: --quick/--workflow/--integration/--qa/--new) |
 
 ### Basic Usage
 
@@ -846,9 +849,9 @@ plugins/ui-mockup/
 
 ## Version
 
-- **Version:** 1.0.0
+- **Version:** 1.11.0
 - **Author:** Mounchons
-- **Last Updated:** 2025-12
+- **Last Updated:** 2026-06-13
 
 ---
 
@@ -861,6 +864,14 @@ plugins/ui-mockup/
 ---
 
 ## Changelog
+
+### 1.11.0 (2026-06-13)
+- 🔧 `create-html-mockup`: ลบ `Agent(*)` ใน allowed-tools (tool ไม่มีจริง — command ใช้ `Skill(frontend-design)` ไม่ spawn subagent) + intra-plugin template paths → `${CLAUDE_PLUGIN_ROOT}` (master-page/html/index templates)
+- 🔧 `create-mockups-parallel`: SKILL/mockup-template/ascii-patterns paths → `${CLAUDE_PLUGIN_ROOT}`
+- 📝 README version sync (header 1.6.0 / footer 1.0.0 → 1.11.0) + Commands table ครบ 8 commands (เพิ่ม create-html-mockup, validate-mockup, help)
+- 📝 help.md version sync v1.8.0 → v1.11.0
+- 📝 mockup_list.json template: QA fields (complexity_factors/acceptance_criteria_ids/risk_baseline) ใน example pages + split-aware related_documents paths + plugin_version sync
+- 🧹 SKILL.md References table: ลบ 2 ไฟล์ที่ไม่มีจริง (component-library.md, responsive-patterns.md)
 
 ### 1.10.0 (2026-05-30)
 - **Split-aware design-doc reading (coverage gap closure).** All commands that read system-design-doc now support the split per-section layout (schema 2.3.0).
