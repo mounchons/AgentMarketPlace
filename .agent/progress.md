@@ -424,3 +424,36 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - Feature #11 (opus): cross-plugin contract — (1) qa-create-scenario อ่าน `.mockups/mockup_list.json` seed hints (ปิด BROKEN edge ui-mockup→qa-ui-test); (2) qa-trace.md อ่าน `scenarios[].use_case_id` first-class (ปิด dead UC leg) → `integration-map.json`
 
 ---
+
+## Session 11 — Feature #11: qa-ui-test v2.7.0 → v2.7.1 (cross-plugin contract — ปิด BROKEN edge + dead UC leg) 🎉 epic ครบ
+**Date**: 2026-06-13
+**Type**: Coding (Feature #11) — epic `plugin-suite-improvements` (feature สุดท้าย)
+**Model**: opus main-loop + adversarial verification (force_opus_all policy)
+
+### What was done (3 subtasks + 2 review-fix):
+- ✅ 11.1 qa-create-scenario **Auto Step 0.6** อ่าน `.mockups/mockup_list.json` pages[] hints (complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps) seed ก่อน code-scan + merge ใน Step 2 + `--no-mockup-hints` opt-out + defensive risk_baseline parse (string|object) → **ปิด BROKEN edge ui-mockup→qa-ui-test** (`c5b49e0`)
+- ✅ 11.2 qa-trace consume `scenario.use_case_id` first-class: Source 1b + uc_inventory + Step 3 A2 direct UC mapping + UC gate + UC Matrix/UC GAP output + summary row + CRITICAL RULE 1b → **ปิด dead UC leg** (`9c8d7d8`)
+- ✅ 11.3 bump 2.7.1 + marketplace sync + plugin desc note + integration-map re-verify (3 edges → working, broken=0) (`398e52d`)
+- 🔧 review-fix(#11.2): persist UC ใน qa-tracker.traceability (uc_inventory/uc_summary) + Step 7 log + Source 2 grep จับ `### Use Case (UC-NNN)` header (`fbdf871`)
+- 🔧 review-fix(#11.3): version sync ครบ 2.7.1 (SKILL/qa-help/README — invariant 4-file+README ของ #10) + integration-map grep count precision (`841f21c`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown plugin) | `claude plugin validate` ✅ passed | JSON ทั้ง 4 valid
+- AC1 grep `mockup_list.json` ใน qa-create-scenario = 6 (literal 5; was 0) ✅ | AC2 `use_case_id` ใน qa-trace = 18 (consumed, was 0 write-only) ✅ | AC3 broken edges = 0 (3 edges broken/partial/missing → working) ✅ | AC4 validate + version 2.7.1 sync ครบ 5 stamps ✅
+- QA+NFR gates: N/A (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json)
+- **Pipeline Result: PASSED**
+
+### Adversarial Verification (workflow `wf_8ef4e726-1b6`, 3 refuting verifiers):
+- consumer-contract fidelity (field names vs producer + risk_baseline dual-form) → **clean**
+- UC read-path completeness → **2 low** (UC ไม่ persist + Source2 UC-header grep) → **fixed** (fbdf871)
+- version sync + integration-map accuracy → **1 medium** (SKILL/qa-help/README ยัง 2.7.0) → **fixed** (841f21c) + **1 cosmetic** (grep count) → fixed
+- scope ถูกต้อง: ui-mockup write-side UC emission (page.use_case_ids) ไม่อยู่ scope #11 (qa-ui-test consumer) — edge นั้นคง partial
+
+### Current status:
+- Features passed: **11/11** 🎉 | epic plugin-suite-improvements: **8/8 ครบ** | opus done: 10 | sonnet done+reviewed: 1
+- **pending: 0 — epic เสร็จสมบูรณ์**
+
+### Next feature:
+- ไม่มี — epic `plugin-suite-improvements` (Features #4–#11) เสร็จครบทุกตัว. งานต่อยอด (out-of-scope, ผ่าน /add-feature): ui-mockup emit `page.use_case_ids[]` (ปิด UC leg ฝั่ง write), brain low-pri (PENDING ข้อ 6), long-running help/SKILL progressive-disclosure split
+
+---

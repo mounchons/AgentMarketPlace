@@ -50,7 +50,7 @@
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8, 9, 10, 11],
-      "progress": { "total": 8, "passed": 7, "in_progress": 0 }
+      "progress": { "total": 8, "passed": 8, "in_progress": 0 }
     }
   ],
 
@@ -806,40 +806,51 @@
       "module": "qa-ui-test", "layer": "application", "category": "feature",
       "description": "แก้ cross-plugin contract ที่ integration-map ระบุ BROKEN/dead: (1) qa-create-scenario อ่าน .mockups/mockup_list.json seed hints (complexity_factors/risk_baseline/acceptance_criteria_ids) แทนการ scan code ซ้ำ — ปิด BROKEN edge ui-mockup→qa-ui-test; (2) qa-trace.md อ่าน scenarios[].use_case_id เป็น first-class UC source — ปิด dead UC leg ของ 3-way traceability — อ่าน plans/plugin-analysis-20260612/integration-map.json recommendations ก่อน",
       "priority": "high", "complexity": "medium", "risk_level": "medium",
-      "status": "pending", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
-        { "id": "11.1", "description": "qa-create-scenario.md: เพิ่ม Step/Mode อ่าน .mockups/mockup_list.json pages[].complexity_factors/risk_baseline/acceptance_criteria_ids ก่อน code-scan (consumer side ของ ui-mockup hints) — ปิด BROKEN edge", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-create-scenario.md"] },
-        { "id": "11.2", "description": "qa-trace.md: อ่าน scenarios[].use_case_id เป็น first-class UC source (เชื่อม UC จาก design_doc_list.json ↔ scenario) — ปิด dead UC leg", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-trace.md"] },
-        { "id": "11.3", "description": "Verify cross-plugin round-trip: ui-mockup เขียน hints → qa-create-scenario อ่าน; design_doc UC → scenario.use_case_id → qa-trace + bump qa-ui-test patch + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["11.1", "11.2"], "files": ["plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+        { "id": "11.1", "description": "qa-create-scenario.md: เพิ่ม Step/Mode อ่าน .mockups/mockup_list.json pages[].complexity_factors/risk_baseline/acceptance_criteria_ids ก่อน code-scan (consumer side ของ ui-mockup hints) — ปิด BROKEN edge", "done": true, "committed_at": "2026-06-13T18:20:26+07:00", "commits": ["c5b49e0"], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-create-scenario.md"] },
+        { "id": "11.2", "description": "qa-trace.md: อ่าน scenarios[].use_case_id เป็น first-class UC source (เชื่อม UC จาก design_doc_list.json ↔ scenario) — ปิด dead UC leg", "done": true, "committed_at": "2026-06-13T18:22:59+07:00", "commits": ["9c8d7d8"], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-trace.md"] },
+        { "id": "11.3", "description": "Verify cross-plugin round-trip: ui-mockup เขียน hints → qa-create-scenario อ่าน; design_doc UC → scenario.use_case_id → qa-trace + bump qa-ui-test patch + marketplace sync", "done": true, "committed_at": "2026-06-13T18:25:12+07:00", "commits": ["398e52d"], "depends_on": ["11.1", "11.2"], "files": ["plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "11.3",
       "acceptance_criteria": [
         "qa-create-scenario อ่าน mockup_list.json hints (grep .mockups/mockup_list.json ใน qa-create-scenario > 0)",
         "qa-trace.md consume scenario.use_case_id (ไม่ใช่ write-only)",
         "integration-map edge ui-mockup→qa-ui-test เปลี่ยนจาก broken → working (re-verify)",
         "claude plugin validate ผ่าน"
       ],
-      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "60min", "actual_time": "~13min", "started_at": "2026-06-13T11:18:32Z", "completed_at": "2026-06-13T11:31:11Z" },
       "dependencies": [10],
       "references": ["plans/plugin-analysis-20260612/integration-map.json", "plans/plugin-analysis-20260612/analysis-qa-ui-test.json", "plans/plugin-analysis-20260612/analysis-ui-mockup.json"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "n/a", "passes": false, "verification_results": null, "tested_at": null,
+      "sync_status": "synced", "passes": true, "tested_at": "2026-06-13T11:31:11Z",
+      "verification_results": {
+        "build": "n/a (markdown plugin — no build)",
+        "claude_plugin_validate": "passed",
+        "ac1_mockup_consumer": "qa-create-scenario Auto Step 0.6 อ่าน .mockups/mockup_list.json (grep mockup_list.json = 6, literal .mockups/mockup_list.json = 5; was 0) + Step 2 merge + --no-mockup-hints opt-out + defensive risk_baseline parse (string|object)",
+        "ac2_uc_consumer": "qa-trace consume scenario.use_case_id first-class (Source 1b + uc_inventory + Step 3 A2 + UC gate + UC Matrix/UC GAP + persisted qa-tracker.traceability.uc_inventory/uc_summary); grep use_case_id = 18 (was 0, write-only)",
+        "ac3_integration_map": "edges re-verified: ui-mockup→qa-ui-test broken→working, use_case_id leg partial→working, qa-ui-test→ui-mockup missing→working; broken edges remaining = 0",
+        "ac4_validate": "claude plugin validate passed; version 2.7.1 sync ครบ 5 stamps (plugin/marketplace/SKILL/qa-help/README)",
+        "adversarial_verify": "3 refuting verifiers (consumer/uc/version-map): consumer clean; uc 2 low (UC not persisted + Source2 UC-header grep) → fixed fbdf871; version-map 1 medium (SKILL/qa-help/README ยัง 2.7.0) → fixed 841f21c + 1 cosmetic grep count → fixed",
+        "scope_note": "ui-mockup write-side UC emission (page.use_case_ids) ยังไม่ทำ — เป็น ui-mockup-side improvement (out of scope #11 ซึ่งเป็น qa-ui-test consumer); edge นั้นคง partial ถูกต้อง",
+        "qa_nfr_gates": "n/a (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "จาก Feature #6 integration-map — 1 BROKEN edge + 1 dead UC leg (high recommendations). ดีกว่าทำหลัง #9 (ui-mockup write side) + #10 (qa-ui-test base) เสร็จ"
+      "notes": "จาก Feature #6 integration-map — 1 BROKEN edge + 1 dead UC leg. ปิดทั้งคู่ฝั่ง qa-ui-test consumer (v2.7.1). opus + adversarial (3 verifiers, refuted findings fixed). ui-mockup write-side UC emission เป็น follow-up แยก (ไม่อยู่ scope นี้)"
     }
   ],
 
   "summary": {
     "total": 11,
-    "passed": 10,
+    "passed": 11,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 1,
-    "last_updated": "2026-06-13T10:49:07Z",
+    "pending": 0,
+    "last_updated": "2026-06-13T11:31:11Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 10, "done": 9, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 10, "done": 10, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }

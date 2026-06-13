@@ -57,14 +57,14 @@
 - 12-agent workflow (2 analysts + 9 adversarial verifiers + 1 integration auditor)
 
 ### 2. Integration map ครบทั้ง 6 ตัว ✅ เสร็จ (Feature #6)
-- `integration-map.json` — 34 edges (20 working / 10 partial / **1 broken** / 3 missing) + 8 gaps + 8 recommendations (ทุก status มี file evidence)
-- **BROKEN**: ui-mockup → qa-ui-test (ui-mockup เขียน QA hints ใน mockup_list.json แต่ qa-create-scenario ไม่เคยอ่าน) → Feature #11
+- `integration-map.json` — 34 edges. เดิม (20 working / 10 partial / **1 broken** / 3 missing); **หลัง Feature #11 re-verify: 23 working / 9 partial / 0 broken / 2 missing** (3 edges ฝั่ง qa-ui-test consumer ปิดแล้ว)
+- **BROKEN** (เดิม): ui-mockup → qa-ui-test (ui-mockup เขียน QA hints ใน mockup_list.json แต่ qa-create-scenario ไม่เคยอ่าน) → ✅ **ปิดแล้วใน Feature #11** (Auto Step 0.6 consumer)
 - **MISSING** (enhancement future-candidate, ยังไม่เป็น feature): dotnet-dev↔shared-artifacts (by-design passive skill), qa-ui-test→brain (auto-save QA results), pending_updates round-trip (INTEGRATION_TEST Scenario 7 — already noted in #5 follow-up), graph-brain MCP bundling (brain low-pri งานเลื่อน)
 
 ### ✅ Features ใหม่จาก Feature #6 (verified-high findings → backlog):
 - **#9 ui-mockup v1.11.0**: ✅ เสร็จ (opus, PASS 94/100) — create-html-mockup ลบ Agent(*) + ${CLAUDE_PLUGIN_ROOT} paths, README/help → v1.11.0 (8 commands), mockup_list QA fields + split-aware paths, SKILL refs fix. adversarial 2 verifiers refuted=0
 - **#10 qa-ui-test v2.7.0**: ✅ เสร็จ (opus, adversarial 3 verifiers — readme/template clean, version 1 low fixed) — Agent(*)→Task ×13, README v2.7.0 (เพิ่ม 5/18 commands + schema 1.7.0 + changelog), version sync 2.7.0 + 13-mode, ${CLAUDE_PLUGIN_ROOT} paths, scenario-template → schema 1.7.0, namespace /qa-coverage-check (0 bare/13 namespaced). commits 62fb653/67e6f76/bcc2d1e/afc879c + review-fix 2358d2b
-- **#11 cross-plugin contract**: qa-create-scenario อ่าน mockup_list.json hints (ปิด BROKEN edge) + qa-trace อ่าน use_case_id (ปิด dead UC leg)
+- **#11 cross-plugin contract**: ✅ เสร็จ (opus, adversarial 3 verifiers — consumer clean, uc 2 low fixed, version-map 1 medium fixed) — qa-create-scenario Auto Step 0.6 อ่าน .mockups/mockup_list.json hints (ปิด BROKEN edge ui-mockup→qa-ui-test) + qa-trace consume scenario.use_case_id first-class + UC matrix/GAP + persist ใน traceability (ปิด dead UC leg). bump 2.7.1 (5 stamps sync). integration-map: 3 edges → working, 0 broken. commits c5b49e0/9c8d7d8/398e52d + review-fix fbdf871/841f21c. **⚠️ follow-up แยก:** ui-mockup emit page.use_case_ids[] (ปิด UC leg ฝั่ง write — improvement #118)
 
 ### 3. แก้ system-design-doc (วิเคราะห์เสร็จแล้ว — ลงมือได้เลย)
 ปัญหา high ที่ verify แล้ว:
