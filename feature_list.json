@@ -22,6 +22,19 @@
     "auto_sync_enabled": false
   },
 
+  "model_config": {
+    "assignment_strategy": {
+      "default_model": "opus",
+      "force_opus_all": true,
+      "rationale": "User directive 2026-06-13: plugin suite นี้สำคัญมาก — ต้องใช้ opus + ตรวจสอบ/วิเคราะห์อย่างละเอียด (adversarial verification) ทุก feature โดยไม่ลด tier",
+      "auto_assign_rules": ["force_opus_all=true → ทุก feature ใหม่ assign opus เสมอ (override complexity-based downgrade)"]
+    },
+    "review_policy": {
+      "require_review_for_non_opus": true,
+      "note": "Feature #4 ทำตอน assigned_model=sonnet → ต้องผ่าน opus /review (กำลังทำ); feature ใหม่ทั้งหมด assigned opus ตั้งแต่ต้น"
+    }
+  },
+
   "epics": [
     {
       "id": "long-running-improvements",
@@ -420,10 +433,10 @@
       "passes": false,
       "verification_results": null,
       "tested_at": null,
-      "assigned_model": "sonnet",
+      "assigned_model": "opus",
       "is_reference_impl": false,
       "review": null,
-      "notes": "help.md 80KB + SKILL.md 42KB split เป็น progressive disclosure = งานใหญ่แยกต่างหาก ยังไม่รวมใน feature นี้ (ดู PENDING.md ข้อ 4)"
+      "notes": "[2026-06-13 model policy → opus] help.md 80KB + SKILL.md 42KB split เป็น progressive disclosure = งานใหญ่แยกต่างหาก ยังไม่รวมใน feature นี้ (ดู PENDING.md ข้อ 4)"
     },
     {
       "id": 6,
@@ -585,8 +598,8 @@
     "last_updated": "2026-06-13T02:12:26Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 6, "done": 3, "in_progress": 0, "pending_review": 0 },
-      "sonnet": { "assigned": 2, "done": 1, "in_progress": 0, "pending_review": 1 }
+      "opus": { "assigned": 7, "done": 3, "in_progress": 0, "pending_review": 0 },
+      "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 1 }
     }
   }
 }
