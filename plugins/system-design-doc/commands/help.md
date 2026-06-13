@@ -5,7 +5,7 @@ allowed-tools: Read(*), Bash(*)
 
 # System Design Doc Help — คู่มือการใช้งาน
 
-คุณคือ **System Design Doc Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน system-design-doc plugin (v1.7.0+)
+คุณคือ **System Design Doc Help Guide** — ผู้ช่วยอธิบายวิธีใช้งาน system-design-doc plugin (v2.2.0)
 
 ## CRITICAL RULES
 
@@ -34,8 +34,8 @@ allowed-tools: Read(*), Bash(*)
 /help --diagrams               # ทุกประเภท diagram + เมื่อใช้
 /help --reverse                # Reverse Engineering workflow
 /help --validation             # Validation/sync commands
-/help --qa                     # ⭐ qa-ui-test integration (AC + UC + traceability) — v1.7.0
-/help --new                    # What's new in v1.7.0
+/help --qa                     # qa-ui-test integration (AC + UC + traceability)
+/help --new                    # What's new in v2.2.0
 ```
 
 ---
@@ -45,13 +45,15 @@ allowed-tools: Read(*), Bash(*)
 ### Mode 1: ไม่มี argument → แสดงทั้งหมด
 
 ```
-📖 System Design Doc — คู่มือการใช้งาน v1.7.0
+📖 System Design Doc — คู่มือการใช้งาน v2.2.0 (22 commands)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 สร้างเอกสารออกแบบระบบมาตรฐาน (Standardized System Design Doc)
 รองรับ Reverse Engineering, Import Plan, Brainstorming
 มี Mermaid diagrams ครบ 7 ประเภท + integration กับ ui-mockup, long-running, qa-ui-test
-⭐ v1.7.0: AC + UC source-of-truth สำหรับ qa-ui-test traceability
+⭐ v2.1: split per-section layout (default) — .design-docs/<slug>/00-index.md + NN-<key>.md + registry schema 2.3.0
+⭐ v2.0: sitemap.json machine-readable graph + 8 commands /sitemap-*
+⭐ v1.7: AC + UC source-of-truth สำหรับ qa-ui-test traceability
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -75,31 +77,39 @@ allowed-tools: Read(*), Bash(*)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📐 DIAGRAMS & EDITING (2 commands)
+📐 DIAGRAMS & EDITING (3 commands)
 
   /create-diagram              สร้าง diagram เฉพาะประเภท
                                รองรับ: ER, Flow, DFD, Sequence, Sitemap, State, Class
                                ตัวอย่าง: /create-diagram er
                                ตัวอย่าง: /create-diagram sequence
 
-  /edit-section                แก้ section ใน design doc
+  /edit-section                แก้ section ใน design doc (split-aware)
                                ตัวอย่าง: /edit-section api-endpoints
                                ตัวอย่าง: /edit-section entities
 
+  /split-design-doc            ⭐ v2.1: migrate เอกสาร single-file → split per-section layout
+                               ตัวอย่าง: /split-design-doc
+                               ตัวอย่าง: /split-design-doc .design-docs/system-design-shop.md
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ VALIDATION (2 commands)
+✅ VALIDATION (3 commands)
 
-  /validate-design-doc         ตรวจ completeness + consistency
+  /validate-design-doc         ตรวจ completeness + consistency (layout-aware)
                                ตัวอย่าง: /validate-design-doc
 
-  /validate-integration        ⭐ v1.7: ขยายเป็น 4 plugins (+qa-ui-test)
-                               ตรวจ cross-reference + AC coverage + release-ready flag
+  /validate-integration        ตรวจ cross-reference 4 plugins (+qa-ui-test)
+                               + AC coverage + release-ready flag
                                ตัวอย่าง: /validate-integration
+
+  /sitemap-validate            ⭐ v2.0: ตรวจ sitemap.json (ajv schema + กฎ R31-R35)
+                               ตัวอย่าง: /sitemap-validate
+                               ตัวอย่าง: /sitemap-validate --strict
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔄 SYNC (3 commands)
+🔄 SYNC (4 commands)
 
   /sync-with-features          Sync design_doc_list ↔ feature_list (long-running)
                                ตัวอย่าง: /sync-with-features
@@ -107,11 +117,38 @@ allowed-tools: Read(*), Bash(*)
   /sync-with-mockups           Sync design_doc_list ↔ mockup_list (ui-mockup)
                                ตัวอย่าง: /sync-with-mockups
 
-  /sync-with-qa-tracker        ⭐ v1.7: Sync AC + UC ↔ qa-tracker (qa-ui-test)
+  /sync-with-qa-tracker        Sync AC + UC ↔ qa-tracker (qa-ui-test)
                                bidirectional, auto-discovery, GAP detection
                                ตัวอย่าง: /sync-with-qa-tracker
                                ตัวอย่าง: /sync-with-qa-tracker --gaps-only
                                ตัวอย่าง: /sync-with-qa-tracker --auto-link
+
+  /sync-sitemap                ⭐ v2.0: Sync Section 9 ↔ sitemap.json + pull downstream stats
+                               ตัวอย่าง: /sync-sitemap
+                               ตัวอย่าง: /sync-sitemap --pull-downstream
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🗺️  SITEMAP GRAPH (6 commands) — ⭐ v2.0
+
+  /sitemap-init                สร้าง .design-docs/sitemap.json จาก template
+                               ตัวอย่าง: /sitemap-init --project-name shop
+
+  /sitemap-add-node            เพิ่ม node 8 ประเภท (page/api/middleware/external/
+                               master/template/nav/component) + auto-assign ID
+                               ตัวอย่าง: /sitemap-add-node page name="Checkout" url=/checkout
+
+  /sitemap-link                เพิ่ม edge ระหว่าง nodes + validate type/prefix
+                               ตัวอย่าง: /sitemap-link from=P-003 to=API-007 type=calls
+
+  /sitemap-scan                Auto-scan codebase populate nodes + infer edges
+                               ตัวอย่าง: /sitemap-scan --dry-run
+
+  /sitemap-graph               Render Mermaid graph จาก edges → Section 9.8
+                               ตัวอย่าง: /sitemap-graph --types page,api
+
+  /sitemap-export              Export เป็น Cytoscape JSON / GraphML / DOT
+                               ตัวอย่าง: /sitemap-export cytoscape
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -121,8 +158,8 @@ allowed-tools: Read(*), Bash(*)
   มี code อยู่แล้ว?        → /help --reverse         (Reverse Engineering)
   อยากดู diagrams?         → /help --diagrams        (ทุกประเภท + เมื่อใช้)
   เชื่อม long-running?     → /help --integration
-  ⭐ qa-ui-test (AC/UC)?   → /help --qa              (v1.7.0 — ใหม่)
-  v1.7 มีอะไรใหม่?         → /help --new             (changelog)
+  qa-ui-test (AC/UC)?      → /help --qa
+  v2.2 มีอะไรใหม่?         → /help --new             (changelog)
   ดูคำสั่งเฉพาะ?           → /help [command]         เช่น /help create-diagram
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -149,6 +186,7 @@ allowed-tools: Read(*), Bash(*)
 🔧 Maintenance:
    /edit-section [name]              # แก้ section
    /create-diagram [type]            # เพิ่ม diagram
+   /split-design-doc                 # ⭐ v2.1: migrate single-file → split layout
    /sync-with-features               # sync long-running
    /sync-with-mockups                # sync ui-mockup
    /sync-with-qa-tracker             # ⭐ sync qa-ui-test (AC/UC coverage)
@@ -163,8 +201,8 @@ allowed-tools: Read(*), Bash(*)
    /help --reverse         Reverse Engineering
    /help --integration     Cross-plugin integration (4 plugins)
    /help --validation      Validation guide
-   /help --qa              ⭐ qa-ui-test integration (v1.7.0)
-   /help --new             What's new in v1.7.0
+   /help --qa              qa-ui-test integration (AC/UC traceability)
+   /help --new             What's new in v2.2.0
 ```
 
 ---
@@ -542,7 +580,7 @@ $ /validate-integration        # ตรวจ cross-plugin
 ### Mode 6.5: `--qa` → QA Integration (v1.7.0) ⭐
 
 ```
-🧪 qa-ui-test Integration — system-design-doc v1.7.0
+🧪 qa-ui-test Integration — system-design-doc (ตั้งแต่ v1.7.0)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎯 system-design-doc เป็น source of truth ของ AC + UC IDs
@@ -699,13 +737,43 @@ Release-Ready override:
 
 ---
 
-### Mode 6.6: `--new` → What's new in v1.7.0
+### Mode 6.6: `--new` → What's new in v2.2.0
 
 ```
-✨ What's new in v1.7.0 (2026-05-05)
+✨ What's new in v2.2.0 (2026-06-13)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⭐ qa-ui-test v2.5 Integration
+📚 Documentation sync ครั้งใหญ่
+  • README + /help ตรงกับความสามารถจริงครบ 22 commands
+  • /system-design-doc (main entry) สร้าง split layout (default) เหมือน /create-design-doc, /import-plan
+  • frontmatter ครบทุก command (เพิ่มให้ sync-with-features, sync-with-mockups, validate-integration)
+  • แก้ allowed-tools ขัดแย้ง (brainstorm-design ได้ Write/Bash, sitemap-scan Agent→Task)
+  • ${CLAUDE_PLUGIN_ROOT} สำหรับ intra-plugin template/reference paths
+
+🧪 qa-ui-test contract fix สองฝั่ง (qa-ui-test v2.6.1)
+  • /qa-trace resolve AC/UC ผ่าน .design-docs/design_doc_list.json registry (split-aware)
+  • ตัวอย่าง acceptance_criteria_id เป็น flat AC-NNN ตาม CRITICAL RULE 24
+  • เพิ่ม scenario.use_case_id ใน qa-tracker template (รับค่าจาก /sync-with-qa-tracker)
+
+
+✨ v2.1.0 (2026-05-29) — Split per-section layout (default)
+
+  • เอกสารแยกไฟล์: .design-docs/<slug>/00-index.md + 01..10-<key>.md
+  • registry schema 2.3.0: doc_layout, doc_dir, sections[] (machine map สำหรับ consumers)
+  • /split-design-doc — migrate เอกสาร single-file เดิม (เก็บ original เป็น .bak)
+  • /edit-section, /create-diagram, /validate-design-doc เป็น split-aware
+  • CRITICAL RULES 36-38
+
+
+✨ v2.0.0 (2026-05-07) — sitemap.json machine-readable graph
+
+  • 8 node types 2 layers (Design System + Application)
+  • 8 commands ใหม่: /sitemap-init /sitemap-add-node /sitemap-link /sitemap-scan
+    /sync-sitemap /sitemap-validate /sitemap-graph /sitemap-export
+  • Section 9.4-9.9 + validation rules R31-R35 + JSON Schema draft-07 (ajv-cli)
+
+
+✨ v1.7.0 (2026-05-05) — qa-ui-test v2.5 Integration
 
 system-design-doc กลายเป็น source of truth สำหรับ AC + UC IDs ที่ qa-ui-test consume
 
@@ -937,6 +1005,65 @@ system-design-doc กลายเป็น source of truth สำหรับ AC
 - Time: 2-5 min (ขึ้นกับจำนวน ACs/scenarios)
 - Next: /validate-integration, /qa-trace (qa-ui-test side)
 
+**split-design-doc:** ⭐ v2.1
+- Prerequisites: เอกสาร single-file (doc_layout:"single") + design_doc_list.json
+- Output: .design-docs/<slug>/00-index.md + 01..10-<key>.md (original เก็บเป็น .bak) + registry → 2.3.0
+- Time: 2-5 min
+- Next: /validate-design-doc
+
+**sitemap-init:** ⭐ v2.0
+- Prerequisites: ไม่มี (--force ถ้ามีไฟล์เดิม)
+- Output: .design-docs/sitemap.json จาก template + ajv validation
+- Time: < 1 min
+- Next: /sitemap-scan หรือ /sitemap-add-node
+
+**sitemap-add-node:** ⭐ v2.0
+- Prerequisites: sitemap.json (/sitemap-init ก่อน)
+- Output: node ใหม่ (8 ประเภท) + auto-assign ID (P-/API-/MW-/EXT-/MP-/TPL-/NAV-/CMP-)
+- Time: < 1 min ต่อ node
+- Next: /sitemap-link, /sitemap-validate
+
+**sitemap-link:** ⭐ v2.0
+- Prerequisites: sitemap.json + nodes ที่จะเชื่อม
+- Output: edge ใหม่ใน edges[] + validate type/prefix + sync cross-ref fields
+- Types: calls, guarded-by, calls-external, uses-master, uses-template, uses-component, has-nav, links-to
+- Time: < 1 min ต่อ edge
+- Next: /sitemap-graph, /sitemap-validate
+
+**sitemap-scan:** ⭐ v2.0
+- Prerequisites: sitemap.json + source code project
+- Output: auto-discover Pages/APIs/Middlewares/External/Components + infer edges (แสดง plan ก่อน write)
+- Flags: --types <list> / --dry-run / --update
+- Time: 3-10 min (ขึ้นกับขนาด codebase)
+- Next: /sitemap-validate, /sitemap-graph
+
+**sync-sitemap:** ⭐ v2.0
+- Prerequisites: sitemap.json + design doc Section 9
+- Output: sync 2 phase — Section 9 tables ↔ sitemap.json (ตาม mtime) + pull downstream stats
+- Flags: --to-md / --from-md / --pull-downstream
+- Time: 2-3 min
+- Next: /sitemap-validate
+
+**sitemap-validate:** ⭐ v2.0
+- Prerequisites: sitemap.json
+- Output: ajv schema validation + กฎ R31-R35 report
+- Flags: --strict (R33 warn→error)
+- Time: 1-2 min
+- Next: แก้ตาม report → /sitemap-validate ซ้ำ
+
+**sitemap-graph:** ⭐ v2.0
+- Prerequisites: sitemap.json ที่มี edges
+- Output: Mermaid flowchart → embed Section 9.8 (หรือ --to-stdout)
+- Flags: --types <list> / --to-stdout
+- Time: 1-2 min
+- Next: /sync-sitemap
+
+**sitemap-export:** ⭐ v2.0
+- Prerequisites: sitemap.json
+- Output: Cytoscape JSON / GraphML / Graphviz DOT
+- Time: < 1 min
+- Next: ใช้ไฟล์กับ external tool
+
 **help:**
 - Prerequisites: ไม่มี
 - Output: display only
@@ -959,8 +1086,8 @@ system-design-doc กลายเป็น source of truth สำหรับ AC
    /help --quick                   — Quick start guide
    /help --diagrams                — Diagram types reference
    /help --integration             — เชื่อม plugins อื่น (4 plugins)
-   /help --qa                      — ⭐ qa-ui-test integration (v1.7.0)
-   /help --new                     — What's new in v1.7.0
+   /help --qa                      — qa-ui-test integration (AC/UC traceability)
+   /help --new                     — What's new in v2.2.0
 ```
 
 > 💬 **หมายเหตุ:** คำสั่งนี้ตอบเป็นภาษาไทย (ศัพท์เทคนิคใช้ภาษาอังกฤษ)
