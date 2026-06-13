@@ -62,6 +62,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 /qa-create-scenario --auto --modules PRODUCT,ORDER       # เฉพาะ modules
 /qa-create-scenario --auto --modules new-only            # หา module ใหม่
 /qa-create-scenario --auto --dry-run                     # preview diff ไม่ write
+/qa-create-scenario --auto --no-mockup-hints             # ข้าม seed จาก .mockups/mockup_list.json (code-scan ล้วน)
 /qa-create-scenario --auto --reset --yes                 # ลบเก่าทิ้ง สแกนใหม่ (destructive)
 
 /qa-create-scenario [URL]                     # manual: brainstorm ทีละหน้า
@@ -229,6 +230,43 @@ Special:
 
 ---
 
+### ⭐ Auto Step 0.6: Seed QA hints จาก ui-mockup (`.mockups/mockup_list.json`)
+
+**ทำก่อน code-scan เสมอ (ถ้ามีไฟล์)** — consume hints ที่ ui-mockup `/init-mockup` Step 3.55 (auto-derive) เขียนไว้ เพื่อ seed `complexity_factors` / `risk` / AC โดยไม่ต้อง re-derive จาก code ทั้งหมด → **ปิด integration edge `ui-mockup → qa-ui-test`** (ก่อนหน้านี้ ui-mockup เขียน hints แต่ไม่มีฝั่งอ่าน)
+
+> ข้าม step นี้เมื่อส่ง `--no-mockup-hints` หรือไม่พบไฟล์ — **graceful degrade ไม่ใช่ error** (project ที่ไม่ได้ใช้ ui-mockup ก็ทำงานปกติด้วย code-scan ล้วน)
+
+```bash
+# อ่าน mockup hints (optional)
+cat .mockups/mockup_list.json 2>/dev/null
+```
+
+**ถ้ามี `.mockups/mockup_list.json`:** อ่าน `pages[]` แล้วสร้าง hint map ต่อหน้า:
+
+| ฟิลด์ใน mockup `page` | ใช้ seed อะไรใน scenario |
+|---|---|
+| `complexity_factors[]` | **union** เข้า `scenario.complexity_factors` (code-scan เพิ่มได้ ไม่ลบ hint) |
+| `acceptance_criteria_ids[]` | seed `scenario.acceptance_criteria_id[]` (flat `AC-NNN`) |
+| `risk_baseline` | seed `risk.priority` — รองรับ **2 รูปแบบ**: string `"P2"` หรือ object `{ probability, impact, priority }` (parse แบบ defensive) |
+| `cascade_chain[]` | ถ้า `length >= 2` → เพิ่ม factor `cascade-deep` |
+| `wizard_steps` | ถ้า `>= 3` → เพิ่ม factor `multi-step` |
+| `use_case_ids[]` *(ถ้ามี — forward-compat กับ ui-mockup รุ่นถัดไป)* | seed `scenario.use_case_id` |
+
+**Page → scenario matching (ตามลำดับ):**
+1. `page.url` / route ตรงกับ URL ของ scenario ที่จะสร้าง
+2. fallback: `page.crud_group` / `page.category` ↔ `scenario.module`
+3. ไม่ match → ข้าม (หน้านั้นใช้ code-scan ล้วน)
+
+**Precedence (สำคัญ — hint เป็นจุดเริ่ม ไม่ใช่ authority สุดท้าย):**
+- `complexity_factors`: **union** (mockup ∪ code-scan) — code-scan เสริม factor ที่ hint ไม่เห็นได้
+- `risk`: mockup_list `risk_baseline` เป็น *baseline*; ถ้า code-scan พบหลักฐานชัด (money-flow / security / cascade ลึกกว่า) → ยกระดับ priority ขึ้นได้ แต่ **ห้ามลดต่ำกว่า baseline** โดยไม่มีเหตุผลใน `risk.rationale`
+- `acceptance_criteria_id`: union ไม่ซ้ำ
+- บันทึก `"hint_source": "mockup_list.json"` ใน scenario ที่ seed จาก hint เพื่อ trace ย้อนกลับ
+
+ส่ง hint map นี้ต่อให้ **Auto Step 1** (เป็น context ของ subagent → skip การ re-derive) และ **Auto Step 2** (merge ก่อนคำนวณ model assignment final)
+
+---
+
 ### Auto Step 1: Dispatch Code Analysis Subagent
 
 ```
@@ -304,6 +342,12 @@ Return ผลเป็น JSON format"
 **ใช้ template catalog เป็น single source of truth:**
 
 📖 อ่าน `skills/qa-ui-test/references/test-templates.md` เป็นกฎเลือก template
+
+> **🔗 Merge mockup hints (จาก Auto Step 0.6):** ถ้ามี hint map จาก `.mockups/mockup_list.json` →
+> ก่อนคำนวณ `complexity_factors` + risk + model assignment ของแต่ละ scenario ให้ **union hint factors
+> กับ factors ที่ derive จาก template/code-scan** แล้วใช้ `risk_baseline` เป็น risk เริ่มต้น
+> (ดู Precedence ใน Step 0.6). ผลคือ scenario ของหน้าที่มี mockup hint จะได้ factor/model ที่ตรง
+> โดยไม่ต้อง re-derive ทั้งหมด — ส่วนหน้าที่ไม่มี hint ใช้ logic เดิมทุกอย่าง
 
 **Decision Tree (ตาม test-templates.md):**
 
