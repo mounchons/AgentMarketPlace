@@ -62,7 +62,7 @@
 - **MISSING** (enhancement future-candidate, ยังไม่เป็น feature): dotnet-dev↔shared-artifacts (by-design passive skill), qa-ui-test→brain (auto-save QA results), pending_updates round-trip (INTEGRATION_TEST Scenario 7 — already noted in #5 follow-up), graph-brain MCP bundling (brain low-pri งานเลื่อน)
 
 ### ✅ Features ใหม่จาก Feature #6 (verified-high findings → backlog):
-- **#9 ui-mockup v1.11.0**: Agent(*)→Task(*), ${CLAUDE_PLUGIN_ROOT} paths, README/help version drift, mockup_list.json template QA fields, SKILL.md nonexistent refs
+- **#9 ui-mockup v1.11.0**: ✅ เสร็จ (opus, PASS 94/100) — create-html-mockup ลบ Agent(*) + ${CLAUDE_PLUGIN_ROOT} paths, README/help → v1.11.0 (8 commands), mockup_list QA fields + split-aware paths, SKILL refs fix. adversarial 2 verifiers refuted=0
 - **#10 qa-ui-test v2.7.0**: Agent(*)→Task(*) ×13, README v2.7.0 (omits 5/18 commands), version drift (12-mode↔13-mode), ${CLAUDE_PLUGIN_ROOT}, scenario-template sync
 - **#11 cross-plugin contract**: qa-create-scenario อ่าน mockup_list.json hints (ปิด BROKEN edge) + qa-trace อ่าน use_case_id (ปิด dead UC leg)
 

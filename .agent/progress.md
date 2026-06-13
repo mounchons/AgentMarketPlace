@@ -362,3 +362,32 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - Feature #9 (opus): ui-mockup v1.11.0 — Agent(*)→Task(*), ${CLAUDE_PLUGIN_ROOT} paths, README/help version drift, mockup_list.json QA fields → `analysis-ui-mockup.json`
 
 ---
+
+## Session 9 — Feature #9: ui-mockup v1.10.0 → v1.11.0 (doc-sync + Agent fix + paths)
+**Date**: 2026-06-13
+**Type**: Coding (Feature #9) — epic `plugin-suite-improvements`
+**Model**: opus main-loop + adversarial verification
+
+### What was done (5 subtasks + 2 review-fix):
+- ✅ 9.1 create-html-mockup ลบ `Agent(*)` (ใช้ Skill(frontend-design) ไม่ spawn subagent) + `${CLAUDE_PLUGIN_ROOT}` paths (`0ba394c`)
+- ✅ 9.2 README v1.11.0 — version sync (header 1.6.0/footer 1.0.0 → 1.11.0) + Commands ครบ 8 + changelog (`bc7dd62`)
+- ✅ 9.3 help.md v1.8.0 → v1.11.0 (banner + --new + footer; feature labels คงไว้) (`4eece11`, `173090a`)
+- ✅ 9.4 mockup_list template — QA fields (page 001) + split-aware related_documents + plugin_version 1.11.0 (`9d826de`)
+- ✅ 9.5 SKILL References ลบ 2 ไฟล์ที่ไม่มีจริง (component-library/responsive-patterns) + bump 1.11.0 + marketplace (`066d7a2`)
+- 🔧 review-fix: Agent(*) changelog reword → grep=0 (`173090a`); reading-design-docs.md refs → ${CLAUDE_PLUGIN_ROOT} (4 commands) (`3b0666a`)
+
+### Verification:
+- adversarial verify (2 verifiers): agent+paths+version / commands+template+refs → **refuted=0**
+- `claude plugin validate ui-mockup` ผ่าน + version triad 1.11.0
+- AC: Agent(*)=0, bare paths=0, 8 commands ครบ, mockup_list QA fields, SKILL refs ตรง disk
+
+### Opus Review: **PASS 94/100** (excellent)
+
+### Current status:
+- Features passed: **9/11** | epic plugin-suite-improvements: 6/8 | reviewed: 6 (#4–#9)
+- pending: 2 (#10 qa-ui-test, #11 cross-plugin contract)
+
+### Next feature:
+- Feature #10 (opus): qa-ui-test v2.7.0 — Agent(*)→Task(*) ×13 commands, README v2.7.0 (omits 5/18), version drift → `analysis-qa-ui-test.json`
+
+---

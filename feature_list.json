@@ -50,7 +50,7 @@
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8, 9, 10, 11],
-      "progress": { "total": 8, "passed": 5, "in_progress": 0 }
+      "progress": { "total": 8, "passed": 6, "in_progress": 0 }
     }
   ],
 
@@ -732,13 +732,13 @@
       "module": "ui-mockup", "layer": "presentation", "category": "bug-fix",
       "description": "แก้ ui-mockup v1.10.0 → v1.11.0 ตามผลวิเคราะห์ (verified): create-html-mockup Agent(*)→Task(*) + ${CLAUDE_PLUGIN_ROOT} paths, README version drift (header 1.6.0/footer 1.0.0 → 1.10.0 + 3 commands หาย), help.md v1.8.0→v1.11.0, mockup_list.json template QA fields + split-aware paths + plugin_version, SKILL.md References ลบ 2 ไฟล์ที่ไม่มีจริง — อ่าน plans/plugin-analysis-20260612/analysis-ui-mockup.json ก่อน ห้ามวิเคราะห์ซ้ำ",
       "priority": "high", "complexity": "medium", "risk_level": "low",
-      "status": "pending", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
         { "id": "9.1", "description": "create-html-mockup.md Agent(*)→Task(*) + ${CLAUDE_PLUGIN_ROOT} paths (master-page templates); create-mockups-parallel.md path fix", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/commands/create-html-mockup.md", "plugins/ui-mockup/commands/create-mockups-parallel.md"] },
-        { "id": "9.2", "description": "README rewrite v1.11.0 — header/footer version sync + เพิ่ม 3 commands ที่ขาด (create-html-mockup, validate-mockup, help) + changelog", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/README.md"] },
-        { "id": "9.3", "description": "help.md v1.8.0→v1.11.0 (banner + --new + cross-refs)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/commands/help.md"] },
-        { "id": "9.4", "description": "mockup_list.json template: QA fields (complexity_factors/acceptance_criteria_ids/risk_baseline/cascade_chain/wizard_steps) ใน example pages + split-aware related_documents paths + plugin_version 1.8.0→1.11.0", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/skills/ui-mockup/templates/mockup_list.json"] },
-        { "id": "9.5", "description": "SKILL.md References table ลบ component-library.md + responsive-patterns.md (ไม่มีจริง); plugin.json desc กระชับ + bump 1.11.0 + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["9.1", "9.2", "9.3", "9.4"], "files": ["plugins/ui-mockup/skills/ui-mockup/SKILL.md", "plugins/ui-mockup/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+        { "id": "9.2", "description": "README rewrite v1.11.0 — header/footer version sync + เพิ่ม 3 commands ที่ขาด (create-html-mockup, validate-mockup, help) + changelog", "done": true, "committed_at": "2026-06-13T10:15:00Z", "commits": ["bc7dd62"], "depends_on": [], "files": ["plugins/ui-mockup/README.md"] },
+        { "id": "9.3", "description": "help.md v1.8.0→v1.11.0 (banner + --new + cross-refs)", "done": true, "committed_at": "2026-06-13T10:15:00Z", "commits": ["4eece11"], "depends_on": [], "files": ["plugins/ui-mockup/commands/help.md"] },
+        { "id": "9.4", "description": "mockup_list.json template: QA fields (complexity_factors/acceptance_criteria_ids/risk_baseline/cascade_chain/wizard_steps) ใน example pages + split-aware related_documents paths + plugin_version 1.8.0→1.11.0", "done": true, "committed_at": "2026-06-13T10:15:00Z", "commits": ["9d826de"], "depends_on": [], "files": ["plugins/ui-mockup/skills/ui-mockup/templates/mockup_list.json"] },
+        { "id": "9.5", "description": "SKILL.md References table ลบ component-library.md + responsive-patterns.md (ไม่มีจริง); plugin.json desc กระชับ + bump 1.11.0 + marketplace sync", "done": true, "committed_at": "2026-06-13T10:15:00Z", "commits": ["066d7a2"], "depends_on": ["9.1", "9.2", "9.3", "9.4"], "files": ["plugins/ui-mockup/skills/ui-mockup/SKILL.md", "plugins/ui-mockup/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
       ],
       "last_committed_subtask": null,
       "acceptance_criteria": [
@@ -748,14 +748,14 @@
         "mockup_list.json template มี QA fields ใน example + plugin_version ตรง",
         "claude plugin validate ผ่าน + marketplace sync"
       ],
-      "time_tracking": { "estimated_time": "75min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "75min", "actual_time": "45min", "started_at": "2026-06-13T10:06:40Z", "completed_at": "2026-06-13T10:16:05Z" },
       "dependencies": [],
       "references": ["plans/plugin-analysis-20260612/analysis-ui-mockup.json", "plans/plugin-analysis-20260612/integration-map.json"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "n/a", "passes": false, "verification_results": null, "tested_at": null,
-      "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "จาก Feature #6 analysis — 3 verified-high findings (Agent(*), paths, README drift). ห้ามวิเคราะห์ซ้ำ (อ่าน analysis-ui-mockup.json)"
+      "sync_status": "n/a", "passes": true, "verification_results": {"build_check": "n/a (markdown/json plugin) \u2014 claude plugin validate ui-mockup = passed", "test_coverage": {"unit": 0, "integration": 0, "e2e": 0, "adversarial_verify": "2 verifiers, refuted=0"}, "config_flags": "n/a (max_features_per_session=1 honored)", "qa_nfr_gates": "n/a", "pipeline_result": "passed", "verified_at": "2026-06-13T10:16:05Z", "acceptance_criteria_checked": ["\u0e44\u0e21\u0e48\u0e21\u0e35 Agent(*) \u0e43\u0e19 allowed-tools (grep=0 \u0e17\u0e31\u0e49\u0e07 plugin \u0e23\u0e27\u0e21 changelog reword) \u2713", "intra-plugin paths \u0e43\u0e0a\u0e49 ${CLAUDE_PLUGIN_ROOT} \u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 (plugins/ui-mockup/skills + skills/ui-mockup forms) \u2713", "README + help.md = v1.11.0 \u0e15\u0e23\u0e07 plugin.json + \u0e04\u0e23\u0e1a 8 commands \u2713", "mockup_list.json template QA fields (page 001) + split-aware paths + plugin_version 1.11.0 \u2713", "claude plugin validate \u0e1c\u0e48\u0e32\u0e19 + marketplace sync 1.11.0; SKILL References \u0e44\u0e21\u0e48\u0e21\u0e35\u0e44\u0e1f\u0e25\u0e4c\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e21\u0e35\u0e08\u0e23\u0e34\u0e07 \u2713"]}, "tested_at": "2026-06-13T10:16:05Z",
+      "assigned_model": "opus", "is_reference_impl": false, "review": {"reviewed_by": "opus", "reviewed_at": "2026-06-13T10:16:05Z", "result": "pass", "score": 94, "method": "opus main-loop implementation + adversarial verify (2 verifiers vs files)", "adversarial_verification": {"verifiers": 2, "refuted": 0, "note": "agent+paths+version / commands+template+refs \u0e17\u0e31\u0e49\u0e07\u0e04\u0e39\u0e48 refuted=false. 1 minor (bare skills/ui-mockup refs \u0e43\u0e19 prose) \u0e41\u0e01\u0e49\u0e41\u0e25\u0e49\u0e27 3b0666a"}, "remaining_issues": [], "reference_feature_id": 1, "pattern_adherence": "excellent", "notes": "PASS 94/100. doc-sync feature (markdown/json, \u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07 MS Learn). \u0e17\u0e31\u0e49\u0e07 5 AC \u0e1c\u0e48\u0e32\u0e19 + reword Agent(*) changelog \u0e43\u0e2b\u0e49 grep=0 + qualify reading-design-docs refs. write-side \u0e02\u0e2d\u0e07 ui-mockup\u2192qa-ui-test (mockup_list QA hints) \u0e2d\u0e22\u0e39\u0e48\u0e41\u0e25\u0e49\u0e27 \u2014 consumer side (qa-create-scenario \u0e2d\u0e48\u0e32\u0e19) = Feature #11"},
+      "notes": "ui-mockup v1.10.0 → v1.11.0. 5 subtasks + 2 review-fix (Agent(*) reword + reading-design-docs paths). doc-sync จาก analysis-ui-mockup.json verified findings"
     },
     {
       "id": 10,
@@ -821,14 +821,14 @@
 
   "summary": {
     "total": 11,
-    "passed": 8,
+    "passed": 9,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 3,
-    "last_updated": "2026-06-13T10:03:00Z",
+    "pending": 2,
+    "last_updated": "2026-06-13T10:16:05Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 10, "done": 7, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 10, "done": 8, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
