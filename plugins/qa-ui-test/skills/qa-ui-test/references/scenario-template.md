@@ -1,10 +1,101 @@
 # Test scenario template
 
-Based on IEEE 829-2008 Test Case Specification, adapted for AI-driven Playwright testing.
+Based on IEEE 829-2008 Test Case Specification, adapted for AI-driven Playwright testing
+and aligned with **qa-tracker.json schema 1.7.0**.
 
-## Scenario document structure
+Every scenario lives in two places that MUST stay in sync:
 
-When creating a scenario, produce a markdown file with this exact structure:
+1. **The structured entry** in `qa-tracker.json → scenarios[]` (authoritative — drives risk
+   prioritization, model assignment, traceability, NFR and Gate 4 control coverage).
+2. **The human-readable doc** `test-scenarios/{scenario-id}.md` (referenced by the entry's
+   `scenario_doc` field) — steps, negative/boundary cases, screenshots.
+
+---
+
+## 1. Structured scenario entry (qa-tracker.json `scenarios[]`)
+
+Each scenario object MUST carry `risk{}` + `complexity_factors[]` (used for v1.6+ model
+assignment) and SHOULD carry `acceptance_criteria_id[]` / `use_case_id` for traceability.
+
+```jsonc
+{
+  "id": "TS-MODULE-001",
+  "title": "Short, intent-revealing scenario title",
+  "module": "MODULE_NAME",
+  "page_type": "form|master-data|master-detail|wizard|dashboard|...",
+  "type": "happy-path|negative|boundary|security|role-access|state-machine|...",
+
+  // priority is LEGACY — derived from risk.priority, kept for backward-compat only
+  "priority": "critical|high|medium|low",
+
+  // risk-based prioritization — score = probability × impact
+  "risk": {
+    "probability": 3,          // 1=rare | 2=occasional | 3=likely
+    "impact": 3,               // 1=cosmetic | 2=functional | 3=critical (money/data/security/blocker)
+    "score": 9,                // 1-9 (probability × impact)
+    "priority": "P0",          // P0(7-9) | P1(5-6) | P2(3-4) | P3(1-2)
+    "rationale": "money-flow + cascade depth 3"
+  },
+
+  // flow-difficulty factors — drive opus/sonnet/haiku assignment (see §2)
+  "complexity_factors": ["state-machine", "cascade-deep"],
+
+  // traceability → system-design-doc (flat AC-NNN / UC-NNN per design_doc_list.json registry)
+  "acceptance_criteria_id": ["AC-001", "AC-002"],   // [] = unlinked → appears as GAP candidate
+  "use_case_id": "UC-007",                          // or null — written by /sync-with-qa-tracker
+
+  "status": "pending|running|passed|failed|deprecated",
+
+  // model assignment (computed top-down, first match wins — see §2)
+  "assigned_model": "opus",                         // sonnet|opus|haiku
+  "assigned_model_reason": "state-machine factor present",
+
+  "url": "/admin/products",
+  "depends_on": [],
+  "test_script": "tests/TS-MODULE-001.spec.ts",
+  "test_data": "test-data/TS-MODULE-001.json",
+  "scenario_doc": "test-scenarios/TS-MODULE-001.md",
+
+  // Gate 4 control coverage (set when authored via --from-control-spec, Mode C)
+  "control_refs": ["ctrl-product-grid", "ctrl-save-btn"],
+  "control_test_category": "render-binding|api-binding|permission|validation|cascade-loading-error"
+}
+```
+
+> **Rule:** `acceptance_criteria_id` uses **flat `AC-NNN`** (never `AC-X.Y`) to match the
+> `design_doc_list.json` registry. Link manually or via `/qa-trace --auto-link`.
+
+---
+
+## 2. Risk & model assignment
+
+### Risk priority (probability × impact → score → P-level)
+
+| Priority | Score | Meaning | Example |
+|---|:---:|---|---|
+| **P0** | 7–9 | Money / data / security / blocker | Checkout payment, login, delete account |
+| **P1** | 5–6 | Major feature, significant user impact | Form submission, search, master-detail save |
+| **P2** | 3–4 | Supporting feature, workarounds exist | Profile edit, filters, sorting |
+| **P3** | 1–2 | Cosmetic / nice-to-have | Tooltip text, animation timing |
+
+### complexity_factors catalog
+
+`state-machine`, `cascade-deep`, `multi-step`, `concurrent`, `security-flow`,
+`network-mock`, `master-detail-sync`, `cross-browser`.
+
+### 3-tier model assignment (first matching rule wins)
+
+| → Model | When |
+|---|---|
+| **opus** | `complexity_factors.length >= 2`, OR contains `state-machine` / `cascade-deep` / `concurrent` / `cross-browser` / `master-detail-sync`, OR `P0` + any factor, OR `security-flow`+P0, OR `network-mock`+P0, OR `multi-step` + P0/P1 |
+| **haiku** | `P3` AND `complexity_factors.length == 0` (trivial CRUD — pattern-based) |
+| **sonnet** | everything else (standard CRUD / single-factor mid-risk) |
+
+Always record `assigned_model_reason` with the rule that matched.
+
+---
+
+## 3. Scenario doc structure (`test-scenarios/{id}.md`)
 
 ```markdown
 # {Scenario ID}: {Title}
@@ -13,14 +104,20 @@ When creating a scenario, produce a markdown file with this exact structure:
 |---|---|
 | **ID** | TS-{MODULE}-{NNN} |
 | **Title** | {Clear one-line description} |
-| **Module** | {Feature area: LOGIN, REGISTER, CHECKOUT, PROFILE, etc.} |
-| **Priority** | {Critical / High / Medium / Low} |
-| **Type** | {Happy Path / Negative / Boundary / Security / Accessibility} |
+| **Module** | {Feature area — project-specific, e.g. CHECKOUT, AUTH, PRODUCT} |
+| **Page type** | {form / master-data / master-detail / wizard / dashboard} |
+| **Type** | {happy-path / negative / boundary / security / role-access / state-machine} |
+| **Risk** | P{0-3} (score {1-9} = prob {1-3} × impact {1-3}) — {rationale} |
+| **Complexity factors** | {e.g. state-machine, cascade-deep — or "none"} |
+| **Assigned model** | {opus / sonnet / haiku} ({reason}) |
+| **AC linked** | {AC-001, AC-002 — or "unlinked (GAP candidate)"} |
+| **UC linked** | {UC-007 — or "none"} |
+| **Control refs** | {ctrl-ids + category — only if from-control-spec} |
 | **Preconditions** | {What must be true before test runs} |
 | **Test data file** | `test-data/{scenario-id}.json` |
 | **Created** | {YYYY-MM-DD} |
 | **Last run** | {YYYY-MM-DD or "Never"} |
-| **Status** | {Draft / Ready / Passing / Failing / Skipped} |
+| **Status** | {pending / running / passed / failed / deprecated} |
 
 ## Steps
 
@@ -56,36 +153,25 @@ When creating a scenario, produce a markdown file with this exact structure:
 
 ## Dependencies
 
-- Depends on: {other scenario IDs, e.g., "TS-REGISTER-001 must pass first"}
+- Depends on: {other scenario IDs, e.g., "TS-AUTH-001 must pass first"}
 - Blocks: {scenarios that depend on this one}
 ```
 
-## Priority classification (ISTQB-based)
+---
 
-- **Critical**: Core business flow, blocks all other testing (login, checkout payment)
-- **High**: Major feature, significant user impact (form submission, search)
-- **Medium**: Supporting feature, workarounds exist (profile edit, filters)
-- **Low**: Cosmetic, nice-to-have (tooltip text, animation timing)
+## 4. Scenario ID naming convention
 
-## Scenario ID naming convention
+Format: `TS-{MODULE}-{NNN}` (zero-padded number, e.g. `TS-CHECKOUT-001`).
 
-Format: `TS-{MODULE}-{NNN}`
+`MODULE` is **project-specific** — derive it from the feature area / route, not a fixed
+codebook. Keep it short, UPPER-CASE, and consistent across a feature (e.g. `AUTH`,
+`PRODUCT`, `CHECKOUT`, `PROFILE`, `ADMIN`, `DASHBOARD`, `SEARCH`, `UPLOAD`). Reuse the
+same module string in `qa-tracker.json → scenarios[].module` so `/qa-trace` and
+`/qa-status --module` group correctly.
 
-Common module codes:
-- `LOGIN` — Authentication, login forms
-- `REG` — Registration, signup
-- `PROF` — User profile, settings
-- `CART` — Shopping cart
-- `CHKOUT` — Checkout flow
-- `SEARCH` — Search functionality
-- `FORM` — Generic form pages
-- `NAV` — Navigation, menu
-- `DASH` — Dashboard
-- `ADMIN` — Admin panels
-- `REPORT` — Report pages
-- `UPLOAD` — File upload features
+---
 
-## Test type matrix
+## 5. Test type matrix
 
 For every form page, generate AT MINIMUM these scenario types:
 
@@ -101,7 +187,13 @@ For every form page, generate AT MINIMUM these scenario types:
 | Duplicate submission | Double-click submit | Only one submission processed |
 | Back/forward navigation | Use browser back during flow | State preserved or handled |
 
-## How to decide what to screenshot
+When a scenario is authored `--from-control-spec`, also cover the 5 mandatory control
+categories per control: **render-binding, api-binding, permission, validation,
+cascade-loading-error** (see `control-spec-scenarios.md`).
+
+---
+
+## 6. How to decide what to screenshot
 
 Capture a screenshot whenever:
 1. A page first loads (initial state)
