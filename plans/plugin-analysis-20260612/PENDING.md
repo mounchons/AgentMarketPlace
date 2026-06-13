@@ -52,13 +52,19 @@
 > → ครั้งหน้าสั่ง **`/long-running:continue`** ได้เลย — mapping: ข้อ 3→#4, ข้อ 4→#5, ข้อ 1+2→#6, ข้อ 5→#7+#8
 > (ข้อ 6 brain งานเลื่อนเป็น low priority ยังไม่เป็น feature — เพิ่มทีหลังผ่าน /add-feature ได้)
 
-### 1. วิเคราะห์ 2 plugins ที่ขาด
-- `ui-mockup` + `qa-ui-test` — analyst ถูกตัดกลางคันตอน stop workflow (ยังไม่มีผล)
-- รัน `workflow-script.js` โดยแก้ args.plugins = ["ui-mockup", "qa-ui-test"] (workflow journal resume ใช้ข้าม session ไม่ได้)
+### 1. วิเคราะห์ 2 plugins ที่ขาด ✅ เสร็จ (Feature #6, 2026-06-13)
+- `ui-mockup` (v1.10.0) + `qa-ui-test` (v2.6.1) วิเคราะห์เสร็จ → `analysis-ui-mockup.json` + `analysis-qa-ui-test.json` (มี verdicts — 9 verified-high ทั้งหมด VALID)
+- 12-agent workflow (2 analysts + 9 adversarial verifiers + 1 integration auditor)
 
-### 2. Integration map ครบทั้ง 6 ตัว
-- ยังไม่ได้รัน (ต้องรอผล 2 ตัวข้างบน) — integration claims ต่อ plugin อยู่ใน analysis-*.json field `integration_points` แล้ว
-- จุดที่รู้แล้วว่าเพี้ยน: qa-trace.md ใช้ search path ผิด (`find docs/design` แทน registry), template มี ID format ต้องห้าม, ขาด use_case_id field (verified ✓)
+### 2. Integration map ครบทั้ง 6 ตัว ✅ เสร็จ (Feature #6)
+- `integration-map.json` — 34 edges (20 working / 10 partial / **1 broken** / 3 missing) + 8 gaps + 8 recommendations (ทุก status มี file evidence)
+- **BROKEN**: ui-mockup → qa-ui-test (ui-mockup เขียน QA hints ใน mockup_list.json แต่ qa-create-scenario ไม่เคยอ่าน) → Feature #11
+- **MISSING** (enhancement future-candidate, ยังไม่เป็น feature): dotnet-dev↔shared-artifacts (by-design passive skill), qa-ui-test→brain (auto-save QA results), pending_updates round-trip (INTEGRATION_TEST Scenario 7 — already noted in #5 follow-up), graph-brain MCP bundling (brain low-pri งานเลื่อน)
+
+### ✅ Features ใหม่จาก Feature #6 (verified-high findings → backlog):
+- **#9 ui-mockup v1.11.0**: Agent(*)→Task(*), ${CLAUDE_PLUGIN_ROOT} paths, README/help version drift, mockup_list.json template QA fields, SKILL.md nonexistent refs
+- **#10 qa-ui-test v2.7.0**: Agent(*)→Task(*) ×13, README v2.7.0 (omits 5/18 commands), version drift (12-mode↔13-mode), ${CLAUDE_PLUGIN_ROOT}, scenario-template sync
+- **#11 cross-plugin contract**: qa-create-scenario อ่าน mockup_list.json hints (ปิด BROKEN edge) + qa-trace อ่าน use_case_id (ปิด dead UC leg)
 
 ### 3. แก้ system-design-doc (วิเคราะห์เสร็จแล้ว — ลงมือได้เลย)
 ปัญหา high ที่ verify แล้ว:

@@ -1,0 +1,250 @@
+{
+  "plugin": "ui-mockup",
+  "analysis": {
+    "plugin": "ui-mockup",
+    "version": "1.10.0",
+    "summary": "ui-mockup v1.10.0 is a mature, content-rich plugin (8 commands, 1 skill, HTML+ASCII master-page templates) that bridges system-design-doc → frontend-design → long-running/qa-ui-test. Version sync between plugin.json and marketplace.json is correct (both 1.10.0), and the split-aware design-doc reading (registry schema 2.3.0) is implemented consistently across create-html-mockup, create-mockups-parallel, validate-mockup, and edit-mockup with a good canonical reference file. However there are concrete quality issues: (1) create-html-mockup.md declares a nonexistent tool `Agent(*)` in allowed-tools and hardcodes `plugins/ui-mockup/...` paths instead of ${CLAUDE_PLUGIN_ROOT}; (2) README.md is badly version-drifted — header says v1.6.0, footer says v1.0.0, the plugin-structure/command table lists only 5 of 8 commands and omits create-html-mockup, validate-mockup, help; (3) help.md self-identifies as v1.8.0 throughout despite plugin being v1.10.0; (4) the headline v1.8.0 qa-ui-test \"factor hint provider\" integration is one-sided — qa-create-scenario never reads .mockups/mockup_list.json, so the auto-derived complexity_factors/risk_baseline/acceptance_criteria_ids are written but never consumed; (5) mockup_list.json template metadata.plugin_version is stale (1.8.0) and its example pages never demonstrate the v1.8 QA fields nor split-aware related_documents paths; (6) SKILL.md References table points to two nonexistent files (component-library.md, responsive-patterns.md). No hooks present (good). Upstream contracts with system-design-doc (entities[], diagrams.sitemap, documents[].sections[], documents[].acceptance_criteria[] with module/uc_ref, flat AC-NNN) are read correctly.",
+    "strengths": [
+      "Version consistency between plugin.json (1.10.0) and marketplace.json (1.10.0) is correct; all 6 audited plugins match across both files.",
+      "Split-aware design-doc reading is implemented consistently: a single canonical reference (skills/ui-mockup/references/reading-design-docs.md, 46 lines, lean) is linked from create-html-mockup Step 1b, create-mockups-parallel Step 4.5 (resolve-then-inject), validate-mockup Category 7, and edit-mockup Step 3.5 — no logic duplication.",
+      "Field-name contract with system-design-doc registry is accurate: ui-mockup reads documents[].doc_layout, documents[].doc_dir, documents[].sections[].key/.file, entities[], diagrams.sitemap — all match the actual design_doc_list.json template (schema 2.3.0).",
+      "AC propagation uses flat AC-NNN and matches ac.module against page.crud_group/category, consistent with the design_doc_list.json acceptance_criteria[].module field and the v2.6.1 flat-AC contract.",
+      "All cross-plugin commands referenced (system-design-doc /sync-with-mockups, /validate-integration; long-running /generate-features-from-mockups, /sync-mockups) actually exist on disk.",
+      "No hooks directory — nothing loads into every session; zero session-startup cost.",
+      "Strong anti-hallucination guardrails in create-mockup/create-mockups-parallel/validate-mockup (CRITICAL RULES, Self-Check checklists, rejection criteria) enforce 3-breakpoint wireframes, action-column-first, SweetAlert2 default, CLAUDE.md-aware conventions.",
+      "Most command frontmatter is clean: description + allowed-tools present, $ARGUMENTS used for flag-taking commands, help.md correctly read-only (Read+Bash only)."
+    ],
+    "issues": [
+      {
+        "title": "create-html-mockup.md declares nonexistent tool Agent(*) in allowed-tools",
+        "detail": "Frontmatter line 3: `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), Skill(frontend-design)`. There is no `Agent` tool in Claude Code — the subagent-spawning tool is `Task`. The sibling create-mockups-parallel.md correctly uses `Task(*)`. As written, Agent(*) is a no-op/invalid entry. If the command intends to spawn subagents it should use Task(*); otherwise drop Agent(*).",
+        "evidence": "plugins/ui-mockup/commands/create-html-mockup.md:3",
+        "severity": "high"
+      },
+      {
+        "title": "create-html-mockup hardcodes plugin paths instead of ${CLAUDE_PLUGIN_ROOT}",
+        "detail": "Steps 3/5/6 instruct `cat plugins/ui-mockup/skills/ui-mockup/templates/master-page-template.js` (and .css, html-mockup-template.html, index-template.html). This relative path only resolves when cwd is the AgentMarketPlace repo root; for an end user who installed the plugin, the templates live under ${CLAUDE_PLUGIN_ROOT}. create-mockups-parallel.md has the same problem (Step 1: `cat plugins/ui-mockup/skills/ui-mockup/SKILL.md`). Use ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/... so it works post-install.",
+        "evidence": "plugins/ui-mockup/commands/create-html-mockup.md:287-288,379,421; plugins/ui-mockup/commands/create-mockups-parallel.md:124-130",
+        "severity": "high"
+      },
+      {
+        "title": "qa-ui-test integration is one-sided — consumer never reads the hints ui-mockup writes",
+        "detail": "ui-mockup v1.8.0's headline feature (SKILL.md QA Integration section, help.md --qa mode, init-mockup Step 3.55) auto-derives pages[].complexity_factors / risk_baseline / acceptance_criteria_ids / cascade_chain / wizard_steps into mockup_list.json, claiming qa-create-scenario consumes them 'without re-scanning code'. But grep across the entire qa-ui-test plugin finds ZERO references to `.mockups/` or `mockup_list.json`. qa-create-scenario.md computes complexity_factors from its own code-scan only. The hints are written but never read, so the advertised speed-up does not occur.",
+        "evidence": "grep '\\.mockups/|mockup_list.json' over plugins/qa-ui-test/ returns nothing; plugins/ui-mockup/skills/ui-mockup/SKILL.md:1020-1036; plugins/ui-mockup/commands/help.md:404-428",
+        "severity": "high"
+      },
+      {
+        "title": "README.md has severe internal version drift and is missing 3 of 8 commands",
+        "detail": "Header (line 3) says 'Version 1.6.0', Version section (line 849) says 'Version: 1.0.0', changelog top (line 865) says 1.10.0, while plugin.json is 1.10.0. The Quick Start command table (lines 53-60) and Plugin Structure tree (lines 800-820) list only init-mockup, create-mockup, create-mockups-parallel, edit-mockup, list-mockups — omitting create-html-mockup, validate-mockup, and help (all shipping commands). A new user reading README would not know the HTML-mockup or validation features exist.",
+        "evidence": "plugins/ui-mockup/README.md:3,849,53-60,800-820",
+        "severity": "medium"
+      },
+      {
+        "title": "help.md self-labels as v1.8.0 throughout despite plugin v1.10.0",
+        "detail": "The help command header claims v1.10.0+ (line 8) but the main banner (line 48 '¹.8.0'), Next-Action footer, and most --new/--qa mode copy are pinned to v1.8.0. The --new mode shows v1.8.0 content first then appends a v1.10.0 block, and most cross-references say 'What's new in v1.8.0'. The user-facing version string is wrong/inconsistent for the current release.",
+        "evidence": "plugins/ui-mockup/commands/help.md:8,48,1000-1008,816",
+        "severity": "medium"
+      },
+      {
+        "title": "mockup_list.json template metadata is stale and never demonstrates the v1.8 QA fields",
+        "detail": "Template metadata.schema_version and metadata.plugin_version are both '1.8.0' (lines 2,390-391) while plugin is 1.10.0. More importantly, none of the 7 example pages actually contain complexity_factors[], acceptance_criteria_ids[], risk_baseline, cascade_chain[], or wizard_steps — they exist only as prose in the _v1.8_qa_field_definitions comment. So an agent copying the template produces pages WITHOUT the QA fields, undercutting the v1.8 feature. Also the example related_documents still use legacy 'system-design.md#anchor' paths (lines 28,80,173) rather than the split-aware '.design-docs/<slug>/NN-<key>.md' form the v1.10 reference mandates.",
+        "evidence": "plugins/ui-mockup/skills/ui-mockup/templates/mockup_list.json:2,390-391,397-446,28,80,173",
+        "severity": "medium"
+      },
+      {
+        "title": "SKILL.md References table lists two nonexistent files",
+        "detail": "The References table (lines 769-775) advertises `references/component-library.md` and `references/responsive-patterns.md`, but only `references/ascii-patterns.md` and `references/reading-design-docs.md` exist on disk. An agent told to read those references for progressive disclosure will hit missing files. Either create the files or remove the rows.",
+        "evidence": "plugins/ui-mockup/skills/ui-mockup/SKILL.md:769-775; ls of plugins/ui-mockup/skills/ui-mockup/references/ shows only ascii-patterns.md + reading-design-docs.md",
+        "severity": "medium"
+      },
+      {
+        "title": "use_case_id contract not propagated by ui-mockup despite qa-tracker/design-doc support",
+        "detail": "qa-ui-test v2.6.1 added scenario.use_case_id (UC-NNN) and the design_doc_list.json AC schema carries uc_ref + a use_cases[] table. ui-mockup propagates acceptance_criteria_ids[] but never reads use_cases[] nor exposes a use_case_ids[]/uc hint on pages. Since ui-mockup positions itself as the AC/factor hint provider into the 3-way link (design-doc ↔ ui-mockup ↔ qa-tracker ↔ feature_list), the UC dimension of that link is silently dropped at the mockup layer.",
+        "evidence": "plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:99; plugins/system-design-doc/skills/system-design-doc/templates/design_doc_list.json:230-245; ui-mockup init-mockup.md Step 3.55 only emits acceptance_criteria_ids[]",
+        "severity": "low"
+      },
+      {
+        "title": "plugin.json description is overloaded (single ~1500-char run-on field)",
+        "detail": "The description field packs the full feature history (v1.8 qa integration heuristics, v1.10 split-aware details, Step numbers like '3.55', file paths) into one sentence. plugin.json description should be a concise capability summary; deep changelog belongs in README/SKILL. This bloats the manifest and is hard to read in marketplace listings.",
+        "evidence": "plugins/ui-mockup/.claude-plugin/plugin.json:4",
+        "severity": "low"
+      },
+      {
+        "title": "validate-mockup intro says '10 categories' but Category 7 etc. note split-aware additions inconsistently; README troubleshooting/footer stale 2025-12",
+        "detail": "Minor doc-hygiene: validate-mockup is internally consistent at 10 categories, but README footer 'Last Updated: 2025-12' and Related Skills point frontend-design to '../../' (repo root) rather than its actual plugin location, and the README workflow diagram still references generic '/test, /ui-test' rather than the qa-ui-test command names. Low impact but contributes to the overall stale-docs picture.",
+        "evidence": "plugins/ui-mockup/README.md:851,859,793",
+        "severity": "low"
+      }
+    ],
+    "improvements": [
+      {
+        "title": "Fix create-html-mockup allowed-tools and intra-plugin paths",
+        "detail": "Change `Agent(*)` to `Task(*)` (or remove it if no subagents are spawned) in create-html-mockup.md:3. Replace all `plugins/ui-mockup/skills/...` template reads with `${CLAUDE_PLUGIN_ROOT}/skills/...` in create-html-mockup.md (Steps 3,5,6) and create-mockups-parallel.md (Step 1). This is the single highest-value correctness fix for installed-plugin users.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Close or honestly downgrade the qa-ui-test hint-provider integration",
+        "detail": "Either (a) add a step to qa-ui-test/qa-create-scenario.md that reads .mockups/mockup_list.json pages[].complexity_factors/risk_baseline/acceptance_criteria_ids and merges them as seed hints (making the v1.8 claim real), or (b) reword ui-mockup SKILL.md QA Integration + help.md --qa to state the fields are forward-looking/optional metadata not yet consumed. Right now docs over-promise a working data flow that does not exist.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      {
+        "title": "Rewrite README.md to match v1.10.0 and all 8 commands",
+        "detail": "Set a single version (1.10.0) in header + Version section; add create-html-mockup, validate-mockup, help to the Quick Start command table and the Plugin Structure tree; refresh the workflow diagrams to reference real command names (qa-create-scenario, sync-with-mockups). Move the long feature history to the Changelog only.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Normalize help.md version strings to v1.10.0",
+        "detail": "Replace the v1.8.0 banner/footers and 'What's new in v1.8.0' framing with v1.10.0 as the current release; keep older changelog blocks under a clearly-labeled history section. Ensures the user-facing /help version matches the manifest.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Refresh mockup_list.json template to 1.10.0 and demonstrate QA + split-aware fields",
+        "detail": "Bump metadata.schema_version/plugin_version; add complexity_factors[], acceptance_criteria_ids[], risk_baseline, cascade_chain[], wizard_steps to at least pages 001 (auth→security-flow) and 004 (list→master-detail-sync) as concrete examples; convert example related_documents[].path to the split-aware '.design-docs/<slug>/NN-<key>.md' form so copied output is contract-current.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Reconcile SKILL.md References table with disk",
+        "detail": "Add reading-design-docs.md to the References table, and either author the missing component-library.md / responsive-patterns.md (the SKILL already embeds a full inline component library and responsive breakpoints that could be split out for progressive disclosure) or delete those two rows.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Add use_case_id propagation to init-mockup Step 3.55",
+        "detail": "When design_doc_list.json has use_cases[], also derive page.use_case_ids[] (match uc.module to page.crud_group/category) alongside acceptance_criteria_ids[], so the UC dimension survives into the 3-way traceability link consumed by qa-trace/sync-with-qa-tracker.",
+        "priority": "low",
+        "effort": "small"
+      },
+      {
+        "title": "Trim plugin.json description to a one-line capability summary",
+        "detail": "Reduce the manifest description to ~1-2 sentences (what it does + key integrations); the version-by-version detail already lives in README changelog and SKILL.md.",
+        "priority": "low",
+        "effort": "small"
+      }
+    ],
+    "integration_points": [
+      {
+        "target": "system-design-doc (design_doc_list.json registry, schema 2.3.0)",
+        "mechanism": "init-mockup/create-html-mockup/create-mockups-parallel/validate-mockup/edit-mockup read the registry: branch on documents[].doc_layout (split/single), resolve section files via documents[].sections[].key→.file under documents[].doc_dir, and prefer machine fields entities[], diagrams.sitemap. Canonical logic centralized in references/reading-design-docs.md.",
+        "status": "working",
+        "evidence": "plugins/ui-mockup/skills/ui-mockup/references/reading-design-docs.md:1-46; init-mockup.md:58-86; create-html-mockup.md:171-187; field names match plugins/system-design-doc/skills/system-design-doc/templates/design_doc_list.json:161-180"
+      },
+      {
+        "target": "system-design-doc acceptance_criteria (flat AC-NNN, documents[].acceptance_criteria[])",
+        "mechanism": "init-mockup Step 3.55 + help --qa propagate AC IDs onto pages[].acceptance_criteria_ids[] by matching ac.module to page.crud_group/category; uses flat AC-NNN consistent with v2.2.0/v2.6.1 contract.",
+        "status": "working",
+        "evidence": "plugins/ui-mockup/commands/init-mockup.md:332-338; design_doc_list.json AC schema has module + flat AC-NNN at documents[].acceptance_criteria[] (templates/design_doc_list.json:216-228,332)"
+      },
+      {
+        "target": "qa-ui-test (qa-create-scenario factor/risk hints)",
+        "mechanism": "ui-mockup writes pages[].complexity_factors/risk_baseline/acceptance_criteria_ids/cascade_chain/wizard_steps into mockup_list.json intending qa-create-scenario to consume them as seed hints instead of code-scanning.",
+        "status": "broken",
+        "evidence": "qa-ui-test contains NO reference to .mockups/ or mockup_list.json (grep over plugins/qa-ui-test/ empty); qa-create-scenario.md:1526,1549-1585 derives complexity_factors purely from its own scan; claim made in ui-mockup SKILL.md:1020-1036 and help.md:404-428"
+      },
+      {
+        "target": "qa-ui-test use_case_id (UC-NNN, qa-tracker v2.6.1)",
+        "mechanism": "qa-tracker scenarios carry use_case_id and design-doc carries use_cases[]/uc_ref, but ui-mockup pages never emit a UC reference, so the UC leg of the 3-way link is not seeded at the mockup layer.",
+        "status": "partial",
+        "evidence": "plugins/qa-ui-test/.../qa-tracker.json:99 (use_case_id); design_doc_list.json:230-245 (use_cases[]); ui-mockup init-mockup Step 3.55 emits only acceptance_criteria_ids[]"
+      },
+      {
+        "target": "long-running (feature generation + mockup sync)",
+        "mechanism": "ui-mockup docs hand off to long-running /generate-features-from-mockups and /sync-mockups; pages carry implemented_by_features[]/feature_status for reverse linkage.",
+        "status": "working",
+        "evidence": "plugins/long-running/commands/generate-features-from-mockups.md + sync-mockups.md exist; referenced in ui-mockup help.md:391,450-451; mockup_list.json template has implemented_by_features/feature_status fields"
+      },
+      {
+        "target": "system-design-doc /sync-with-mockups + /validate-integration",
+        "mechanism": "Bidirectional sitemap/AC sync and integration validation are invoked from system-design-doc side; ui-mockup help references them as the upstream sync/validation path.",
+        "status": "working",
+        "evidence": "plugins/system-design-doc/commands/sync-with-mockups.md and validate-integration.md exist; referenced ui-mockup help.md:449,764"
+      },
+      {
+        "target": "frontend-design skill",
+        "mechanism": "create-html-mockup invokes the frontend-design skill via the Skill tool (Skill(frontend-design) in frontmatter) to generate inner HTML, wrapped in a <master-page> Web Component from templates.",
+        "status": "working",
+        "evidence": "plugins/ui-mockup/commands/create-html-mockup.md:3,321-344; frontend-design skill present in environment skill list"
+      },
+      {
+        "target": "brain (MCP knowledge for nav/topbar/profile)",
+        "mechanism": "create-html-mockup Step 2 queries brain MCP (search-knowledge/get-knowledge/explore-graph) for nav structure, topbar, profile dropdown, icons, with documented fallback to mockup_list.json grouping if brain has no data.",
+        "status": "unverified",
+        "evidence": "plugins/ui-mockup/commands/create-html-mockup.md:191-271; brain MCP tools (mcp__graph-brain__*) available; actual runtime retrieval not executable in this static audit"
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "create-html-mockup.md declares nonexistent tool Agent(*) in allowed-tools",
+        "detail": "Frontmatter line 3: `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), Skill(frontend-design)`. There is no `Agent` tool in Claude Code — the subagent-spawning tool is `Task`. The sibling create-mockups-parallel.md correctly uses `Task(*)`. As written, Agent(*) is a no-op/invalid entry. If the command intends to spawn subagents it should use Task(*); otherwise drop Agent(*).",
+        "evidence": "plugins/ui-mockup/commands/create-html-mockup.md:3",
+        "severity": "high"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence. D:/GitHub/AgentMarketPlace/plugins/ui-mockup/commands/create-html-mockup.md line 3 reads exactly: `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*), Skill(frontend-design)`. \n\nCore factual assertion holds: there is no built-in Claude Code tool named `Agent`; the subagent-spawning tool is `Task`. The sibling file create-mockups-parallel.md:3 correctly declares `Task(*)` and its body uses real `Task tool call` invocations with `subagent_type` (lines 256, 362-381), proving `Task` is the correct token. No custom agent is defined anywhere (glob `plugins/*/agents/**` returns nothing), so `Agent` is not a repo-defined tool either. Therefore `Agent(*)` matches no real tool and is an inert/invalid entry in allowed-tools.\n\nI attempted the standard refutations and none succeed:\n- Not a typo unique to this file gone unnoticed: but that does not make it valid — it is a widespread error. `Agent(*)` appears in 20 command files (qa-ui-test x12, flow-discovery x5, ui-mockup x1). The convention is intentional from the author's side but still names a nonexistent tool.\n- create-html-mockup.md does NOT actually spawn subagents in its body (no Task call, no subagent_type, no \"Sub Agent\" language — workflow uses Bash/Read/Write/Edit/Skill only), so the entry is functionally dead weight here regardless.\n- The claim's recommendation is sound and hedged correctly (\"if it intends to spawn subagents use Task(*); otherwise drop Agent(*)\"); since this command does not spawn subagents, dropping it is the right fix.\n\nEvidence citation is exact and accurate.",
+        "correction": "The claim is valid for the cited file. One scope note for the maintainer (not a refutation): the same `Agent(*)` mistake exists in 19 other command files across qa-ui-test and flow-discovery (e.g., flow-discovery/commands/flow-dive.md, which actually does dispatch subagents — \"Dispatch 7 subagents พร้อมกัน\" — yet still declares Agent(*) instead of Task(*)). Only create-mockups-parallel.md and system-design-doc/commands/sitemap-scan.md use the correct Task(*). A repo-wide fix is warranted, not just create-html-mockup.md. For create-html-mockup.md specifically, the body never spawns subagents, so the correct fix is to drop Agent(*) entirely rather than rename it to Task(*)."
+      }
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "create-html-mockup hardcodes plugin paths instead of ${CLAUDE_PLUGIN_ROOT}",
+        "detail": "Steps 3/5/6 instruct `cat plugins/ui-mockup/skills/ui-mockup/templates/master-page-template.js` (and .css, html-mockup-template.html, index-template.html). This relative path only resolves when cwd is the AgentMarketPlace repo root; for an end user who installed the plugin, the templates live under ${CLAUDE_PLUGIN_ROOT}. create-mockups-parallel.md has the same problem (Step 1: `cat plugins/ui-mockup/skills/ui-mockup/SKILL.md`). Use ${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/templates/... so it works post-install.",
+        "evidence": "plugins/ui-mockup/commands/create-html-mockup.md:287-288,379,421; plugins/ui-mockup/commands/create-mockups-parallel.md:124-130",
+        "severity": "high"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Claim CONFIRMED with file evidence.\n\n1. Hardcoded relative paths exist exactly as cited:\n   - D:/GitHub/AgentMarketPlace/plugins/ui-mockup/commands/create-html-mockup.md\n     - L287: `cat plugins/ui-mockup/skills/ui-mockup/templates/master-page-template.js`\n     - L288: `cat plugins/ui-mockup/skills/ui-mockup/templates/master-page-template.css`\n     - L379: `cat plugins/ui-mockup/skills/ui-mockup/templates/html-mockup-template.html`\n     - L421: `cat plugins/ui-mockup/skills/ui-mockup/templates/index-template.html`\n   - D:/GitHub/AgentMarketPlace/plugins/ui-mockup/commands/create-mockups-parallel.md\n     - L124: `cat plugins/ui-mockup/skills/ui-mockup/SKILL.md`\n     - L127: `cat plugins/ui-mockup/skills/ui-mockup/templates/mockup-template.md`\n     - L130: `cat plugins/ui-mockup/skills/ui-mockup/references/ascii-patterns.md`\n\n2. These are bare repo-relative paths that only resolve when cwd is the AgentMarketPlace repo root. For an installed plugin, cwd is the user's project and the files do not exist at `plugins/ui-mockup/...`, so the `cat` commands would fail.\n\n3. The referenced template/skill files DO exist under the plugin at skills/ui-mockup/templates/ (master-page-template.js/.css, html-mockup-template.html, index-template.html, mockup-template.md), skills/ui-mockup/SKILL.md, and skills/ui-mockup/references/ascii-patterns.md — confirming `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/...` is the correct post-install location.\n\n4. Grep for CLAUDE_PLUGIN_ROOT in the entire ui-mockup plugin returned ZERO matches, whereas sibling plugins (long-running, system-design-doc, brain) use `${CLAUDE_PLUGIN_ROOT}/skills/<plugin>/...` extensively (e.g. long-running/commands/continue.md L136/L203/L777, init.md L241, emit-control-spec.md L17). This establishes `${CLAUDE_PLUGIN_ROOT}` as the repo-wide convention for in-plugin file references, so ui-mockup's bare relative paths are genuine drift/portability bugs, not an intentional pattern.\n\nNo refutation found: no other file overrides these paths, the docs are not already fixed, and the drift is not intentional. The proposed fix (use `${CLAUDE_PLUGIN_ROOT}/skills/ui-mockup/...`) is correct."
+      }
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "qa-ui-test integration is one-sided — consumer never reads the hints ui-mockup writes",
+        "detail": "ui-mockup v1.8.0's headline feature (SKILL.md QA Integration section, help.md --qa mode, init-mockup Step 3.55) auto-derives pages[].complexity_factors / risk_baseline / acceptance_criteria_ids / cascade_chain / wizard_steps into mockup_list.json, claiming qa-create-scenario consumes them 'without re-scanning code'. But grep across the entire qa-ui-test plugin finds ZERO references to `.mockups/` or `mockup_list.json`. qa-create-scenario.md computes complexity_factors from its own code-scan only. The hints are written but never read, so the advertised speed-up does not occur.",
+        "evidence": "grep '\\.mockups/|mockup_list.json' over plugins/qa-ui-test/ returns nothing; plugins/ui-mockup/skills/ui-mockup/SKILL.md:1020-1036; plugins/ui-mockup/commands/help.md:404-428",
+        "severity": "high"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "CONFIRMED. The integration is genuinely one-sided — ui-mockup writes the hints and explicitly names qa-create-scenario as the consumer, but no file in qa-ui-test ever reads mockup_list.json or .mockups/.\n\nWRITER SIDE (ui-mockup) repeatedly asserts qa-create-scenario consumes the hints:\n- plugins/ui-mockup/.claude-plugin/plugin.json (v1.10.0, current): \"...seeds qa-create-scenario without code re-scan\"\n- SKILL.md:1022 \"scenarios get correct model assignment + risk priority without re-scanning code\"\n- SKILL.md:1029 \"qa-create-scenario reads as hints\"\n- SKILL.md:1071 \"risk_baseline { probability, impact, priority } consumed by qa-create-scenario\"\n- SKILL.md:1081-1083 \"qa-create-scenario falls back to code-scan only\", \"computes risk from scratch\"\n- help.md:412-416 \"qa-create-scenario ใช้เป็น hint: ไม่ต้อง re-scan code\"\n\nCONSUMER SIDE (qa-ui-test) has NO matching read path:\n- A full grep across plugins/qa-ui-test for `mockup_list.json` / `.mockups/` returns nothing (only matches are unrelated: bug-export `mockup_page_refs`, a \"fix code/mockup\" drift message, a long-running-side \"cross-validates with mockup\" note, and a vague SKILL.md table row \"Detect mockup pages for scenario generation\").\n- qa-create-scenario.md's full input/mode list (lines 49-80) has --auto (code scan), [URL] (brainstorm), --from-design-doc (reads .design-docs/design_doc_list.json), and --from-control-spec (reads .agent/ui-controls/feature-N.json). There is NO --from-mockup flag and no mockup_list.json ingestion anywhere.\n- qa-create-scenario.md computes complexity_factors purely from its own signals — `type == 'state-machine'`, \"page มี status flow\", \"cascade depth >= 2\", \"wizard >= 3 steps\" (lines 1564-1576) — never inheriting from mockup hints.\n- qa-ui-test v2.6.1 plugin.json description enumerates every integration (control-spec manifest, design_doc_list registry, long-running sync) but never mentions consuming mockup hints.\n\nSo the advertised \"qa-create-scenario reads mockup_list.json hints → skips code re-scan\" data flow does not exist on the consumer end. The hints are written but never read; the claimed speed-up cannot occur. The auditor's grep evidence and cited line ranges all check out.",
+        "correction": "Minor precision note (does not change validity): the auditor cited SKILL.md:1020-1036 and help.md:404-428; the strongest \"without code re-scan\" assertions actually also live at SKILL.md:1071 and 1081-1083, and — most damning — in ui-mockup's own plugin.json description. The bidirectional gap is real: ui-mockup unilaterally claims qa-create-scenario is the consumer, but qa-create-scenario's mode list, factor-computation logic, and qa-ui-test's plugin.json all confirm it never reads mockup_list.json or .mockups/. The integration would need a real consumer hook on the qa-ui-test side (e.g., a --from-mockup mode or a read step that merges page hints before factor computation) for the documented speed-up to be true."
+      }
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Fix create-html-mockup allowed-tools and intra-plugin paths",
+        "detail": "Change `Agent(*)` to `Task(*)` (or remove it if no subagents are spawned) in create-html-mockup.md:3. Replace all `plugins/ui-mockup/skills/...` template reads with `${CLAUDE_PLUGIN_ROOT}/skills/...` in create-html-mockup.md (Steps 3,5,6) and create-mockups-parallel.md (Step 1). This is the single highest-value correctness fix for installed-plugin users.",
+        "priority": "high",
+        "effort": "small"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence in both named files; nothing already fixed, no intentional-drift justification.\n\nPATHS BUG (the claim's \"highest-value\" assertion) — VERIFIED REAL:\n- create-html-mockup.md hardcodes `cat plugins/ui-mockup/skills/ui-mockup/templates/...` at lines 287, 288 (Step 3), 379 (Step 5), 421 (Step 6) — exactly the steps the claim cites.\n- create-mockups-parallel.md hardcodes the same anti-pattern at lines 124, 127, 130 (Step 1: SKILL.md, mockup-template.md, ascii-patterns.md) — matches the claim.\n- `${CLAUDE_PLUGIN_ROOT}` is the established convention in THIS repo: 101 occurrences across 30 files (system-design-doc, long-running, brain all migrated). The hardcoded `cat plugins/...` form survives in EXACTLY the two files the claim names (7 total occurrences, 0 elsewhere). So these two files are the unmigrated holdouts, not intentional drift. For installed-plugin users the CWD is their own project (not the AgentMarketPlace repo), so `cat plugins/ui-mockup/...` resolves to a non-existent path and the template reads fail — a genuine correctness bug. `${CLAUDE_PLUGIN_ROOT}` is the correct documented variable and the repo's own standard. Target template/reference files exist under the real skills/ tree, confirming the paths are merely wrong-prefixed, not nonexistent.\n\nallowed-tools BUG — VERIFIED:\n- create-html-mockup.md:3 contains `Agent(*)`; sibling create-mockups-parallel.md:3 uses `Task(*)`, so the plugin is internally inconsistent. create-html-mockup spawns NO subagents (it invokes the frontend-design Skill in Step 4), so the claim's \"remove it if no subagents are spawned\" alternative is also correct.\n\nONE NUANCE (does not invalidate): `Agent(*)` is a repo-wide pattern (20 command files across flow-discovery, qa-ui-test, ui-mockup), so calling the fix purely single-file slightly understates scope. But the claim scopes the edit to the named files, does not deny it occurs elsewhere, and its load-bearing assertion (broken intra-plugin template paths) is fully confirmed. Line numbers, step numbers, and file names in the claim all check out."
+      }
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Close or honestly downgrade the qa-ui-test hint-provider integration",
+        "detail": "Either (a) add a step to qa-ui-test/qa-create-scenario.md that reads .mockups/mockup_list.json pages[].complexity_factors/risk_baseline/acceptance_criteria_ids and merges them as seed hints (making the v1.8 claim real), or (b) reword ui-mockup SKILL.md QA Integration + help.md --qa to state the fields are forward-looking/optional metadata not yet consumed. Right now docs over-promise a working data flow that does not exist.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence. I attempted to refute the claim by checking whether the \"missing\" integration actually lives on the qa-ui-test (consumer) side — it does not.\n\nPRODUCER SIDE (ui-mockup) asserts a working data flow:\n- D:/GitHub/AgentMarketPlace/plugins/ui-mockup/skills/ui-mockup/SKILL.md lines 1020-1083 (\"QA Integration v1.8.0\"): states ui-mockup is a \"factor hint provider\", with an explicit Data Flow diagram \"ui-mockup pages[].complexity_factors[] -> qa-create-scenario reads as hints -> scenario.complexity_factors = [merged with code-scan results]\", plus AC ID Linkage and risk_baseline \"consumed by qa-create-scenario\".\n- D:/GitHub/AgentMarketPlace/plugins/ui-mockup/commands/help.md (--qa / Mode 7.5, lines 54, 67, 404-428, 662-829): \"seeds qa-create-scenario\", \"qa-create-scenario ใช้เป็น hint\", workflow step \"6. /qa-ui-test:qa-create-scenario # uses ui-mockup hints\", \"qa-create-scenario ใช้เป็น input โดยไม่ต้อง re-scan code\".\n\nCONSUMER SIDE (qa-ui-test) does NOT implement it:\n- D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/commands/qa-create-scenario.md input modes (lines 52-78) are: --auto (code scan), [URL] (manual), --from-design-doc, --from-control-spec (long-running UI Control Manifest). There is NO --from-mockup mode.\n- Step 0 Read Context (lines 954-965) reads only qa-tracker.json, CLAUDE.md, .agent/qa-progress.md — not .mockups/mockup_list.json.\n- complexity_factors/risk_baseline are computed from qa-create-scenario's OWN code-scan heuristic table (lines 1564-1597), not seeded from mockup pages.\n- grep -rln for \"mockup_list\" / \".mockups/mockup\" across the ENTIRE qa-ui-test plugin returns ZERO files. grep for the field names (complexity_factors/risk_baseline/acceptance_criteria_ids) in connection with mockup also returns nothing.\n- The only ui-mockup reference in qa-ui-test's scenario path is a single vague table row in skills/qa-ui-test/SKILL.md line 661: \"Detect mockup pages for scenario generation\" — it does not read or merge the v1.8 hint fields and does not even name them.\n\nSo the producer documents a concrete, working two-way data flow (\"reads as hints\", \"seeds\", \"uses ui-mockup hints\"), but the consumer has no step that ingests mockup_list.json hint fields. The docs over-promise an integration that does not exist in code/command logic. This matches the claim exactly. None of the common false-positive escape hatches apply: the integration does not live on the other plugin's side, the docs are not already downgraded (they actively assert it works), and there is no alternate file implementing it.",
+        "correction": ""
+      }
+    }
+  ]
+}

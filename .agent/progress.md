@@ -263,3 +263,42 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - project-specific nav block ใน continue.md Step 0.5 ยังไม่ extract เป็น CLAUDE.md/brain
 
 ---
+
+## Session 6 — Feature #6: Analyze ui-mockup + qa-ui-test + Integration Map
+**Date**: 2026-06-13
+**Type**: Analysis (Feature #6) — epic `plugin-suite-improvements`
+**Model**: opus (force_opus_all) — 12-agent workflow
+
+### What was done:
+- ✅ 6.1 วิเคราะห์ ui-mockup (v1.10.0) + qa-ui-test (v2.6.1) — analyst + adversarial verify → `analysis-ui-mockup.json` + `analysis-qa-ui-test.json`
+- ✅ 6.2 integration map ครบ 6 plugins (อ่าน integration_points 4 ตัวเดิม + 2 ใหม่, verify จาก code) → `integration-map.json`
+- ✅ 6.3 อัปเดต PENDING.md (ปิดข้อ 1+2) + เพิ่ม features #9/#10/#11 จาก verified-high findings
+
+### Workflow (12 agents, 824k tokens, 10 นาที):
+- 2 analysts → ui-mockup (10 issues: 3H/4M/3L, 8 improvements) + qa-ui-test (8 issues: 2H/4M/2L, 9 improvements)
+- 9 adversarial verifiers → **verified-high ทั้งหมด VALID** (5 ui-mockup + 4 qa-ui-test)
+- 1 integration auditor → 34 edges (20 working / 10 partial / **1 broken** / 3 missing) + 8 gaps + 8 recs
+
+### Verified-high findings → features ใหม่:
+- **#9 ui-mockup v1.11.0**: Agent(*)→Task(*), ${CLAUDE_PLUGIN_ROOT} paths, README/help version drift, mockup_list.json QA fields
+- **#10 qa-ui-test v2.7.0**: Agent(*)→Task(*) ×13 commands, README v2.7.0 (omits 5/18), version drift
+- **#11 cross-plugin**: ปิด BROKEN edge (qa-create-scenario อ่าน mockup_list.json hints) + dead UC leg (qa-trace อ่าน use_case_id)
+
+### Verification Pipeline:
+- Build: n/a (analysis feature — JSON deliverables)
+- Test Coverage: adversarial verification 1 รอบ (9 verifiers, all VALID)
+- Config Flags: max_features_per_session=1 honored (เพิ่ม #9-#11 เข้า backlog เท่านั้น ไม่ implement)
+- **Pipeline Result: PASSED** | Opus review: **PASS 95/100**
+
+### Current status:
+- Features passed: **6/11** | epic plugin-suite-improvements: 3/8 | reviewed: 3 (#4, #5, #6)
+- pending: 5 (#7, #8 dotnet-dev + #9, #10, #11 ใหม่)
+
+### Next feature:
+- Feature #7 (opus): dotnet-dev v1.4.0 — aspire-setup.md Aspire 13 rewrite + EF Core 10 patterns → `plans/plugin-analysis-20260612/dotnet-deepdive.json`
+- (หรือ #9/#10/#11 ที่ priority high เท่ากัน — เลือกตามลำดับ id)
+
+### MISSING edges (enhancement future-candidate, ยังไม่เป็น feature):
+- dotnet-dev↔shared-artifacts (by-design), qa-ui-test→brain (auto-save QA), graph-brain MCP bundling — บันทึกใน PENDING.md
+
+---

@@ -1,0 +1,231 @@
+{
+  "plugin": "qa-ui-test",
+  "analysis": {
+    "plugin": "qa-ui-test",
+    "version": "2.6.1",
+    "summary": "qa-ui-test v2.6.1 is a mature, feature-rich QA automation plugin (18 commands, 3 skills) covering scenario creation, risk-based prioritization (P0-P3 + 8 complexity factors + 3-tier model assignment), bug lifecycle, NFR assessment (4 categories with security hard-floor), AC traceability, and manifest-driven control testing. Plugin internals (qa-tracker.json schema 1.7.0, command logic, NFR floor, control-spec derivation) are high quality and the v2.6.1 registry-first qa-trace + use_case_id field landed in the schema. However the plugin has a serious systemic bug — all 13 action commands declare a NONEXISTENT tool `Agent(*)` in allowed-tools (should be `Task`), which can block subagent dispatch. Documentation is badly drifted: README still says v2.2.0 / schema 1.3.0 and omits 5 of the 18 commands; SKILL.md frontmatter says 2.5.0; qa-help says v2.6.0; plugin.json says \"12-mode\" while marketplace says \"13-mode\". The plugin also never adopted `${CLAUDE_PLUGIN_ROOT}` (every sibling plugin did), uses hardcoded paths, and the scenario-template.md reference is stale (missing risk/complexity_factors/AC/use_case_id/control_refs). Integration with long-running (bug export + control-spec consumption) is well-built and bidirectional; integration with system-design-doc (AC registry resolution) is mostly working but use_case_id is written-but-never-consumed by qa-trace.",
+    "strengths": [
+      "qa-tracker.json template (skills/qa-ui-test/templates/qa-tracker.json) is excellent and current at schema 1.7.0 — includes risk{probability,impact,score,priority}, complexity_factors[] with catalog, 3-tier model assignment rules (opus/sonnet/haiku) with assigned_model_reason, full bug schema with history/root_cause_hint/exported_to, NFR + traceability schema references, and the new use_case_id field (line 99) with flat AC-NNN note (line 98)",
+      "NFR security hard-floor (security < 75 → overall FAIL) is implemented consistently in both skills/qa-nfr/SKILL.md:145 and commands/qa-nfr-assess.md:18,210-211 with output examples",
+      "All 3 SKILL.md files use valid YAML block-scalar (|) descriptions with both English and Thai trigger phrases — good progressive-disclosure split into references/ subfolders",
+      "qa-trace.md correctly implements registry-first AC resolution (Step 0 reads .design-docs/design_doc_list.json, resolves split layout via sections[key='requirements'].file, with single-doc + find fallback) matching the v2.6.1 contract",
+      "control-spec-scenarios.md reference is well-designed — documents the 5 mandatory categories with a correct get_required_categories() algorithm and cites the long-running manifest schema path",
+      "long-running integration is genuinely bidirectional: qa-bug-export.md maps bug→feature_list.json (epic='bug-fix', generated subtasks, severity→priority/complexity/model, exported_to↔linked_bug sync) and qa-create-scenario Mode C reads .agent/ui-controls/feature-N.json manifests",
+      "No hooks directory — nothing loads into every session, zero startup cost",
+      "modules.json dependency for qa↔long-running module mapping is treated as optional ('ถ้ามี') with graceful fallback, not a hard requirement"
+    ],
+    "issues": [
+      {
+        "title": "All 13 action commands declare nonexistent tool Agent(*) in allowed-tools",
+        "detail": "Claude Code has no tool named `Agent`; the correct tool for dispatching subagents is `Task`. Every command that uses parallel/subagent dispatch (qa-create-scenario, qa-continue, qa-run, qa-retest, qa-bug-triage, qa-bug-export, qa-bug-export-subtask, qa-bug-verify, qa-edit-scenario, qa-trace, qa-nfr-assess, qa-create-advanced, qa-continue-advanced) lists `Agent(*)`. This either gets silently ignored (subagent dispatch then needs Task which is NOT in the allowlist → permission prompt/block) or is dead config. Fix: replace `Agent(*)` with `Task` in the allowed-tools frontmatter of all 13 files.",
+        "severity": "high",
+        "evidence": "13 command files contain `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)` e.g. commands/qa-create-scenario.md:3, qa-trace.md:3, qa-bug-export.md frontmatter; Grep for `\\bAgent\\(` = 13 hits across 13 files"
+      },
+      {
+        "title": "README.md is 4 minor versions stale (v2.2.0) and omits 5 of 18 commands",
+        "detail": "README title says 'QA UI Test Plugin v2.2.0', TOC says '13 คำสั่ง', and qa-tracker schema shown is 1.3.0 (actual is 1.7.0). It documents only the original 13 commands and entirely omits /qa-trace, /qa-nfr-assess, /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto — i.e. the entire NFR, traceability, and advanced-testing feature sets added in v2.3-2.6. A user reading the README has no idea these exist.",
+        "severity": "high",
+        "evidence": "README.md:1 '# QA UI Test Plugin v2.2.0', README.md:22 '(13 คำสั่ง)', README.md:721 '\"schema_version\": \"1.3.0\"'; grep of README shows 0 mentions of /qa-trace, /qa-nfr-assess, /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto vs 18 actual command files"
+      },
+      {
+        "title": "Version drift across plugin.json, SKILL.md, qa-help.md, README.md, marketplace.json",
+        "detail": "plugin.json=2.6.1, marketplace.json=2.6.1 (consistent), but skills/qa-ui-test/SKILL.md frontmatter version=2.5.0, commands/qa-help.md says 'v2.6.0' (lines 8,70), README.md says v2.2.0. Additionally plugin.json description says '12-mode help system' while marketplace.json description says '13-mode /qa-help' — qa-help actually defines 13 modes, so plugin.json is the wrong one.",
+        "severity": "medium",
+        "evidence": "plugin.json:3 version 2.6.1 + desc '12-mode'; .claude-plugin/marketplace.json:194 '13-mode'; skills/qa-ui-test/SKILL.md:3 'version: 2.5.0'; commands/qa-help.md:8,70 'v2.6.0'; README.md:1 'v2.2.0'"
+      },
+      {
+        "title": "qa-trace.md never consumes scenario.use_case_id — UC traceability is one-directional/dead",
+        "detail": "The v2.6.1 schema adds scenario.use_case_id (written by system-design-doc /sync-with-qa-tracker), and the plugin description advertises 'scenario.use_case_id'. But qa-trace.md only scans design docs for `UC-` regex patterns and builds the matrix purely from acceptance_criteria_id; it never reads the use_case_id field to link scenarios to use cases. The field is written but the traceability command ignores it, so UC coverage is not actually reported from the structured field.",
+        "severity": "medium",
+        "evidence": "skills/qa-ui-test/templates/qa-tracker.json:99 defines use_case_id; grep `use_case_id` matches only the template and plugin.json, NOT qa-trace.md; qa-trace.md:106,111-112 only reference UC via regex on design docs, and Steps 1/3 link exclusively via acceptance_criteria_id"
+      },
+      {
+        "title": "scenario-template.md reference file is stale vs the JSON schema",
+        "detail": "skills/qa-ui-test/references/scenario-template.md still uses the legacy Priority field (Critical/High/Medium/Low) and old module codes (CHKOUT, REG, etc.), and contains NONE of the current schema fields: risk{}, complexity_factors[], acceptance_criteria_id, use_case_id, control_refs, control_test_category, assigned_model. An agent reading this reference to author a scenario doc will produce v2.0-era output that doesn't match qa-tracker.json 1.7.0.",
+        "severity": "medium",
+        "evidence": "skills/qa-ui-test/references/scenario-template.md:17 '| **Priority** | {Critical / High / Medium / Low}', lines 70-86 legacy module codes; grep for control_refs|control_test_category|use_case_id in scenario-template.md = 'No matches found' (contrast with templates/qa-tracker.json which has all of them)"
+      },
+      {
+        "title": "No ${CLAUDE_PLUGIN_ROOT} adoption — hardcoded intra-plugin paths break on marketplace install",
+        "detail": "qa-ui-test has ZERO uses of ${CLAUDE_PLUGIN_ROOT}, while every sibling plugin (brain 3.1.0, long-running 2.10.0, system-design-doc 2.2.0, ui-mockup 1.10.0) explicitly converted to it per their changelogs. qa-help.md and README.md instruct reading/copying via hardcoded `plugins/qa-ui-test/...` relative paths, which only resolve in a monorepo checkout, not when the plugin is installed from the marketplace into ~/.claude.",
+        "severity": "medium",
+        "evidence": "grep -rc CLAUDE_PLUGIN_ROOT across qa-ui-test = 0; hardcoded paths at commands/qa-help.md:242, qa-help.md:1707 ('plugins/qa-ui-test/skills/qa-ui-test/references/control-spec-scenarios.md') and README.md:1007 ('cp plugins/qa-ui-test/skills/qa-ui-test/templates/github-actions-ui-test.yml')"
+      },
+      {
+        "title": "qa-help.md references /qa-coverage-check as if it were a qa-ui-test command",
+        "detail": "qa-help lists /qa-coverage-check in its command set, but that command lives in the long-running plugin (long-running:qa-coverage-check), not qa-ui-test. Presenting it unqualified in qa-ui-test's help misleads users into thinking it is a qa-ui-test command. Also qa-help omits the 3 advanced commands (/qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto) from its listing, routing only to skill names.",
+        "severity": "low",
+        "evidence": "qa-help.md distinct command extraction includes /qa-coverage-check (owned by long-running per skill registry long-running:qa-coverage-check); /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto absent from qa-help command list though the command files exist"
+      },
+      {
+        "title": "Command files are very large monoliths (token cost on invoke)",
+        "detail": "commands/qa-create-scenario.md is 1995 lines/80KB and commands/qa-help.md is 1915 lines/97KB. Slash-command bodies load fully into context on invocation. Heavy per-command bodies could be trimmed by moving derivation detail (e.g. Mode C control-spec algorithm, multi-pass strategy) into references/ that are read on demand, as is already done well for the SKILL.",
+        "severity": "low",
+        "evidence": "wc: commands/qa-create-scenario.md = 1995 lines / 80912 bytes; commands/qa-help.md = 1915 lines / 97344 bytes; SKILL.md = 673 lines / 35126 bytes (also large for a SKILL entry point)"
+      }
+    ],
+    "improvements": [
+      {
+        "title": "Replace Agent(*) with Task in all command frontmatter",
+        "detail": "Sed/edit the 13 affected command files: change `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)` to `...Grep(*), Task`. Verify against any command that actually dispatches subagents (qa-run --parallel, qa-create-scenario --brainstorm-agents) so dispatch is permitted without a prompt.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Rewrite README.md to v2.6.1 with all 18 commands and current schema",
+        "detail": "Update title to v2.6.1, fix TOC count, replace the qa-tracker schema_version 1.3.0 block with 1.7.0 (include risk/complexity_factors/use_case_id/control_refs), and add sections for /qa-trace, /qa-nfr-assess, /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto. Add the traceability + NFR + control-spec workflows that already exist in qa-help.",
+        "priority": "high",
+        "effort": "large"
+      },
+      {
+        "title": "Synchronize all version stamps",
+        "detail": "Set SKILL.md frontmatter version to 2.6.1, change qa-help.md 'v2.6.0' to 'v2.6.1', and fix plugin.json description '12-mode' to '13-mode' to match marketplace.json and the actual 13 modes in qa-help.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Make qa-trace consume scenario.use_case_id",
+        "detail": "In qa-trace.md Step 3, add a direct-mapping pass that reads scenario.use_case_id and builds a UC inventory/coverage section alongside the AC matrix (parallel to the acceptance_criteria_id handling), and emit UC GAP rows. This closes the loop on the field system-design-doc writes.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Refresh scenario-template.md to schema 1.7.0",
+        "detail": "Rewrite skills/qa-ui-test/references/scenario-template.md to include risk{probability,impact,score,priority,rationale}, complexity_factors[], acceptance_criteria_id[], use_case_id, control_refs[]/control_test_category, assigned_model + reason — mirroring templates/qa-tracker.json _scenario_schema_reference. Drop the legacy Priority-only field and old module codes.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Adopt ${CLAUDE_PLUGIN_ROOT} for all intra-plugin paths",
+        "detail": "Replace hardcoded `plugins/qa-ui-test/...` paths in qa-help.md (lines 242, 1707) and README.md (line 1007, the github-actions cp) with `${CLAUDE_PLUGIN_ROOT}/...`, matching the convention all sibling plugins adopted. Confirm setup.js/generate-summary.js script invocations also resolve via plugin root.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Add control_refs/control_test_category to the scenario schema reference fields list",
+        "detail": "The plugin.json description advertises control_refs[]/control_test_category in the scenario schema, and control-spec-scenarios.md emits them, but templates/qa-tracker.json _scenario_schema_reference does not list these two fields. Add them so Gate 4 control-coverage tooling and qa-coverage-check --include-controls have a documented field to read.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Namespace cross-plugin command refs in qa-help and add missing advanced commands",
+        "detail": "In qa-help.md, qualify /qa-coverage-check as /long-running:qa-coverage-check (it is a long-running command), and add /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto to the command listing so the help is complete.",
+        "priority": "low",
+        "effort": "small"
+      },
+      {
+        "title": "Slim down the two largest command files",
+        "detail": "Move the long algorithmic blocks (Mode C control-spec derivation in qa-create-scenario.md ~lines 1679-1954, and the deep mode walkthroughs in qa-help.md) into references/ read on demand, keeping the command body to flags + flow + a pointer. Reduces per-invoke token cost.",
+        "priority": "low",
+        "effort": "medium"
+      }
+    ],
+    "integration_points": [
+      {
+        "target": "long-running (bug flow)",
+        "mechanism": "qa-bug-export.md and qa-bug-export-subtask.md append/patch feature_list.json: new feature with epic='bug-fix', generated subtasks (Reproduce/Investigate/Fix/Verify/Regression), severity→priority/complexity/risk/model mapping, bidirectional bug.exported_to ↔ feature.linked_bug; qa-bug-verify --auto-sync scans feature_list for subtask /Verify BUG-(\\d+)/ done=true and closes the loop.",
+        "status": "working",
+        "evidence": "commands/qa-bug-export.md:8,69-73,125 (epic='bug-fix'), :139 subtasks, :299-353 generate_subtasks, :520 history sync; commands/qa-bug-export-subtask.md matching algorithm; README.md:496-503 auto-sync workflow"
+      },
+      {
+        "target": "long-running (control-spec / Gate 4 flow)",
+        "mechanism": "qa-create-scenario --from-control-spec <feature-id> (Mode C) and qa-edit-scenario --from-control-spec read .agent/ui-controls/feature-N.json emitted by long-running /continue Step 5.4 or /emit-control-spec, then derive 5 mandatory categories per control and stamp control_refs[]/control_test_category. long-running /continue Step 5.6 enforces these as Gate 4.",
+        "status": "working",
+        "evidence": "commands/qa-create-scenario.md:73-78,1679-1733,1809,1924; skills/qa-ui-test/references/control-spec-scenarios.md:1-7,71; long-running/commands/emit-control-spec.md:388,414,442 reciprocate"
+      },
+      {
+        "target": "system-design-doc (AC traceability via registry)",
+        "mechanism": "qa-trace.md Step 0 reads .design-docs/design_doc_list.json registry (schema 2.3.0) and resolves AC source: split layout via sections[key='requirements'].file, single via documents[].file_path, with find fallback; scans flat AC-NNN/UC-NNN; builds AC↔scenario matrix + GAP gate.",
+        "status": "partial",
+        "evidence": "commands/qa-trace.md:62-71,100-118,244; AC side works but UC side: scenario.use_case_id (templates/qa-tracker.json:99) is never read by qa-trace — UC linkage from the structured field is not consumed (regex-only)"
+      },
+      {
+        "target": "system-design-doc (use_case_id field write contract)",
+        "mechanism": "system-design-doc /sync-with-qa-tracker writes scenario.use_case_id into qa-tracker.json; qa-ui-test reserves the field in its template schema.",
+        "status": "partial",
+        "evidence": "templates/qa-tracker.json:99 'use_case_id ... เขียนโดย system-design-doc /sync-with-qa-tracker Step 5'; field is stored but unused downstream within qa-ui-test"
+      },
+      {
+        "target": "long-running (NFR + AC coverage gates)",
+        "mechanism": "qa-nfr-assess writes qa-tracker.nfr_results and qa-trace writes qa-tracker.traceability; long-running /nfr-check and /qa-coverage-check read those into feature.nfr_compliance / feature.qa_trace_coverage for release gates 1-3.",
+        "status": "working",
+        "evidence": "templates/qa-tracker.json:133-203 nfr_results + traceability schemas; long-running/commands/continue.md:969,1011,1116 and help.md:141,148-154 consume them"
+      },
+      {
+        "target": "ui-mockup",
+        "mechanism": "No direct integration. qa-ui-test does not read mockup_list.json or .mockups/. (ui-mockup independently derives complexity_factors/risk_baseline for qa-tracker per its own changelog, but qa-ui-test has no reciprocal reference.)",
+        "status": "unverified",
+        "evidence": "grep for mockup_list across qa-ui-test = 0 matches; no .mockups path references in any qa-ui-test command/skill"
+      },
+      {
+        "target": "long-running (modules.json module mapping)",
+        "mechanism": "qa-bug-export / qa-bug-export-subtask optionally read modules.json to map qa.module ↔ long-running feature.module for matching/scoring; degrades gracefully when absent.",
+        "status": "working",
+        "evidence": "commands/qa-bug-export.md:283; qa-bug-export-subtask.md:68,95,226 ('ls modules.json 2>/dev/null ... ถ้ามี'); referenced as a long-running artifact in long-running/README.md + SKILL.md"
+      },
+      {
+        "target": "brain / dotnet-dev / flow-discovery / code-review",
+        "mechanism": "No artifact or command cross-references found from qa-ui-test toward these plugins.",
+        "status": "unverified",
+        "evidence": "integration keyword scan returned matches only for long-running, system-design-doc, feature_list.json, design_doc_list, .design-docs, ui-controls, modules.json"
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "All 13 action commands declare nonexistent tool Agent(*) in allowed-tools",
+        "detail": "Claude Code has no tool named `Agent`; the correct tool for dispatching subagents is `Task`. Every command that uses parallel/subagent dispatch (qa-create-scenario, qa-continue, qa-run, qa-retest, qa-bug-triage, qa-bug-export, qa-bug-export-subtask, qa-bug-verify, qa-edit-scenario, qa-trace, qa-nfr-assess, qa-create-advanced, qa-continue-advanced) lists `Agent(*)`. This either gets silently ignored (subagent dispatch then needs Task which is NOT in the allowlist → permission prompt/block) or is dead config. Fix: replace `Agent(*)` with `Task` in the allowed-tools frontmatter of all 13 files.",
+        "severity": "high",
+        "evidence": "13 command files contain `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)` e.g. commands/qa-create-scenario.md:3, qa-trace.md:3, qa-bug-export.md frontmatter; Grep for `\\bAgent\\(` = 13 hits across 13 files"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence. Grep over D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/commands shows exactly 13 command files, each with one occurrence of `Agent(*)` in the `allowed-tools` frontmatter at line 3, matching the claim's file list precisely: qa-create-scenario.md, qa-continue.md, qa-run.md, qa-retest.md, qa-bug-triage.md, qa-bug-export.md, qa-bug-export-subtask.md, qa-bug-verify.md, qa-edit-scenario.md, qa-trace.md, qa-nfr-assess.md, qa-create-advanced.md, qa-continue-advanced.md (\"Found 13 total occurrences across 13 files\").\n\nThese are not dead config: the file bodies actually dispatch subagents using the Task tool's real parameter signature while mislabeling the tool \"Agent\". E.g. qa-run.md:215 \"→ Dispatch Agent tool (run_in_background: true)\"; qa-create-scenario.md:441/468/499/532/562 \"Dispatch Agent (subagent_type: \\\"general-purpose\\\", run_in_background: true)\"; qa-create-advanced.md uses \"Dispatch Agent (subagent_type: \\\"Explore\\\", run_in_background: true)\". `subagent_type`/`run_in_background` are the Task tool's parameters.\n\n`Agent` is not a valid Claude Code tool name — the canonical subagent-dispatch tool is `Task` (and `TaskStop`); no `Agent` tool exists in the environment's tool inventory, and the qa-ui-test plugin has no agents/ directory or hooks that could define a custom \"Agent\" tool (plugin contains only commands, skills, docs, README). \n\nDecisive corroboration of intent: within the SAME repo the author uses the correct `Task(*)` for identical subagent-dispatch purposes — ui-mockup/commands/create-mockups-parallel.md:3 (description: \"Create multiple UI Mockups simultaneously using Sub Agents\") and system-design-doc/commands/sitemap-scan.md:3 both list `Task(*)`. This internal inconsistency proves `Task` is the intended/correct token and `Agent(*)` is the bug. Consequently `Agent(*)` grants nothing while the actually-used Task tool is absent from the allowlist, leading to permission prompts/blocks on subagent dispatch. The proposed fix (replace `Agent(*)` with `Task` across the 13 files) is correct.",
+        "correction": "Claim is valid. Minor scope note (does not weaken it): the same `Agent(*)` mistake also exists outside qa-ui-test — flow-discovery (flow-scan.md, flow-dive.md, flow-think.md, flow-research.md, flow-ideate.md, flow-persona.md) and ui-mockup/commands/create-html-mockup.md carry the same error. A repo-wide fix would be ideal, but the qa-ui-test claim of 13 affected files stands exactly as stated."
+      }
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "README.md is 4 minor versions stale (v2.2.0) and omits 5 of 18 commands",
+        "detail": "README title says 'QA UI Test Plugin v2.2.0', TOC says '13 คำสั่ง', and qa-tracker schema shown is 1.3.0 (actual is 1.7.0). It documents only the original 13 commands and entirely omits /qa-trace, /qa-nfr-assess, /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto — i.e. the entire NFR, traceability, and advanced-testing feature sets added in v2.3-2.6. A user reading the README has no idea these exist.",
+        "severity": "high",
+        "evidence": "README.md:1 '# QA UI Test Plugin v2.2.0', README.md:22 '(13 คำสั่ง)', README.md:721 '\"schema_version\": \"1.3.0\"'; grep of README shows 0 mentions of /qa-trace, /qa-nfr-assess, /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto vs 18 actual command files"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Every cited point is confirmed against actual files; refutation failed.\n\n1. Version stale: README.md:1 = \"# QA UI Test Plugin v2.2.0\". plugin.json version is \"2.6.1\". README is 4 minor versions behind (2.2 -> 2.6). Confirmed.\n\n2. TOC \"13 คำสั่ง\": README.md:22 = \"5. [คำสั่งทั้งหมด (13 คำสั่ง — รวม /qa-help)]\". Confirmed.\n\n3. Schema stale: README.md:717 \"โครงสร้าง v1.3.0\" and README.md:721 \"schema_version\": \"1.3.0\". The actual template at plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:2 = \"schema_version\": \"1.7.0\" (the two other 1.0 hits in that file are nested sub-schemas, not the top-level tracker schema). Confirmed stale.\n\n4. 5 commands omitted: Grep of README for qa-trace|qa-nfr-assess|qa-create-advanced|qa-continue-advanced|qa-advanced-howto returns \"No matches found\" (zero mentions). All 5 command files physically exist (Glob lists 18 command .md files including qa-trace.md, qa-nfr-assess.md, qa-create-advanced.md, qa-continue-advanced.md, qa-advanced-howto.md). Confirmed.\n\nRefutation checks that failed:\n- The README is NOT dynamically deferring its command list to /qa-help. It has dedicated inline per-command documentation sections 5.1–5.12 (12 commands) + /qa-help = 13, each with usage/flags. So \"documents only 13 and omits 5\" is accurate, not a false positive.\n- The omitted commands are real, current features: qa-trace (traceability matrix), qa-nfr-assess (NFR), and qa-create-advanced/qa-continue-advanced/qa-advanced-howto (advanced testing) — all present as command files and as registered skills/commands, matching the v2.3–2.6 feature sets described in plugin.json's description.\n\nMinor note (does not affect validity): the claim's framing \"4 minor versions stale\" is approximate — README says v2.2.0 vs actual v2.6.1, a gap across the 2.3/2.4/2.5/2.6 line. The core factual assertions (title=2.2.0, TOC=13, schema=1.3.0, 5 named commands absent while 18 exist) are all verified true.\n\nEvidence files: D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/README.md (lines 1, 22, 717, 721), D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/.claude-plugin/plugin.json (version 2.6.1), D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json (schema_version 1.7.0), and the commands/ directory (18 command files via Glob)."
+      }
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Replace Agent(*) with Task in all command frontmatter",
+        "detail": "Sed/edit the 13 affected command files: change `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)` to `...Grep(*), Task`. Verify against any command that actually dispatches subagents (qa-run --parallel, qa-create-scenario --brainstorm-agents) so dispatch is permitted without a prompt.",
+        "priority": "high",
+        "effort": "small"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence. (1) Exactly 13 qa-ui-test command files carry the frontmatter `allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)` verbatim (qa-trace, qa-create-scenario, qa-edit-scenario, qa-retest, qa-nfr-assess, qa-bug-export-subtask, qa-bug-verify, qa-bug-export, qa-bug-triage, qa-run, qa-continue, qa-create-advanced, qa-continue-advanced) — verified via Grep on Agent\\(\\*\\) and reading qa-run.md:3. (2) `Agent(*)` is an invalid/wrong tool name; the real Claude Code subagent-dispatch tool is `Task`. This is established as correct precedent inside the same repo: system-design-doc/commands/help.md:762 (v2.2.0 changelog, dated 2026-06-13) explicitly records the fix 'sitemap-scan Agent→Task', and sitemap-scan.md now uses Task(*) with zero Agent references; ui-mockup/commands/create-mockups-parallel.md (a parallel-dispatch command) also already uses Task(*). (3) The two commands the claim names genuinely dispatch subagents: qa-run.md:204-218 (--parallel dispatches subagent batches with run_in_background:true) and qa-create-scenario.md:373-562 (--brainstorm-agents dispatches a parallel QA-agent team) — both need Task permission to dispatch without a prompt, which the nonexistent Agent(*) token cannot grant. The fix is not yet handled in qa-ui-test (sibling-plugin fixes don't touch these 13 files). No refuting evidence found.",
+        "correction": "Scope note (does not refute the claim): the same 13 command bodies also reference 'Agent tool' / 'Dispatch Agent tool' in prose (e.g. qa-run.md:215, qa-create-scenario.md:235,378,441...). Those prose mentions are cosmetic guidance, not permission tokens, so they are outside the claim's stated frontmatter-only scope; the frontmatter change is the load-bearing permission fix. For full consistency the implementer may optionally also update the prose 'Agent tool' references to 'Task tool', mirroring how sitemap-scan was scrubbed of all Agent references."
+      }
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Rewrite README.md to v2.6.1 with all 18 commands and current schema",
+        "detail": "Update title to v2.6.1, fix TOC count, replace the qa-tracker schema_version 1.3.0 block with 1.7.0 (include risk/complexity_factors/use_case_id/control_refs), and add sections for /qa-trace, /qa-nfr-assess, /qa-create-advanced, /qa-continue-advanced, /qa-advanced-howto. Add the traceability + NFR + control-spec workflows that already exist in qa-help.",
+        "priority": "high",
+        "effort": "large"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence at D:/GitHub/AgentMarketPlace/plugins/qa-ui-test. The README.md is genuinely stale relative to the current plugin (plugin.json version 2.6.1):\n\n1. TITLE/VERSION: README.md line 1 = \"QA UI Test Plugin v2.2.0\"; plugin.json line 3 = \"2.6.1\". Title needs update.\n\n2. TOC COUNT: README.md line 22 = \"คำสั่งทั้งหมด (13 คำสั่ง — รวม /qa-help)\" and the full command list (sections 5.1–5.13) stops at 13. But Glob of plugins/qa-ui-test/commands/*.md returns 18 files (adds qa-trace, qa-nfr-assess, qa-create-advanced, qa-continue-advanced, qa-advanced-howto). Count is wrong.\n\n3. SCHEMA: README.md line 721 shows qa-tracker `\"schema_version\": \"1.3.0\"` with only roles/role_page_access/cascade_dependencies/summary/scenarios. The canonical template plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json line 2 = \"1.7.0\" and the _scenario_schema_reference contains exactly the fields the claim names: risk{} (lines 89-96), complexity_factors[] (line 97), use_case_id (line 99), plus acceptance_criteria_id with flat AC-NNN format. control_refs[]/control_test_category are real current schema fields (qa-create-scenario.md lines 1807-1808, control-spec-scenarios.md lines 338-339, qa-help.md multiple). README documents none of these.\n\n4. MISSING SECTIONS: grep of README.md for qa-trace|qa-nfr-assess|qa-create-advanced|qa-continue-advanced|qa-advanced-howto = 0 matches, yet all 5 commands exist as files and qa-help.md already documents NFR (v2.4, lines 181-188), Traceability (v2.5, lines 195-200), and --from-control-spec (v2.6, lines 206-242) workflows. So these workflows \"already exist in qa-help\" as the claim states.\n\nThe improvement is a legitimate, needed doc-sync task. I could not refute it.",
+        "correction": "The claim is valid. One minor imprecision worth noting for whoever implements it: control_refs[]/control_test_category do not currently live inside the template's 1.7.0 `_scenario_schema_reference` block — they appear in the qa-create-scenario v1.6.0 schema reference (qa-create-scenario.md line 733+, fields at 1807-1808) and in references/control-spec-scenarios.md. They are nonetheless genuine current-schema fields tied to v2.6 Gate 4 control coverage and should be documented in the rewritten README, so the claim's intent (replace the stale 1.3.0 block with the full current schema including risk/complexity_factors/use_case_id/control_refs) is correct."
+      }
+    }
+  ]
+}

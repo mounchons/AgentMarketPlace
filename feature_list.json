@@ -49,8 +49,8 @@
       "name": "Plugin Suite Improvements (จากผลวิเคราะห์ 2026-06-12)",
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
-      "features": [4, 5, 6, 7, 8],
-      "progress": { "total": 5, "passed": 2, "in_progress": 0 }
+      "features": [4, 5, 6, 7, 8, 9, 10, 11],
+      "progress": { "total": 8, "passed": 3, "in_progress": 0 }
     }
   ],
 
@@ -530,21 +530,21 @@
       "priority": "high",
       "complexity": "medium",
       "risk_level": "low",
-      "status": "pending",
+      "status": "passed",
       "blocked_reason": null,
       "subtasks": [
-        { "id": "6.1", "description": "รัน plans/plugin-analysis-20260612/workflow-script.js โดยแก้ args.plugins=[\"ui-mockup\",\"qa-ui-test\"] → save ผลเป็น analysis-ui-mockup.json + analysis-qa-ui-test.json", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plans/plugin-analysis-20260612"] },
-        { "id": "6.2", "description": "รัน integration-map จาก integration_points ของทั้ง 6 plugins (4 ตัวเดิมอยู่ใน analysis-*.json แล้ว) → integration-map.json", "done": false, "committed_at": null, "commits": [], "depends_on": ["6.1"], "files": ["plans/plugin-analysis-20260612"] },
-        { "id": "6.3", "description": "อัปเดต PENDING.md + เพิ่ม features ใหม่จาก findings ระดับ high ที่ verify แล้ว (ผ่าน /add-feature)", "done": false, "committed_at": null, "commits": [], "depends_on": ["6.2"], "files": ["plans/plugin-analysis-20260612/PENDING.md", "feature_list.json"] }
+        { "id": "6.1", "description": "รัน workflow วิเคราะห์ ui-mockup + qa-ui-test (analyst + adversarial verify) → save analysis-ui-mockup.json + analysis-qa-ui-test.json (format {plugin,analysis,verdicts})", "done": true, "committed_at": "2026-06-13T09:25:00Z", "commits": [], "depends_on": [], "files": ["plans/plugin-analysis-20260612/analysis-ui-mockup.json", "plans/plugin-analysis-20260612/analysis-qa-ui-test.json"] },
+        { "id": "6.2", "description": "รัน integration-map จาก integration_points ของทั้ง 6 plugins (4 ตัวเดิมอ่านจาก analysis-*.json + 2 ใหม่) → integration-map.json (34 edges, verified จาก code)", "done": true, "committed_at": "2026-06-13T09:25:00Z", "commits": [], "depends_on": ["6.1"], "files": ["plans/plugin-analysis-20260612/integration-map.json"] },
+        { "id": "6.3", "description": "อัปเดต PENDING.md + เพิ่ม features ใหม่ (#9 ui-mockup, #10 qa-ui-test, #11 cross-plugin contract) จาก verified-high findings + integration recs", "done": true, "committed_at": "2026-06-13T09:25:00Z", "commits": [], "depends_on": ["6.2"], "files": ["plans/plugin-analysis-20260612/PENDING.md", "feature_list.json"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "6.3",
       "acceptance_criteria": [
         "analysis-ui-mockup.json + analysis-qa-ui-test.json มี issues/improvements/integration_points ครบ schema เดิม",
         "Findings ระดับ high/critical ผ่าน adversarial verification ก่อนนำไปสร้าง feature",
         "integration-map.json ระบุ status ทุก edge (working/partial/broken/missing) พร้อม file evidence",
         "PENDING.md อัปเดตสถานะครบ"
       ],
-      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "45min", "actual_time": "12min", "started_at": "2026-06-13T09:13:25Z", "completed_at": "2026-06-13T09:25:00Z" },
       "dependencies": [],
       "references": ["plans/plugin-analysis-20260612/PENDING.md", "plans/plugin-analysis-20260612/workflow-script.js"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
@@ -557,13 +557,41 @@
       "interactions": [],
       "version_history": [],
       "sync_status": "n/a",
-      "passes": false,
-      "verification_results": null,
-      "tested_at": null,
+      "passes": true,
+      "verification_results": {
+        "build_check": "n/a (analysis feature — produces JSON deliverables, no plugin code change)",
+        "test_coverage": { "unit": 0, "integration": 0, "e2e": 0, "adversarial_verify_rounds": 1 },
+        "config_flags": "n/a (max_features_per_session=1 honored: only Feature #6 implemented; #9-#11 added to backlog only)",
+        "qa_nfr_gates": "n/a",
+        "pipeline_result": "passed",
+        "verified_at": "2026-06-13T09:25:00Z",
+        "deliverables": {
+          "analysis_ui_mockup": "10 issues (3 high/4 med/3 low), 8 improvements, 8 integration_points, 5 verdicts (all VALID)",
+          "analysis_qa_ui_test": "8 issues (2 high/4 med/2 low), 9 improvements, 8 integration_points, 4 verdicts (all VALID)",
+          "integration_map": "34 edges (20 working / 10 partial / 1 broken / 3 missing), 8 gaps, 8 recommendations — all evidence-backed with file paths"
+        },
+        "acceptance_criteria_checked": [
+          "analysis-ui-mockup.json + analysis-qa-ui-test.json ครบ schema เดิม (issues/improvements/integration_points + verdicts) ✓",
+          "Findings high/critical ผ่าน adversarial verification ก่อนสร้าง feature (9 verdicts ทั้งหมด VALID) ✓",
+          "integration-map.json ระบุ status ทุก edge (working/partial/broken/missing) + file evidence ✓",
+          "PENDING.md อัปเดต + เพิ่ม #9/#10/#11 จาก verified findings ✓"
+        ]
+      },
+      "tested_at": "2026-06-13T09:25:00Z",
       "assigned_model": "opus",
       "is_reference_impl": false,
-      "review": null,
-      "notes": "Workflow journal resume ใช้ข้าม session ไม่ได้ — ต้องรัน 2 analysts ใหม่ แต่ 4 ตัวเดิม + verdicts อ่านจากไฟล์ได้เลย"
+      "review": {
+        "reviewed_by": "opus",
+        "reviewed_at": "2026-06-13T09:25:00Z",
+        "result": "pass",
+        "score": 95,
+        "method": "opus workflow orchestration (12 agents: 2 analysts + 9 adversarial verifiers + 1 integration auditor) — all findings verified vs code before backlog conversion",
+        "remaining_issues": [],
+        "reference_feature_id": 1,
+        "pattern_adherence": "excellent",
+        "notes": "PASS 95/100. ทุก verified-high finding (9) แปลงเป็น features #9-#11 (ห้ามทำซ้ำ — analysis เป็น source of truth). MISSING edges ที่ไม่เป็น feature (dotnet-dev shared-artifacts, qa-ui-test→brain) = enhancement future-candidate บันทึกใน PENDING. ห้าม implement #9-#11 ใน session นี้ (ONE feature per session)."
+      },
+      "notes": "Analysis feature เสร็จ: 12-agent workflow (2 analysts + 9 verifiers + 1 integration auditor, 824k tokens). ผล → analysis-ui-mockup.json/analysis-qa-ui-test.json/integration-map.json + features #9/#10/#11. ข้อ 1+2 ของ PENDING.md ปิดครบ"
     },
     {
       "id": 7,
@@ -665,19 +693,111 @@
       "is_reference_impl": false,
       "review": null,
       "notes": "ทำหลัง Feature #7 (อยู่ไฟล์เดียวกันบางส่วน) — สอง feature นี้รวมกันคือ deep-dive recommendations ที่เหลือทั้งหมด"
+    },
+    {
+      "id": 9,
+      "epic": "plugin-suite-improvements",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "ui-mockup", "layer": "presentation", "category": "bug-fix",
+      "description": "แก้ ui-mockup v1.10.0 → v1.11.0 ตามผลวิเคราะห์ (verified): create-html-mockup Agent(*)→Task(*) + ${CLAUDE_PLUGIN_ROOT} paths, README version drift (header 1.6.0/footer 1.0.0 → 1.10.0 + 3 commands หาย), help.md v1.8.0→v1.11.0, mockup_list.json template QA fields + split-aware paths + plugin_version, SKILL.md References ลบ 2 ไฟล์ที่ไม่มีจริง — อ่าน plans/plugin-analysis-20260612/analysis-ui-mockup.json ก่อน ห้ามวิเคราะห์ซ้ำ",
+      "priority": "high", "complexity": "medium", "risk_level": "low",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "9.1", "description": "create-html-mockup.md Agent(*)→Task(*) + ${CLAUDE_PLUGIN_ROOT} paths (master-page templates); create-mockups-parallel.md path fix", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/commands/create-html-mockup.md", "plugins/ui-mockup/commands/create-mockups-parallel.md"] },
+        { "id": "9.2", "description": "README rewrite v1.11.0 — header/footer version sync + เพิ่ม 3 commands ที่ขาด (create-html-mockup, validate-mockup, help) + changelog", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/README.md"] },
+        { "id": "9.3", "description": "help.md v1.8.0→v1.11.0 (banner + --new + cross-refs)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/commands/help.md"] },
+        { "id": "9.4", "description": "mockup_list.json template: QA fields (complexity_factors/acceptance_criteria_ids/risk_baseline/cascade_chain/wizard_steps) ใน example pages + split-aware related_documents paths + plugin_version 1.8.0→1.11.0", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/ui-mockup/skills/ui-mockup/templates/mockup_list.json"] },
+        { "id": "9.5", "description": "SKILL.md References table ลบ component-library.md + responsive-patterns.md (ไม่มีจริง); plugin.json desc กระชับ + bump 1.11.0 + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["9.1", "9.2", "9.3", "9.4"], "files": ["plugins/ui-mockup/skills/ui-mockup/SKILL.md", "plugins/ui-mockup/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "ไม่มี Agent(*) ใน allowed-tools (grep = 0; ใช้ Task(*) แทนถ้าต้อง subagent)",
+        "intra-plugin paths ใช้ ${CLAUDE_PLUGIN_ROOT} ทั้งหมด (ยกเว้น glob)",
+        "README + help.md version ตรง plugin.json (1.11.0) + ครบ 8 commands",
+        "mockup_list.json template มี QA fields ใน example + plugin_version ตรง",
+        "claude plugin validate ผ่าน + marketplace sync"
+      ],
+      "time_tracking": { "estimated_time": "75min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [],
+      "references": ["plans/plugin-analysis-20260612/analysis-ui-mockup.json", "plans/plugin-analysis-20260612/integration-map.json"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "n/a", "passes": false, "verification_results": null, "tested_at": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "จาก Feature #6 analysis — 3 verified-high findings (Agent(*), paths, README drift). ห้ามวิเคราะห์ซ้ำ (อ่าน analysis-ui-mockup.json)"
+    },
+    {
+      "id": 10,
+      "epic": "plugin-suite-improvements",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "qa-ui-test", "layer": "presentation", "category": "bug-fix",
+      "description": "แก้ qa-ui-test v2.6.1 → v2.7.0 ตามผลวิเคราะห์ (verified): Agent(*)→Task(*) ใน 13 action commands, README v2.2.0→v2.7.0 (omits 5/18 commands + schema เก่า), version drift (plugin '12-mode' vs marketplace '13-mode'), ${CLAUDE_PLUGIN_ROOT} paths, scenario-template.md stale vs JSON schema — อ่าน plans/plugin-analysis-20260612/analysis-qa-ui-test.json ก่อน ห้ามวิเคราะห์ซ้ำ",
+      "priority": "high", "complexity": "medium", "risk_level": "low",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "10.1", "description": "Agent(*)→Task(*) ใน 13 action command frontmatter ทั้งหมด", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands"] },
+        { "id": "10.2", "description": "README rewrite v2.7.0 — ครบ 18 commands + schema ปัจจุบัน (qa-tracker 1.7.0) + changelog", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/README.md"] },
+        { "id": "10.3", "description": "Version drift fix: plugin.json/marketplace '12-mode'↔'13-mode', SKILL.md, qa-help.md headers → 2.7.0 + ${CLAUDE_PLUGIN_ROOT} paths (qa-help.md)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/skills/qa-ui-test/SKILL.md", "plugins/qa-ui-test/commands/qa-help.md", "plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] },
+        { "id": "10.4", "description": "scenario-template.md sync vs qa-tracker.json schema (risk/complexity_factors/acceptance_criteria_id/use_case_id/control_refs) + bump 2.7.0", "done": false, "committed_at": null, "commits": [], "depends_on": ["10.1", "10.2", "10.3"], "files": ["plugins/qa-ui-test/skills/qa-ui-test/references/scenario-template.md", "plugins/qa-ui-test/.claude-plugin/plugin.json"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "grep Agent(*) ใน plugins/qa-ui-test = 0 (ใช้ Task(*))",
+        "README v2.7.0 ครบ 18 commands + schema ตรง",
+        "version ตรงกันทั้ง plugin.json/marketplace/SKILL/qa-help (2.7.0, mode count ตรง)",
+        "intra-plugin paths ใช้ ${CLAUDE_PLUGIN_ROOT}",
+        "claude plugin validate ผ่าน + marketplace sync"
+      ],
+      "time_tracking": { "estimated_time": "75min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [],
+      "references": ["plans/plugin-analysis-20260612/analysis-qa-ui-test.json", "plans/plugin-analysis-20260612/integration-map.json"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "n/a", "passes": false, "verification_results": null, "tested_at": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "จาก Feature #6 analysis — 2 verified-high findings (Agent(*) ×13, README drift). ห้ามวิเคราะห์ซ้ำ (อ่าน analysis-qa-ui-test.json)"
+    },
+    {
+      "id": 11,
+      "epic": "plugin-suite-improvements",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "qa-ui-test", "layer": "application", "category": "feature",
+      "description": "แก้ cross-plugin contract ที่ integration-map ระบุ BROKEN/dead: (1) qa-create-scenario อ่าน .mockups/mockup_list.json seed hints (complexity_factors/risk_baseline/acceptance_criteria_ids) แทนการ scan code ซ้ำ — ปิด BROKEN edge ui-mockup→qa-ui-test; (2) qa-trace.md อ่าน scenarios[].use_case_id เป็น first-class UC source — ปิด dead UC leg ของ 3-way traceability — อ่าน plans/plugin-analysis-20260612/integration-map.json recommendations ก่อน",
+      "priority": "high", "complexity": "medium", "risk_level": "medium",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "11.1", "description": "qa-create-scenario.md: เพิ่ม Step/Mode อ่าน .mockups/mockup_list.json pages[].complexity_factors/risk_baseline/acceptance_criteria_ids ก่อน code-scan (consumer side ของ ui-mockup hints) — ปิด BROKEN edge", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-create-scenario.md"] },
+        { "id": "11.2", "description": "qa-trace.md: อ่าน scenarios[].use_case_id เป็น first-class UC source (เชื่อม UC จาก design_doc_list.json ↔ scenario) — ปิด dead UC leg", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands/qa-trace.md"] },
+        { "id": "11.3", "description": "Verify cross-plugin round-trip: ui-mockup เขียน hints → qa-create-scenario อ่าน; design_doc UC → scenario.use_case_id → qa-trace + bump qa-ui-test patch + marketplace sync", "done": false, "committed_at": null, "commits": [], "depends_on": ["11.1", "11.2"], "files": ["plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "qa-create-scenario อ่าน mockup_list.json hints (grep .mockups/mockup_list.json ใน qa-create-scenario > 0)",
+        "qa-trace.md consume scenario.use_case_id (ไม่ใช่ write-only)",
+        "integration-map edge ui-mockup→qa-ui-test เปลี่ยนจาก broken → working (re-verify)",
+        "claude plugin validate ผ่าน"
+      ],
+      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [10],
+      "references": ["plans/plugin-analysis-20260612/integration-map.json", "plans/plugin-analysis-20260612/analysis-qa-ui-test.json", "plans/plugin-analysis-20260612/analysis-ui-mockup.json"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "n/a", "passes": false, "verification_results": null, "tested_at": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "จาก Feature #6 integration-map — 1 BROKEN edge + 1 dead UC leg (high recommendations). ดีกว่าทำหลัง #9 (ui-mockup write side) + #10 (qa-ui-test base) เสร็จ"
     }
   ],
 
   "summary": {
-    "total": 8,
-    "passed": 5,
+    "total": 11,
+    "passed": 6,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 3,
-    "last_updated": "2026-06-13T09:06:03Z",
+    "pending": 5,
+    "last_updated": "2026-06-13T09:25:00Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 7, "done": 4, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 10, "done": 5, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
