@@ -1,0 +1,178 @@
+{
+  "alignment": [
+    "Clean Architecture structure (Domain/Application/Infrastructure/WebApi + tests) ใน SKILL.md ตรงกับสไตล์ที่ผู้ใช้ถนัด และสอดคล้องกับ guidance ของ Microsoft (eShopOnContainers architecture docs) — แยก layer ชัด, IEntityTypeConfiguration + ApplyConfigurationsFromAssembly ถูกต้อง",
+    "Repository + Unit of Work เป็น first-class pattern ตามที่ผู้ใช้ต้องการ — มี interface, generic implementation, DI registration ครบ (SKILL.md sections 2-6)",
+    "รองรับ PostgreSQL และ SQL Server คู่กันจริงตลอดทั้ง plugin: provider switch ใน DependencyInjection, appsettings ตัวอย่างทั้ง 2 แบบ, references/ef-core-patterns.md มี section เฉพาะของแต่ละ DB (JSONB/array/FTS ฝั่ง Postgres; Temporal Tables/RLS/HierarchyId/Always Encrypted ฝั่ง SQL Server) และ database-agnostic configuration pattern",
+    "EF Core query patterns ใน references/ef-core-patterns.md ส่วนใหญ่ยังตรงกับ official docs ปัจจุบัน: AsNoTracking สำหรับ read-only, AsSplitQuery สำหรับ collection includes, projection แทน SELECT *, หลีกเลี่ยง N+1, ExecuteUpdate/ExecuteDelete สำหรับ bulk ops, compiled queries, SaveChangesInterceptor สำหรับ audit — ยืนยันกับ EF Core 10 docs แล้วว่ายังเป็น best practice",
+    "Testing strategy ตรงกับคำแนะนำ official: EF docs (ef/core/testing/choosing-a-testing-strategy) แนะนำ test กับ database จริง — testing-patterns.md ใช้ xUnit + Testcontainers (PostgreSQL) + Respawn + WebApplicationFactory + test builders ซึ่งเป็นแนวทางที่ถูกต้อง",
+    "Aspire เป็นส่วนหนึ่งของ stack ตามที่ผู้ใช้ต้องการ — AppHost เลือก Postgres/SqlServer ได้, ServiceDefaults + OpenTelemetry + health checks ตรงโครงสร้างมาตรฐาน",
+    "Domain-first + Rich Domain Model + Value Objects + Domain Events + soft delete + audit trail ตรง enterprise style ของผู้ใช้, async/await + CancellationToken ทุก method, EnableRetryOnFailure ทั้ง 2 provider",
+    "เนื้อหาเขียนเป็นภาษาไทยผสม technical English ตรงกับ preference ผู้ใช้ และ bundle Microsoft Learn MCP มาให้ตรวจ docs ล่าสุดได้ (plugin.json mcpServers)"
+  ],
+  "gaps": [
+    {
+      "area": "Target framework / package versions",
+      "current": "SKILL.md บอก \".NET 8+ (Latest LTS)\" และ pin ทุก package เป็น 8.* (EF Core 8.*, Aspire.* 8.*, Mvc.Testing 8.*, Serilog 8.*)",
+      "recommended": ".NET 10 คือ LTS ปัจจุบัน (Nov 2025 → Nov 2028); .NET 8 จะหมด support Nov 2026 — ควรเปลี่ยน baseline เป็น net10.0 + EF Core 10.* และอธิบาย LTS/STS policy แทนการ pin เลขเก่า",
+      "source": "https://learn.microsoft.com/dotnet/core/releases-and-support (\".NET 10 (Long Term Support) - supported until November 2028\")"
+    },
+    {
+      "area": "Aspire ทั้งไฟล์ references/aspire-setup.md",
+      "current": "เป็น Aspire 8.x-era ทั้งหมด: dotnet new aspire-starter, Aspire.* 8.* packages, ไม่มี WaitFor/ContainerLifetime, และ `builder.AddDockerComposeEnvironment(\"infra\", \"./docker-compose.yml\")` ใช้ signature ที่ไม่มีจริง (API จริงไม่รับ path compose file สำหรับ import)",
+      "recommended": "ปัจจุบันคือ Aspire 13.x (Aspire.Hosting v13.1.0): ติดตั้งผ่าน Aspire CLI (`aspire new`, `aspire run`, `aspire update`), AppHost ใช้ `Sdk=\"Aspire.AppHost.Sdk/13.0.0\"` ไม่ต้อง reference Aspire.Hosting.AppHost เอง, เพิ่ม `.WaitFor(database)`, `.WithLifetime(ContainerLifetime.Persistent)`, `.WithHttpHealthCheck(\"/health\")`; upgrade path 8.x→9.x→13",
+      "source": "https://learn.microsoft.com/dotnet/aspire/get-started/upgrade-to-aspire-13 และ API docs view=dotnet-aspire-13.0 (AddPostgres remark: \"the dependent resource will wait until the Postgres resource is able to service requests\" ผ่าน WaitFor)"
+    },
+    {
+      "area": "Generic Repository — IQueryable leak ขัดกับเหตุผลที่มี repository",
+      "current": "IRepository<T> มี `IQueryable<T> Query()` — EF testing docs ระบุชัดว่าถ้าทำ repository เพื่อ mock/stub ได้ ห้าม expose IQueryable (\"your repository cannot expose any IQueryable-returning methods... IEnumerable should be returned instead\") และ official stance คือ DbContext implement Repository+UoW อยู่แล้ว, \"Repositories shouldn't be mandatory\", repository ควรเป็น per-aggregate",
+      "recommended": "ผู้ใช้ยืนยันจะใช้ Repo+UoW → เก็บ pattern ไว้ แต่ทำให้ถูก: (1) per-aggregate repository interface ใน Domain layer ต่อยอดจาก generic base, (2) query เฉพาะทางเป็น method ที่ return ผลลัพธ์จริง (IReadOnlyList/DTO) ไม่ leak IQueryable, (3) เพิ่มกล่อง trade-off ตรงๆ ใน SKILL.md: ถ้า leak IQueryable จะ mock ไม่ได้และ abstraction ไม่คุ้ม — ทางเลือกคือยอมรับว่า unit test ชั้น query ต้องเป็น integration test (Testcontainers)",
+      "source": "https://learn.microsoft.com/ef/core/testing/choosing-a-testing-strategy + https://learn.microsoft.com/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    },
+    {
+      "area": "UnitOfWork transactions ชนกับ EnableRetryOnFailure (bug จริง)",
+      "current": "SKILL.md pattern #6 เปิด EnableRetryOnFailure ทั้ง 2 provider พร้อมกับ pattern #3 ที่ UoW มี BeginTransactionAsync/Commit/Rollback — เมื่อใช้ retrying execution strategy การเรียก BeginTransaction ตรงๆ จะ throw InvalidOperationException (execution strategy ไม่รองรับ user-initiated transactions)",
+      "recommended": "เพิ่มตัวอย่าง `var strategy = _context.Database.CreateExecutionStrategy(); await strategy.ExecuteAsync(async () => { await using var tx = ...; ...; await tx.CommitAsync(); });` และ note ว่า SaveChangesAsync ครั้งเดียวเป็น atomic อยู่แล้ว ไม่ต้องเปิด transaction เพิ่มในเคสปกติ",
+      "source": "https://learn.microsoft.com/ef/core/miscellaneous/connection-resiliency (execution strategies and transactions)"
+    },
+    {
+      "area": "API documentation — Swashbuckle ล้าสมัย",
+      "current": "แนะนำ Swashbuckle.AspNetCore 6.* + AddSwaggerGen/UseSwagger/UseSwaggerUI (SKILL.md NuGet section, aspire-setup.md Program.cs)",
+      "recommended": ".NET 9+ มี built-in OpenAPI: `builder.Services.AddOpenApi()` + `app.MapOpenApi()` (Microsoft.AspNetCore.OpenApi) — Swashbuckle ถูกถอดจาก templates แล้ว; ถ้าต้องการ UI ใช้ Scalar/Swagger UI เสริม; `.WithOpenApi()` ถูก deprecate ใน .NET 10 (ASPDEPR002) ให้ใช้ AddOpenApiOperationTransformer",
+      "source": "https://learn.microsoft.com/aspnet/core/fundamentals/openapi/overview (\"In .NET 9 and later... replaces Swashbuckle as the default. Swashbuckle is no longer included in project templates\")"
+    },
+    {
+      "area": "Caching — มีแต่ IDistributedCache/Redis",
+      "current": "SKILL.md DI ลงท้ายด้วย AddStackExchangeRedisCache อย่างเดียว ไม่พูดถึง HybridCache",
+      "recommended": "แนะนำ HybridCache (Microsoft.Extensions.Caching.Hybrid, GA): AddHybridCache() ใช้ Redis ที่มีอยู่เป็น L2 อัตโนมัติ ได้ stampede protection + tag invalidation + L1 in-memory ฟรี; มี Microsoft.Extensions.Caching.Postgres เป็น L2 option ฝั่ง Postgres ด้วย — เข้ากับ dual-DB ของผู้ใช้พอดี",
+      "source": "https://learn.microsoft.com/aspnet/core/performance/caching/hybrid + https://learn.microsoft.com/aspnet/core/performance/caching/overview#hybridcache"
+    },
+    {
+      "area": "เวลา — IDateTimeService / DateTime.UtcNow กระจัดกระจาย",
+      "current": "ef-core-patterns.md ใช้ custom IDateTimeService; SKILL.md ใช้ DateTime.UtcNow ตรงๆ ใน BaseEntity initializer, Repository.Update, SaveChangesAsync override (ตั้ง audit ซ้ำซ้อนกับ interceptor ใน reference อีกไฟล์)",
+      "recommended": "ใช้ TimeProvider (.NET 8+, built-in) inject ผ่าน DI + FakeTimeProvider (Microsoft.Extensions.TimeProvider.Testing) ใน tests; ASP.NET Core เลิกใช้ ISystemClock ไปแล้ว; เลือก audit ที่เดียว (interceptor — เป็นแนวทาง official) ลบ override ซ้ำใน DbContext",
+      "source": "https://learn.microsoft.com/dotnet/standard/datetime/timeprovider-overview + https://learn.microsoft.com/aspnet/core/breaking-changes/8/isystemclock-obsolete"
+    },
+    {
+      "area": "Minimal APIs vs Controllers — ไม่มี guidance เลย",
+      "current": "SKILL.md เอ่ยถึง \"Minimal APIs\" ใน stack list แต่ทุก template เป็น controller-based ไม่มีเกณฑ์เลือก",
+      "recommended": "Official: \"Start with Minimal APIs for new projects\"; controllers เหมาะเมื่อ需 model binding extensibility, advanced validation, application parts, OData — ผู้ใช้ถนัด MVC controllers ดังนั้น flag trade-off ตรงๆ: ใช้ controllers ต่อได้ (รองรับเต็มที่ใน .NET 10) แต่ service/microservice ใหม่เล็กๆ ควรพิจารณา Minimal APIs + route groups; เพิ่ม decision table ใน SKILL.md",
+      "source": "https://learn.microsoft.com/aspnet/core/fundamentals/apis#choosing-between-approaches"
+    },
+    {
+      "area": "Soft delete — ยังไม่ใช้ EF Core 10 named query filters + filter ซ้ำซ้อน",
+      "current": "DbContext สร้าง global query filter ด้วย expression tree เอง และ Repository ทุก method ยัง filter !e.IsDeleted ซ้ำอีกชั้น; IgnoreQueryFilters จะปิด filter ทั้งหมด (รวม tenant filter) ทีเดียว",
+      "recommended": "EF 10 มี named query filters: `HasQueryFilter(\"SoftDeletionFilter\", b => !b.IsDeleted)` + `IgnoreQueryFilters([\"SoftDeletionFilter\"])` เลือกปิดเฉพาะตัวได้ — เหมาะกับ soft delete + multitenancy พร้อมกัน; ตัด filter ซ้ำใน repository ออก",
+      "source": "https://learn.microsoft.com/ef/core/what-is-new/ef-core-10.0/whatsnew#named-query-filters"
+    },
+    {
+      "area": "EF Core 10 features ใหม่ที่ขาด",
+      "current": "ef-core-patterns.md หยุดที่ EF 7-8 era: OwnsOne สำหรับ value objects, ExecuteUpdate แบบ expression-tree, JSONB เฉพาะ Postgres",
+      "recommended": "เพิ่ม: (1) ComplexProperty + .ToJson() สำหรับ value objects (แนวทางใหม่แทน OwnsOne), (2) ExecuteUpdateAsync รับ regular lambda — ทำ conditional SetProperty ได้แล้ว, (3) SQL Server 2025/Azure SQL `json` data type (UseAzureSql / compat level 170) เทียบเท่า JSONB — ปิด gap dual-DB, (4) parameterized collection translation ใหม่, (5) LeftJoin/RightJoin LINQ operators",
+      "source": "https://learn.microsoft.com/ef/core/what-is-new/ef-core-10.0/whatsnew"
+    },
+    {
+      "area": "Concurrency สำหรับ PostgreSQL",
+      "current": "ef-core-patterns.md section 4 มีแต่ [ConcurrencyCheck]/[Timestamp] RowVersion (\"SQL Server preferred\") — ไม่มีทางเลือกฝั่ง Postgres ทั้งที่ผู้ใช้รองรับ 2 DB",
+      "recommended": "เพิ่ม Npgsql `xmin` system column: `builder.Property(p => p.Version).IsRowVersion()` / UseXminAsConcurrencyToken สำหรับ optimistic concurrency บน PostgreSQL",
+      "source": "Npgsql EF Core provider docs (concurrency tokens) — npgsql.org/efcore + https://learn.microsoft.com/ef/core/saving/concurrency"
+    },
+    {
+      "area": "Testing packages + dual-DB coverage",
+      "current": "testing-patterns.md: xunit 2.*, Testcontainers 3.*, Mvc.Testing 8.*, FluentAssertions 6.*, มีแต่ Testcontainers.PostgreSql (postgres:16-alpine) — ไม่มี SQL Server fixture ทั้งที่ skill ชู dual-DB; ctor ของ CustomWebApplicationFactory เรียก StartAsync().GetAwaiter().GetResult() (sync-over-async)",
+      "recommended": "อัปเดตเป็น xunit.v3, Testcontainers 4.x + เพิ่ม Testcontainers.MsSql fixture + Respawn SqlAdapter.SqlServer, Mvc.Testing 10.*, เพิ่ม FakeTimeProvider ใน test patterns, ใช้ IAsyncLifetime แทน sync-over-async; เพิ่ม Aspire.Hosting.Testing (DistributedApplicationTestingBuilder มีอยู่แล้วแต่ version เก่า)",
+      "source": "https://learn.microsoft.com/ef/core/testing/testing-without-the-database + https://learn.microsoft.com/dotnet/core/extensions/timeprovider-testing"
+    },
+    {
+      "area": "Licensing ของ libraries ที่แนะนำ (trade-off ต้องบอกตรงๆ)",
+      "current": "แนะนำ MediatR 12.*, AutoMapper 13.*, FluentAssertions 6.* โดยไม่เตือนว่า MediatR (v13+), AutoMapper (v15+) และ FluentAssertions (v8+) เปลี่ยนเป็น commercial license ตั้งแต่ปี 2025",
+      "recommended": "เพิ่ม note: version ที่ pin ไว้ยังเป็น OSS ใช้ฟรีได้ แต่จะไม่ได้ feature/security updates ใหม่; ทางเลือก: ซื้อ license, ใช้ Mapperly (source-gen, ฟรี) แทน AutoMapper, manual mapping ใน projection (เร็วกว่าและ AOT-friendly), Shouldly/AwesomeAssertions แทน FluentAssertions, หรือ custom mediator/Wolverine แทน MediatR — ให้ผู้ใช้ตัดสินใจเอง",
+      "source": "Ecosystem fact (ไม่ใช่ Microsoft docs) — ตรวจจาก GitHub announcements ของแต่ละ project; ควร verify version ล่าสุดก่อน commit"
+    },
+    {
+      "area": "MCP integration — tool names ผิดและ transport อ้อม",
+      "current": "SKILL.md/references/microsoft-learn-mcp.md อ้าง tool `mcp__microsoft-learn__search` และสอนใช้ mcporter CLI ผ่าน npx; plugin.json ใช้ `npx mcp-remote` (ต้องพึ่ง Node)",
+      "recommended": "Tool จริงคือ microsoft_docs_search / microsoft_docs_fetch / microsoft_code_sample_search (prefix mcp__plugin_dotnet-dev_microsoft-learn__); plugin.json ควรใช้ remote transport ตรง: {\"type\": \"http\", \"url\": \"https://learn.microsoft.com/api/mcp\"} ตามที่ README แสดงไว้ถูกแล้ว; ตัด mcporter section ทิ้ง (ซ้ำซ้อน/error-prone); เพิ่ม microsoft_code_sample_search ใน usage guide",
+      "source": "MCP server instructions ของ microsoft-learn เอง + พฤติกรรมจริงใน session นี้"
+    },
+    {
+      "area": "Missing reference files ที่ workflow ผู้ใช้ต้องใช้",
+      "current": "มีแค่ 4 references: ef-core-patterns, aspire-setup, testing-patterns, microsoft-learn-mcp — ไม่มี auth, API versioning, React integration, deployment, options/DI patterns",
+      "recommended": "เพิ่ม: auth-security.md (JWT bearer + ASP.NET Core Identity; .NET 10 เปลี่ยน behavior: API endpoints return 401/403 แทน redirect login), api-versioning.md (Asp.Versioning.Http), react-integration.md (ผู้ใช้ทำ React frontend — CORS, Vite proxy, openapi-typescript client gen, BFF), dependency-injection.md (keyed services .NET 8+, options pattern + ValidateDataAnnotations().ValidateOnStart(), IExceptionHandler + ProblemDetails), deployment.md (aspire publish / azd up / Dockerfile)",
+      "source": "https://learn.microsoft.com/aspnet/core/security/authentication/api-endpoint-auth + https://learn.microsoft.com/aspnet/core/fundamentals/apis"
+    },
+    {
+      "area": "โครงสร้าง SKILL.md (progressive disclosure)",
+      "current": "SKILL.md ~480 บรรทัด รวม principles + code templates เต็มๆ 8 ชุด + migration commands + package lists ไว้ body เดียว — โหลดทั้งหมดทุกครั้งที่ skill trigger; frontmatter description ไม่มี \"Use when/triggers\" (อยู่แค่ใน marketplace.json)",
+      "recommended": "ทำ SKILL.md ให้ lean: เก็บ core principles, decision tables (DB selection, Minimal API vs MVC), project structure, routing ไปยัง references; ย้าย code templates ไป references/clean-architecture-templates.md; เพิ่ม use-when + trigger keywords ใน frontmatter description ของ SKILL.md เอง",
+      "source": "Claude Code skill authoring best practice (plugin-dev:skill-development — progressive disclosure)"
+    },
+    {
+      "area": "Code bugs เล็กใน templates",
+      "current": "(1) `BaseEntity<TKey>` ใช้ `public new TKey Id` ซ่อน property ฐาน — EF map พังง่ายและเป็น anti-pattern, (2) `await _dbSet.AddAsync(...)` ทั้งที่ docs แนะนำ Add ปกติ (AddAsync จำเป็นเฉพาะ HiLo value generators), (3) README ยังอ้าง path `dotnet-dev-skill` / `your-username` placeholder",
+      "recommended": "(1) กลับด้าน: `BaseEntity<TKey>` เป็นตัวหลัก แล้ว `BaseEntity : BaseEntity<long>`, (2) ใช้ `_dbSet.Add(entity)` พร้อม comment เหตุผล, (3) อัปเดต README ให้ตรง repo จริง (AgentMarketPlace marketplace)",
+      "source": "https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.dbcontext.addasync (remarks: ใช้เฉพาะกรณี value generator ต้อง async)"
+    }
+  ],
+  "recommendations": [
+    {
+      "title": "อัปเกรด baseline เป็น .NET 10 LTS + EF Core 10 ทั้ง plugin",
+      "detail": "แก้ SKILL.md บรรทัด 24 เป็น \".NET 10 (LTS ปัจจุบัน, support ถึง Nov 2028)\"; เปลี่ยน package pins ทั้งหมด 8.* → 10.* (Microsoft.EntityFrameworkCore, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.SqlServer, Caching.StackExchangeRedis, Mvc.Testing); เพิ่ม note สั้นๆ เรื่อง LTS/STS cadence เพื่อให้ skill ไม่ล้าสมัยเร็ว (\"ใช้ LTS ล่าสุด — ตรวจกับ microsoft_docs_search ก่อนสร้าง project\")",
+      "priority": "high"
+    },
+    {
+      "title": "เขียน references/aspire-setup.md ใหม่เป็น Aspire 13",
+      "detail": "แทนที่เนื้อหา 8.x ทั้งไฟล์: ติดตั้ง Aspire CLI + `aspire new`/`aspire run`/`aspire update`, AppHost csproj แบบ `Sdk=\"Aspire.AppHost.Sdk/13.0.0\"` (net10.0), เพิ่ม `.WaitFor(database)` + `.WithLifetime(ContainerLifetime.Persistent)` + `.WithHttpHealthCheck()` ใน AppHost ตัวอย่าง dual-DB, ลบ `AddDockerComposeEnvironment(\"infra\", \"./docker-compose.yml\")` ที่ signature ผิด, และเพิ่ม pattern สำคัญที่ขาด: `builder.EnrichNpgsqlDbContext<ApplicationDbContext>()` / `EnrichSqlServerDbContext` เพื่อใช้ Aspire ร่วมกับ AddInfrastructure() ที่ register DbContext เองอยู่แล้ว (ตอนนี้ aspire-setup.md กับ SKILL.md DI ขัดกัน — จะ double-register DbContext)",
+      "priority": "high"
+    },
+    {
+      "title": "เพิ่ม section \"Repository/UoW ให้ถูกวิธี + trade-offs ตรงไปตรงมา\" ใน SKILL.md",
+      "detail": "เก็บ Repo+UoW ไว้ตามสไตล์ผู้ใช้ แต่เพิ่ม: (1) per-aggregate repository (ICustomerRepository : IRepository<Customer>) interface อยู่ Domain/Application layer, (2) เปลี่ยน Query() ที่ return IQueryable → method เฉพาะทางที่ return IReadOnlyList/paged result พร้อมกล่องเตือน: \"EF docs: repository ที่ expose IQueryable จะ mock ไม่ได้ — ถ้าจะคง Query() ไว้เพื่อความสะดวก ให้ยอมรับว่า test ชั้นนั้นต้องเป็น Testcontainers integration test\", (3) แก้ UoW transaction ให้ wrap ด้วย CreateExecutionStrategy().ExecuteAsync เพราะตอนนี้ชนกับ EnableRetryOnFailure (โค้ดปัจจุบัน throw runtime), (4) ย่อหน้า honesty note: Microsoft ระบุว่า DbContext คือ Repository+UoW ในตัว และ repository \"ไม่ใช่ข้อบังคับ\" — ใช้เพราะทีมถนัดและช่วย mock ได้ ไม่ใช่เพราะเป็น requirement",
+      "priority": "high"
+    },
+    {
+      "title": "แทนที่ Swashbuckle ด้วย built-in OpenAPI",
+      "detail": "SKILL.md NuGet section: ตัด Swashbuckle.AspNetCore 6.* → Microsoft.AspNetCore.OpenApi 10.*; ตัวอย่าง Program.cs ใช้ AddOpenApi()/MapOpenApi() + ตัวเลือก Scalar.AspNetCore สำหรับ UI; เพิ่ม note ว่า WithOpenApi() deprecated (.NET 10, ASPDEPR002) ใช้ AddOpenApiOperationTransformer แทน; อัปเดต aspire-setup.md Program.cs ตัวอย่างด้วย",
+      "priority": "high"
+    },
+    {
+      "title": "แก้ MCP tool names + เปลี่ยน transport ใน plugin.json",
+      "detail": "plugin.json: เปลี่ยน mcpServers.microsoft-learn จาก npx mcp-remote → {\"type\": \"http\", \"url\": \"https://learn.microsoft.com/api/mcp\"} (ตัด Node dependency); SKILL.md + references/microsoft-learn-mcp.md: แก้ชื่อ tool เป็น microsoft_docs_search / microsoft_docs_fetch / microsoft_code_sample_search, ตัด mcporter/bash workaround sections ทิ้ง, เพิ่มตัวอย่างใช้ code_sample_search หา snippet จริง",
+      "priority": "high"
+    },
+    {
+      "title": "เพิ่ม EF Core 10 patterns ใน references/ef-core-patterns.md",
+      "detail": "เพิ่ม sections: named query filters สำหรับ soft delete + tenant filter พร้อม IgnoreQueryFilters([\"...\"]) แบบเลือกปิด (แทน expression-tree generator ใน SKILL.md และตัด !IsDeleted ซ้ำใน repository), ComplexProperty + ToJson() แทน OwnsOne สำหรับ Money value object, ExecuteUpdateAsync แบบ regular lambda (conditional updates), SQL Server 2025 json type + UseAzureSql เทียบ JSONB (ปิด gap dual-DB), Npgsql xmin concurrency token คู่กับ RowVersion ของ SQL Server",
+      "priority": "medium"
+    },
+    {
+      "title": "เพิ่ม references/dependency-injection.md (cross-cutting สมัยใหม่)",
+      "detail": "ครอบคลุม: TimeProvider แทน IDateTimeService/DateTime.UtcNow (แก้ BaseEntity initializer + interceptor ให้รับ TimeProvider, เลือก interceptor เป็น audit ทางเดียว ลบ SaveChangesAsync override ซ้ำ), keyed services (.NET 8+) — เหมาะกับ dual-DB scenario เช่น [FromKeyedServices(\"reporting\")], options pattern เต็มรูป (AddOptions<T>().BindConfiguration().ValidateDataAnnotations().ValidateOnStart()), HybridCache แทน IDistributedCache ตรงๆ (Redis เป็น L2), IExceptionHandler + ProblemDetails (.NET 8+) แทน custom middleware",
+      "priority": "medium"
+    },
+    {
+      "title": "เพิ่ม references/react-integration.md + auth-security.md",
+      "detail": "ผู้ใช้ทำ React frontend กับ ASP.NET Core เสมอแต่ plugin ไม่มีเรื่องนี้เลย: react-integration.md (CORS policy, Vite dev proxy, Aspire AddViteApp/AddNpmApp orchestration, openapi-typescript จาก built-in OpenAPI document, cookie vs JWT สำหรับ SPA, BFF pattern); auth-security.md (JWT bearer config, ASP.NET Core Identity + API endpoints, .NET 10 behavior change: API endpoints return 401/403 ไม่ redirect login, authorization policies)",
+      "priority": "medium"
+    },
+    {
+      "title": "อัปเดต references/testing-patterns.md",
+      "detail": "xunit 2.* → xunit.v3, Testcontainers 3.* → 4.*, Mvc.Testing 8.* → 10.*, เพิ่ม MsSqlContainer fixture + Respawn SqlAdapter.SqlServer สำหรับฝั่ง SQL Server (ตอนนี้ test ได้แค่ Postgres ทั้งที่ขาย dual-DB), แก้ CustomWebApplicationFactory sync-over-async เป็น IAsyncLifetime, เพิ่ม FakeTimeProvider examples, เพิ่ม licensing note: FluentAssertions 8+/MediatR 13+/AutoMapper 15+ เป็น commercial — version ที่ pin ยังฟรีแต่ freeze; เสนอ Shouldly/Mapperly/manual mapping เป็นทางเลือกพร้อม trade-offs ให้ผู้ใช้เลือกเอง",
+      "priority": "medium"
+    },
+    {
+      "title": "เพิ่ม decision guidance: Minimal APIs vs Controllers",
+      "detail": "เพิ่ม decision table ใน SKILL.md: official แนะนำ Minimal APIs สำหรับ project ใหม่ (เร็วกว่า, boilerplate น้อย) แต่ controllers ยังเหมาะกับ enterprise app ที่ผู้ใช้ถนัด (model binding extensibility, filters, OData, ทีมคุ้น MVC) — ระบุชัดว่านี่คือจุดที่ preference ผู้ใช้ต่างจาก default guidance และทั้งคู่ supported เต็มที่; แนะนำ route groups + endpoint filters เมื่อเลือก Minimal APIs",
+      "priority": "medium"
+    },
+    {
+      "title": "Restructure SKILL.md เป็น progressive disclosure",
+      "detail": "ย้าย code templates (BaseEntity, Repository, UoW, DbContext, DI, appsettings, AppHost ~250 บรรทัด) ไป references/clean-architecture-templates.md; SKILL.md เหลือ: principles, tech stack, DB selection table, project structure, API style decision, best practices checklist, routing ไป references; เพิ่ม use-when/trigger keywords ใน frontmatter description; ระหว่างย้าย แก้ bug เล็ก: BaseEntity<TKey> property hiding (ให้ BaseEntity : BaseEntity<long>), AddAsync → Add, README placeholder paths",
+      "priority": "low"
+    },
+    {
+      "title": "เพิ่ม references/deployment.md",
+      "detail": "Aspire 13 deployment: `aspire publish` / azd init + azd up สำหรับ Azure Container Apps, docker-compose publisher, Kubernetes manifests, EF migration bundles (dotnet ef migrations bundle) + dedicated migration service pattern สำหรับ production (สอดคล้องกับ efcore-patterns skill ที่ผู้ใช้มีอยู่แล้วในเครื่อง)",
+      "priority": "low"
+    }
+  ]
+}

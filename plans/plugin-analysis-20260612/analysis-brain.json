@@ -1,0 +1,250 @@
+{
+  "plugin": "brain",
+  "analysis": {
+    "plugin": "brain",
+    "version": "3.0.0",
+    "summary": "brain v3.0.0 is a skills-only plugin (14 skills, no commands/, no agents) wrapping the external graph-brain MCP server with a \"Brain First\" strategy: SessionStart preload hook, 4-step search protocol, note versioning via changelog notes, deep 10-phase codebase scanner, and cross-session activity logging. Versions are consistent between plugin.json and marketplace.json (3.0.0, fixed in commit 4891e31), and the SessionStart hook is a model of safety (static cat, exit 0, explicit never-block rules). However, the plugin has no README (the only marketplace plugin besides bigbrain without one), does not bundle or document the graph-brain MCP server it is 100% dependent on, references its core GRAPH_PROTOCOL.md by bare filename that skills cannot resolve at runtime, and its update/versioning protocol uses save-knowledge instead of the server's update-knowledge/get-note-history/restore-note-version tools, risking note duplication. Integration is one-directional but real: ui-mockup, long-running, and flow-discovery all query/save via graph-brain MCP tools, though flow-discovery's saves violate brain's own Graph Protocol save rules.",
+    "strengths": [
+      "Exemplary SessionStart hook: hooks/hooks.json uses ${CLAUDE_PLUGIN_ROOT}, session-start.sh is a static cat + exit 0 (never blocks, near-zero cost), and the injected context explicitly mandates 'NEVER block the session' with graceful degradation to codebase reading when the MCP server is down",
+      "Version consistency: plugin.json 3.0.0 == marketplace.json 3.0.0 (recently synced in commit 4891e31), and brain-help's 'Graph Protocol (v3.0.0)' label matches",
+      "Token-efficient skills: 13 of 14 SKILL.md files are 1.8-7.8KB (largest, brain-scan, is 14.5KB); content in English with Thai-output mandate, consistent structure (frontmatter, Steps, Thai report templates) across all skills",
+      "GRAPH_PROTOCOL.md as a single source of truth for save rules (projectName, >=2 tags, folderPath convention, duplicate check, wiki links), 4-step search escalation (text -> tags -> graph traversal -> similar), and the versioning/changelog protocol — a genuinely good design intent",
+      "Connection-failure handling is specified in every entry path (hook, /brain, /brain-load, /brain-scan Phase 1, /brain-status) with retry/skip options — never blocks the user",
+      "brain-scan Smart Scan is thoughtful: git-diff-based incremental detection, changed-file-to-phase mapping table, deduplication, deleted/renamed-file handling, and user confirmation before large scans",
+      "Cross-session observability via .brain/activity-log.json (gitignored) with a dedicated /brain-log viewer and per-command structured log entries",
+      "Genuinely consumed by the ecosystem: ui-mockup /create-html-mockup, long-running /init + /continue, flow-discovery /flow-research, and system-design-doc /help all reference brain queries or graph-brain MCP tools"
+    ],
+    "issues": [
+      {
+        "title": "Plugin is 100% dependent on the graph-brain MCP server but neither bundles nor documents it",
+        "detail": "Every skill and the SessionStart hook call mcp__graph-brain__* tools, yet plugin.json has no mcpServers entry, there is no .mcp.json in the plugin, and there is no README with setup instructions. A fresh marketplace install yields 14 skills and a hook that all fail until the user manually configures the MCP server — and nothing in the plugin tells them how. Repo-wide grep shows 'graph-brain' in JSON only in .claude/settings.local.json (user-level config) and marketplace.json tags.",
+        "severity": "critical",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/.claude-plugin/plugin.json (no mcpServers key); no .mcp.json under D:/GitHub/AgentMarketPlace/plugins/brain/; D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:7 instructs calling mcp__graph-brain__brain-stats with no install path documented anywhere in the plugin"
+      },
+      {
+        "title": "No README.md — only marketplace plugin (besides bigbrain) without one",
+        "detail": "All sibling plugins (ui-mockup, long-running, qa-ui-test, system-design-doc, flow-discovery, dotnet-dev) ship README.md. brain has none, so the marketplace entry's claims (incremental scan, permission matrix, cross-project intelligence) have no user-facing documentation, there is no changelog to cross-check the 3.0.0 version against, and no prerequisites section for the MCP server. Root README.md contains zero brain mentions. Git history confirms a README never existed (including in the brain-dev era).",
+        "severity": "high",
+        "evidence": "Directory listing of D:/GitHub/AgentMarketPlace/plugins/brain/ shows only GRAPH_PROTOCOL.md, hooks/, skills/, .claude-plugin/; grep -i brain D:/GitHub/AgentMarketPlace/README.md returns nothing"
+      },
+      {
+        "title": "GRAPH_PROTOCOL.md referenced by bare filename — skills cannot resolve it at runtime",
+        "detail": "Six skills say 'Follow rules in `GRAPH_PROTOCOL.md`' with no path. The file lives at the plugin root, not inside any skill directory, so a relative read resolves against the user's project cwd and fails; ${CLAUDE_PLUGIN_ROOT} is never used in any SKILL.md. Since the protocol carries the load-bearing contracts (save rules, versioning steps, search escalation), skills silently degrade to their partial inline copies when the file can't be found.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:12, skills/brain-save/SKILL.md:12, skills/brain-update/SKILL.md:12, skills/brain-search/SKILL.md:12, skills/brain-explain/SKILL.md:12, skills/brain-history/SKILL.md:86 — all bare 'GRAPH_PROTOCOL.md' references; file actually at D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md"
+      },
+      {
+        "title": "Versioning Protocol updates notes via save-knowledge; server's update-knowledge / get-note-history / restore-note-version are never used",
+        "detail": "GRAPH_PROTOCOL.md Step 3 ('Update Original Note') and brain-update/brain-save both instruct calling mcp__graph-brain__save-knowledge with new content to 'update' an existing note. The graph-brain server exposes a dedicated update-knowledge tool (plus get-note-history and restore-note-version), implying save-knowledge creates notes — so every 'update' likely produces a duplicate note instead of mutating the original. brain-history also hand-rolls history via changelog-note searches and manual restore instead of get-note-history/restore-note-version. Verify against server semantics; if save-knowledge upserts by title, document that explicitly.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md:59 ('เรียก mcp__graph-brain__save-knowledge ด้วย content ใหม่'); skills/brain-update/SKILL.md:39; skills/brain-save/SKILL.md:58-64; skills/brain-history/SKILL.md:27-31 and 81-87; mcp__graph-brain__update-knowledge / get-note-history / restore-note-version appear in the server tool list but in zero skill files (grep confirms)"
+      },
+      {
+        "title": "Skill descriptions lack trigger phrases — weak auto-invocation for a 'Brain First' plugin",
+        "detail": "All 14 descriptions are short English one-liners with no 'USE THIS SKILL when...' trigger list and no Thai triggers, unlike the house style in qa-ui-test, flow-discovery, long-running, and dotnet-dev. For a plugin whose whole premise (and the user's recorded preference) is that Claude should query brain before exploring the codebase, the main brain skill's description gives the model few hooks to self-trigger on phrases like 'โปรเจกต์นี้ทำอะไร', 'หา dependency', 'permission ของ role'.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain/SKILL.md:3 vs D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/SKILL.md:4-20 (USE THIS SKILL + Thai triggers pattern)"
+      },
+      {
+        "title": "Non-standard frontmatter fields user_invocable and args in all 14 skills",
+        "detail": "Only brain and bigbrain use 'user_invocable: true' and 'args:' — neither is a documented SKILL.md frontmatter field, so they are likely ignored (argument hints never surface to users). The recognized field for argument display is argument-hint; allowed-tools is also absent everywhere. Risk: 'claude plugin validate' warnings and silent loss of the intended slash-command UX metadata.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain/SKILL.md:4-5 (user_invocable, args); grep shows the fields exist only under plugins/brain and plugins/bigbrain; no other plugin in the repo uses them"
+      },
+      {
+        "title": "Activity-log schema duplicated in 8 places with drifting field sets",
+        "detail": "The .brain/activity-log.json entry format is re-specified in session-start.sh, brain-save, brain-update, brain-load, brain-scan (3 variants: started/completed/failed), brain-explore, brain-history, and brain-projects — each with slightly different details objects. brain-search and brain-status log nothing (defensible) but brain-help's filter list advertises '--command load' while brain-log's own filter table omits it, and 'session-start' entries written by the hook are not filterable per the table. This is classic copy-paste drift.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:7; skills/brain-save/SKILL.md:67-94; skills/brain-update/SKILL.md:56-80; skills/brain-load/SKILL.md:44-64; skills/brain-scan/SKILL.md:109-180; skills/brain-explore/SKILL.md:87-104; skills/brain-history/SKILL.md:97-114; skills/brain-projects/SKILL.md:100-116; mismatch: skills/brain-help/SKILL.md:118 ('--command load') vs skills/brain-log/SKILL.md:32-44 (no load row)"
+      },
+      {
+        "title": "brain-scan phase ordering is confusing: 'Phase 10.5' runs before 'Phase 10'",
+        "detail": "The versioning pass is numbered 10.5 yet documented and executed BEFORE the Phase 10 report ('Phase 10.5: Versioning (NEW — runs before Report)'). A numbered sequence where 10.5 precedes 10 invites the model to run them in numeric order and version notes after reporting counts, making the reported changelogs_created wrong.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:315 (Phase 10.5) appearing before line 325 (Phase 10: Report Results)"
+      },
+      {
+        "title": "Hook matcher misses clear/compact, and bash dependency is a Windows portability risk",
+        "detail": "hooks.json matcher 'startup|resume' means after /clear (or compaction) the brain preload context is gone and never re-injected. The hook also shells out to bash, which on the developer's own win32 platform requires Git Bash on PATH — if absent the hook fails silently and Brain First never activates.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/hooks/hooks.json:5 (matcher 'startup|resume') and :9 (command 'bash \\\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\\\"')"
+      },
+      {
+        "title": "Stale spec doc and minor doc drift",
+        "detail": "docs/brain-skill-spec.md still describes v2.0.0: 10 skills (no brain-explore/history/projects/log), the old 'prompt'-type hook (replaced by command-type in commit 8b15cb1), and old plugin.json. brain-howto Section 4 also omits /brain-log and /brain-help from its command coverage list.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/docs/brain-skill-spec.md:36 (version 2.0.0) and :49 (type: prompt hook); D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-howto/SKILL.md:39-51 (command list missing brain-log, brain-help)"
+      }
+    ],
+    "improvements": [
+      {
+        "title": "Bundle or document the graph-brain MCP server dependency",
+        "detail": "Either add an mcpServers block (plugin.json or .mcp.json with ${CLAUDE_PLUGIN_ROOT}-relative paths) so the server installs with the plugin, or — if the server is external — add a README 'Prerequisites' section with the exact `claude mcp add graph-brain ...` command and a first-run check. Also make /brain-status print the expected server name so users can match it against `claude mcp list`.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      {
+        "title": "Add README.md for the brain plugin",
+        "detail": "Create plugins/brain/README.md: version 3.0.0 header, MCP prerequisite, command table (reuse the brain-help skill content verbatim to avoid double maintenance), the Brain First data-flow diagram, integration notes (ui-mockup/long-running/flow-discovery consume graph-brain tools), and a changelog (v2 -> v3: graph-first redesign per docs/superpowers/plans/2026-04-02-brain-graph-first-redesign.md). Match the structure of plugins/long-running/README.md.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Make GRAPH_PROTOCOL.md reachable from skills",
+        "detail": "Replace the six bare 'GRAPH_PROTOCOL.md' references with `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`, or move the protocol to skills/brain/references/graph-protocol.md and reference it with skill-relative paths from each consumer. Given it is only 5.5KB and load-bearing, consider inlining the 6 save rules into brain-save/brain-scan directly and keeping only versioning/search escalation as a reference file.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Adopt the server's update/history/restore tools (or document why not)",
+        "detail": "Switch GRAPH_PROTOCOL.md Step 3, brain-update step 5, and brain-save step 4a from save-knowledge to mcp__graph-brain__update-knowledge (passing noteId) to eliminate duplicate-note risk. In brain-history, use get-note-history as Strategy 0 and restore-note-version for option [3], keeping changelog notes as the human-readable layer. If note-based versioning is deliberately preferred over server versioning, state that in GRAPH_PROTOCOL.md so the unused tools are not a landmine.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      {
+        "title": "Add EN+TH trigger phrases to skill descriptions",
+        "detail": "At minimum for brain, brain-save, brain-scan, brain-update: add 'USE THIS SKILL when the user mentions: ...' plus Thai triggers (e.g. 'โปรเจกต์นี้ทำอะไร', 'อธิบายระบบ', 'หา dependency', 'สแกนโค้ดเข้า brain', 'บันทึกความรู้') following the qa-ui-test/flow-discovery description pattern already proven in this marketplace. This directly serves the user's Brain First preference by improving model-initiated invocation.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Normalize frontmatter to supported fields",
+        "detail": "Replace 'args:' with 'argument-hint:' and drop or verify 'user_invocable:' across all 14 skills (and mirror the fix in bigbrain). Run `claude plugin validate plugins/brain` afterward to confirm no warnings.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Single-source the activity-log schema",
+        "detail": "Move the canonical log-entry JSON schema (shared fields + per-command details) into GRAPH_PROTOCOL.md (or a new LOGGING.md referenced via ${CLAUDE_PLUGIN_ROOT}), reduce each skill's logging section to 'append entry per Logging Protocol, command=brain-X, details={...}'. Then sync brain-log's filter table with every command that actually writes entries (including session-start and load) and fix brain-help's --command list to match.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Fix brain-scan phase numbering and brain-howto coverage",
+        "detail": "Rename 'Phase 10.5' to 'Phase 9.5' (it runs after Phase 9 link building and before the Phase 10 report) and update the marketing line 'สแกนทั้งหมด 10 phases' in brain-help if counts change. Add /brain-log and /brain-help to brain-howto Section 4. Also refresh or delete the stale docs/brain-skill-spec.md (v2.0.0).",
+        "priority": "low",
+        "effort": "small"
+      },
+      {
+        "title": "Publish the consumer contract for cross-plugin saves",
+        "detail": "Other plugins depend on brain note content by title ('Nav Template — Common Issues, Fixes & Verification Checklist' in long-running/continue.md:209 and ui-mockup/create-html-mockup.md:503) and flow-discovery saves notes without projectName/folderPath, violating GRAPH_PROTOCOL save rules. Add a short 'Consumers' section to GRAPH_PROTOCOL.md (or README) listing reserved note titles/tags, and fix flow-discovery's save-knowledge snippets (flow-research.md:156, research-guide.md:128) to include projectName + folderPath so their notes land inside brain's folder conventions.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Consider widening the hook matcher and a bash-free hook",
+        "detail": "Add 'clear' (and optionally 'compact') to the SessionStart matcher so brain context survives /clear, and consider replacing the bash script with a platform-neutral command (e.g. node -e or a .cmd shim) since the primary developer is on Windows where Git Bash on PATH is not guaranteed.",
+        "priority": "low",
+        "effort": "small"
+      }
+    ],
+    "integration_points": [
+      {
+        "target": "all plugins (SessionStart preload)",
+        "mechanism": "SessionStart command hook injects additionalContext instructing: brain-stats connection check, search-knowledge preload keyed on cwd basename (limit=5), Thai warning + continue on failure, and a session-start activity-log write. Hook uses ${CLAUDE_PLUGIN_ROOT}, static cat, exit 0 — never blocks.",
+        "status": "working",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/hooks/hooks.json:3-13; D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:3-12. Caveat: works only if the user has separately configured the graph-brain MCP server (not bundled — see critical issue); matcher 'startup|resume' skips /clear."
+      },
+      {
+        "target": "ui-mockup",
+        "mechanism": "/create-html-mockup Step 2 'Query Brain for Navigation Data' — calls graph-brain MCP tools (search-knowledge, get-knowledge, find-similar, search-by-tags, explore-graph) for nav structure, topbar config, profile dropdown, design tokens; mockup_list.json is the documented fallback; final checklist gates on 'Brain queried?'. Also depends on brain note 'Nav Template — Common Issues, Fixes & Verification Checklist' by title.",
+        "status": "working",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/ui-mockup/commands/create-html-mockup.md:75, 191-209, 503, 549; plugins/ui-mockup/commands/help.md:430-433 ('← brain (knowledge, optional)'). Tool names match the live mcp__graph-brain__* tool set. One-directional: brain plugin files contain no reciprocal reference, and the named note is brain content that cannot be verified from the repo."
+      },
+      {
+        "target": "long-running",
+        "mechanism": "/continue and /init mandate querying brain before implementing DashboardShell/Navbar/Sidebar/ProfileDropdown (nav structure, profile config, icons, design tokens), embed brain nav JSON in feature notes, and write back ('Store generated nav structure in brain for future use'). help.md documents /brain-save for feature context and /brain inside /continue.",
+        "status": "partial",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:172-211 (MUST query brain; :195 store-back; :209 depends on brain note title); commands/init.md:411-441; commands/help.md:511-514. Partial because the write-back instruction specifies none of brain's GRAPH_PROTOCOL save rules (projectName, folderPath, >=2 tags, duplicate check), and the 'Nav Template' note dependency is unverifiable."
+      },
+      {
+        "target": "flow-discovery",
+        "mechanism": "Direct MCP calls: /flow-research Step 0 uses mcp__graph-brain__search-knowledge as a 30-day research cache check; Step 4 saves each research layer via mcp__graph-brain__save-knowledge with tags ['flow-discovery','research',domain,layer]; flow-ideate suggests saving results for reuse.",
+        "status": "partial",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/flow-discovery/commands/flow-research.md:60, 156; plugins/flow-discovery/skills/flow-discovery/references/research-guide.md:128-141; commands/flow-ideate.md:123. Partial because the save calls omit projectName and folderPath required by brain's GRAPH_PROTOCOL.md:14-18, so notes bypass brain's project association and folder conventions."
+      },
+      {
+        "target": "system-design-doc",
+        "mechanism": "Documentation-level optional upstream: help.md lists '← brain / bigbrain (upstream, optional)' — /brain or /bigbrain to query existing knowledge before /brainstorm-design, /brain-save to persist design decisions. No artifact-file contract (brain never reads/writes design_doc_list.json or .design-docs/).",
+        "status": "partial",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/help.md:387-390. One-sided doc mention only; brain plugin files contain zero references to system-design-doc or its artifacts."
+      },
+      {
+        "target": "qa-ui-test",
+        "mechanism": "None found. No brain, graph-brain, /brain-save, or brain-query references anywhere in qa-ui-test commands, skills, or docs. Only indirect benefit is the generic SessionStart preload.",
+        "status": "unverified",
+        "evidence": "grep -i 'graph-brain|/brain|brain-save|brain-load|query brain' across D:/GitHub/AgentMarketPlace/plugins/qa-ui-test returns no matches."
+      },
+      {
+        "target": "dotnet-dev",
+        "mechanism": "None found. No brain references in dotnet-dev; brain-scan's file-pattern tables (.sln, .csproj, EF Context, Repository/UnitOfWork) overlap dotnet-dev's domain but there is no explicit cross-reference in either direction.",
+        "status": "unverified",
+        "evidence": "grep -i 'graph-brain|/brain|brain-save|brain-load|query brain' across D:/GitHub/AgentMarketPlace/plugins/dotnet-dev returns no matches; D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:200-227 (.NET scan patterns, no plugin mention)."
+      },
+      {
+        "target": "code-review",
+        "mechanism": "None found in either direction — brain skills never invoke or mention code-review, and no code-review artifact references brain.",
+        "status": "unverified",
+        "evidence": "No matches for code-review in D:/GitHub/AgentMarketPlace/plugins/brain/**; brain absent from the long-running -> code-review chain documented in long-running/commands/help.md."
+      },
+      {
+        "target": "shared artifact files (feature_list.json, qa-tracker.json, design_doc_list.json, mockup_list.json)",
+        "mechanism": "brain participates in NONE of the marketplace's JSON artifact contracts — its only on-disk artifact is its own .brain/activity-log.json (gitignored). All brain integration flows through graph-brain MCP tools and note-title conventions instead.",
+        "status": "working",
+        "evidence": "grep for feature_list|qa-tracker|design_doc_list|mockup_list|.design-docs|.mockups across D:/GitHub/AgentMarketPlace/plugins/brain returns no matches; .brain/activity-log.json contract defined in hooks/session-start.sh:7 and skills/brain-log/SKILL.md:19-21. This is by design (knowledge layer, not workflow layer) but means brain knowledge is invisible to the qa-trace/nfr-check gate machinery."
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "Plugin is 100% dependent on the graph-brain MCP server but neither bundles nor documents it",
+        "detail": "Every skill and the SessionStart hook call mcp__graph-brain__* tools, yet plugin.json has no mcpServers entry, there is no .mcp.json in the plugin, and there is no README with setup instructions. A fresh marketplace install yields 14 skills and a hook that all fail until the user manually configures the MCP server — and nothing in the plugin tells them how. Repo-wide grep shows 'graph-brain' in JSON only in .claude/settings.local.json (user-level config) and marketplace.json tags.",
+        "severity": "critical",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/.claude-plugin/plugin.json (no mcpServers key); no .mcp.json under D:/GitHub/AgentMarketPlace/plugins/brain/; D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:7 instructs calling mcp__graph-brain__brain-stats with no install path documented anywhere in the plugin"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "No README.md — only marketplace plugin (besides bigbrain) without one",
+        "detail": "All sibling plugins (ui-mockup, long-running, qa-ui-test, system-design-doc, flow-discovery, dotnet-dev) ship README.md. brain has none, so the marketplace entry's claims (incremental scan, permission matrix, cross-project intelligence) have no user-facing documentation, there is no changelog to cross-check the 3.0.0 version against, and no prerequisites section for the MCP server. Root README.md contains zero brain mentions. Git history confirms a README never existed (including in the brain-dev era).",
+        "severity": "high",
+        "evidence": "Directory listing of D:/GitHub/AgentMarketPlace/plugins/brain/ shows only GRAPH_PROTOCOL.md, hooks/, skills/, .claude-plugin/; grep -i brain D:/GitHub/AgentMarketPlace/README.md returns nothing"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "GRAPH_PROTOCOL.md referenced by bare filename — skills cannot resolve it at runtime",
+        "detail": "Six skills say 'Follow rules in `GRAPH_PROTOCOL.md`' with no path. The file lives at the plugin root, not inside any skill directory, so a relative read resolves against the user's project cwd and fails; ${CLAUDE_PLUGIN_ROOT} is never used in any SKILL.md. Since the protocol carries the load-bearing contracts (save rules, versioning steps, search escalation), skills silently degrade to their partial inline copies when the file can't be found.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:12, skills/brain-save/SKILL.md:12, skills/brain-update/SKILL.md:12, skills/brain-search/SKILL.md:12, skills/brain-explain/SKILL.md:12, skills/brain-history/SKILL.md:86 — all bare 'GRAPH_PROTOCOL.md' references; file actually at D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "Versioning Protocol updates notes via save-knowledge; server's update-knowledge / get-note-history / restore-note-version are never used",
+        "detail": "GRAPH_PROTOCOL.md Step 3 ('Update Original Note') and brain-update/brain-save both instruct calling mcp__graph-brain__save-knowledge with new content to 'update' an existing note. The graph-brain server exposes a dedicated update-knowledge tool (plus get-note-history and restore-note-version), implying save-knowledge creates notes — so every 'update' likely produces a duplicate note instead of mutating the original. brain-history also hand-rolls history via changelog-note searches and manual restore instead of get-note-history/restore-note-version. Verify against server semantics; if save-knowledge upserts by title, document that explicitly.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md:59 ('เรียก mcp__graph-brain__save-knowledge ด้วย content ใหม่'); skills/brain-update/SKILL.md:39; skills/brain-save/SKILL.md:58-64; skills/brain-history/SKILL.md:27-31 and 81-87; mcp__graph-brain__update-knowledge / get-note-history / restore-note-version appear in the server tool list but in zero skill files (grep confirms)"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Bundle or document the graph-brain MCP server dependency",
+        "detail": "Either add an mcpServers block (plugin.json or .mcp.json with ${CLAUDE_PLUGIN_ROOT}-relative paths) so the server installs with the plugin, or — if the server is external — add a README 'Prerequisites' section with the exact `claude mcp add graph-brain ...` command and a first-run check. Also make /brain-status print the expected server name so users can match it against `claude mcp list`.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      "verdict": null
+    }
+  ]
+}

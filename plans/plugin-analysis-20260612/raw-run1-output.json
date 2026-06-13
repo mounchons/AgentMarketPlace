@@ -1,0 +1,1240 @@
+{
+  "summary": "Analyze 6 plugins: quality, improvements, cross-plugin integration, dotnet-dev best practices",
+  "agentCount": 27,
+  "logs": [
+    "[verify:long-running:Single version-sync pass: README 2.0.0 -] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:long-running:Wire split-layout registry into continue] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:system-design-doc:Rewrite README.md to v2.1.0] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:brain:Plugin is 100% dependent on the graph-br] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:brain:Versioning Protocol updates notes via sa] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:long-running:v2.9.0 split-layout resolution never wir] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:brain:Bundle or document the graph-brain MCP s] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:brain:GRAPH_PROTOCOL.md referenced by bare fil] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:long-running:README frozen at v2.0.0 — seven minor ve] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:system-design-doc:help.md frozen at v1.7.0 — the user-faci] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:system-design-doc:README frozen at v1.3.0 — wrong version,] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:long-running:SKILL.md frontmatter version 2.6.0 and s] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:system-design-doc:qa-ui-test side of the AC/UC contract is] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[analyze:qa-ui-test] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[analyze:ui-mockup] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:system-design-doc:Main entry command system-design-doc.md ] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "[verify:brain:No README.md — only marketplace plugin (] failed: You've hit your session limit · resets 10am (Asia/Bangkok)",
+    "Analyzed 4/6 plugins; verifying integration map",
+    "[integration-map] failed: You've hit your session limit · resets 10am (Asia/Bangkok)"
+  ],
+  "result": {
+    "analyses": [
+      {
+        "plugin": "dotnet-dev",
+        "analysis": {
+          "plugin": "dotnet-dev",
+          "version": "1.2.0",
+          "summary": "dotnet-dev is a skill-only plugin (no commands, no hooks, no agents) containing one SKILL.md (15.6 KB) plus four reference files (~54 KB total) and a bundled Microsoft Learn MCP server declared inline in plugin.json. Versions are consistent at 1.2.0 between plugin.json and marketplace.json (plugin README carries no version/changelog at all). Content quality of the .NET/EF Core/Aspire material is high and dual-database (PostgreSQL + SQL Server) coverage is genuinely useful. The two biggest defects: (1) the skill frontmatter description was stripped of its \"Use when\"/trigger keywords in commit 8948bc1 (2025-12-26), weakening model-based auto-triggering, while the README still advertises those triggers; (2) MCP usage documentation in SKILL.md and references/microsoft-learn-mcp.md instructs using a nonexistent tool name (mcp__microsoft-learn__search) and an unreliable mcporter CLI fallback instead of the server's actual tools (microsoft_docs_search, microsoft_code_sample_search, microsoft_docs_fetch). Integration is entirely inbound: long-running and system-design-doc both route .NET work to /dotnet-dev, but dotnet-dev itself references no other plugin and no shared artifact (feature_list.json, design_doc_list.json, etc.).",
+          "strengths": [
+            "Clean skill-only architecture with zero hooks - no SessionStart cost beyond the MCP server, nothing heavy loaded into every session",
+            "Progressive disclosure is structurally correct: 4 on-demand reference files (ef-core-patterns.md 17 KB, testing-patterns.md 17 KB, aspire-setup.md 13 KB, microsoft-learn-mcp.md 7 KB) explicitly indexed from SKILL.md lines 457-463",
+            "Version sync is correct: plugin.json (D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/.claude-plugin/plugin.json:3) and marketplace.json (D:/GitHub/AgentMarketPlace/.claude-plugin/marketplace.json:43) both say 1.2.0; marketplace entry has rich category/tags metadata",
+            "Dual-database guidance (PostgreSQL vs SQL Server selection criteria, provider-specific features like JSONB/temporal tables/HierarchyId, database-agnostic configuration pattern) is concrete and practical",
+            "Bundled Microsoft Learn MCP server (plugin.json:8-13) loads correctly - its three tools are visible and usable in sessions",
+            "Reference files contain production-grade, complete code samples (Testcontainers + Respawn integration tests, Aspire AppHost orchestration, domain events, interceptors) rather than generic advice",
+            "Plugin is well-positioned in the marketplace workflow: long-running /init, /init-existing, and /continue all auto-detect .csproj/.sln and mandate the dotnet-dev skill"
+          ],
+          "issues": [
+            {
+              "title": "Skill frontmatter lost its trigger phrases (regression in commit 8948bc1)",
+              "detail": "SKILL.md frontmatter description was reduced from a trigger-rich block (Use when: creating .NET projects... Triggers: \".NET\", \"C#\", \"Entity Framework\", \"EF Core\", \"migration\", ...) to a single short line with no 'Use when' clause and no trigger keywords. Model-invoked skill selection depends heavily on the description; sibling plugins (qa-ui-test, flow-discovery) include explicit EN+TH trigger lists. The plugin README still promises automatic activation on those keywords (README.md:81-90), so the docs now over-promise what the frontmatter delivers. There are also no Thai triggers despite the user/marketplace being Thai-first.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:3 (current short description); git show 8948bc1 diff removing the 'Use when:'/'Triggers:' block; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:81-90 (stale trigger-keyword promise)"
+            },
+            {
+              "title": "MCP usage docs reference nonexistent tool names and a dubious mcporter CLI invocation",
+              "detail": "SKILL.md tells the model to call 'npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...' and names the tool 'mcp__microsoft-learn__search'. The bundled server actually exposes microsoft_docs_search, microsoft_code_sample_search, and microsoft_docs_fetch (prefixed mcp__plugin_dotnet-dev_microsoft-learn__* when installed). A model following these instructions will either run a failing/hanging npx command or look for a tool that does not exist, instead of using the already-loaded MCP tools. references/microsoft-learn-mcp.md repeats the same wrong tool name and dedicates a whole 'Alternative: mcporter CLI' section to it.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:55-62; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/references/microsoft-learn-mcp.md:207-241 (mcporter section, 'mcp__microsoft-learn__search' at line 229)"
+            },
+            {
+              "title": "README installation instructions are stale and use a wrong plugin name/command",
+              "detail": "Plugin README references 'your-username/dotnet-dev-skill' placeholder, a '/plugin add /path/to/dotnet-dev-skill' command that does not exist (correct: /plugin install dotnet-dev@agent-marketplace, which the repo root README gets right at README.md:65), and a 'dotnet-dev-skill' directory name that does not match plugins/dotnet-dev. The standalone-skill copy command also uses the wrong source path.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:18-31 vs D:/GitHub/AgentMarketPlace/README.md:63-66"
+            },
+            {
+              "title": "No version or changelog anywhere in the plugin README",
+              "detail": "Version 1.2.0 exists only in plugin.json and marketplace.json. The README has no version badge and no changelog, so what changed in 1.1.0 (SQL Server support, per commit a257184) and 1.2.0 (path/metadata fixes, per f6ef22c/c5c35a6) is undocumented. Every other actively maintained plugin in this marketplace (ui-mockup, long-running, qa-ui-test) keeps a README changelog; this is the drift pattern already tracked in the marketplace-version-sync memory.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md (no version string present); plugin.json:3 = 1.2.0; marketplace.json:43 = 1.2.0"
+            },
+            {
+              "title": "SKILL.md is a 15.6 KB monolith with internal duplication against references/",
+              "detail": "Eight full code templates live inline in SKILL.md (lines 121-400: BaseEntity, IRepository, IUnitOfWork, generic Repository, DbContext, DI, appsettings, Aspire AppHost), making the always-loaded-on-trigger file ~480 lines. Several blocks duplicate reference content: EnableRetryOnFailure config appears in SKILL.md:300-325 and again in ef-core-patterns.md:399-410 and :559-571; audit-field stamping is implemented twice with no 'pick one' guidance (SaveChangesAsync override at SKILL.md:254-271 vs AuditableEntityInterceptor at ef-core-patterns.md:273-321) - applying both would double-stamp; Aspire AppHost appears in SKILL.md:366-400 and aspire-setup.md:34-81.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:121-400 (15,608 bytes total); references/ef-core-patterns.md:273-321,399-410,559-571; references/aspire-setup.md:34-81"
+            },
+            {
+              "title": "Code-template defects: redundant soft-delete filtering and 'new' Id property hiding",
+              "detail": "The DbContext template installs a global query filter for IsDeleted (SKILL.md:243-251), yet every Repository method also manually filters !e.IsDeleted (GetByIdAsync:184-185, GetAllAsync:187-188, ExistsAsync:209-210, Query:212-213) - redundant and confusing about which mechanism is authoritative. BaseEntity<TKey> uses 'public new TKey Id' (SKILL.md:135-138), shadowing the base long Id; property hiding via 'new' breaks EF Core mapping/polymorphism expectations and is a known anti-pattern that a generated project would inherit.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:135-138, 184-213, 243-251"
+            },
+            {
+              "title": "Three contradictory MCP configuration methods across plugin.json, README, and reference doc",
+              "detail": "plugin.json uses 'npx -y mcp-remote <url>' (stdio bridge spawning a node process every session); README.md:37-46 shows a streamable-http config; microsoft-learn-mcp.md:13-43 shows a third (claude mcp add CLI) plus a .mcp.json example that does not exist in the plugin (the server is inline in plugin.json). A reader cannot tell which is canonical. The mcp-remote bridge also adds avoidable startup overhead vs native HTTP transport.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/.claude-plugin/plugin.json:8-13; README.md:33-46; references/microsoft-learn-mcp.md:13-43"
+            },
+            {
+              "title": "plugin.json missing optional metadata; license mismatch",
+              "detail": "plugin.json has name/version/description/author but no homepage, repository, license, or keywords. README declares MIT license (README.md:103-105) but plugin.json carries no license field, and there is no LICENSE file in the plugin directory.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/.claude-plugin/plugin.json:1-14; README.md:103-105"
+            },
+            {
+              "title": "README architecture claims contradict dual-database positioning",
+              "detail": "README 'Architecture Preferences' states 'PostgreSQL - Primary database' while the plugin description, SKILL.md provider-selection section, and v1.1.0 release all position PostgreSQL and SQL Server as equal first-class options.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:99 vs plugin.json:4 and SKILL.md:32-47"
+            }
+          ],
+          "improvements": [
+            {
+              "title": "Restore trigger-rich frontmatter description with EN + TH triggers",
+              "detail": "In SKILL.md:3, re-add the pre-8948bc1 'Use when:' clause and English trigger list (.NET, C#, Entity Framework, EF Core, migration, repository pattern, unit of work, Clean Architecture, Aspire, Web API, DbContext, LINQ, Blazor, SQL Server, PostgreSQL) and add Thai triggers consistent with sibling plugins (e.g. \"สร้างโปรเจกต์ .NET\", \"เขียน C#\", \"ทำ migration\", \"ออกแบบ entity\", \"สร้าง Web API\"). This is the single highest-leverage fix for auto-triggering and brings frontmatter back in line with README.md:81-90.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Fix MCP tool documentation to name the real tools and delete the mcporter fallback",
+              "detail": "In SKILL.md:51-68 replace the mcporter bash snippet and 'mcp__microsoft-learn__search' with the actual tools: microsoft_docs_search (overview), microsoft_code_sample_search (code samples), microsoft_docs_fetch (full page), and a one-line workflow (search -> code sample -> fetch). In references/microsoft-learn-mcp.md remove the 'Alternative: mcporter CLI' section (lines 207-241) and correct line 229. Keeps the model from shelling out to a failing npx command.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Rewrite README install section and add version + changelog",
+              "detail": "Replace README.md:16-31 with the correct commands (/plugin marketplace add <this repo>, /plugin install dotnet-dev@agent-marketplace) and fix the standalone-skill copy path (plugins/dotnet-dev/skills/dotnet-dev). Add a version header (v1.2.0) and a short changelog covering 1.0.0 (initial), 1.1.0 (SQL Server + multi-database), 1.2.0 (MCP/metadata fixes), matching the convention used by ui-mockup/long-running READMEs.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Slim SKILL.md via a references/code-templates.md split and dedupe alternatives",
+              "detail": "Move inline patterns 4-8 (generic Repository implementation, DbContext, DependencyInjection, appsettings examples, Aspire AppHost - SKILL.md:171-400) into a new references/code-templates.md, keeping only BaseEntity/IRepository/IUnitOfWork signatures and principles in SKILL.md (~50% size cut). While doing so: state explicitly that AuditableEntityInterceptor (ef-core-patterns.md) and the SaveChangesAsync override are mutually exclusive choices; keep retry-on-failure config in one place only.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Add a two-sided integration section documenting long-running and system-design-doc handoffs",
+              "detail": "dotnet-dev currently references zero other plugins (grep confirms no matches for long-running/system-design-doc/feature_list/design_doc_list anywhere under plugins/dotnet-dev). Add a 'Works with' section to SKILL.md and README: (1) long-running /init and /continue invoke this skill for .NET projects; (2) system-design-doc hands off Entities -> C# models, Relationships -> EF configurations, Data Dictionary -> migrations (per system-design-doc SKILL.md:451-461); optionally instruct the skill to check for .design-docs/design_doc_list.json and derive entity classes from registered design docs when present, making the contract executable rather than conceptual.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Fix template defects in BaseEntity and Repository soft-delete",
+              "detail": "In SKILL.md: remove BaseEntity<TKey>'s 'public new TKey Id' shadowing (make Id strategy explicit via a single generic base or document the long-only default), and drop the manual !e.IsDeleted predicates from Repository methods since the global query filter already handles soft delete (or remove the filter and keep predicates - one mechanism only, with a note about IgnoreQueryFilters() for admin queries).",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Switch bundled MCP server to native HTTP transport and consolidate config docs",
+              "detail": "Change plugin.json mcpServers to {\"type\": \"http\", \"url\": \"https://learn.microsoft.com/api/mcp\"} to eliminate the npx/mcp-remote node process spawned every session, then make README.md:33-46 and microsoft-learn-mcp.md:11-43 show that single canonical config (delete the .mcp.json example that doesn't exist in the plugin). Also note the potential duplicate with an externally installed microsoft-docs plugin exposing identical tools.",
+              "priority": "low",
+              "effort": "small"
+            },
+            {
+              "title": "Complete plugin.json metadata",
+              "detail": "Add homepage/repository (the AgentMarketPlace repo), license: \"MIT\" (to match README.md:103-105), and keywords mirroring the marketplace tags, so the manifest is self-describing when installed outside this marketplace.",
+              "priority": "low",
+              "effort": "small"
+            }
+          ],
+          "integration_points": [
+            {
+              "target": "long-running (inbound)",
+              "mechanism": "long-running's /init, /init-existing, and /continue detect .NET projects via *.csproj/*.sln and mandate invoking the /dotnet-dev skill for feature breakdown and implementation ('If .NET project -> must use /dotnet-dev skill'); also listed in long-running's skills_to_use config template and Complete Workflow Phase 3.",
+              "status": "working",
+              "evidence": "plugins/long-running/skills/long-running/SKILL.md:779-811,851; plugins/long-running/commands/continue.md:281,314,339,364; plugins/long-running/commands/init.md:148,178,204,304,491; plugins/long-running/commands/init-existing.md:142,166,273,304; plugins/long-running/references/coding-agent-guide.md:73-93. The dotnet-dev:dotnet-dev skill exists and loads, so the invocation contract resolves. One-sided documentation only: dotnet-dev never mentions long-running (grep over plugins/dotnet-dev: 0 matches)."
+            },
+            {
+              "target": "system-design-doc (inbound)",
+              "mechanism": "Documented conceptual handoff: system-design-doc -> dotnet-dev passes Entities -> C# Model classes, Relationships -> EF Core configurations, Data Dictionary -> Database migrations, APIs -> Controller scaffolding; dotnet-dev also appears in system-design-doc's integration diagram and README related-plugins list.",
+              "status": "partial",
+              "evidence": "plugins/system-design-doc/skills/system-design-doc/SKILL.md:147,451-461; plugins/system-design-doc/README.md:430. Partial because the contract is documentation-only on one side: dotnet-dev has no instruction to read design_doc_list.json or .design-docs/ (grep over plugins/dotnet-dev for design_doc_list/.design-docs: 0 matches), so nothing operationalizes the Entities->EF-config mapping."
+            },
+            {
+              "target": "microsoft-learn MCP server (bundled)",
+              "mechanism": "plugin.json declares an inline mcpServers entry running 'npx -y mcp-remote https://learn.microsoft.com/api/mcp'; SKILL.md and references/microsoft-learn-mcp.md instruct when/how to query it for latest Microsoft docs.",
+              "status": "partial",
+              "evidence": "plugins/dotnet-dev/.claude-plugin/plugin.json:8-13 (server loads; tools microsoft_docs_search/microsoft_code_sample_search/microsoft_docs_fetch are live in sessions). Partial because the usage docs name a nonexistent tool 'mcp__microsoft-learn__search' and a mcporter CLI path (SKILL.md:55-62; references/microsoft-learn-mcp.md:216-237), so documented usage does not match the working server. Note: duplicates an externally installed microsoft-docs plugin exposing the identical server."
+            },
+            {
+              "target": "Shared workflow artifacts (feature_list.json, qa-tracker.json, design_doc_list.json, mockup_list.json, .design-docs/, .mockups/)",
+              "mechanism": "None - dotnet-dev neither reads nor writes any shared artifact file used by the long-running/qa-ui-test/system-design-doc/ui-mockup pipeline.",
+              "status": "unverified",
+              "evidence": "Grep over D:/GitHub/AgentMarketPlace/plugins/dotnet-dev for feature_list|qa-tracker|design_doc_list|mockup_list|.design-docs|.mockups: no matches. dotnet-dev participates in the primary workflow only as a passive knowledge skill invoked by long-running's coding agent."
+            },
+            {
+              "target": "brain / qa-ui-test / ui-mockup / flow-discovery / code-review",
+              "mechanism": "No direct references in either direction specific to dotnet-dev beyond brain's generic SessionStart preload of all plugins.",
+              "status": "unverified",
+              "evidence": "Grep over plugins/dotnet-dev for brain|qa-ui-test|ui-mockup|flow-discovery|code-review: 0 matches; repo-wide grep for 'dotnet-dev' hits only long-running, system-design-doc, marketplace.json, root README, and dotnet-dev itself."
+            }
+          ]
+        },
+        "verdicts": [
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "Skill frontmatter lost its trigger phrases (regression in commit 8948bc1)",
+              "detail": "SKILL.md frontmatter description was reduced from a trigger-rich block (Use when: creating .NET projects... Triggers: \".NET\", \"C#\", \"Entity Framework\", \"EF Core\", \"migration\", ...) to a single short line with no 'Use when' clause and no trigger keywords. Model-invoked skill selection depends heavily on the description; sibling plugins (qa-ui-test, flow-discovery) include explicit EN+TH trigger lists. The plugin README still promises automatic activation on those keywords (README.md:81-90), so the docs now over-promise what the frontmatter delivers. There are also no Thai triggers despite the user/marketplace being Thai-first.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:3 (current short description); git show 8948bc1 diff removing the 'Use when:'/'Triggers:' block; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:81-90 (stale trigger-keyword promise)"
+            },
+            "verdict": {
+              "valid": true,
+              "reasoning": "Confirmed all cited evidence. (1) plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:3 currently has only a one-line description with no 'Use when' clause and no trigger keywords (only incidental Thai words 'รองรับ ... และ ...', no Thai trigger phrases). (2) git show 8948bc1 (in main, latest commit touching the file) shows the exact diff removing the 7-line 'Use when:'/'Triggers:' block listing \".NET\", \"C#\", \"Entity Framework\", \"EF Core\", \"migration\", etc. (3) README.md:81-90 still contains the '📋 Trigger Keywords' section promising automatic activation on those keywords — now over-promising vs the frontmatter. (4) Sibling plugins qa-ui-test (qa-ui-test, qa-advanced, qa-nfr) and flow-discovery SKILL.md files all include 'USE THIS SKILL when' + 'Thai triggers:' blocks, so dotnet-dev diverges from repo convention. (5) The trigger list does not survive elsewhere: plugin.json and marketplace.json descriptions lack triggers, and there is only one SKILL.md in the plugin. The user's installed cache (cache/agent-marketplace/dotnet-dev/1.2.0) still ships the OLD rich description, which masks the regression locally, but the repo is the marketplace source and any fresh install gets the degraded description. The commit was a deliberate 'simplify' pass, but the README contradiction makes this a genuine current inconsistency rather than an intentional, consistent change.",
+              "correction": "Minor nuance only: the regression has not yet affected the user's currently installed copy — the plugin cache at C:/Users/mounc/.claude/plugins/cache/agent-marketplace/dotnet-dev/1.2.0 still contains the old trigger-rich SKILL.md (installed 2025-12-21, before commit 8948bc1, and never re-synced despite the version staying 1.2.0). This also implies a secondary issue: SKILL.md changed without a version bump, so installed copies will not pick up future frontmatter fixes until the version is bumped."
+            }
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "MCP usage docs reference nonexistent tool names and a dubious mcporter CLI invocation",
+              "detail": "SKILL.md tells the model to call 'npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...' and names the tool 'mcp__microsoft-learn__search'. The bundled server actually exposes microsoft_docs_search, microsoft_code_sample_search, and microsoft_docs_fetch (prefixed mcp__plugin_dotnet-dev_microsoft-learn__* when installed). A model following these instructions will either run a failing/hanging npx command or look for a tool that does not exist, instead of using the already-loaded MCP tools. references/microsoft-learn-mcp.md repeats the same wrong tool name and dedicates a whole 'Alternative: mcporter CLI' section to it.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:55-62; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/references/microsoft-learn-mcp.md:207-241 (mcporter section, 'mcp__microsoft-learn__search' at line 229)"
+            },
+            "verdict": {
+              "valid": true,
+              "reasoning": "Confirmed with direct file evidence. (1) SKILL.md lines 55-62 contain the exact mcporter invocation `npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...` (line 57) and the tool name `mcp__microsoft-learn__search` (line 61). (2) references/microsoft-learn-mcp.md has the 'Alternative: mcporter CLI' section at lines 207-241, repeats the same invocation at lines 216-218 and 234-236, and names `mcp__microsoft-learn__search` at line 229. (3) The plugin's .claude-plugin/plugin.json bundles the microsoft-learn server via `npx -y mcp-remote https://learn.microsoft.com/api/mcp`, and the actually-installed tools (verified against the live tool registry and the server's own MCP instructions in this environment) are mcp__plugin_dotnet-dev_microsoft-learn__microsoft_docs_search, __microsoft_code_sample_search, and __microsoft_docs_fetch — there is no tool named 'search', so both the documented MCP tool name and the mcporter call target a nonexistent tool. Even under a user-level config named 'microsoft-learn', the suffix would still be microsoft_docs_search, not search, so the documented name is wrong in every installation scenario. Grep across the plugin found no corrected version elsewhere; the wrong guidance is the only MCP usage guidance in the plugin."
+            }
+          },
+          {
+            "claim": {
+              "kind": "improvement",
+              "title": "Restore trigger-rich frontmatter description with EN + TH triggers",
+              "detail": "In SKILL.md:3, re-add the pre-8948bc1 'Use when:' clause and English trigger list (.NET, C#, Entity Framework, EF Core, migration, repository pattern, unit of work, Clean Architecture, Aspire, Web API, DbContext, LINQ, Blazor, SQL Server, PostgreSQL) and add Thai triggers consistent with sibling plugins (e.g. \"สร้างโปรเจกต์ .NET\", \"เขียน C#\", \"ทำ migration\", \"ออกแบบ entity\", \"สร้าง Web API\"). This is the single highest-leverage fix for auto-triggering and brings frontmatter back in line with README.md:81-90.",
+              "priority": "high",
+              "effort": "small"
+            },
+            "verdict": {
+              "valid": true,
+              "reasoning": "Confirmed with file evidence on every point. (1) Current state: D:\\GitHub\\AgentMarketPlace\\plugins\\dotnet-dev\\skills\\dotnet-dev\\SKILL.md line 3 has only the short description \"Expert .NET Core development - ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns, .NET Aspire รองรับ PostgreSQL และ SQL Server\" — no 'Use when:' clause, no English trigger list, no Thai trigger phrases. (2) Git history: `git show 8948bc1` confirms commit 8948bc18 (\"docs: Simplify and enhance descriptions...\") removed exactly the multi-line description containing \"Use when: creating .NET projects, writing C# code, designing Entity Framework models...\" and the Triggers list (\".NET\", \"C#\", \"Entity Framework\", \"ASP.NET\", \"EF Core\", \"migration\", \"repository pattern\", \"unit of work\", \"Clean Architecture\", \"Aspire\", \"Web API\", \"MVC\", \"dependency injection\", \"DbContext\", \"LINQ\", \"Blazor\", \"SQL Server\", \"PostgreSQL\") — matching the claim's cited keyword list. (3) README drift: plugins/dotnet-dev/README.md lines 81-90 still document a \"📋 Trigger Keywords\" section promising the skill \"จะถูก activate โดยอัตโนมัติ\" on those same keywords, so the frontmatter is genuinely out of line with the README — the simplification commit did not update README, refuting the \"intentional drift\" defense. (4) Sibling consistency: grep confirms 4 sibling SKILL.md files in the same repo (qa-ui-test/qa-ui-test, qa-nfr, qa-advanced, flow-discovery) carry explicit \"Thai triggers\" sections, so adding Thai triggers is consistent with repo conventions. (5) No false positive: the plugin contains only 7 files; grep for \"Use when|Triggers\" across plugins/dotnet-dev (plugin.json, references, README aside) returns no frontmatter-level trigger text elsewhere — the trigger-rich description does not live in another file. Minor nuance: the removal was part of a deliberate 4-plugin \"simplify\" commit, but since README still advertises the trigger keywords and sibling skills follow the trigger-rich pattern, the gap is real and the improvement claim stands."
+            }
+          },
+          {
+            "claim": {
+              "kind": "improvement",
+              "title": "Fix MCP tool documentation to name the real tools and delete the mcporter fallback",
+              "detail": "In SKILL.md:51-68 replace the mcporter bash snippet and 'mcp__microsoft-learn__search' with the actual tools: microsoft_docs_search (overview), microsoft_code_sample_search (code samples), microsoft_docs_fetch (full page), and a one-line workflow (search -> code sample -> fetch). In references/microsoft-learn-mcp.md remove the 'Alternative: mcporter CLI' section (lines 207-241) and correct line 229. Keeps the model from shelling out to a failing npx command.",
+              "priority": "high",
+              "effort": "small"
+            },
+            "verdict": {
+              "valid": true,
+              "reasoning": "Confirmed with file evidence. (1) plugins/dotnet-dev/skills/dotnet-dev/SKILL.md lines 51-68 contain the mcporter bash snippet (line 57: 'npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...') and the nonexistent tool name 'mcp__microsoft-learn__search' (line 61). (2) references/microsoft-learn-mcp.md has the '## Alternative: mcporter CLI' section at lines 207-241, and line 229 is exactly '- ใช้ tool: mcp__microsoft-learn__search'. (3) The plugin's plugin.json bundles the microsoft-learn MCP server (npx mcp-remote https://learn.microsoft.com/api/mcp), whose actual tools are microsoft_docs_search, microsoft_code_sample_search, and microsoft_docs_fetch — there is no 'search' tool, so the documented name is wrong. (4) The correct tool names appear nowhere in the plugin's docs (grep verified), and since the server is bundled in plugin.json, the 'if MCP not configured' mcporter fallback premise is moot. No file already fixes this; the claim's proposed improvement is accurate and actionable."
+            }
+          }
+        ]
+      },
+      {
+        "plugin": "brain",
+        "analysis": {
+          "plugin": "brain",
+          "version": "3.0.0",
+          "summary": "brain v3.0.0 is a skills-only plugin (14 skills, no commands/, no agents) wrapping the external graph-brain MCP server with a \"Brain First\" strategy: SessionStart preload hook, 4-step search protocol, note versioning via changelog notes, deep 10-phase codebase scanner, and cross-session activity logging. Versions are consistent between plugin.json and marketplace.json (3.0.0, fixed in commit 4891e31), and the SessionStart hook is a model of safety (static cat, exit 0, explicit never-block rules). However, the plugin has no README (the only marketplace plugin besides bigbrain without one), does not bundle or document the graph-brain MCP server it is 100% dependent on, references its core GRAPH_PROTOCOL.md by bare filename that skills cannot resolve at runtime, and its update/versioning protocol uses save-knowledge instead of the server's update-knowledge/get-note-history/restore-note-version tools, risking note duplication. Integration is one-directional but real: ui-mockup, long-running, and flow-discovery all query/save via graph-brain MCP tools, though flow-discovery's saves violate brain's own Graph Protocol save rules.",
+          "strengths": [
+            "Exemplary SessionStart hook: hooks/hooks.json uses ${CLAUDE_PLUGIN_ROOT}, session-start.sh is a static cat + exit 0 (never blocks, near-zero cost), and the injected context explicitly mandates 'NEVER block the session' with graceful degradation to codebase reading when the MCP server is down",
+            "Version consistency: plugin.json 3.0.0 == marketplace.json 3.0.0 (recently synced in commit 4891e31), and brain-help's 'Graph Protocol (v3.0.0)' label matches",
+            "Token-efficient skills: 13 of 14 SKILL.md files are 1.8-7.8KB (largest, brain-scan, is 14.5KB); content in English with Thai-output mandate, consistent structure (frontmatter, Steps, Thai report templates) across all skills",
+            "GRAPH_PROTOCOL.md as a single source of truth for save rules (projectName, >=2 tags, folderPath convention, duplicate check, wiki links), 4-step search escalation (text -> tags -> graph traversal -> similar), and the versioning/changelog protocol — a genuinely good design intent",
+            "Connection-failure handling is specified in every entry path (hook, /brain, /brain-load, /brain-scan Phase 1, /brain-status) with retry/skip options — never blocks the user",
+            "brain-scan Smart Scan is thoughtful: git-diff-based incremental detection, changed-file-to-phase mapping table, deduplication, deleted/renamed-file handling, and user confirmation before large scans",
+            "Cross-session observability via .brain/activity-log.json (gitignored) with a dedicated /brain-log viewer and per-command structured log entries",
+            "Genuinely consumed by the ecosystem: ui-mockup /create-html-mockup, long-running /init + /continue, flow-discovery /flow-research, and system-design-doc /help all reference brain queries or graph-brain MCP tools"
+          ],
+          "issues": [
+            {
+              "title": "Plugin is 100% dependent on the graph-brain MCP server but neither bundles nor documents it",
+              "detail": "Every skill and the SessionStart hook call mcp__graph-brain__* tools, yet plugin.json has no mcpServers entry, there is no .mcp.json in the plugin, and there is no README with setup instructions. A fresh marketplace install yields 14 skills and a hook that all fail until the user manually configures the MCP server — and nothing in the plugin tells them how. Repo-wide grep shows 'graph-brain' in JSON only in .claude/settings.local.json (user-level config) and marketplace.json tags.",
+              "severity": "critical",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/.claude-plugin/plugin.json (no mcpServers key); no .mcp.json under D:/GitHub/AgentMarketPlace/plugins/brain/; D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:7 instructs calling mcp__graph-brain__brain-stats with no install path documented anywhere in the plugin"
+            },
+            {
+              "title": "No README.md — only marketplace plugin (besides bigbrain) without one",
+              "detail": "All sibling plugins (ui-mockup, long-running, qa-ui-test, system-design-doc, flow-discovery, dotnet-dev) ship README.md. brain has none, so the marketplace entry's claims (incremental scan, permission matrix, cross-project intelligence) have no user-facing documentation, there is no changelog to cross-check the 3.0.0 version against, and no prerequisites section for the MCP server. Root README.md contains zero brain mentions. Git history confirms a README never existed (including in the brain-dev era).",
+              "severity": "high",
+              "evidence": "Directory listing of D:/GitHub/AgentMarketPlace/plugins/brain/ shows only GRAPH_PROTOCOL.md, hooks/, skills/, .claude-plugin/; grep -i brain D:/GitHub/AgentMarketPlace/README.md returns nothing"
+            },
+            {
+              "title": "GRAPH_PROTOCOL.md referenced by bare filename — skills cannot resolve it at runtime",
+              "detail": "Six skills say 'Follow rules in `GRAPH_PROTOCOL.md`' with no path. The file lives at the plugin root, not inside any skill directory, so a relative read resolves against the user's project cwd and fails; ${CLAUDE_PLUGIN_ROOT} is never used in any SKILL.md. Since the protocol carries the load-bearing contracts (save rules, versioning steps, search escalation), skills silently degrade to their partial inline copies when the file can't be found.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:12, skills/brain-save/SKILL.md:12, skills/brain-update/SKILL.md:12, skills/brain-search/SKILL.md:12, skills/brain-explain/SKILL.md:12, skills/brain-history/SKILL.md:86 — all bare 'GRAPH_PROTOCOL.md' references; file actually at D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md"
+            },
+            {
+              "title": "Versioning Protocol updates notes via save-knowledge; server's update-knowledge / get-note-history / restore-note-version are never used",
+              "detail": "GRAPH_PROTOCOL.md Step 3 ('Update Original Note') and brain-update/brain-save both instruct calling mcp__graph-brain__save-knowledge with new content to 'update' an existing note. The graph-brain server exposes a dedicated update-knowledge tool (plus get-note-history and restore-note-version), implying save-knowledge creates notes — so every 'update' likely produces a duplicate note instead of mutating the original. brain-history also hand-rolls history via changelog-note searches and manual restore instead of get-note-history/restore-note-version. Verify against server semantics; if save-knowledge upserts by title, document that explicitly.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md:59 ('เรียก mcp__graph-brain__save-knowledge ด้วย content ใหม่'); skills/brain-update/SKILL.md:39; skills/brain-save/SKILL.md:58-64; skills/brain-history/SKILL.md:27-31 and 81-87; mcp__graph-brain__update-knowledge / get-note-history / restore-note-version appear in the server tool list but in zero skill files (grep confirms)"
+            },
+            {
+              "title": "Skill descriptions lack trigger phrases — weak auto-invocation for a 'Brain First' plugin",
+              "detail": "All 14 descriptions are short English one-liners with no 'USE THIS SKILL when...' trigger list and no Thai triggers, unlike the house style in qa-ui-test, flow-discovery, long-running, and dotnet-dev. For a plugin whose whole premise (and the user's recorded preference) is that Claude should query brain before exploring the codebase, the main brain skill's description gives the model few hooks to self-trigger on phrases like 'โปรเจกต์นี้ทำอะไร', 'หา dependency', 'permission ของ role'.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain/SKILL.md:3 vs D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/SKILL.md:4-20 (USE THIS SKILL + Thai triggers pattern)"
+            },
+            {
+              "title": "Non-standard frontmatter fields user_invocable and args in all 14 skills",
+              "detail": "Only brain and bigbrain use 'user_invocable: true' and 'args:' — neither is a documented SKILL.md frontmatter field, so they are likely ignored (argument hints never surface to users). The recognized field for argument display is argument-hint; allowed-tools is also absent everywhere. Risk: 'claude plugin validate' warnings and silent loss of the intended slash-command UX metadata.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain/SKILL.md:4-5 (user_invocable, args); grep shows the fields exist only under plugins/brain and plugins/bigbrain; no other plugin in the repo uses them"
+            },
+            {
+              "title": "Activity-log schema duplicated in 8 places with drifting field sets",
+              "detail": "The .brain/activity-log.json entry format is re-specified in session-start.sh, brain-save, brain-update, brain-load, brain-scan (3 variants: started/completed/failed), brain-explore, brain-history, and brain-projects — each with slightly different details objects. brain-search and brain-status log nothing (defensible) but brain-help's filter list advertises '--command load' while brain-log's own filter table omits it, and 'session-start' entries written by the hook are not filterable per the table. This is classic copy-paste drift.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:7; skills/brain-save/SKILL.md:67-94; skills/brain-update/SKILL.md:56-80; skills/brain-load/SKILL.md:44-64; skills/brain-scan/SKILL.md:109-180; skills/brain-explore/SKILL.md:87-104; skills/brain-history/SKILL.md:97-114; skills/brain-projects/SKILL.md:100-116; mismatch: skills/brain-help/SKILL.md:118 ('--command load') vs skills/brain-log/SKILL.md:32-44 (no load row)"
+            },
+            {
+              "title": "brain-scan phase ordering is confusing: 'Phase 10.5' runs before 'Phase 10'",
+              "detail": "The versioning pass is numbered 10.5 yet documented and executed BEFORE the Phase 10 report ('Phase 10.5: Versioning (NEW — runs before Report)'). A numbered sequence where 10.5 precedes 10 invites the model to run them in numeric order and version notes after reporting counts, making the reported changelogs_created wrong.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:315 (Phase 10.5) appearing before line 325 (Phase 10: Report Results)"
+            },
+            {
+              "title": "Hook matcher misses clear/compact, and bash dependency is a Windows portability risk",
+              "detail": "hooks.json matcher 'startup|resume' means after /clear (or compaction) the brain preload context is gone and never re-injected. The hook also shells out to bash, which on the developer's own win32 platform requires Git Bash on PATH — if absent the hook fails silently and Brain First never activates.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/hooks/hooks.json:5 (matcher 'startup|resume') and :9 (command 'bash \\\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\\\"')"
+            },
+            {
+              "title": "Stale spec doc and minor doc drift",
+              "detail": "docs/brain-skill-spec.md still describes v2.0.0: 10 skills (no brain-explore/history/projects/log), the old 'prompt'-type hook (replaced by command-type in commit 8b15cb1), and old plugin.json. brain-howto Section 4 also omits /brain-log and /brain-help from its command coverage list.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/docs/brain-skill-spec.md:36 (version 2.0.0) and :49 (type: prompt hook); D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-howto/SKILL.md:39-51 (command list missing brain-log, brain-help)"
+            }
+          ],
+          "improvements": [
+            {
+              "title": "Bundle or document the graph-brain MCP server dependency",
+              "detail": "Either add an mcpServers block (plugin.json or .mcp.json with ${CLAUDE_PLUGIN_ROOT}-relative paths) so the server installs with the plugin, or — if the server is external — add a README 'Prerequisites' section with the exact `claude mcp add graph-brain ...` command and a first-run check. Also make /brain-status print the expected server name so users can match it against `claude mcp list`.",
+              "priority": "high",
+              "effort": "medium"
+            },
+            {
+              "title": "Add README.md for the brain plugin",
+              "detail": "Create plugins/brain/README.md: version 3.0.0 header, MCP prerequisite, command table (reuse the brain-help skill content verbatim to avoid double maintenance), the Brain First data-flow diagram, integration notes (ui-mockup/long-running/flow-discovery consume graph-brain tools), and a changelog (v2 -> v3: graph-first redesign per docs/superpowers/plans/2026-04-02-brain-graph-first-redesign.md). Match the structure of plugins/long-running/README.md.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Make GRAPH_PROTOCOL.md reachable from skills",
+              "detail": "Replace the six bare 'GRAPH_PROTOCOL.md' references with `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`, or move the protocol to skills/brain/references/graph-protocol.md and reference it with skill-relative paths from each consumer. Given it is only 5.5KB and load-bearing, consider inlining the 6 save rules into brain-save/brain-scan directly and keeping only versioning/search escalation as a reference file.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Adopt the server's update/history/restore tools (or document why not)",
+              "detail": "Switch GRAPH_PROTOCOL.md Step 3, brain-update step 5, and brain-save step 4a from save-knowledge to mcp__graph-brain__update-knowledge (passing noteId) to eliminate duplicate-note risk. In brain-history, use get-note-history as Strategy 0 and restore-note-version for option [3], keeping changelog notes as the human-readable layer. If note-based versioning is deliberately preferred over server versioning, state that in GRAPH_PROTOCOL.md so the unused tools are not a landmine.",
+              "priority": "high",
+              "effort": "medium"
+            },
+            {
+              "title": "Add EN+TH trigger phrases to skill descriptions",
+              "detail": "At minimum for brain, brain-save, brain-scan, brain-update: add 'USE THIS SKILL when the user mentions: ...' plus Thai triggers (e.g. 'โปรเจกต์นี้ทำอะไร', 'อธิบายระบบ', 'หา dependency', 'สแกนโค้ดเข้า brain', 'บันทึกความรู้') following the qa-ui-test/flow-discovery description pattern already proven in this marketplace. This directly serves the user's Brain First preference by improving model-initiated invocation.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Normalize frontmatter to supported fields",
+              "detail": "Replace 'args:' with 'argument-hint:' and drop or verify 'user_invocable:' across all 14 skills (and mirror the fix in bigbrain). Run `claude plugin validate plugins/brain` afterward to confirm no warnings.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Single-source the activity-log schema",
+              "detail": "Move the canonical log-entry JSON schema (shared fields + per-command details) into GRAPH_PROTOCOL.md (or a new LOGGING.md referenced via ${CLAUDE_PLUGIN_ROOT}), reduce each skill's logging section to 'append entry per Logging Protocol, command=brain-X, details={...}'. Then sync brain-log's filter table with every command that actually writes entries (including session-start and load) and fix brain-help's --command list to match.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Fix brain-scan phase numbering and brain-howto coverage",
+              "detail": "Rename 'Phase 10.5' to 'Phase 9.5' (it runs after Phase 9 link building and before the Phase 10 report) and update the marketing line 'สแกนทั้งหมด 10 phases' in brain-help if counts change. Add /brain-log and /brain-help to brain-howto Section 4. Also refresh or delete the stale docs/brain-skill-spec.md (v2.0.0).",
+              "priority": "low",
+              "effort": "small"
+            },
+            {
+              "title": "Publish the consumer contract for cross-plugin saves",
+              "detail": "Other plugins depend on brain note content by title ('Nav Template — Common Issues, Fixes & Verification Checklist' in long-running/continue.md:209 and ui-mockup/create-html-mockup.md:503) and flow-discovery saves notes without projectName/folderPath, violating GRAPH_PROTOCOL save rules. Add a short 'Consumers' section to GRAPH_PROTOCOL.md (or README) listing reserved note titles/tags, and fix flow-discovery's save-knowledge snippets (flow-research.md:156, research-guide.md:128) to include projectName + folderPath so their notes land inside brain's folder conventions.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Consider widening the hook matcher and a bash-free hook",
+              "detail": "Add 'clear' (and optionally 'compact') to the SessionStart matcher so brain context survives /clear, and consider replacing the bash script with a platform-neutral command (e.g. node -e or a .cmd shim) since the primary developer is on Windows where Git Bash on PATH is not guaranteed.",
+              "priority": "low",
+              "effort": "small"
+            }
+          ],
+          "integration_points": [
+            {
+              "target": "all plugins (SessionStart preload)",
+              "mechanism": "SessionStart command hook injects additionalContext instructing: brain-stats connection check, search-knowledge preload keyed on cwd basename (limit=5), Thai warning + continue on failure, and a session-start activity-log write. Hook uses ${CLAUDE_PLUGIN_ROOT}, static cat, exit 0 — never blocks.",
+              "status": "working",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/hooks/hooks.json:3-13; D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:3-12. Caveat: works only if the user has separately configured the graph-brain MCP server (not bundled — see critical issue); matcher 'startup|resume' skips /clear."
+            },
+            {
+              "target": "ui-mockup",
+              "mechanism": "/create-html-mockup Step 2 'Query Brain for Navigation Data' — calls graph-brain MCP tools (search-knowledge, get-knowledge, find-similar, search-by-tags, explore-graph) for nav structure, topbar config, profile dropdown, design tokens; mockup_list.json is the documented fallback; final checklist gates on 'Brain queried?'. Also depends on brain note 'Nav Template — Common Issues, Fixes & Verification Checklist' by title.",
+              "status": "working",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/ui-mockup/commands/create-html-mockup.md:75, 191-209, 503, 549; plugins/ui-mockup/commands/help.md:430-433 ('← brain (knowledge, optional)'). Tool names match the live mcp__graph-brain__* tool set. One-directional: brain plugin files contain no reciprocal reference, and the named note is brain content that cannot be verified from the repo."
+            },
+            {
+              "target": "long-running",
+              "mechanism": "/continue and /init mandate querying brain before implementing DashboardShell/Navbar/Sidebar/ProfileDropdown (nav structure, profile config, icons, design tokens), embed brain nav JSON in feature notes, and write back ('Store generated nav structure in brain for future use'). help.md documents /brain-save for feature context and /brain inside /continue.",
+              "status": "partial",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:172-211 (MUST query brain; :195 store-back; :209 depends on brain note title); commands/init.md:411-441; commands/help.md:511-514. Partial because the write-back instruction specifies none of brain's GRAPH_PROTOCOL save rules (projectName, folderPath, >=2 tags, duplicate check), and the 'Nav Template' note dependency is unverifiable."
+            },
+            {
+              "target": "flow-discovery",
+              "mechanism": "Direct MCP calls: /flow-research Step 0 uses mcp__graph-brain__search-knowledge as a 30-day research cache check; Step 4 saves each research layer via mcp__graph-brain__save-knowledge with tags ['flow-discovery','research',domain,layer]; flow-ideate suggests saving results for reuse.",
+              "status": "partial",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/flow-discovery/commands/flow-research.md:60, 156; plugins/flow-discovery/skills/flow-discovery/references/research-guide.md:128-141; commands/flow-ideate.md:123. Partial because the save calls omit projectName and folderPath required by brain's GRAPH_PROTOCOL.md:14-18, so notes bypass brain's project association and folder conventions."
+            },
+            {
+              "target": "system-design-doc",
+              "mechanism": "Documentation-level optional upstream: help.md lists '← brain / bigbrain (upstream, optional)' — /brain or /bigbrain to query existing knowledge before /brainstorm-design, /brain-save to persist design decisions. No artifact-file contract (brain never reads/writes design_doc_list.json or .design-docs/).",
+              "status": "partial",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/help.md:387-390. One-sided doc mention only; brain plugin files contain zero references to system-design-doc or its artifacts."
+            },
+            {
+              "target": "qa-ui-test",
+              "mechanism": "None found. No brain, graph-brain, /brain-save, or brain-query references anywhere in qa-ui-test commands, skills, or docs. Only indirect benefit is the generic SessionStart preload.",
+              "status": "unverified",
+              "evidence": "grep -i 'graph-brain|/brain|brain-save|brain-load|query brain' across D:/GitHub/AgentMarketPlace/plugins/qa-ui-test returns no matches."
+            },
+            {
+              "target": "dotnet-dev",
+              "mechanism": "None found. No brain references in dotnet-dev; brain-scan's file-pattern tables (.sln, .csproj, EF Context, Repository/UnitOfWork) overlap dotnet-dev's domain but there is no explicit cross-reference in either direction.",
+              "status": "unverified",
+              "evidence": "grep -i 'graph-brain|/brain|brain-save|brain-load|query brain' across D:/GitHub/AgentMarketPlace/plugins/dotnet-dev returns no matches; D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:200-227 (.NET scan patterns, no plugin mention)."
+            },
+            {
+              "target": "code-review",
+              "mechanism": "None found in either direction — brain skills never invoke or mention code-review, and no code-review artifact references brain.",
+              "status": "unverified",
+              "evidence": "No matches for code-review in D:/GitHub/AgentMarketPlace/plugins/brain/**; brain absent from the long-running -> code-review chain documented in long-running/commands/help.md."
+            },
+            {
+              "target": "shared artifact files (feature_list.json, qa-tracker.json, design_doc_list.json, mockup_list.json)",
+              "mechanism": "brain participates in NONE of the marketplace's JSON artifact contracts — its only on-disk artifact is its own .brain/activity-log.json (gitignored). All brain integration flows through graph-brain MCP tools and note-title conventions instead.",
+              "status": "working",
+              "evidence": "grep for feature_list|qa-tracker|design_doc_list|mockup_list|.design-docs|.mockups across D:/GitHub/AgentMarketPlace/plugins/brain returns no matches; .brain/activity-log.json contract defined in hooks/session-start.sh:7 and skills/brain-log/SKILL.md:19-21. This is by design (knowledge layer, not workflow layer) but means brain knowledge is invisible to the qa-trace/nfr-check gate machinery."
+            }
+          ]
+        },
+        "verdicts": [
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "Plugin is 100% dependent on the graph-brain MCP server but neither bundles nor documents it",
+              "detail": "Every skill and the SessionStart hook call mcp__graph-brain__* tools, yet plugin.json has no mcpServers entry, there is no .mcp.json in the plugin, and there is no README with setup instructions. A fresh marketplace install yields 14 skills and a hook that all fail until the user manually configures the MCP server — and nothing in the plugin tells them how. Repo-wide grep shows 'graph-brain' in JSON only in .claude/settings.local.json (user-level config) and marketplace.json tags.",
+              "severity": "critical",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/.claude-plugin/plugin.json (no mcpServers key); no .mcp.json under D:/GitHub/AgentMarketPlace/plugins/brain/; D:/GitHub/AgentMarketPlace/plugins/brain/hooks/session-start.sh:7 instructs calling mcp__graph-brain__brain-stats with no install path documented anywhere in the plugin"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "No README.md — only marketplace plugin (besides bigbrain) without one",
+              "detail": "All sibling plugins (ui-mockup, long-running, qa-ui-test, system-design-doc, flow-discovery, dotnet-dev) ship README.md. brain has none, so the marketplace entry's claims (incremental scan, permission matrix, cross-project intelligence) have no user-facing documentation, there is no changelog to cross-check the 3.0.0 version against, and no prerequisites section for the MCP server. Root README.md contains zero brain mentions. Git history confirms a README never existed (including in the brain-dev era).",
+              "severity": "high",
+              "evidence": "Directory listing of D:/GitHub/AgentMarketPlace/plugins/brain/ shows only GRAPH_PROTOCOL.md, hooks/, skills/, .claude-plugin/; grep -i brain D:/GitHub/AgentMarketPlace/README.md returns nothing"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "GRAPH_PROTOCOL.md referenced by bare filename — skills cannot resolve it at runtime",
+              "detail": "Six skills say 'Follow rules in `GRAPH_PROTOCOL.md`' with no path. The file lives at the plugin root, not inside any skill directory, so a relative read resolves against the user's project cwd and fails; ${CLAUDE_PLUGIN_ROOT} is never used in any SKILL.md. Since the protocol carries the load-bearing contracts (save rules, versioning steps, search escalation), skills silently degrade to their partial inline copies when the file can't be found.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/skills/brain-scan/SKILL.md:12, skills/brain-save/SKILL.md:12, skills/brain-update/SKILL.md:12, skills/brain-search/SKILL.md:12, skills/brain-explain/SKILL.md:12, skills/brain-history/SKILL.md:86 — all bare 'GRAPH_PROTOCOL.md' references; file actually at D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "Versioning Protocol updates notes via save-knowledge; server's update-knowledge / get-note-history / restore-note-version are never used",
+              "detail": "GRAPH_PROTOCOL.md Step 3 ('Update Original Note') and brain-update/brain-save both instruct calling mcp__graph-brain__save-knowledge with new content to 'update' an existing note. The graph-brain server exposes a dedicated update-knowledge tool (plus get-note-history and restore-note-version), implying save-knowledge creates notes — so every 'update' likely produces a duplicate note instead of mutating the original. brain-history also hand-rolls history via changelog-note searches and manual restore instead of get-note-history/restore-note-version. Verify against server semantics; if save-knowledge upserts by title, document that explicitly.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/brain/GRAPH_PROTOCOL.md:59 ('เรียก mcp__graph-brain__save-knowledge ด้วย content ใหม่'); skills/brain-update/SKILL.md:39; skills/brain-save/SKILL.md:58-64; skills/brain-history/SKILL.md:27-31 and 81-87; mcp__graph-brain__update-knowledge / get-note-history / restore-note-version appear in the server tool list but in zero skill files (grep confirms)"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "improvement",
+              "title": "Bundle or document the graph-brain MCP server dependency",
+              "detail": "Either add an mcpServers block (plugin.json or .mcp.json with ${CLAUDE_PLUGIN_ROOT}-relative paths) so the server installs with the plugin, or — if the server is external — add a README 'Prerequisites' section with the exact `claude mcp add graph-brain ...` command and a first-run check. Also make /brain-status print the expected server name so users can match it against `claude mcp list`.",
+              "priority": "high",
+              "effort": "medium"
+            },
+            "verdict": null
+          }
+        ]
+      },
+      {
+        "plugin": "system-design-doc",
+        "analysis": {
+          "plugin": "system-design-doc",
+          "version": "2.1.0 (plugin.json + marketplace.json agree; README footer claims 1.3.0; help.md claims v1.7.0)",
+          "summary": "Mature, contract-heavy documentation plugin (21 commands, 1 skill, no hooks) at v2.1.0 with a well-designed machine-readable registry (design_doc_list.json schema 2.3.0, split per-section layout, AC-NNN/UC-NNN ID contracts, sitemap.json graph schema). Core generation/sync/validation commands and templates are internally consistent, and the two heaviest consumers (long-running v2.9.0, ui-mockup) correctly implement the split-aware reading protocol. The main problems are documentation drift — README is frozen at v1.3.0 and help.md at v1.7.0, both missing the 9 v2.x commands — plus a partially executed v2.1 migration (system-design-doc.md and reverse-engineer.md still describe legacy single-file output), three commands with no frontmatter at all, and a qa-ui-test contract that is one-sided (qa-trace never looks in .design-docs/, qa-tracker template uses the forbidden AC-1.1 format, and use_case_id does not exist on the qa side).",
+          "strengths": [
+            "Machine-readable contract design: skills/system-design-doc/templates/design_doc_list.json (schema 2.3.0) embeds sections[] registry with per-section anchors regexes, AC/UC structures, ID-format metadata (ac_id_format, uc_header_pattern), and compatible_with version gates — consumers can resolve everything without parsing prose",
+            "Split-layout progressive disclosure for consumers is real and adopted: SKILL.md 'Reading Protocol for Consumers' is implemented by long-running (skills/long-running/SKILL.md:668,698; coding-agent-guide.md:79) and ui-mockup (references/reading-design-docs.md:8-9) — token-efficient section-level reads instead of whole-doc cats",
+            "No hooks directory — zero per-session overhead; all weight is opt-in via commands/skill",
+            "Sitemap commands correctly use ${CLAUDE_PLUGIN_ROOT} for intra-plugin schema/template paths and pair them with concrete ajv-cli validation (commands/sitemap-init.md:40,52; sitemap-validate.md:22; sitemap-add-node.md:65)",
+            "Section templates are contract-consistent: all 10 templates/sections/NN-*.md carry the exact line-1 marker '<!-- sdd-section: <key> | doc: __PROJECT_SLUG__ | schema: 2.3.0 -->' matching split-design-doc.md Step 3 and CRITICAL RULE 36",
+            "CRITICAL RULES with numbered, testable constraints (rules 24-30 pin AC-NNN format and the UC heading regex that qa-trace greps) plus self-check checklists give downstream agents enforceable contracts rather than vague guidance",
+            "plugin.json and marketplace.json versions are in sync at 2.1.0, and the marketplace tags are accurate",
+            "Bidirectional sync commands document exactly which fields they write on both sides (e.g., sync-with-mockups.md:176-188 lists design_doc_list.json and mockup_list.json field updates that match the actual ui-mockup template fields)"
+          ],
+          "issues": [
+            {
+              "title": "README frozen at v1.3.0 — wrong version, missing 11 of 21 commands, stale schema and output layout",
+              "detail": "README footer says 'Version: 1.3.0, Last Updated: 2025-01' while plugin.json/marketplace say 2.1.0 (the top of the same README says 'What's new in v2.0' — internally contradictory). The Commands table (lines 34-45) lists only 10 commands, omitting /brainstorm-design, /sync-with-qa-tracker, /help, /split-design-doc and all 8 /sitemap-* commands. README shows design_doc_list schema_version 2.1.0 (line 365) and 'Compatible Versions: design_doc_list.json 2.1.0' (line 398) vs actual template schema 2.3.0. Output Files section (lines 213-218) shows only the legacy single-file layout, contradicting the v2.1 default split layout. Cross-Plugin Integration section (lines 340-358) shows only 3 plugins, omitting qa-ui-test which /validate-integration covers. Changelog stops at 1.3.0.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/README.md:5,34-45,213-218,344-358,365,398,406-414 vs D:/GitHub/AgentMarketPlace/plugins/system-design-doc/.claude-plugin/plugin.json:3"
+            },
+            {
+              "title": "help.md frozen at v1.7.0 — the user-facing command reference omits all 9 v2.x commands",
+              "detail": "commands/help.md (42 KB) banners 'คู่มือการใช้งาน v1.7.0' and '/help --new # What's new in v1.7.0'; it documents 12 commands and never mentions /sitemap-init, /sitemap-add-node, /sitemap-link, /sitemap-scan, /sync-sitemap, /sitemap-validate, /sitemap-graph, /sitemap-export, or /split-design-doc, and has zero occurrences of doc_layout/split. Users running /help get a two-major-versions-old picture of the plugin.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/help.md:8,37-38,48,54 (26 'v1.7.0' references, no sitemap-*/split-design-doc matches)"
+            },
+            {
+              "title": "Main entry command system-design-doc.md not migrated to v2.1 split layout",
+              "detail": "The catch-all /system-design-doc command still instructs 'Create file system-design-[project-name].md' (not even under .design-docs/) using the legacy templates/design-doc-template.md, with no mention of doc_layout, sections[], or 00-index.md. Running the plugin's primary command produces the legacy single-file output while /create-design-doc and /import-plan produce the split default — contradictory behavior depending on entry point.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/system-design-doc.md:44,55,290 (zero split/doc_layout/00-index matches)"
+            },
+            {
+              "title": "Three commands have no YAML frontmatter at all",
+              "detail": "sync-with-features.md, sync-with-mockups.md, and validate-integration.md start directly with '# /command' — no description and no allowed-tools. They get no description in command listings and inherit no tool pre-approvals, unlike every other command in the plugin.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-features.md:1, sync-with-mockups.md:1, validate-integration.md:1"
+            },
+            {
+              "title": "qa-ui-test side of the AC/UC contract is skewed: wrong search path, forbidden ID format in template, missing use_case_id field",
+              "detail": "system-design-doc SKILL.md (Reading Protocol) claims qa-ui-test MUST resolve sections via the registry, and CRITICAL RULE 24 forbids AC-X.Y format. But qa-ui-test/commands/qa-trace.md auto-discovers ACs with 'find docs/' and 'grep -rE ... docs/ --include=*.md' (never .design-docs/, never design_doc_list.json — zero references in the whole qa-ui-test plugin), and qa-tracker.json template line 98 exemplifies acceptance_criteria_id as [\"AC-1.1\", \"AC-1.2\"] — the exact format rule 24 bans. Additionally /sync-with-qa-tracker Step 5 writes scenario.use_case_id, a field that appears nowhere in qa-ui-test (template or commands). Auto-discovery from qa side will miss every doc this plugin generates; only the system-design-doc-driven /sync-with-qa-tracker path works.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/commands/qa-trace.md:63,105 ; D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:98 ; D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:300,408 ; sync-with-qa-tracker.md:102,221"
+            },
+            {
+              "title": "brainstorm-design.md allowed-tools contradicts its own steps (no Write, no Bash)",
+              "detail": "Frontmatter allows only Read/Glob/Grep/WebSearch, but Step 0 runs 'mkdir -p .design-docs' and 'ls' (Bash), and CRITICAL RULE 3 + the rejection criteria mandate saving .design-docs/brainstorm-[name].md (Write). The command cannot satisfy its mandatory output with its declared toolset without extra permission prompts.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/brainstorm-design.md:3 vs :14,22,52-57"
+            },
+            {
+              "title": "Intra-plugin template/reference paths mostly lack ${CLAUDE_PLUGIN_ROOT}",
+              "detail": "Only the 3 sitemap commands use ${CLAUDE_PLUGIN_ROOT}. The other ~12 commands reference 'templates/design-doc-template.md', 'templates/sections/NN-<key>.md', 'references/mermaid-patterns.md' etc. as bare relative paths, which resolve against the user's project cwd, not the plugin install dir. The agent must guess/search for the real location at runtime.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/create-design-doc.md:123-126,184-191 ; reverse-engineer.md:117 ; system-design-doc.md:44 ; import-plan.md:89-92,342 ; split-design-doc.md:38 (contrast sitemap-init.md:40,52)"
+            },
+            {
+              "title": "Partially executed v2.1 split migration leaves internal contradictions in reverse-engineer.md and import-plan.md",
+              "detail": "reverse-engineer.md line 109 mandates split layout (schema 2.3.0) but lines 113/197/233 still show output '.design-docs/system-design-[project].md' single files and lines 117/303 point to the legacy monolith template. import-plan.md line 214 mandates split + schema 2.3.0 but line 342 says 'Use the structure from templates/design_doc_list.json (schema v2.1.0)' and line 504 stages 'git add .design-docs/system-design-*.md'. validate-integration.md Step 2 still pins design_doc_list.json at 2.2.0.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/reverse-engineer.md:109,113,197,233 ; import-plan.md:214,342,504 ; validate-integration.md:48"
+            },
+            {
+              "title": "Registry path inconsistency: sync/validate commands read design_doc_list.json from project root",
+              "detail": "sync-with-features.md, sync-with-mockups.md, sync-with-qa-tracker.md, and validate-integration.md all do 'cat design_doc_list.json' (root), while create-design-doc/edit-section/import-plan/split-design-doc and all consumers use '.design-docs/design_doc_list.json' — the documented location. The root-path reads will fail first try on any doc this plugin generates.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-features.md:30 ; sync-with-mockups.md:30 ; sync-with-qa-tracker.md:39 ; validate-integration.md:30 vs create-design-doc.md:57"
+            },
+            {
+              "title": "SKILL.md is monolithic (28.5 KB) with misplaced rule content and a frontmatter description lacking trigger phrases",
+              "detail": "SKILL.md carries 38 CRITICAL RULES, 4 mermaid workflow diagrams, full version history, and tables duplicated in README and help.md — all loaded whenever the skill triggers. Structural bug: the 'Tables Summary' code block at lines 307-313 belongs to rule 23's consistency report but sits orphaned under rule 30 because the v1.7.0 rules block was inserted between rule 23 and its example. The frontmatter description has no 'Use when' trigger phrases and no Thai triggers, unlike sibling plugins (qa-ui-test, flow-discovery, long-running all ship EN+TH trigger lists), weakening auto-invocation.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:2-3,296-313,601-614 (28,566 bytes)"
+            },
+            {
+              "title": "Marketplace description stale relative to plugin.json (no v2.0/v2.1 features)",
+              "detail": "marketplace.json version is synced (2.1.0) but its description still describes the v1.7.0 feature set ('Mermaid diagrams 7 ประเภท', qa integration, /help) with no mention of sitemap.json, the 8 sitemap commands, or split-doc layout — while plugin.json's description does. plugin.json's description itself is a ~700-char changelog dump rather than a concise description.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/.claude-plugin/marketplace.json (system-design-doc entry, description field) vs D:/GitHub/AgentMarketPlace/plugins/system-design-doc/.claude-plugin/plugin.json:4"
+            },
+            {
+              "title": "sitemap-scan.md allowed-tools lists non-existent 'Agent(*)' tool",
+              "detail": "The subagent tool in Claude Code is 'Task', not 'Agent'. The entry grants nothing and suggests the parallel-scan step was never permission-tested.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sitemap-scan.md:3"
+            },
+            {
+              "title": "README compatible-versions table disagrees with template metadata",
+              "detail": "README says minimum mockup_list.json 1.7.0; the registry template metadata.compatible_with says >=1.6.0. Minor, but these tables are the contract consumers check.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/README.md:399 vs skills/system-design-doc/templates/design_doc_list.json:328"
+            }
+          ],
+          "improvements": [
+            {
+              "title": "Rewrite README.md to v2.1.0",
+              "detail": "Fix the footer version (1.3.0 → 2.1.0) and date; add all 21 commands to the Commands table (8 sitemap-*, /split-design-doc, /sync-with-qa-tracker, /brainstorm-design, /help); replace the single-file Output Files tree with the split layout (.design-docs/<slug>/00-index.md + NN-*.md); bump schema examples/compat table to 2.3.0; add qa-ui-test to the Cross-Plugin Integration diagram; append changelog entries 1.4.0-2.1.0 (copy from SKILL.md Version History).",
+              "priority": "high",
+              "effort": "medium"
+            },
+            {
+              "title": "Refresh help.md to v2.1.0",
+              "detail": "Update the banner and '/help --new' to v2.1.0; add a SITEMAP section (8 commands) and /split-design-doc with examples; mention doc_layout split and the registry reading protocol in '/help --integration'. Consider trimming the 42 KB file while at it — the workflow walkthroughs duplicate SKILL.md heavily.",
+              "priority": "high",
+              "effort": "medium"
+            },
+            {
+              "title": "Finish the v2.1 split migration in the three stale commands",
+              "detail": "system-design-doc.md: replace 'Create file system-design-[project-name].md' + legacy template references with the split-layout Steps 6-7 delegation used by import-plan.md:214. reverse-engineer.md: fix lines 113/197/233 output examples to '.design-docs/<slug>/' and re-point 117/303 to templates/sections/. import-plan.md: fix line 342 'schema v2.1.0' → 2.3.0 and line 504 git add glob. validate-integration.md: bump Step 2 expected schema to 2.3.0 with 2.2.0 accepted.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Add frontmatter to sync-with-features, sync-with-mockups, validate-integration",
+              "detail": "Add description (matching the SKILL.md commands table wording) and allowed-tools (Read/Write/Edit/Glob/Grep/Bash for the sync pair; read-only set for validate-integration since it declares itself read-only at line 463).",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Fix brainstorm-design allowed-tools",
+              "detail": "Add Write(*) and Bash(*) (or replace the mkdir/ls bash steps with Write-implied directory creation) so the mandatory '.design-docs/brainstorm-[name].md' output is achievable under the declared toolset. Also fix sitemap-scan.md 'Agent(*)' → 'Task(*)'.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Standardize registry path and intra-plugin paths",
+              "detail": "Change 'cat design_doc_list.json' to 'cat .design-docs/design_doc_list.json' (with root fallback) in the four sync/validate commands; prefix all templates/ and references/ mentions in commands with ${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/ as the sitemap commands already do.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Coordinate qa-ui-test contract fixes (cross-plugin PR)",
+              "detail": "In qa-ui-test: (1) qa-trace.md Step 0/Source 2 should read .design-docs/design_doc_list.json first and resolve sections[key=requirements].file per the registry protocol, falling back to docs/ greps; (2) change qa-tracker.json template example to flat AC-NNN ([\"AC-001\",\"AC-002\"]) per system-design-doc rule 24; (3) add use_case_id (nullable) to the scenario template so /sync-with-qa-tracker Step 5 writes a documented field.",
+              "priority": "high",
+              "effort": "medium"
+            },
+            {
+              "title": "Slim SKILL.md via progressive disclosure",
+              "detail": "Move CRITICAL RULES 14-38 details, the Output Rejection/Penalty blocks, Post-Edit Consistency Report, and the Version History table into references/critical-rules.md (linked from a 10-line summary), and drop the 3 generation workflow mermaid diagrams (they restate the commands). While restructuring, re-home the orphaned 'Tables Summary' code block (lines 307-313) back under rule 23. Target ≤ 12 KB SKILL.md.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Add trigger-rich skill description (EN + TH)",
+              "detail": "Extend the SKILL.md frontmatter description with 'USE THIS SKILL when the user mentions: system design, design document, ER diagram, data dictionary, reverse engineer, sitemap, acceptance criteria...' plus Thai triggers ('ออกแบบระบบ', 'เอกสารออกแบบ', 'สร้าง ER diagram', 'reverse engineer ระบบ') matching the convention used by qa-ui-test/flow-discovery/long-running skills.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Tighten plugin.json and marketplace description",
+              "detail": "Replace the changelog-style plugin.json description with 2-3 sentences (features live in README); sync the marketplace description to mention sitemap.json, the sitemap command family, and split-doc layout; consider adding homepage/repository fields.",
+              "priority": "low",
+              "effort": "small"
+            },
+            {
+              "title": "Add argument-hint frontmatter to argumented commands",
+              "detail": "Commands like /edit-section, /create-diagram, /sitemap-add-node, /sitemap-link, /split-design-doc, /help take positional args/flags — argument-hint improves discoverability in the slash-command picker.",
+              "priority": "low",
+              "effort": "small"
+            }
+          ],
+          "integration_points": [
+            {
+              "target": "ui-mockup",
+              "mechanism": "Sitemap/Entities handoff via design_doc_list.json ↔ .mockups/mockup_list.json (fields design_doc_entity_ref, design_doc_section, design_doc_api_refs, last_synced_with_design_doc) + /sync-with-mockups; ui-mockup v1.10 reads design docs split-aware through the sections[] registry",
+              "status": "working",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-mockups.md:176-188 ↔ D:/GitHub/AgentMarketPlace/plugins/ui-mockup/skills/ui-mockup/templates/mockup_list.json:13,26,77-78 ; split protocol: plugins/ui-mockup/skills/ui-mockup/references/reading-design-docs.md:8-9,44 (schema ≥ 2.3.0 matches template)"
+            },
+            {
+              "target": "long-running",
+              "mechanism": "Modules/APIs/entities → features via design_doc_list.json (crud_operations gate, entities[].feature_ids, api_endpoints[].feature_id) ↔ feature_list.json features[].design_doc_refs; /sync-with-features + long-running /generate-features-from-design (exists, reads .design-docs/design_doc_list.json); long-running v2.9.0 /continue resolves sections via registry and is split-aware",
+              "status": "working",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/generate-features-from-design.md:39,58 ; plugins/long-running/skills/long-running/templates/feature_list.json:232,991-999 (design_doc_list_schema >=2.2.0, AC-NNN format) ; plugins/long-running/skills/long-running/SKILL.md:668,698,891 ; minor stale: generate-features-from-design.md:17,29 still globs '*system-design*.md' at root/docs, not .design-docs/<slug>/"
+            },
+            {
+              "target": "qa-ui-test",
+              "mechanism": "AC-NNN/UC-NNN source-of-truth → qa-tracker.json scenarios[].acceptance_criteria_id[] via /sync-with-qa-tracker (push IDs, pull coverage into acceptance_criteria[].linked_scenarios + sync_status.qa_tracker); /qa-trace auto-discovery greps AC/UC patterns; /validate-integration computes AC/UC coverage gates",
+              "status": "partial",
+              "evidence": "Push/pull side defined: D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-qa-tracker.md:93-142 and qa-tracker field exists (plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:98). Skew: qa-trace.md:63,105 searches docs/ never .design-docs/ or the registry (zero design_doc_list.json refs in qa-ui-test); qa-tracker template example uses banned 'AC-1.1' format (violates SKILL.md rule 24); scenario.use_case_id written by sync-with-qa-tracker.md:102,221 exists nowhere in qa-ui-test"
+            },
+            {
+              "target": "dotnet-dev",
+              "mechanism": "Documented conceptual handoff only (Entities → C# models, DD → EF migrations, APIs → controllers) in SKILL.md 'dotnet-dev Integration'; no shared artifact file and no command cross-invocation",
+              "status": "partial",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:451-461 and README.md:430; dotnet-dev plugin has zero references back to system-design-doc (grep 'system-design' in plugins/dotnet-dev → no matches)"
+            },
+            {
+              "target": "flow-discovery",
+              "mechanism": "Inbound handoff: flow-discovery findings → /edit-section and /brainstorm-design; flow-tracker.json findings[].handoffTo enumerates 'system-design-doc'",
+              "status": "working",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/flow-discovery/skills/flow-discovery/templates/flow-tracker.json:28 ; plugins/flow-discovery/skills/flow-discovery/SKILL.md:74 ; plugins/flow-discovery/README.md:29 — both target commands exist in this plugin (one-way by design)"
+            },
+            {
+              "target": "long-running (release gates: /nfr-check, /qa-coverage-check)",
+              "mechanism": "feature_list.json acceptance_criteria_id[] declared as 'references design_doc_list.json acceptance_criteria[].id' (AC-NNN flat) — long-running enforces gap_acs/nfr blocks before passes=true, closing the loop on AC IDs this plugin owns",
+              "status": "working",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/templates/feature_list.json:996-999,1037 matching skills/system-design-doc/templates/design_doc_list.json:332 (ac_id_format AC-NNN)"
+            },
+            {
+              "target": "sync-sitemap downstream pull (ui-mockup + long-running + qa-ui-test artifacts)",
+              "mechanism": "/sync-sitemap Step 4 reads .mockups/mockup_list.json, feature_list.json, qa-tracker.json to populate sitemap.json linked_artifacts[] and stage_status[] (R35 validates artifact integrity)",
+              "status": "partial",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-sitemap.md:57-72 — reads are one-directional and rely on fields like qa-tracker scenarios 'page_id' and feature 'page_ref' that are not declared contracts in the consumer templates; no consumer references sitemap.json back"
+            },
+            {
+              "target": "brain",
+              "mechanism": "No explicit coupling — system-design-doc contains no brain references; integration is passive (brain-scan can index .design-docs/ artifacts at session start)",
+              "status": "unverified",
+              "evidence": "grep 'brain' across plugins/system-design-doc → no functional references"
+            }
+          ]
+        },
+        "verdicts": [
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "README frozen at v1.3.0 — wrong version, missing 11 of 21 commands, stale schema and output layout",
+              "detail": "README footer says 'Version: 1.3.0, Last Updated: 2025-01' while plugin.json/marketplace say 2.1.0 (the top of the same README says 'What's new in v2.0' — internally contradictory). The Commands table (lines 34-45) lists only 10 commands, omitting /brainstorm-design, /sync-with-qa-tracker, /help, /split-design-doc and all 8 /sitemap-* commands. README shows design_doc_list schema_version 2.1.0 (line 365) and 'Compatible Versions: design_doc_list.json 2.1.0' (line 398) vs actual template schema 2.3.0. Output Files section (lines 213-218) shows only the legacy single-file layout, contradicting the v2.1 default split layout. Cross-Plugin Integration section (lines 340-358) shows only 3 plugins, omitting qa-ui-test which /validate-integration covers. Changelog stops at 1.3.0.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/README.md:5,34-45,213-218,344-358,365,398,406-414 vs D:/GitHub/AgentMarketPlace/plugins/system-design-doc/.claude-plugin/plugin.json:3"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "help.md frozen at v1.7.0 — the user-facing command reference omits all 9 v2.x commands",
+              "detail": "commands/help.md (42 KB) banners 'คู่มือการใช้งาน v1.7.0' and '/help --new # What's new in v1.7.0'; it documents 12 commands and never mentions /sitemap-init, /sitemap-add-node, /sitemap-link, /sitemap-scan, /sync-sitemap, /sitemap-validate, /sitemap-graph, /sitemap-export, or /split-design-doc, and has zero occurrences of doc_layout/split. Users running /help get a two-major-versions-old picture of the plugin.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/help.md:8,37-38,48,54 (26 'v1.7.0' references, no sitemap-*/split-design-doc matches)"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "Main entry command system-design-doc.md not migrated to v2.1 split layout",
+              "detail": "The catch-all /system-design-doc command still instructs 'Create file system-design-[project-name].md' (not even under .design-docs/) using the legacy templates/design-doc-template.md, with no mention of doc_layout, sections[], or 00-index.md. Running the plugin's primary command produces the legacy single-file output while /create-design-doc and /import-plan produce the split default — contradictory behavior depending on entry point.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/system-design-doc.md:44,55,290 (zero split/doc_layout/00-index matches)"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "qa-ui-test side of the AC/UC contract is skewed: wrong search path, forbidden ID format in template, missing use_case_id field",
+              "detail": "system-design-doc SKILL.md (Reading Protocol) claims qa-ui-test MUST resolve sections via the registry, and CRITICAL RULE 24 forbids AC-X.Y format. But qa-ui-test/commands/qa-trace.md auto-discovers ACs with 'find docs/' and 'grep -rE ... docs/ --include=*.md' (never .design-docs/, never design_doc_list.json — zero references in the whole qa-ui-test plugin), and qa-tracker.json template line 98 exemplifies acceptance_criteria_id as [\"AC-1.1\", \"AC-1.2\"] — the exact format rule 24 bans. Additionally /sync-with-qa-tracker Step 5 writes scenario.use_case_id, a field that appears nowhere in qa-ui-test (template or commands). Auto-discovery from qa side will miss every doc this plugin generates; only the system-design-doc-driven /sync-with-qa-tracker path works.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/commands/qa-trace.md:63,105 ; D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:98 ; D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:300,408 ; sync-with-qa-tracker.md:102,221"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "improvement",
+              "title": "Rewrite README.md to v2.1.0",
+              "detail": "Fix the footer version (1.3.0 → 2.1.0) and date; add all 21 commands to the Commands table (8 sitemap-*, /split-design-doc, /sync-with-qa-tracker, /brainstorm-design, /help); replace the single-file Output Files tree with the split layout (.design-docs/<slug>/00-index.md + NN-*.md); bump schema examples/compat table to 2.3.0; add qa-ui-test to the Cross-Plugin Integration diagram; append changelog entries 1.4.0-2.1.0 (copy from SKILL.md Version History).",
+              "priority": "high",
+              "effort": "medium"
+            },
+            "verdict": null
+          }
+        ]
+      },
+      {
+        "plugin": "long-running",
+        "analysis": {
+          "plugin": "long-running",
+          "version": "2.9.0 (plugin.json + marketplace.json); SKILL.md frontmatter says 2.6.0; README says 2.0.0; help.md says 2.6.0+/2.8.0",
+          "summary": "long-running v2.9.0 is the most contract-rich plugin in the marketplace: 19 commands, a 7-step Verification Pipeline, 4 release gates wired to qa-ui-test's qa-tracker.json, design-doc impact checks wired to system-design-doc's design_doc_list.json, and a UI Control Manifest handoff whose test categories match qa-ui-test exactly. The core machinery (continue/nfr-check/qa-coverage-check/emit-control-spec/scan-changes) is solid and genuinely two-sided. The plugin's weakness is severe internal documentation drift: README is frozen at v2.0.0 (7 minor versions behind, missing 7 commands, recommending two skills that do not exist), SKILL.md frontmatter says 2.6.0 and the skill body has zero mention of v2.7 scan-changes or v2.8 Gate 4, six commands have no frontmatter, no intra-plugin path uses ${CLAUDE_PLUGIN_ROOT}, and the headline v2.9.0 feature (split-layout design-doc resolution) was added only to SKILL.md and references/coding-agent-guide.md while continue.md — the command that actually executes Verification Pipeline Step 2 — still uses the legacy single-file find fallback and never points to the guide.",
+          "strengths": [
+            "plugin.json and marketplace.json versions are in sync at 2.9.0 (D:/GitHub/AgentMarketPlace/plugins/long-running/.claude-plugin/plugin.json:3, .claude-plugin/marketplace.json:67)",
+            "Gate 4 control manifest contract is exactly mirrored on the qa-ui-test side: mandatory categories render-binding/api-binding/permission/validation/cascade-loading-error in continue.md:1014-1024 match qa-ui-test/skills/qa-ui-test/references/control-spec-scenarios.md:15-33 verbatim",
+            "qa-tracker.json schema requirement (>=1.7.0) in nfr-check.md:78 and qa-coverage-check.md:68 matches qa-ui-test's shipped template (qa-tracker.json template declares schema_version 1.7.0 with nfr_results and traceability sections)",
+            "Strict consumer discipline: nfr-check.md:39 and qa-coverage-check.md:41 declare read-only on qa-tracker.json with idempotent re-runs; ID propagation rules (AC-NNN from system-design-doc, BUG-NNN from qa-ui-test, long-running only mirrors) documented in SKILL.md:756-759",
+            "Enforcement design is unusually rigorous: self-check checklists, output rejection criteria, and override flags (--force-coverage/--force-nfr/--force-bug-verify/--force-control-coverage) that require audit logging (continue.md:19-71, 1026-1049)",
+            "Has a written cross-plugin regression charter (tests/INTEGRATION_TEST.md) that explicitly tracks contract drift between /add-feature, /edit-feature and system-design-doc's /sync-with-features",
+            "No hooks directory — zero per-session overhead; all weight is opt-in via commands/skill",
+            "scan-changes.md is a well-designed upstream traceability enforcer with proper argument parsing ($ARGUMENTS), ignore patterns, and legacy-commit cutoff"
+          ],
+          "issues": [
+            {
+              "title": "README frozen at v2.0.0 — seven minor versions behind plugin.json 2.9.0",
+              "detail": "README.md:3 says 'Version 2.0.0' and the changelog (README.md:606-693) ends at v2.0.0 (2026-03-08). It omits every feature since: v2.1 model assignment//review, v2.2 CRITICAL RULES, v2.3 Verification Pipeline, v2.4 design-doc impact check, v2.6 release gates (/nfr-check, /qa-coverage-check), v2.7 /scan-changes, v2.8 /emit-control-spec + Gate 4, v2.9 split-layout awareness. The Commands tables (README.md:123-145) list only 12 of 19 commands — /help, /review, /nfr-check, /qa-coverage-check, /scan-changes, /emit-control-spec, /init-project are absent. The feature template at README.md:577-592 still shows the pre-v1.5 flat schema with no status/subtasks/epic fields.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/README.md:3, README.md:123-145, README.md:606-693 vs .claude-plugin/plugin.json:3 (2.9.0)"
+            },
+            {
+              "title": "SKILL.md frontmatter version 2.6.0 and skill body has no v2.7/v2.8 content",
+              "detail": "SKILL.md frontmatter (line 3) declares version 2.6.0 while the body header (line 9) says 2.9.0 and plugin.json says 2.9.0. The skill never mentions /scan-changes, /emit-control-spec, Gate 4, the UI Control Manifest, or references/ui-control-manifest.md (grep for 'ui-control-manifest|emit-control-spec|scan-changes' in SKILL.md returns zero matches). The changelog table (SKILL.md:889-895) jumps from 2.3.0 to 2.9.0, omitting 2.4-2.8. The Available Commands table (SKILL.md:47-61) is missing /add-feature, /edit-feature, /init-existing, /help, /scan-changes, /emit-control-spec. Since the skill is what auto-triggers on long-running mentions, agents get a v2.6-era picture of a v2.9 plugin.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/SKILL.md:3 vs :9; SKILL.md:889-895 (changelog gap); zero grep hits for emit-control-spec/scan-changes/ui-control-manifest in SKILL.md"
+            },
+            {
+              "title": "v2.9.0 split-layout resolution never wired into continue.md",
+              "detail": "The 2.9.0 changelog (SKILL.md:891) claims '/continue (coding-agent-guide) resolves design sections via design_doc_list.json documents[].sections[]'. The registry logic exists only in references/coding-agent-guide.md:38-47,79 and SKILL.md:668,698 — but continue.md contains zero references to design_doc_list.json, never instructs reading coding-agent-guide.md (grep for 'coding-agent-guide' in commands/ returns nothing), and Step 0.5 (continue.md:117-119) still uses the legacy `find . -name \"*design*.md\"`. Verification Pipeline Step 2 in continue.md:891-894 still keys on '.design-docs/ exists' with no layout-aware DD-count. The headline v2.9.0 feature is unreachable from the command that needs it.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:117-119, 891-894 (no design_doc_list.json anywhere in file) vs skills/long-running/references/coding-agent-guide.md:38-47 and SKILL.md:891"
+            },
+            {
+              "title": "No ${CLAUDE_PLUGIN_ROOT} — intra-plugin paths will not resolve from user projects",
+              "detail": "Commands reference plugin-internal files with bare relative or repo-relative paths: continue.md:770 and emit-control-spec.md:15,288 point to 'skills/long-running/references/ui-control-manifest.md', init.md:242 to 'references/feature-patterns.md and templates/feature_list.json', help.md:1306 to 'plugins/long-running/skills/...'. When the plugin is installed via marketplace, the working directory is the user's project, so these paths fail; the agent must guess or glob. All should be ${CLAUDE_PLUGIN_ROOT}/skills/long-running/...",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:770, commands/emit-control-spec.md:15,288, commands/init.md:242, commands/help.md:1306; grep for CLAUDE_PLUGIN_ROOT in the plugin returns zero hits"
+            },
+            {
+              "title": "17 references to nonexistent skills /test-runner and /ai-ui-test",
+              "detail": "continue.md (lines 331-332, 350-351, 380-381), init.md (195-196, 306, 493), init-existing.md (159-160, 275, 306), and README.md (330-332, 395) present /test-runner and /ai-ui-test as 'universal skills' and even write '/test-runner' into the generated .agent/config.json recommended_skills. Neither exists in the marketplace; the actual QA plugin is qa-ui-test, which the same files' newer sections integrate correctly. Agents following these instructions will attempt invalid skill invocations and emit config files recommending dead skills.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:331-332,350-351; commands/init.md:195-196,306,493; commands/init-existing.md:159-160,275,306; README.md:330-332,395"
+            },
+            {
+              "title": "Six commands have no frontmatter (no description, no allowed-tools)",
+              "detail": "dependencies.md, generate-features-from-design.md, generate-features-from-mockups.md, migrate.md, sync-mockups.md, and validate-coverage.md all start directly with '# /command' and have no YAML frontmatter. They get no description in command listings and no tool scoping, unlike the other 13 commands which consistently declare description + allowed-tools. These are exactly the v1.5.0-era commands, suggesting they were never touched since.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/dependencies.md:1, generate-features-from-design.md:1, generate-features-from-mockups.md:1, migrate.md:1, sync-mockups.md:1, validate-coverage.md:1 (all begin with '# /...' instead of '---')"
+            },
+            {
+              "title": "Flag-taking commands omit $ARGUMENTS placeholder",
+              "detail": "nfr-check.md (documents --module/--feature/--strict/--report-only), qa-coverage-check.md (--include-controls/--controls-only), review.md (/review #6), emit-control-spec.md (<feature-id>), help.md (11 modes like --qa/--controls), migrate.md, and continue.md (--force-coverage/--force-nfr/--force-bug-verify/--force-all per its own rejection criteria at lines 61-67) never include $ARGUMENTS, so user-supplied flags are not reliably injected into the prompt. Only add-feature, edit-feature, init, init-project, and scan-changes handle arguments properly.",
+              "severity": "medium",
+              "evidence": "grep '\\$ARGUMENTS' in commands/ matches only add-feature.md, edit-feature.md, init-project.md, init.md, scan-changes.md; contrast commands/nfr-check.md:18-24 and commands/continue.md:61-67 which document flags"
+            },
+            {
+              "title": "help.md is 80KB and stale; SKILL.md is 42KB monolith",
+              "detail": "commands/help.md is 80,590 bytes (~20k tokens) injected wholesale on every /long-running:help call, and it is version-stale: line 8 says '(v2.6.0+)', line 49 titles the guide 'v2.8.0', and there is zero v2.9.0/split-layout content (grep 'split|2.9' returns nothing). SKILL.md is 42,749 bytes (~11k tokens) loaded on every skill trigger with full Verification Pipeline, model-assignment, and gate detail inline instead of in references/ — violating progressive disclosure. The skill description also lacks concrete EN+TH trigger phrases ('USE THIS SKILL when... / Thai triggers:') that sibling plugins qa-ui-test and flow-discovery use.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/help.md (80590 bytes; lines 8, 49); skills/long-running/SKILL.md (42749 bytes; frontmatter description at line 4 has no trigger-phrase block)"
+            },
+            {
+              "title": "templates/feature_list.json (schema 2.4.0) missing v2.8 control_coverage and compat skew",
+              "detail": "The shipped template declares schema_version 2.4.0 (templates/feature_list.json:2) but contains no control_coverage block, no .agent/ui-controls manifest_path example, and no missing_categories example, even though continue.md Step 6 (lines 1098-1106) specifies them as the v2.8.0 schema shape. metadata.compatible_with says design_doc_list_schema '>=2.2.0' (line 991) while v2.9.0 split layout requires >=2.3.0 (SKILL.md:891). Initializers copying the template will produce files missing the Gate 4 contract fields.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/templates/feature_list.json:2,991 (grep control_coverage/ui-controls returns zero hits) vs commands/continue.md:1098-1106"
+            },
+            {
+              "title": "sync-with-features pending_updates contract still unverified (Scenario 7 skipped)",
+              "detail": "tests/INTEGRATION_TEST.md:278 records 'Scenario 7: skipped — yet to update sync-with-features' and line 250 warns 'Fail if: sync-with-features ไม่รู้จัก format → ต้องอัปเดต system-design-doc plugin ด้วย'. add-feature.md:115, edit-feature.md:156, and scan-changes.md:313 all route users to /sync-with-features to resolve design_doc_refs.pending_updates[], but compatibility of the pending_updates format with system-design-doc's command was never tested. The Run History section is empty.",
+              "severity": "medium",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/tests/INTEGRATION_TEST.md:230-250,278,290-292; commands/add-feature.md:115; commands/scan-changes.md:313"
+            },
+            {
+              "title": "Broken Anthropic blog URL in README and SKILL.md",
+              "detail": "Both files link to https://www.anthropic.com/engineering/effective-harnesses-for-long-runnings — the slug is wrong (actual article is 'effective-harnesses-for-long-running-agents'); the link 404s.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/README.md:7; skills/long-running/SKILL.md:18"
+            },
+            {
+              "title": "Project-specific content hardcoded in generic command",
+              "detail": "continue.md Step 0.5 (lines 170-225) embeds the user's own nav reference: 'docs/example/html/nav/src/frontend/src/components/' and specific brain queries ('nav template', 'profile dropdown') plus a Nav Template bug checklist sourced from a personal brain note. In any other project these paths/notes do not exist, sending agents on dead-end searches. This belongs in project CLAUDE.md or brain, not the plugin.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:170-225 (esp. 189: docs/example/html/nav/src/frontend/src/components/)"
+            },
+            {
+              "title": "Reference Files tables omit two reference files; version-label inconsistency in manifests",
+              "detail": "SKILL.md:602-611 Reference Files table omits references/module-decomposition.md and references/ui-control-manifest.md plus templates/modules.json and component_library.json; README.md:460-473 omits ui-control-manifest.md. Also plugin.json describes the gates as 'v2.5 release gates' while marketplace.json says 'v2.6 release gates' for the same feature set, and the plugin.json description is a 1000+ char changelog dump rather than a concise summary.",
+              "severity": "low",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/SKILL.md:602-611; README.md:460-473; .claude-plugin/plugin.json:4 ('v2.5 release gates') vs .claude-plugin/marketplace.json:66 ('v2.6 release gates')"
+            }
+          ],
+          "improvements": [
+            {
+              "title": "Single version-sync pass: README 2.0.0 -> 2.9.0, SKILL.md frontmatter 2.6.0 -> 2.9.0, help.md headers",
+              "detail": "Update README.md:3 header and add changelog entries for 2.1-2.9; fix SKILL.md:3 frontmatter version; fill SKILL.md:889-895 changelog gaps (2.4.0 design-doc impact check, 2.6.0 gates, 2.7.0/2.7.1 scan-changes, 2.8.0 Gate 4); bump help.md:8 '(v2.6.0+)' and :49 'v2.8.0' to v2.9.0 and add a v2.9 'What's new' entry. Consider a node script in CI (like the existing marketplace version-sync check) asserting plugin.json == SKILL.md frontmatter == README header.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Wire split-layout registry into continue.md",
+              "detail": "Port the registry-resolution block from references/coding-agent-guide.md:38-47 into continue.md Step 0.5 (replace the bare find at lines 117-119) and make Verification Pipeline Step 2 (continue.md:891-894) layout-aware (resolve 08-data-dictionary.md via documents[].sections[] when doc_layout=='split'). Alternatively add one line: 'Read ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/coding-agent-guide.md Step 0 for design-doc resolution.'",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Replace stale /test-runner and /ai-ui-test references with qa-ui-test commands",
+              "detail": "In continue.md:331-381, init.md:195-493, init-existing.md:159-306, README.md:330-395: replace '/ai-ui-test' with '/qa-ui-test:qa-create-scenario / qa-run', drop '/test-runner' (or map to the project's real test command), and remove '/test-runner' from the generated recommended_skills config template.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Adopt ${CLAUDE_PLUGIN_ROOT} for all intra-plugin file references",
+              "detail": "Fix continue.md:770, emit-control-spec.md:15,288, init.md:242, help.md:1306 to use ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/... so schema references resolve after marketplace install. Audit references in skills/ guides too.",
+              "priority": "high",
+              "effort": "small"
+            },
+            {
+              "title": "Add frontmatter to the six v1.5-era commands",
+              "detail": "dependencies.md, generate-features-from-design.md, generate-features-from-mockups.md, migrate.md, sync-mockups.md, validate-coverage.md need '---\\ndescription: ...\\nallowed-tools: ...\\n---'. migrate.md's body also still says 'migrate to schema v1.5.0' — update to current 2.4.0 target with the documented migration chain.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Add $ARGUMENTS handling to flag-taking commands",
+              "detail": "Add an 'Input received: $ARGUMENTS' + parse section (mirroring scan-changes.md:58-69) to nfr-check.md, qa-coverage-check.md, review.md, emit-control-spec.md, help.md, migrate.md, and continue.md (which must parse --force-coverage/--force-nfr/--force-bug-verify/--force-control-coverage/--skip-control-manifest/--force-all to honor its own gate-override semantics).",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Slim SKILL.md via progressive disclosure and add trigger phrases",
+              "detail": "Move the full Verification Pipeline detail (SKILL.md:401-531), model assignment/review detail (:307-353), and qa-gate detail (:702-776) into references/ (verification-pipeline.md exists implicitly inside continue.md — dedupe to one canonical reference), keeping one-paragraph summaries + pointers; target <15KB. Add v2.7/v2.8 command rows to the Available Commands table and ui-control-manifest.md + module-decomposition.md to the Reference Files table. Rewrite the frontmatter description with 'USE THIS SKILL when...' + Thai triggers ('ทำต่อจาก session ก่อน', 'สร้าง feature list', 'release gate', 'ตรวจ coverage') matching the qa-ui-test/flow-discovery pattern.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Split help.md (80KB) into per-mode reference files",
+              "detail": "Keep help.md as a <10KB dispatcher (mode table + overview) and move --qa, --controls, --gates, scan-changes, and per-command deep-dives into skills/long-running/references/help/*.md loaded via ${CLAUDE_PLUGIN_ROOT} only for the requested mode. Cuts ~15k tokens per /help invocation.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Update templates/feature_list.json for v2.8 contract",
+              "detail": "Add a qa_trace_coverage.control_coverage example (manifest_path, gap_control_ids, missing_categories) matching continue.md:1098-1106, bump metadata.compatible_with.design_doc_list_schema to '>=2.3.0' (split layout), and decide whether v2.8 warrants schema_version 2.5.0 with a /migrate path.",
+              "priority": "medium",
+              "effort": "small"
+            },
+            {
+              "title": "Execute INTEGRATION_TEST Scenario 7 and log the run",
+              "detail": "Run the pending_updates -> /sync-with-features round-trip against the current system-design-doc plugin, record results in the Run History section (tests/INTEGRATION_TEST.md:290), and fix whichever side owns the format break. This is the known open follow-up from the SDD split-files work.",
+              "priority": "medium",
+              "effort": "medium"
+            },
+            {
+              "title": "Extract project-specific nav/brain content from continue.md",
+              "detail": "Move the DashboardShell/Navbar brain-query block and 'docs/example/html/nav/...' reference paths (continue.md:170-225) into the user's project CLAUDE.md or a brain note; keep at most a generic 'if brain plugin available, query for existing nav patterns' instruction.",
+              "priority": "low",
+              "effort": "small"
+            },
+            {
+              "title": "Fix blog URL and trim manifest descriptions",
+              "detail": "Correct the Anthropic article slug in README.md:7 and SKILL.md:18. Shrink plugin.json description to 1-2 sentences (move feature history to README changelog) and align the 'v2.5 vs v2.6 release gates' wording between plugin.json:4 and marketplace.json:66.",
+              "priority": "low",
+              "effort": "small"
+            }
+          ],
+          "integration_points": [
+            {
+              "target": "qa-ui-test (NFR gate)",
+              "mechanism": "/nfr-check reads qa-tracker.json nfr_results (by_module, critical_failures; populated by /qa-ui-test:qa-nfr-assess) and writes features[].nfr_compliance; /continue Gate 2 blocks passes=true when blocks_release && score < required",
+              "status": "working",
+              "evidence": "commands/nfr-check.md:10,78,90 and continue.md:981-986 vs qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:2 (schema_version 1.7.0), :132-174 (nfr_results schema with by_module + critical_failures)"
+            },
+            {
+              "target": "qa-ui-test (AC coverage gate)",
+              "mechanism": "/qa-coverage-check reads qa-tracker.traceability.ac_inventory (populated by /qa-ui-test:qa-trace), maps gate PASS/GAP/FAIL/CONCERNS to features[].qa_trace_coverage; /continue Gate 1 blocks on gap_acs/fail_acs",
+              "status": "working",
+              "evidence": "commands/qa-coverage-check.md:10,68,84-98 and continue.md:967-975 vs qa-ui-test/commands/qa-trace.md and qa-tracker.json template traceability section"
+            },
+            {
+              "target": "qa-ui-test (Gate 4 UI Control Manifest)",
+              "mechanism": "/continue Step 5.4 / /emit-control-spec emit .agent/ui-controls/feature-N.json; qa-ui-test:qa-create-scenario --from-control-spec consumes it and tags scenarios[].control_refs[]; /qa-coverage-check --include-controls closes the loop into qa_trace_coverage.control_coverage",
+              "status": "working",
+              "evidence": "commands/continue.md:763-824,999-1024 and skills/long-running/references/ui-control-manifest.md:1-60 vs qa-ui-test/skills/qa-ui-test/references/control-spec-scenarios.md:15-33 — mandatory categories (render-binding, api-binding, permission, validation, cascade-loading-error) identical on both sides"
+            },
+            {
+              "target": "qa-ui-test (bug-fix loop)",
+              "mechanism": "qa-bug-export writes features with epic='bug-fix' + linked_bug{} into feature_list.json; /continue Gate 3 blocks 'Verify BUG-XXX' subtasks until qa-tracker bugs[].status=='verified'; qa-bug-verify closes features back",
+              "status": "working",
+              "evidence": "continue.md:988-997, SKILL.md:744-759 vs qa-ui-test/commands/qa-bug-export.md (21 feature_list.json refs), qa-bug-verify.md (5 refs)"
+            },
+            {
+              "target": "system-design-doc (design_doc_list.json contract)",
+              "mechanism": "/add-feature and /edit-feature (v2.4.0) run design-doc impact check against entities[]/api_endpoints[]/crud_operations; /init and /generate-features-from-design read crud_operations before creating CRUD features; AC-NNN IDs mirrored into acceptance_criteria_id[]",
+              "status": "working",
+              "evidence": "commands/add-feature.md:42-93,174,289; commands/edit-feature.md:68-110,331; commands/generate-features-from-design.md:35-58; references/initializer-guide.md:356-360 vs system-design-doc templates/design_doc_list.json"
+            },
+            {
+              "target": "system-design-doc (split-layout registry, v2.9.0)",
+              "mechanism": "Resolve sections via design_doc_list.json documents[].sections[] (doc_layout=='split', requires registry >=2.3.0) instead of reading whole doc; layout-aware DD-count in Verification Pipeline Step 2",
+              "status": "partial",
+              "evidence": "Implemented in references/coding-agent-guide.md:38-47,79 and SKILL.md:668,698,891; system-design-doc side has doc_layout/sections in 12 files incl. split-design-doc.md — but commands/continue.md has zero design_doc_list.json references and still uses find fallback (continue.md:117-119), and /continue never instructs reading coding-agent-guide.md"
+            },
+            {
+              "target": "system-design-doc (/sync-with-features pending_updates)",
+              "mechanism": "add/edit-feature write design_doc_refs.pending_updates[] and route users to /sync-with-features (exists at system-design-doc/commands/sync-with-features.md) for bidirectional sync",
+              "status": "partial",
+              "evidence": "commands/add-feature.md:115,311; commands/scan-changes.md:313,475; sync-with-features.md exists — but tests/INTEGRATION_TEST.md:278 'Scenario 7: skipped — yet to update sync-with-features' (format compatibility never verified)"
+            },
+            {
+              "target": "ui-mockup (.mockups/ + mockup_list.json)",
+              "mechanism": "/generate-features-from-mockups and /sync-mockups consume mockup_list.json; /continue Step 0.5/3.5 reads .mockups/*.mockup.md + _design-tokens.yaml as structural spec; Step 5.4.5 cross-validates control manifest against mockup component specs (Hybrid B drift detection: missing-implementation/permission-wider block passes=true)",
+              "status": "working",
+              "evidence": "commands/continue.md:121-167,661-676,830-876; commands/sync-mockups.md; ui-mockup ships mockup_list.json template and SKILL.md:1066 links acceptance_criteria_id to feature_list features"
+            },
+            {
+              "target": "dotnet-dev",
+              "mechanism": "Technology detection (*.csproj/*.sln) mandates /dotnet-dev skill for .NET implementation in /continue Step 0.6, /init, /init-existing",
+              "status": "working",
+              "evidence": "commands/continue.md:281,314,337-344; SKILL.md:779-812; README.md:300-314; dotnet-dev plugin exists with matching skill — one-way documented invocation, no shared artifact needed"
+            },
+            {
+              "target": "code-review",
+              "mechanism": "Documented as 'universal skill' to review before commit; no artifact contract (long-running's own /review command handles model review internally)",
+              "status": "unverified",
+              "evidence": "commands/continue.md:330,350,380; README.md:330 — generic mention only; the built-in code-review skill exists but no invocation contract is specified"
+            },
+            {
+              "target": "brain",
+              "mechanism": "/continue Step 0.5 mandates brain queries before implementing nav/layout features (nav template, profile dropdown, design tokens) with fallback to mockup_list.json-derived navigation; brain side preloads at SessionStart independently",
+              "status": "partial",
+              "evidence": "commands/continue.md:170-225 — works only in the author's project: hardcodes docs/example/html/nav/src/frontend/src/components/ and a personal brain note checklist that won't exist elsewhere"
+            },
+            {
+              "target": "flow-discovery",
+              "mechanism": "flow-discovery exports discovered features into the backlog via /add-feature (one-way, flow-discovery initiates)",
+              "status": "working",
+              "evidence": "flow-discovery/skills/flow-discovery/SKILL.md:76 ('long-running : features → /add-feature'); /add-feature exists and accepts $ARGUMENTS"
+            },
+            {
+              "target": "test-runner / ai-ui-test (nonexistent)",
+              "mechanism": "Listed as universal skills and written into generated .agent/config.json recommended_skills",
+              "status": "broken",
+              "evidence": "commands/continue.md:331-332,350-351,380-381; commands/init.md:195-196,306,493; commands/init-existing.md:159-160,275,306; README.md:330-332,395 — neither plugin/skill exists in the marketplace; superseded by qa-ui-test"
+            }
+          ]
+        },
+        "verdicts": [
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "README frozen at v2.0.0 — seven minor versions behind plugin.json 2.9.0",
+              "detail": "README.md:3 says 'Version 2.0.0' and the changelog (README.md:606-693) ends at v2.0.0 (2026-03-08). It omits every feature since: v2.1 model assignment//review, v2.2 CRITICAL RULES, v2.3 Verification Pipeline, v2.4 design-doc impact check, v2.6 release gates (/nfr-check, /qa-coverage-check), v2.7 /scan-changes, v2.8 /emit-control-spec + Gate 4, v2.9 split-layout awareness. The Commands tables (README.md:123-145) list only 12 of 19 commands — /help, /review, /nfr-check, /qa-coverage-check, /scan-changes, /emit-control-spec, /init-project are absent. The feature template at README.md:577-592 still shows the pre-v1.5 flat schema with no status/subtasks/epic fields.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/README.md:3, README.md:123-145, README.md:606-693 vs .claude-plugin/plugin.json:3 (2.9.0)"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "SKILL.md frontmatter version 2.6.0 and skill body has no v2.7/v2.8 content",
+              "detail": "SKILL.md frontmatter (line 3) declares version 2.6.0 while the body header (line 9) says 2.9.0 and plugin.json says 2.9.0. The skill never mentions /scan-changes, /emit-control-spec, Gate 4, the UI Control Manifest, or references/ui-control-manifest.md (grep for 'ui-control-manifest|emit-control-spec|scan-changes' in SKILL.md returns zero matches). The changelog table (SKILL.md:889-895) jumps from 2.3.0 to 2.9.0, omitting 2.4-2.8. The Available Commands table (SKILL.md:47-61) is missing /add-feature, /edit-feature, /init-existing, /help, /scan-changes, /emit-control-spec. Since the skill is what auto-triggers on long-running mentions, agents get a v2.6-era picture of a v2.9 plugin.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/SKILL.md:3 vs :9; SKILL.md:889-895 (changelog gap); zero grep hits for emit-control-spec/scan-changes/ui-control-manifest in SKILL.md"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "issue",
+              "title": "v2.9.0 split-layout resolution never wired into continue.md",
+              "detail": "The 2.9.0 changelog (SKILL.md:891) claims '/continue (coding-agent-guide) resolves design sections via design_doc_list.json documents[].sections[]'. The registry logic exists only in references/coding-agent-guide.md:38-47,79 and SKILL.md:668,698 — but continue.md contains zero references to design_doc_list.json, never instructs reading coding-agent-guide.md (grep for 'coding-agent-guide' in commands/ returns nothing), and Step 0.5 (continue.md:117-119) still uses the legacy `find . -name \"*design*.md\"`. Verification Pipeline Step 2 in continue.md:891-894 still keys on '.design-docs/ exists' with no layout-aware DD-count. The headline v2.9.0 feature is unreachable from the command that needs it.",
+              "severity": "high",
+              "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:117-119, 891-894 (no design_doc_list.json anywhere in file) vs skills/long-running/references/coding-agent-guide.md:38-47 and SKILL.md:891"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "improvement",
+              "title": "Single version-sync pass: README 2.0.0 -> 2.9.0, SKILL.md frontmatter 2.6.0 -> 2.9.0, help.md headers",
+              "detail": "Update README.md:3 header and add changelog entries for 2.1-2.9; fix SKILL.md:3 frontmatter version; fill SKILL.md:889-895 changelog gaps (2.4.0 design-doc impact check, 2.6.0 gates, 2.7.0/2.7.1 scan-changes, 2.8.0 Gate 4); bump help.md:8 '(v2.6.0+)' and :49 'v2.8.0' to v2.9.0 and add a v2.9 'What's new' entry. Consider a node script in CI (like the existing marketplace version-sync check) asserting plugin.json == SKILL.md frontmatter == README header.",
+              "priority": "high",
+              "effort": "small"
+            },
+            "verdict": null
+          },
+          {
+            "claim": {
+              "kind": "improvement",
+              "title": "Wire split-layout registry into continue.md",
+              "detail": "Port the registry-resolution block from references/coding-agent-guide.md:38-47 into continue.md Step 0.5 (replace the bare find at lines 117-119) and make Verification Pipeline Step 2 (continue.md:891-894) layout-aware (resolve 08-data-dictionary.md via documents[].sections[] when doc_layout=='split'). Alternatively add one line: 'Read ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/coding-agent-guide.md Step 0 for design-doc resolution.'",
+              "priority": "high",
+              "effort": "small"
+            },
+            "verdict": null
+          }
+        ]
+      }
+    ],
+    "integration": null,
+    "deepDive": {
+      "alignment": [
+        "Clean Architecture structure (Domain/Application/Infrastructure/WebApi + tests) ใน SKILL.md ตรงกับสไตล์ที่ผู้ใช้ถนัด และสอดคล้องกับ guidance ของ Microsoft (eShopOnContainers architecture docs) — แยก layer ชัด, IEntityTypeConfiguration + ApplyConfigurationsFromAssembly ถูกต้อง",
+        "Repository + Unit of Work เป็น first-class pattern ตามที่ผู้ใช้ต้องการ — มี interface, generic implementation, DI registration ครบ (SKILL.md sections 2-6)",
+        "รองรับ PostgreSQL และ SQL Server คู่กันจริงตลอดทั้ง plugin: provider switch ใน DependencyInjection, appsettings ตัวอย่างทั้ง 2 แบบ, references/ef-core-patterns.md มี section เฉพาะของแต่ละ DB (JSONB/array/FTS ฝั่ง Postgres; Temporal Tables/RLS/HierarchyId/Always Encrypted ฝั่ง SQL Server) และ database-agnostic configuration pattern",
+        "EF Core query patterns ใน references/ef-core-patterns.md ส่วนใหญ่ยังตรงกับ official docs ปัจจุบัน: AsNoTracking สำหรับ read-only, AsSplitQuery สำหรับ collection includes, projection แทน SELECT *, หลีกเลี่ยง N+1, ExecuteUpdate/ExecuteDelete สำหรับ bulk ops, compiled queries, SaveChangesInterceptor สำหรับ audit — ยืนยันกับ EF Core 10 docs แล้วว่ายังเป็น best practice",
+        "Testing strategy ตรงกับคำแนะนำ official: EF docs (ef/core/testing/choosing-a-testing-strategy) แนะนำ test กับ database จริง — testing-patterns.md ใช้ xUnit + Testcontainers (PostgreSQL) + Respawn + WebApplicationFactory + test builders ซึ่งเป็นแนวทางที่ถูกต้อง",
+        "Aspire เป็นส่วนหนึ่งของ stack ตามที่ผู้ใช้ต้องการ — AppHost เลือก Postgres/SqlServer ได้, ServiceDefaults + OpenTelemetry + health checks ตรงโครงสร้างมาตรฐาน",
+        "Domain-first + Rich Domain Model + Value Objects + Domain Events + soft delete + audit trail ตรง enterprise style ของผู้ใช้, async/await + CancellationToken ทุก method, EnableRetryOnFailure ทั้ง 2 provider",
+        "เนื้อหาเขียนเป็นภาษาไทยผสม technical English ตรงกับ preference ผู้ใช้ และ bundle Microsoft Learn MCP มาให้ตรวจ docs ล่าสุดได้ (plugin.json mcpServers)"
+      ],
+      "gaps": [
+        {
+          "area": "Target framework / package versions",
+          "current": "SKILL.md บอก \".NET 8+ (Latest LTS)\" และ pin ทุก package เป็น 8.* (EF Core 8.*, Aspire.* 8.*, Mvc.Testing 8.*, Serilog 8.*)",
+          "recommended": ".NET 10 คือ LTS ปัจจุบัน (Nov 2025 → Nov 2028); .NET 8 จะหมด support Nov 2026 — ควรเปลี่ยน baseline เป็น net10.0 + EF Core 10.* และอธิบาย LTS/STS policy แทนการ pin เลขเก่า",
+          "source": "https://learn.microsoft.com/dotnet/core/releases-and-support (\".NET 10 (Long Term Support) - supported until November 2028\")"
+        },
+        {
+          "area": "Aspire ทั้งไฟล์ references/aspire-setup.md",
+          "current": "เป็น Aspire 8.x-era ทั้งหมด: dotnet new aspire-starter, Aspire.* 8.* packages, ไม่มี WaitFor/ContainerLifetime, และ `builder.AddDockerComposeEnvironment(\"infra\", \"./docker-compose.yml\")` ใช้ signature ที่ไม่มีจริง (API จริงไม่รับ path compose file สำหรับ import)",
+          "recommended": "ปัจจุบันคือ Aspire 13.x (Aspire.Hosting v13.1.0): ติดตั้งผ่าน Aspire CLI (`aspire new`, `aspire run`, `aspire update`), AppHost ใช้ `Sdk=\"Aspire.AppHost.Sdk/13.0.0\"` ไม่ต้อง reference Aspire.Hosting.AppHost เอง, เพิ่ม `.WaitFor(database)`, `.WithLifetime(ContainerLifetime.Persistent)`, `.WithHttpHealthCheck(\"/health\")`; upgrade path 8.x→9.x→13",
+          "source": "https://learn.microsoft.com/dotnet/aspire/get-started/upgrade-to-aspire-13 และ API docs view=dotnet-aspire-13.0 (AddPostgres remark: \"the dependent resource will wait until the Postgres resource is able to service requests\" ผ่าน WaitFor)"
+        },
+        {
+          "area": "Generic Repository — IQueryable leak ขัดกับเหตุผลที่มี repository",
+          "current": "IRepository<T> มี `IQueryable<T> Query()` — EF testing docs ระบุชัดว่าถ้าทำ repository เพื่อ mock/stub ได้ ห้าม expose IQueryable (\"your repository cannot expose any IQueryable-returning methods... IEnumerable should be returned instead\") และ official stance คือ DbContext implement Repository+UoW อยู่แล้ว, \"Repositories shouldn't be mandatory\", repository ควรเป็น per-aggregate",
+          "recommended": "ผู้ใช้ยืนยันจะใช้ Repo+UoW → เก็บ pattern ไว้ แต่ทำให้ถูก: (1) per-aggregate repository interface ใน Domain layer ต่อยอดจาก generic base, (2) query เฉพาะทางเป็น method ที่ return ผลลัพธ์จริง (IReadOnlyList/DTO) ไม่ leak IQueryable, (3) เพิ่มกล่อง trade-off ตรงๆ ใน SKILL.md: ถ้า leak IQueryable จะ mock ไม่ได้และ abstraction ไม่คุ้ม — ทางเลือกคือยอมรับว่า unit test ชั้น query ต้องเป็น integration test (Testcontainers)",
+          "source": "https://learn.microsoft.com/ef/core/testing/choosing-a-testing-strategy + https://learn.microsoft.com/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+        },
+        {
+          "area": "UnitOfWork transactions ชนกับ EnableRetryOnFailure (bug จริง)",
+          "current": "SKILL.md pattern #6 เปิด EnableRetryOnFailure ทั้ง 2 provider พร้อมกับ pattern #3 ที่ UoW มี BeginTransactionAsync/Commit/Rollback — เมื่อใช้ retrying execution strategy การเรียก BeginTransaction ตรงๆ จะ throw InvalidOperationException (execution strategy ไม่รองรับ user-initiated transactions)",
+          "recommended": "เพิ่มตัวอย่าง `var strategy = _context.Database.CreateExecutionStrategy(); await strategy.ExecuteAsync(async () => { await using var tx = ...; ...; await tx.CommitAsync(); });` และ note ว่า SaveChangesAsync ครั้งเดียวเป็น atomic อยู่แล้ว ไม่ต้องเปิด transaction เพิ่มในเคสปกติ",
+          "source": "https://learn.microsoft.com/ef/core/miscellaneous/connection-resiliency (execution strategies and transactions)"
+        },
+        {
+          "area": "API documentation — Swashbuckle ล้าสมัย",
+          "current": "แนะนำ Swashbuckle.AspNetCore 6.* + AddSwaggerGen/UseSwagger/UseSwaggerUI (SKILL.md NuGet section, aspire-setup.md Program.cs)",
+          "recommended": ".NET 9+ มี built-in OpenAPI: `builder.Services.AddOpenApi()` + `app.MapOpenApi()` (Microsoft.AspNetCore.OpenApi) — Swashbuckle ถูกถอดจาก templates แล้ว; ถ้าต้องการ UI ใช้ Scalar/Swagger UI เสริม; `.WithOpenApi()` ถูก deprecate ใน .NET 10 (ASPDEPR002) ให้ใช้ AddOpenApiOperationTransformer",
+          "source": "https://learn.microsoft.com/aspnet/core/fundamentals/openapi/overview (\"In .NET 9 and later... replaces Swashbuckle as the default. Swashbuckle is no longer included in project templates\")"
+        },
+        {
+          "area": "Caching — มีแต่ IDistributedCache/Redis",
+          "current": "SKILL.md DI ลงท้ายด้วย AddStackExchangeRedisCache อย่างเดียว ไม่พูดถึง HybridCache",
+          "recommended": "แนะนำ HybridCache (Microsoft.Extensions.Caching.Hybrid, GA): AddHybridCache() ใช้ Redis ที่มีอยู่เป็น L2 อัตโนมัติ ได้ stampede protection + tag invalidation + L1 in-memory ฟรี; มี Microsoft.Extensions.Caching.Postgres เป็น L2 option ฝั่ง Postgres ด้วย — เข้ากับ dual-DB ของผู้ใช้พอดี",
+          "source": "https://learn.microsoft.com/aspnet/core/performance/caching/hybrid + https://learn.microsoft.com/aspnet/core/performance/caching/overview#hybridcache"
+        },
+        {
+          "area": "เวลา — IDateTimeService / DateTime.UtcNow กระจัดกระจาย",
+          "current": "ef-core-patterns.md ใช้ custom IDateTimeService; SKILL.md ใช้ DateTime.UtcNow ตรงๆ ใน BaseEntity initializer, Repository.Update, SaveChangesAsync override (ตั้ง audit ซ้ำซ้อนกับ interceptor ใน reference อีกไฟล์)",
+          "recommended": "ใช้ TimeProvider (.NET 8+, built-in) inject ผ่าน DI + FakeTimeProvider (Microsoft.Extensions.TimeProvider.Testing) ใน tests; ASP.NET Core เลิกใช้ ISystemClock ไปแล้ว; เลือก audit ที่เดียว (interceptor — เป็นแนวทาง official) ลบ override ซ้ำใน DbContext",
+          "source": "https://learn.microsoft.com/dotnet/standard/datetime/timeprovider-overview + https://learn.microsoft.com/aspnet/core/breaking-changes/8/isystemclock-obsolete"
+        },
+        {
+          "area": "Minimal APIs vs Controllers — ไม่มี guidance เลย",
+          "current": "SKILL.md เอ่ยถึง \"Minimal APIs\" ใน stack list แต่ทุก template เป็น controller-based ไม่มีเกณฑ์เลือก",
+          "recommended": "Official: \"Start with Minimal APIs for new projects\"; controllers เหมาะเมื่อ需 model binding extensibility, advanced validation, application parts, OData — ผู้ใช้ถนัด MVC controllers ดังนั้น flag trade-off ตรงๆ: ใช้ controllers ต่อได้ (รองรับเต็มที่ใน .NET 10) แต่ service/microservice ใหม่เล็กๆ ควรพิจารณา Minimal APIs + route groups; เพิ่ม decision table ใน SKILL.md",
+          "source": "https://learn.microsoft.com/aspnet/core/fundamentals/apis#choosing-between-approaches"
+        },
+        {
+          "area": "Soft delete — ยังไม่ใช้ EF Core 10 named query filters + filter ซ้ำซ้อน",
+          "current": "DbContext สร้าง global query filter ด้วย expression tree เอง และ Repository ทุก method ยัง filter !e.IsDeleted ซ้ำอีกชั้น; IgnoreQueryFilters จะปิด filter ทั้งหมด (รวม tenant filter) ทีเดียว",
+          "recommended": "EF 10 มี named query filters: `HasQueryFilter(\"SoftDeletionFilter\", b => !b.IsDeleted)` + `IgnoreQueryFilters([\"SoftDeletionFilter\"])` เลือกปิดเฉพาะตัวได้ — เหมาะกับ soft delete + multitenancy พร้อมกัน; ตัด filter ซ้ำใน repository ออก",
+          "source": "https://learn.microsoft.com/ef/core/what-is-new/ef-core-10.0/whatsnew#named-query-filters"
+        },
+        {
+          "area": "EF Core 10 features ใหม่ที่ขาด",
+          "current": "ef-core-patterns.md หยุดที่ EF 7-8 era: OwnsOne สำหรับ value objects, ExecuteUpdate แบบ expression-tree, JSONB เฉพาะ Postgres",
+          "recommended": "เพิ่ม: (1) ComplexProperty + .ToJson() สำหรับ value objects (แนวทางใหม่แทน OwnsOne), (2) ExecuteUpdateAsync รับ regular lambda — ทำ conditional SetProperty ได้แล้ว, (3) SQL Server 2025/Azure SQL `json` data type (UseAzureSql / compat level 170) เทียบเท่า JSONB — ปิด gap dual-DB, (4) parameterized collection translation ใหม่, (5) LeftJoin/RightJoin LINQ operators",
+          "source": "https://learn.microsoft.com/ef/core/what-is-new/ef-core-10.0/whatsnew"
+        },
+        {
+          "area": "Concurrency สำหรับ PostgreSQL",
+          "current": "ef-core-patterns.md section 4 มีแต่ [ConcurrencyCheck]/[Timestamp] RowVersion (\"SQL Server preferred\") — ไม่มีทางเลือกฝั่ง Postgres ทั้งที่ผู้ใช้รองรับ 2 DB",
+          "recommended": "เพิ่ม Npgsql `xmin` system column: `builder.Property(p => p.Version).IsRowVersion()` / UseXminAsConcurrencyToken สำหรับ optimistic concurrency บน PostgreSQL",
+          "source": "Npgsql EF Core provider docs (concurrency tokens) — npgsql.org/efcore + https://learn.microsoft.com/ef/core/saving/concurrency"
+        },
+        {
+          "area": "Testing packages + dual-DB coverage",
+          "current": "testing-patterns.md: xunit 2.*, Testcontainers 3.*, Mvc.Testing 8.*, FluentAssertions 6.*, มีแต่ Testcontainers.PostgreSql (postgres:16-alpine) — ไม่มี SQL Server fixture ทั้งที่ skill ชู dual-DB; ctor ของ CustomWebApplicationFactory เรียก StartAsync().GetAwaiter().GetResult() (sync-over-async)",
+          "recommended": "อัปเดตเป็น xunit.v3, Testcontainers 4.x + เพิ่ม Testcontainers.MsSql fixture + Respawn SqlAdapter.SqlServer, Mvc.Testing 10.*, เพิ่ม FakeTimeProvider ใน test patterns, ใช้ IAsyncLifetime แทน sync-over-async; เพิ่ม Aspire.Hosting.Testing (DistributedApplicationTestingBuilder มีอยู่แล้วแต่ version เก่า)",
+          "source": "https://learn.microsoft.com/ef/core/testing/testing-without-the-database + https://learn.microsoft.com/dotnet/core/extensions/timeprovider-testing"
+        },
+        {
+          "area": "Licensing ของ libraries ที่แนะนำ (trade-off ต้องบอกตรงๆ)",
+          "current": "แนะนำ MediatR 12.*, AutoMapper 13.*, FluentAssertions 6.* โดยไม่เตือนว่า MediatR (v13+), AutoMapper (v15+) และ FluentAssertions (v8+) เปลี่ยนเป็น commercial license ตั้งแต่ปี 2025",
+          "recommended": "เพิ่ม note: version ที่ pin ไว้ยังเป็น OSS ใช้ฟรีได้ แต่จะไม่ได้ feature/security updates ใหม่; ทางเลือก: ซื้อ license, ใช้ Mapperly (source-gen, ฟรี) แทน AutoMapper, manual mapping ใน projection (เร็วกว่าและ AOT-friendly), Shouldly/AwesomeAssertions แทน FluentAssertions, หรือ custom mediator/Wolverine แทน MediatR — ให้ผู้ใช้ตัดสินใจเอง",
+          "source": "Ecosystem fact (ไม่ใช่ Microsoft docs) — ตรวจจาก GitHub announcements ของแต่ละ project; ควร verify version ล่าสุดก่อน commit"
+        },
+        {
+          "area": "MCP integration — tool names ผิดและ transport อ้อม",
+          "current": "SKILL.md/references/microsoft-learn-mcp.md อ้าง tool `mcp__microsoft-learn__search` และสอนใช้ mcporter CLI ผ่าน npx; plugin.json ใช้ `npx mcp-remote` (ต้องพึ่ง Node)",
+          "recommended": "Tool จริงคือ microsoft_docs_search / microsoft_docs_fetch / microsoft_code_sample_search (prefix mcp__plugin_dotnet-dev_microsoft-learn__); plugin.json ควรใช้ remote transport ตรง: {\"type\": \"http\", \"url\": \"https://learn.microsoft.com/api/mcp\"} ตามที่ README แสดงไว้ถูกแล้ว; ตัด mcporter section ทิ้ง (ซ้ำซ้อน/error-prone); เพิ่ม microsoft_code_sample_search ใน usage guide",
+          "source": "MCP server instructions ของ microsoft-learn เอง + พฤติกรรมจริงใน session นี้"
+        },
+        {
+          "area": "Missing reference files ที่ workflow ผู้ใช้ต้องใช้",
+          "current": "มีแค่ 4 references: ef-core-patterns, aspire-setup, testing-patterns, microsoft-learn-mcp — ไม่มี auth, API versioning, React integration, deployment, options/DI patterns",
+          "recommended": "เพิ่ม: auth-security.md (JWT bearer + ASP.NET Core Identity; .NET 10 เปลี่ยน behavior: API endpoints return 401/403 แทน redirect login), api-versioning.md (Asp.Versioning.Http), react-integration.md (ผู้ใช้ทำ React frontend — CORS, Vite proxy, openapi-typescript client gen, BFF), dependency-injection.md (keyed services .NET 8+, options pattern + ValidateDataAnnotations().ValidateOnStart(), IExceptionHandler + ProblemDetails), deployment.md (aspire publish / azd up / Dockerfile)",
+          "source": "https://learn.microsoft.com/aspnet/core/security/authentication/api-endpoint-auth + https://learn.microsoft.com/aspnet/core/fundamentals/apis"
+        },
+        {
+          "area": "โครงสร้าง SKILL.md (progressive disclosure)",
+          "current": "SKILL.md ~480 บรรทัด รวม principles + code templates เต็มๆ 8 ชุด + migration commands + package lists ไว้ body เดียว — โหลดทั้งหมดทุกครั้งที่ skill trigger; frontmatter description ไม่มี \"Use when/triggers\" (อยู่แค่ใน marketplace.json)",
+          "recommended": "ทำ SKILL.md ให้ lean: เก็บ core principles, decision tables (DB selection, Minimal API vs MVC), project structure, routing ไปยัง references; ย้าย code templates ไป references/clean-architecture-templates.md; เพิ่ม use-when + trigger keywords ใน frontmatter description ของ SKILL.md เอง",
+          "source": "Claude Code skill authoring best practice (plugin-dev:skill-development — progressive disclosure)"
+        },
+        {
+          "area": "Code bugs เล็กใน templates",
+          "current": "(1) `BaseEntity<TKey>` ใช้ `public new TKey Id` ซ่อน property ฐาน — EF map พังง่ายและเป็น anti-pattern, (2) `await _dbSet.AddAsync(...)` ทั้งที่ docs แนะนำ Add ปกติ (AddAsync จำเป็นเฉพาะ HiLo value generators), (3) README ยังอ้าง path `dotnet-dev-skill` / `your-username` placeholder",
+          "recommended": "(1) กลับด้าน: `BaseEntity<TKey>` เป็นตัวหลัก แล้ว `BaseEntity : BaseEntity<long>`, (2) ใช้ `_dbSet.Add(entity)` พร้อม comment เหตุผล, (3) อัปเดต README ให้ตรง repo จริง (AgentMarketPlace marketplace)",
+          "source": "https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.dbcontext.addasync (remarks: ใช้เฉพาะกรณี value generator ต้อง async)"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "อัปเกรด baseline เป็น .NET 10 LTS + EF Core 10 ทั้ง plugin",
+          "detail": "แก้ SKILL.md บรรทัด 24 เป็น \".NET 10 (LTS ปัจจุบัน, support ถึง Nov 2028)\"; เปลี่ยน package pins ทั้งหมด 8.* → 10.* (Microsoft.EntityFrameworkCore, Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.SqlServer, Caching.StackExchangeRedis, Mvc.Testing); เพิ่ม note สั้นๆ เรื่อง LTS/STS cadence เพื่อให้ skill ไม่ล้าสมัยเร็ว (\"ใช้ LTS ล่าสุด — ตรวจกับ microsoft_docs_search ก่อนสร้าง project\")",
+          "priority": "high"
+        },
+        {
+          "title": "เขียน references/aspire-setup.md ใหม่เป็น Aspire 13",
+          "detail": "แทนที่เนื้อหา 8.x ทั้งไฟล์: ติดตั้ง Aspire CLI + `aspire new`/`aspire run`/`aspire update`, AppHost csproj แบบ `Sdk=\"Aspire.AppHost.Sdk/13.0.0\"` (net10.0), เพิ่ม `.WaitFor(database)` + `.WithLifetime(ContainerLifetime.Persistent)` + `.WithHttpHealthCheck()` ใน AppHost ตัวอย่าง dual-DB, ลบ `AddDockerComposeEnvironment(\"infra\", \"./docker-compose.yml\")` ที่ signature ผิด, และเพิ่ม pattern สำคัญที่ขาด: `builder.EnrichNpgsqlDbContext<ApplicationDbContext>()` / `EnrichSqlServerDbContext` เพื่อใช้ Aspire ร่วมกับ AddInfrastructure() ที่ register DbContext เองอยู่แล้ว (ตอนนี้ aspire-setup.md กับ SKILL.md DI ขัดกัน — จะ double-register DbContext)",
+          "priority": "high"
+        },
+        {
+          "title": "เพิ่ม section \"Repository/UoW ให้ถูกวิธี + trade-offs ตรงไปตรงมา\" ใน SKILL.md",
+          "detail": "เก็บ Repo+UoW ไว้ตามสไตล์ผู้ใช้ แต่เพิ่ม: (1) per-aggregate repository (ICustomerRepository : IRepository<Customer>) interface อยู่ Domain/Application layer, (2) เปลี่ยน Query() ที่ return IQueryable → method เฉพาะทางที่ return IReadOnlyList/paged result พร้อมกล่องเตือน: \"EF docs: repository ที่ expose IQueryable จะ mock ไม่ได้ — ถ้าจะคง Query() ไว้เพื่อความสะดวก ให้ยอมรับว่า test ชั้นนั้นต้องเป็น Testcontainers integration test\", (3) แก้ UoW transaction ให้ wrap ด้วย CreateExecutionStrategy().ExecuteAsync เพราะตอนนี้ชนกับ EnableRetryOnFailure (โค้ดปัจจุบัน throw runtime), (4) ย่อหน้า honesty note: Microsoft ระบุว่า DbContext คือ Repository+UoW ในตัว และ repository \"ไม่ใช่ข้อบังคับ\" — ใช้เพราะทีมถนัดและช่วย mock ได้ ไม่ใช่เพราะเป็น requirement",
+          "priority": "high"
+        },
+        {
+          "title": "แทนที่ Swashbuckle ด้วย built-in OpenAPI",
+          "detail": "SKILL.md NuGet section: ตัด Swashbuckle.AspNetCore 6.* → Microsoft.AspNetCore.OpenApi 10.*; ตัวอย่าง Program.cs ใช้ AddOpenApi()/MapOpenApi() + ตัวเลือก Scalar.AspNetCore สำหรับ UI; เพิ่ม note ว่า WithOpenApi() deprecated (.NET 10, ASPDEPR002) ใช้ AddOpenApiOperationTransformer แทน; อัปเดต aspire-setup.md Program.cs ตัวอย่างด้วย",
+          "priority": "high"
+        },
+        {
+          "title": "แก้ MCP tool names + เปลี่ยน transport ใน plugin.json",
+          "detail": "plugin.json: เปลี่ยน mcpServers.microsoft-learn จาก npx mcp-remote → {\"type\": \"http\", \"url\": \"https://learn.microsoft.com/api/mcp\"} (ตัด Node dependency); SKILL.md + references/microsoft-learn-mcp.md: แก้ชื่อ tool เป็น microsoft_docs_search / microsoft_docs_fetch / microsoft_code_sample_search, ตัด mcporter/bash workaround sections ทิ้ง, เพิ่มตัวอย่างใช้ code_sample_search หา snippet จริง",
+          "priority": "high"
+        },
+        {
+          "title": "เพิ่ม EF Core 10 patterns ใน references/ef-core-patterns.md",
+          "detail": "เพิ่ม sections: named query filters สำหรับ soft delete + tenant filter พร้อม IgnoreQueryFilters([\"...\"]) แบบเลือกปิด (แทน expression-tree generator ใน SKILL.md และตัด !IsDeleted ซ้ำใน repository), ComplexProperty + ToJson() แทน OwnsOne สำหรับ Money value object, ExecuteUpdateAsync แบบ regular lambda (conditional updates), SQL Server 2025 json type + UseAzureSql เทียบ JSONB (ปิด gap dual-DB), Npgsql xmin concurrency token คู่กับ RowVersion ของ SQL Server",
+          "priority": "medium"
+        },
+        {
+          "title": "เพิ่ม references/dependency-injection.md (cross-cutting สมัยใหม่)",
+          "detail": "ครอบคลุม: TimeProvider แทน IDateTimeService/DateTime.UtcNow (แก้ BaseEntity initializer + interceptor ให้รับ TimeProvider, เลือก interceptor เป็น audit ทางเดียว ลบ SaveChangesAsync override ซ้ำ), keyed services (.NET 8+) — เหมาะกับ dual-DB scenario เช่น [FromKeyedServices(\"reporting\")], options pattern เต็มรูป (AddOptions<T>().BindConfiguration().ValidateDataAnnotations().ValidateOnStart()), HybridCache แทน IDistributedCache ตรงๆ (Redis เป็น L2), IExceptionHandler + ProblemDetails (.NET 8+) แทน custom middleware",
+          "priority": "medium"
+        },
+        {
+          "title": "เพิ่ม references/react-integration.md + auth-security.md",
+          "detail": "ผู้ใช้ทำ React frontend กับ ASP.NET Core เสมอแต่ plugin ไม่มีเรื่องนี้เลย: react-integration.md (CORS policy, Vite dev proxy, Aspire AddViteApp/AddNpmApp orchestration, openapi-typescript จาก built-in OpenAPI document, cookie vs JWT สำหรับ SPA, BFF pattern); auth-security.md (JWT bearer config, ASP.NET Core Identity + API endpoints, .NET 10 behavior change: API endpoints return 401/403 ไม่ redirect login, authorization policies)",
+          "priority": "medium"
+        },
+        {
+          "title": "อัปเดต references/testing-patterns.md",
+          "detail": "xunit 2.* → xunit.v3, Testcontainers 3.* → 4.*, Mvc.Testing 8.* → 10.*, เพิ่ม MsSqlContainer fixture + Respawn SqlAdapter.SqlServer สำหรับฝั่ง SQL Server (ตอนนี้ test ได้แค่ Postgres ทั้งที่ขาย dual-DB), แก้ CustomWebApplicationFactory sync-over-async เป็น IAsyncLifetime, เพิ่ม FakeTimeProvider examples, เพิ่ม licensing note: FluentAssertions 8+/MediatR 13+/AutoMapper 15+ เป็น commercial — version ที่ pin ยังฟรีแต่ freeze; เสนอ Shouldly/Mapperly/manual mapping เป็นทางเลือกพร้อม trade-offs ให้ผู้ใช้เลือกเอง",
+          "priority": "medium"
+        },
+        {
+          "title": "เพิ่ม decision guidance: Minimal APIs vs Controllers",
+          "detail": "เพิ่ม decision table ใน SKILL.md: official แนะนำ Minimal APIs สำหรับ project ใหม่ (เร็วกว่า, boilerplate น้อย) แต่ controllers ยังเหมาะกับ enterprise app ที่ผู้ใช้ถนัด (model binding extensibility, filters, OData, ทีมคุ้น MVC) — ระบุชัดว่านี่คือจุดที่ preference ผู้ใช้ต่างจาก default guidance และทั้งคู่ supported เต็มที่; แนะนำ route groups + endpoint filters เมื่อเลือก Minimal APIs",
+          "priority": "medium"
+        },
+        {
+          "title": "Restructure SKILL.md เป็น progressive disclosure",
+          "detail": "ย้าย code templates (BaseEntity, Repository, UoW, DbContext, DI, appsettings, AppHost ~250 บรรทัด) ไป references/clean-architecture-templates.md; SKILL.md เหลือ: principles, tech stack, DB selection table, project structure, API style decision, best practices checklist, routing ไป references; เพิ่ม use-when/trigger keywords ใน frontmatter description; ระหว่างย้าย แก้ bug เล็ก: BaseEntity<TKey> property hiding (ให้ BaseEntity : BaseEntity<long>), AddAsync → Add, README placeholder paths",
+          "priority": "low"
+        },
+        {
+          "title": "เพิ่ม references/deployment.md",
+          "detail": "Aspire 13 deployment: `aspire publish` / azd init + azd up สำหรับ Azure Container Apps, docker-compose publisher, Kubernetes manifests, EF migration bundles (dotnet ef migrations bundle) + dedicated migration service pattern สำหรับ production (สอดคล้องกับ efcore-patterns skill ที่ผู้ใช้มีอยู่แล้วในเครื่อง)",
+          "priority": "low"
+        }
+      ]
+    }
+  }
+}

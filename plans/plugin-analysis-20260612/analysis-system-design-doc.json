@@ -1,0 +1,268 @@
+{
+  "plugin": "system-design-doc",
+  "analysis": {
+    "plugin": "system-design-doc",
+    "version": "2.1.0 (plugin.json + marketplace.json agree; README footer claims 1.3.0; help.md claims v1.7.0)",
+    "summary": "Mature, contract-heavy documentation plugin (21 commands, 1 skill, no hooks) at v2.1.0 with a well-designed machine-readable registry (design_doc_list.json schema 2.3.0, split per-section layout, AC-NNN/UC-NNN ID contracts, sitemap.json graph schema). Core generation/sync/validation commands and templates are internally consistent, and the two heaviest consumers (long-running v2.9.0, ui-mockup) correctly implement the split-aware reading protocol. The main problems are documentation drift — README is frozen at v1.3.0 and help.md at v1.7.0, both missing the 9 v2.x commands — plus a partially executed v2.1 migration (system-design-doc.md and reverse-engineer.md still describe legacy single-file output), three commands with no frontmatter at all, and a qa-ui-test contract that is one-sided (qa-trace never looks in .design-docs/, qa-tracker template uses the forbidden AC-1.1 format, and use_case_id does not exist on the qa side).",
+    "strengths": [
+      "Machine-readable contract design: skills/system-design-doc/templates/design_doc_list.json (schema 2.3.0) embeds sections[] registry with per-section anchors regexes, AC/UC structures, ID-format metadata (ac_id_format, uc_header_pattern), and compatible_with version gates — consumers can resolve everything without parsing prose",
+      "Split-layout progressive disclosure for consumers is real and adopted: SKILL.md 'Reading Protocol for Consumers' is implemented by long-running (skills/long-running/SKILL.md:668,698; coding-agent-guide.md:79) and ui-mockup (references/reading-design-docs.md:8-9) — token-efficient section-level reads instead of whole-doc cats",
+      "No hooks directory — zero per-session overhead; all weight is opt-in via commands/skill",
+      "Sitemap commands correctly use ${CLAUDE_PLUGIN_ROOT} for intra-plugin schema/template paths and pair them with concrete ajv-cli validation (commands/sitemap-init.md:40,52; sitemap-validate.md:22; sitemap-add-node.md:65)",
+      "Section templates are contract-consistent: all 10 templates/sections/NN-*.md carry the exact line-1 marker '<!-- sdd-section: <key> | doc: __PROJECT_SLUG__ | schema: 2.3.0 -->' matching split-design-doc.md Step 3 and CRITICAL RULE 36",
+      "CRITICAL RULES with numbered, testable constraints (rules 24-30 pin AC-NNN format and the UC heading regex that qa-trace greps) plus self-check checklists give downstream agents enforceable contracts rather than vague guidance",
+      "plugin.json and marketplace.json versions are in sync at 2.1.0, and the marketplace tags are accurate",
+      "Bidirectional sync commands document exactly which fields they write on both sides (e.g., sync-with-mockups.md:176-188 lists design_doc_list.json and mockup_list.json field updates that match the actual ui-mockup template fields)"
+    ],
+    "issues": [
+      {
+        "title": "README frozen at v1.3.0 — wrong version, missing 11 of 21 commands, stale schema and output layout",
+        "detail": "README footer says 'Version: 1.3.0, Last Updated: 2025-01' while plugin.json/marketplace say 2.1.0 (the top of the same README says 'What's new in v2.0' — internally contradictory). The Commands table (lines 34-45) lists only 10 commands, omitting /brainstorm-design, /sync-with-qa-tracker, /help, /split-design-doc and all 8 /sitemap-* commands. README shows design_doc_list schema_version 2.1.0 (line 365) and 'Compatible Versions: design_doc_list.json 2.1.0' (line 398) vs actual template schema 2.3.0. Output Files section (lines 213-218) shows only the legacy single-file layout, contradicting the v2.1 default split layout. Cross-Plugin Integration section (lines 340-358) shows only 3 plugins, omitting qa-ui-test which /validate-integration covers. Changelog stops at 1.3.0.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/README.md:5,34-45,213-218,344-358,365,398,406-414 vs D:/GitHub/AgentMarketPlace/plugins/system-design-doc/.claude-plugin/plugin.json:3"
+      },
+      {
+        "title": "help.md frozen at v1.7.0 — the user-facing command reference omits all 9 v2.x commands",
+        "detail": "commands/help.md (42 KB) banners 'คู่มือการใช้งาน v1.7.0' and '/help --new # What's new in v1.7.0'; it documents 12 commands and never mentions /sitemap-init, /sitemap-add-node, /sitemap-link, /sitemap-scan, /sync-sitemap, /sitemap-validate, /sitemap-graph, /sitemap-export, or /split-design-doc, and has zero occurrences of doc_layout/split. Users running /help get a two-major-versions-old picture of the plugin.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/help.md:8,37-38,48,54 (26 'v1.7.0' references, no sitemap-*/split-design-doc matches)"
+      },
+      {
+        "title": "Main entry command system-design-doc.md not migrated to v2.1 split layout",
+        "detail": "The catch-all /system-design-doc command still instructs 'Create file system-design-[project-name].md' (not even under .design-docs/) using the legacy templates/design-doc-template.md, with no mention of doc_layout, sections[], or 00-index.md. Running the plugin's primary command produces the legacy single-file output while /create-design-doc and /import-plan produce the split default — contradictory behavior depending on entry point.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/system-design-doc.md:44,55,290 (zero split/doc_layout/00-index matches)"
+      },
+      {
+        "title": "Three commands have no YAML frontmatter at all",
+        "detail": "sync-with-features.md, sync-with-mockups.md, and validate-integration.md start directly with '# /command' — no description and no allowed-tools. They get no description in command listings and inherit no tool pre-approvals, unlike every other command in the plugin.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-features.md:1, sync-with-mockups.md:1, validate-integration.md:1"
+      },
+      {
+        "title": "qa-ui-test side of the AC/UC contract is skewed: wrong search path, forbidden ID format in template, missing use_case_id field",
+        "detail": "system-design-doc SKILL.md (Reading Protocol) claims qa-ui-test MUST resolve sections via the registry, and CRITICAL RULE 24 forbids AC-X.Y format. But qa-ui-test/commands/qa-trace.md auto-discovers ACs with 'find docs/' and 'grep -rE ... docs/ --include=*.md' (never .design-docs/, never design_doc_list.json — zero references in the whole qa-ui-test plugin), and qa-tracker.json template line 98 exemplifies acceptance_criteria_id as [\"AC-1.1\", \"AC-1.2\"] — the exact format rule 24 bans. Additionally /sync-with-qa-tracker Step 5 writes scenario.use_case_id, a field that appears nowhere in qa-ui-test (template or commands). Auto-discovery from qa side will miss every doc this plugin generates; only the system-design-doc-driven /sync-with-qa-tracker path works.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/commands/qa-trace.md:63,105 ; D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:98 ; D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:300,408 ; sync-with-qa-tracker.md:102,221"
+      },
+      {
+        "title": "brainstorm-design.md allowed-tools contradicts its own steps (no Write, no Bash)",
+        "detail": "Frontmatter allows only Read/Glob/Grep/WebSearch, but Step 0 runs 'mkdir -p .design-docs' and 'ls' (Bash), and CRITICAL RULE 3 + the rejection criteria mandate saving .design-docs/brainstorm-[name].md (Write). The command cannot satisfy its mandatory output with its declared toolset without extra permission prompts.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/brainstorm-design.md:3 vs :14,22,52-57"
+      },
+      {
+        "title": "Intra-plugin template/reference paths mostly lack ${CLAUDE_PLUGIN_ROOT}",
+        "detail": "Only the 3 sitemap commands use ${CLAUDE_PLUGIN_ROOT}. The other ~12 commands reference 'templates/design-doc-template.md', 'templates/sections/NN-<key>.md', 'references/mermaid-patterns.md' etc. as bare relative paths, which resolve against the user's project cwd, not the plugin install dir. The agent must guess/search for the real location at runtime.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/create-design-doc.md:123-126,184-191 ; reverse-engineer.md:117 ; system-design-doc.md:44 ; import-plan.md:89-92,342 ; split-design-doc.md:38 (contrast sitemap-init.md:40,52)"
+      },
+      {
+        "title": "Partially executed v2.1 split migration leaves internal contradictions in reverse-engineer.md and import-plan.md",
+        "detail": "reverse-engineer.md line 109 mandates split layout (schema 2.3.0) but lines 113/197/233 still show output '.design-docs/system-design-[project].md' single files and lines 117/303 point to the legacy monolith template. import-plan.md line 214 mandates split + schema 2.3.0 but line 342 says 'Use the structure from templates/design_doc_list.json (schema v2.1.0)' and line 504 stages 'git add .design-docs/system-design-*.md'. validate-integration.md Step 2 still pins design_doc_list.json at 2.2.0.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/reverse-engineer.md:109,113,197,233 ; import-plan.md:214,342,504 ; validate-integration.md:48"
+      },
+      {
+        "title": "Registry path inconsistency: sync/validate commands read design_doc_list.json from project root",
+        "detail": "sync-with-features.md, sync-with-mockups.md, sync-with-qa-tracker.md, and validate-integration.md all do 'cat design_doc_list.json' (root), while create-design-doc/edit-section/import-plan/split-design-doc and all consumers use '.design-docs/design_doc_list.json' — the documented location. The root-path reads will fail first try on any doc this plugin generates.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-features.md:30 ; sync-with-mockups.md:30 ; sync-with-qa-tracker.md:39 ; validate-integration.md:30 vs create-design-doc.md:57"
+      },
+      {
+        "title": "SKILL.md is monolithic (28.5 KB) with misplaced rule content and a frontmatter description lacking trigger phrases",
+        "detail": "SKILL.md carries 38 CRITICAL RULES, 4 mermaid workflow diagrams, full version history, and tables duplicated in README and help.md — all loaded whenever the skill triggers. Structural bug: the 'Tables Summary' code block at lines 307-313 belongs to rule 23's consistency report but sits orphaned under rule 30 because the v1.7.0 rules block was inserted between rule 23 and its example. The frontmatter description has no 'Use when' trigger phrases and no Thai triggers, unlike sibling plugins (qa-ui-test, flow-discovery, long-running all ship EN+TH trigger lists), weakening auto-invocation.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:2-3,296-313,601-614 (28,566 bytes)"
+      },
+      {
+        "title": "Marketplace description stale relative to plugin.json (no v2.0/v2.1 features)",
+        "detail": "marketplace.json version is synced (2.1.0) but its description still describes the v1.7.0 feature set ('Mermaid diagrams 7 ประเภท', qa integration, /help) with no mention of sitemap.json, the 8 sitemap commands, or split-doc layout — while plugin.json's description does. plugin.json's description itself is a ~700-char changelog dump rather than a concise description.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/.claude-plugin/marketplace.json (system-design-doc entry, description field) vs D:/GitHub/AgentMarketPlace/plugins/system-design-doc/.claude-plugin/plugin.json:4"
+      },
+      {
+        "title": "sitemap-scan.md allowed-tools lists non-existent 'Agent(*)' tool",
+        "detail": "The subagent tool in Claude Code is 'Task', not 'Agent'. The entry grants nothing and suggests the parallel-scan step was never permission-tested.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sitemap-scan.md:3"
+      },
+      {
+        "title": "README compatible-versions table disagrees with template metadata",
+        "detail": "README says minimum mockup_list.json 1.7.0; the registry template metadata.compatible_with says >=1.6.0. Minor, but these tables are the contract consumers check.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/README.md:399 vs skills/system-design-doc/templates/design_doc_list.json:328"
+      }
+    ],
+    "improvements": [
+      {
+        "title": "Rewrite README.md to v2.1.0",
+        "detail": "Fix the footer version (1.3.0 → 2.1.0) and date; add all 21 commands to the Commands table (8 sitemap-*, /split-design-doc, /sync-with-qa-tracker, /brainstorm-design, /help); replace the single-file Output Files tree with the split layout (.design-docs/<slug>/00-index.md + NN-*.md); bump schema examples/compat table to 2.3.0; add qa-ui-test to the Cross-Plugin Integration diagram; append changelog entries 1.4.0-2.1.0 (copy from SKILL.md Version History).",
+        "priority": "high",
+        "effort": "medium"
+      },
+      {
+        "title": "Refresh help.md to v2.1.0",
+        "detail": "Update the banner and '/help --new' to v2.1.0; add a SITEMAP section (8 commands) and /split-design-doc with examples; mention doc_layout split and the registry reading protocol in '/help --integration'. Consider trimming the 42 KB file while at it — the workflow walkthroughs duplicate SKILL.md heavily.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      {
+        "title": "Finish the v2.1 split migration in the three stale commands",
+        "detail": "system-design-doc.md: replace 'Create file system-design-[project-name].md' + legacy template references with the split-layout Steps 6-7 delegation used by import-plan.md:214. reverse-engineer.md: fix lines 113/197/233 output examples to '.design-docs/<slug>/' and re-point 117/303 to templates/sections/. import-plan.md: fix line 342 'schema v2.1.0' → 2.3.0 and line 504 git add glob. validate-integration.md: bump Step 2 expected schema to 2.3.0 with 2.2.0 accepted.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Add frontmatter to sync-with-features, sync-with-mockups, validate-integration",
+        "detail": "Add description (matching the SKILL.md commands table wording) and allowed-tools (Read/Write/Edit/Glob/Grep/Bash for the sync pair; read-only set for validate-integration since it declares itself read-only at line 463).",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Fix brainstorm-design allowed-tools",
+        "detail": "Add Write(*) and Bash(*) (or replace the mkdir/ls bash steps with Write-implied directory creation) so the mandatory '.design-docs/brainstorm-[name].md' output is achievable under the declared toolset. Also fix sitemap-scan.md 'Agent(*)' → 'Task(*)'.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Standardize registry path and intra-plugin paths",
+        "detail": "Change 'cat design_doc_list.json' to 'cat .design-docs/design_doc_list.json' (with root fallback) in the four sync/validate commands; prefix all templates/ and references/ mentions in commands with ${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/ as the sitemap commands already do.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Coordinate qa-ui-test contract fixes (cross-plugin PR)",
+        "detail": "In qa-ui-test: (1) qa-trace.md Step 0/Source 2 should read .design-docs/design_doc_list.json first and resolve sections[key=requirements].file per the registry protocol, falling back to docs/ greps; (2) change qa-tracker.json template example to flat AC-NNN ([\"AC-001\",\"AC-002\"]) per system-design-doc rule 24; (3) add use_case_id (nullable) to the scenario template so /sync-with-qa-tracker Step 5 writes a documented field.",
+        "priority": "high",
+        "effort": "medium"
+      },
+      {
+        "title": "Slim SKILL.md via progressive disclosure",
+        "detail": "Move CRITICAL RULES 14-38 details, the Output Rejection/Penalty blocks, Post-Edit Consistency Report, and the Version History table into references/critical-rules.md (linked from a 10-line summary), and drop the 3 generation workflow mermaid diagrams (they restate the commands). While restructuring, re-home the orphaned 'Tables Summary' code block (lines 307-313) back under rule 23. Target ≤ 12 KB SKILL.md.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Add trigger-rich skill description (EN + TH)",
+        "detail": "Extend the SKILL.md frontmatter description with 'USE THIS SKILL when the user mentions: system design, design document, ER diagram, data dictionary, reverse engineer, sitemap, acceptance criteria...' plus Thai triggers ('ออกแบบระบบ', 'เอกสารออกแบบ', 'สร้าง ER diagram', 'reverse engineer ระบบ') matching the convention used by qa-ui-test/flow-discovery/long-running skills.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Tighten plugin.json and marketplace description",
+        "detail": "Replace the changelog-style plugin.json description with 2-3 sentences (features live in README); sync the marketplace description to mention sitemap.json, the sitemap command family, and split-doc layout; consider adding homepage/repository fields.",
+        "priority": "low",
+        "effort": "small"
+      },
+      {
+        "title": "Add argument-hint frontmatter to argumented commands",
+        "detail": "Commands like /edit-section, /create-diagram, /sitemap-add-node, /sitemap-link, /split-design-doc, /help take positional args/flags — argument-hint improves discoverability in the slash-command picker.",
+        "priority": "low",
+        "effort": "small"
+      }
+    ],
+    "integration_points": [
+      {
+        "target": "ui-mockup",
+        "mechanism": "Sitemap/Entities handoff via design_doc_list.json ↔ .mockups/mockup_list.json (fields design_doc_entity_ref, design_doc_section, design_doc_api_refs, last_synced_with_design_doc) + /sync-with-mockups; ui-mockup v1.10 reads design docs split-aware through the sections[] registry",
+        "status": "working",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-mockups.md:176-188 ↔ D:/GitHub/AgentMarketPlace/plugins/ui-mockup/skills/ui-mockup/templates/mockup_list.json:13,26,77-78 ; split protocol: plugins/ui-mockup/skills/ui-mockup/references/reading-design-docs.md:8-9,44 (schema ≥ 2.3.0 matches template)"
+      },
+      {
+        "target": "long-running",
+        "mechanism": "Modules/APIs/entities → features via design_doc_list.json (crud_operations gate, entities[].feature_ids, api_endpoints[].feature_id) ↔ feature_list.json features[].design_doc_refs; /sync-with-features + long-running /generate-features-from-design (exists, reads .design-docs/design_doc_list.json); long-running v2.9.0 /continue resolves sections via registry and is split-aware",
+        "status": "working",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/generate-features-from-design.md:39,58 ; plugins/long-running/skills/long-running/templates/feature_list.json:232,991-999 (design_doc_list_schema >=2.2.0, AC-NNN format) ; plugins/long-running/skills/long-running/SKILL.md:668,698,891 ; minor stale: generate-features-from-design.md:17,29 still globs '*system-design*.md' at root/docs, not .design-docs/<slug>/"
+      },
+      {
+        "target": "qa-ui-test",
+        "mechanism": "AC-NNN/UC-NNN source-of-truth → qa-tracker.json scenarios[].acceptance_criteria_id[] via /sync-with-qa-tracker (push IDs, pull coverage into acceptance_criteria[].linked_scenarios + sync_status.qa_tracker); /qa-trace auto-discovery greps AC/UC patterns; /validate-integration computes AC/UC coverage gates",
+        "status": "partial",
+        "evidence": "Push/pull side defined: D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-with-qa-tracker.md:93-142 and qa-tracker field exists (plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:98). Skew: qa-trace.md:63,105 searches docs/ never .design-docs/ or the registry (zero design_doc_list.json refs in qa-ui-test); qa-tracker template example uses banned 'AC-1.1' format (violates SKILL.md rule 24); scenario.use_case_id written by sync-with-qa-tracker.md:102,221 exists nowhere in qa-ui-test"
+      },
+      {
+        "target": "dotnet-dev",
+        "mechanism": "Documented conceptual handoff only (Entities → C# models, DD → EF migrations, APIs → controllers) in SKILL.md 'dotnet-dev Integration'; no shared artifact file and no command cross-invocation",
+        "status": "partial",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:451-461 and README.md:430; dotnet-dev plugin has zero references back to system-design-doc (grep 'system-design' in plugins/dotnet-dev → no matches)"
+      },
+      {
+        "target": "flow-discovery",
+        "mechanism": "Inbound handoff: flow-discovery findings → /edit-section and /brainstorm-design; flow-tracker.json findings[].handoffTo enumerates 'system-design-doc'",
+        "status": "working",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/flow-discovery/skills/flow-discovery/templates/flow-tracker.json:28 ; plugins/flow-discovery/skills/flow-discovery/SKILL.md:74 ; plugins/flow-discovery/README.md:29 — both target commands exist in this plugin (one-way by design)"
+      },
+      {
+        "target": "long-running (release gates: /nfr-check, /qa-coverage-check)",
+        "mechanism": "feature_list.json acceptance_criteria_id[] declared as 'references design_doc_list.json acceptance_criteria[].id' (AC-NNN flat) — long-running enforces gap_acs/nfr blocks before passes=true, closing the loop on AC IDs this plugin owns",
+        "status": "working",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/templates/feature_list.json:996-999,1037 matching skills/system-design-doc/templates/design_doc_list.json:332 (ac_id_format AC-NNN)"
+      },
+      {
+        "target": "sync-sitemap downstream pull (ui-mockup + long-running + qa-ui-test artifacts)",
+        "mechanism": "/sync-sitemap Step 4 reads .mockups/mockup_list.json, feature_list.json, qa-tracker.json to populate sitemap.json linked_artifacts[] and stage_status[] (R35 validates artifact integrity)",
+        "status": "partial",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/sync-sitemap.md:57-72 — reads are one-directional and rely on fields like qa-tracker scenarios 'page_id' and feature 'page_ref' that are not declared contracts in the consumer templates; no consumer references sitemap.json back"
+      },
+      {
+        "target": "brain",
+        "mechanism": "No explicit coupling — system-design-doc contains no brain references; integration is passive (brain-scan can index .design-docs/ artifacts at session start)",
+        "status": "unverified",
+        "evidence": "grep 'brain' across plugins/system-design-doc → no functional references"
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "README frozen at v1.3.0 — wrong version, missing 11 of 21 commands, stale schema and output layout",
+        "detail": "README footer says 'Version: 1.3.0, Last Updated: 2025-01' while plugin.json/marketplace say 2.1.0 (the top of the same README says 'What's new in v2.0' — internally contradictory). The Commands table (lines 34-45) lists only 10 commands, omitting /brainstorm-design, /sync-with-qa-tracker, /help, /split-design-doc and all 8 /sitemap-* commands. README shows design_doc_list schema_version 2.1.0 (line 365) and 'Compatible Versions: design_doc_list.json 2.1.0' (line 398) vs actual template schema 2.3.0. Output Files section (lines 213-218) shows only the legacy single-file layout, contradicting the v2.1 default split layout. Cross-Plugin Integration section (lines 340-358) shows only 3 plugins, omitting qa-ui-test which /validate-integration covers. Changelog stops at 1.3.0.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/README.md:5,34-45,213-218,344-358,365,398,406-414 vs D:/GitHub/AgentMarketPlace/plugins/system-design-doc/.claude-plugin/plugin.json:3"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "help.md frozen at v1.7.0 — the user-facing command reference omits all 9 v2.x commands",
+        "detail": "commands/help.md (42 KB) banners 'คู่มือการใช้งาน v1.7.0' and '/help --new # What's new in v1.7.0'; it documents 12 commands and never mentions /sitemap-init, /sitemap-add-node, /sitemap-link, /sitemap-scan, /sync-sitemap, /sitemap-validate, /sitemap-graph, /sitemap-export, or /split-design-doc, and has zero occurrences of doc_layout/split. Users running /help get a two-major-versions-old picture of the plugin.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/help.md:8,37-38,48,54 (26 'v1.7.0' references, no sitemap-*/split-design-doc matches)"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "Main entry command system-design-doc.md not migrated to v2.1 split layout",
+        "detail": "The catch-all /system-design-doc command still instructs 'Create file system-design-[project-name].md' (not even under .design-docs/) using the legacy templates/design-doc-template.md, with no mention of doc_layout, sections[], or 00-index.md. Running the plugin's primary command produces the legacy single-file output while /create-design-doc and /import-plan produce the split default — contradictory behavior depending on entry point.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/system-design-doc/commands/system-design-doc.md:44,55,290 (zero split/doc_layout/00-index matches)"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "qa-ui-test side of the AC/UC contract is skewed: wrong search path, forbidden ID format in template, missing use_case_id field",
+        "detail": "system-design-doc SKILL.md (Reading Protocol) claims qa-ui-test MUST resolve sections via the registry, and CRITICAL RULE 24 forbids AC-X.Y format. But qa-ui-test/commands/qa-trace.md auto-discovers ACs with 'find docs/' and 'grep -rE ... docs/ --include=*.md' (never .design-docs/, never design_doc_list.json — zero references in the whole qa-ui-test plugin), and qa-tracker.json template line 98 exemplifies acceptance_criteria_id as [\"AC-1.1\", \"AC-1.2\"] — the exact format rule 24 bans. Additionally /sync-with-qa-tracker Step 5 writes scenario.use_case_id, a field that appears nowhere in qa-ui-test (template or commands). Auto-discovery from qa side will miss every doc this plugin generates; only the system-design-doc-driven /sync-with-qa-tracker path works.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/commands/qa-trace.md:63,105 ; D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:98 ; D:/GitHub/AgentMarketPlace/plugins/system-design-doc/skills/system-design-doc/SKILL.md:300,408 ; sync-with-qa-tracker.md:102,221"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Rewrite README.md to v2.1.0",
+        "detail": "Fix the footer version (1.3.0 → 2.1.0) and date; add all 21 commands to the Commands table (8 sitemap-*, /split-design-doc, /sync-with-qa-tracker, /brainstorm-design, /help); replace the single-file Output Files tree with the split layout (.design-docs/<slug>/00-index.md + NN-*.md); bump schema examples/compat table to 2.3.0; add qa-ui-test to the Cross-Plugin Integration diagram; append changelog entries 1.4.0-2.1.0 (copy from SKILL.md Version History).",
+        "priority": "high",
+        "effort": "medium"
+      },
+      "verdict": null
+    }
+  ]
+}

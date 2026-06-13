@@ -132,3 +132,20 @@ self-validation ที่จะ catch bugs ก่อน user เจอ จริ
 - ทำไม dogfood แยก? — เพื่อให้ /scan-changes test กับ feature_list ตัวเองได้ (self-validation)
 
 ---
+
+
+---
+
+## Session 2 — Plugin Suite Analysis + dotnet-dev v1.3.0 + brain v3.1.0
+**Date**: 2026-06-12
+**Type**: Analysis + Coding (นอก feature workflow — งานทำก่อนสร้าง epic)
+
+### What was done:
+- ✅ Multi-agent analysis 4/6 plugins (dotnet-dev, brain, system-design-doc, long-running) + dotnet deep-dive + 18 adversarial verdicts → ผลทั้งหมดอยู่ที่ `plans/plugin-analysis-20260612/` (อ่าน `PENDING.md` ก่อนเสมอ)
+- ✅ dotnet-dev v1.2.0 → **v1.3.0**: .NET 10 baseline, แก้ MCP tool names, template bugs (execution-strategy transactions, property hiding, soft-delete ซ้ำ), built-in OpenAPI, trigger keywords, README ใหม่
+- ✅ brain v3.0.0 → **v3.1.0**: README ใหม่ + MCP prerequisites, ${CLAUDE_PLUGIN_ROOT} paths, upsert semantics doc, trigger phrases, argument-hint
+- ✅ สร้าง epic `plugin-suite-improvements` (Features #4-#8) สำหรับงานที่เหลือ — ทุก feature ชี้ analysis JSON ใน references[] **ห้ามวิเคราะห์ซ้ำ**
+
+### Next session (/continue):
+- Feature #4 (sonnet): แก้ system-design-doc — เริ่มจาก `plans/plugin-analysis-20260612/analysis-system-design-doc.json`
+- หมายเหตุ: ยังไม่ commit งาน session นี้

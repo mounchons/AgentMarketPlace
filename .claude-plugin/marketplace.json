@@ -39,8 +39,8 @@
     {
       "name": "dotnet-dev",
       "source": "./plugins/dotnet-dev",
-      "description": "Expert .NET Core development skill สำหรับ ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns และ .NET Aspire พร้อม Microsoft Learn MCP integration รองรับทั้ง PostgreSQL และ SQL Server",
-      "version": "1.2.0",
+      "description": "Expert .NET Core development skill สำหรับ ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns และ .NET Aspire พร้อม Microsoft Learn MCP integration รองรับทั้ง PostgreSQL และ SQL Server. v1.3.0: .NET 10 LTS + EF Core 10 baseline, built-in OpenAPI แทน Swashbuckle, แก้ MCP tool names ให้ถูกต้อง (microsoft_docs_search/code_sample_search/docs_fetch + HTTP transport ตรง), แก้ template bugs (execution-strategy-safe transactions, property hiding, soft-delete filter ซ้ำ), Minimal APIs vs Controllers decision table, HybridCache + TimeProvider, restore trigger keywords EN+TH",
+      "version": "1.3.0",
       "category": "development",
       "tags": [
         "dotnet",
@@ -309,8 +309,8 @@
     {
       "name": "brain",
       "source": "./plugins/brain",
-      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge",
-      "version": "3.0.0",
+      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.1.0: เพิ่ม README + MCP prerequisites, แก้ GRAPH_PROTOCOL.md paths เป็น ${CLAUDE_PLUGIN_ROOT}, document upsert-by-title semantics, trigger phrases EN+TH, argument-hint frontmatter",
+      "version": "3.1.0",
       "category": "knowledge",
       "tags": [
         "graph-brain",

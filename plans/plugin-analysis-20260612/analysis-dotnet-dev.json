@@ -1,0 +1,210 @@
+{
+  "plugin": "dotnet-dev",
+  "analysis": {
+    "plugin": "dotnet-dev",
+    "version": "1.2.0",
+    "summary": "dotnet-dev is a skill-only plugin (no commands, no hooks, no agents) containing one SKILL.md (15.6 KB) plus four reference files (~54 KB total) and a bundled Microsoft Learn MCP server declared inline in plugin.json. Versions are consistent at 1.2.0 between plugin.json and marketplace.json (plugin README carries no version/changelog at all). Content quality of the .NET/EF Core/Aspire material is high and dual-database (PostgreSQL + SQL Server) coverage is genuinely useful. The two biggest defects: (1) the skill frontmatter description was stripped of its \"Use when\"/trigger keywords in commit 8948bc1 (2025-12-26), weakening model-based auto-triggering, while the README still advertises those triggers; (2) MCP usage documentation in SKILL.md and references/microsoft-learn-mcp.md instructs using a nonexistent tool name (mcp__microsoft-learn__search) and an unreliable mcporter CLI fallback instead of the server's actual tools (microsoft_docs_search, microsoft_code_sample_search, microsoft_docs_fetch). Integration is entirely inbound: long-running and system-design-doc both route .NET work to /dotnet-dev, but dotnet-dev itself references no other plugin and no shared artifact (feature_list.json, design_doc_list.json, etc.).",
+    "strengths": [
+      "Clean skill-only architecture with zero hooks - no SessionStart cost beyond the MCP server, nothing heavy loaded into every session",
+      "Progressive disclosure is structurally correct: 4 on-demand reference files (ef-core-patterns.md 17 KB, testing-patterns.md 17 KB, aspire-setup.md 13 KB, microsoft-learn-mcp.md 7 KB) explicitly indexed from SKILL.md lines 457-463",
+      "Version sync is correct: plugin.json (D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/.claude-plugin/plugin.json:3) and marketplace.json (D:/GitHub/AgentMarketPlace/.claude-plugin/marketplace.json:43) both say 1.2.0; marketplace entry has rich category/tags metadata",
+      "Dual-database guidance (PostgreSQL vs SQL Server selection criteria, provider-specific features like JSONB/temporal tables/HierarchyId, database-agnostic configuration pattern) is concrete and practical",
+      "Bundled Microsoft Learn MCP server (plugin.json:8-13) loads correctly - its three tools are visible and usable in sessions",
+      "Reference files contain production-grade, complete code samples (Testcontainers + Respawn integration tests, Aspire AppHost orchestration, domain events, interceptors) rather than generic advice",
+      "Plugin is well-positioned in the marketplace workflow: long-running /init, /init-existing, and /continue all auto-detect .csproj/.sln and mandate the dotnet-dev skill"
+    ],
+    "issues": [
+      {
+        "title": "Skill frontmatter lost its trigger phrases (regression in commit 8948bc1)",
+        "detail": "SKILL.md frontmatter description was reduced from a trigger-rich block (Use when: creating .NET projects... Triggers: \".NET\", \"C#\", \"Entity Framework\", \"EF Core\", \"migration\", ...) to a single short line with no 'Use when' clause and no trigger keywords. Model-invoked skill selection depends heavily on the description; sibling plugins (qa-ui-test, flow-discovery) include explicit EN+TH trigger lists. The plugin README still promises automatic activation on those keywords (README.md:81-90), so the docs now over-promise what the frontmatter delivers. There are also no Thai triggers despite the user/marketplace being Thai-first.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:3 (current short description); git show 8948bc1 diff removing the 'Use when:'/'Triggers:' block; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:81-90 (stale trigger-keyword promise)"
+      },
+      {
+        "title": "MCP usage docs reference nonexistent tool names and a dubious mcporter CLI invocation",
+        "detail": "SKILL.md tells the model to call 'npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...' and names the tool 'mcp__microsoft-learn__search'. The bundled server actually exposes microsoft_docs_search, microsoft_code_sample_search, and microsoft_docs_fetch (prefixed mcp__plugin_dotnet-dev_microsoft-learn__* when installed). A model following these instructions will either run a failing/hanging npx command or look for a tool that does not exist, instead of using the already-loaded MCP tools. references/microsoft-learn-mcp.md repeats the same wrong tool name and dedicates a whole 'Alternative: mcporter CLI' section to it.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:55-62; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/references/microsoft-learn-mcp.md:207-241 (mcporter section, 'mcp__microsoft-learn__search' at line 229)"
+      },
+      {
+        "title": "README installation instructions are stale and use a wrong plugin name/command",
+        "detail": "Plugin README references 'your-username/dotnet-dev-skill' placeholder, a '/plugin add /path/to/dotnet-dev-skill' command that does not exist (correct: /plugin install dotnet-dev@agent-marketplace, which the repo root README gets right at README.md:65), and a 'dotnet-dev-skill' directory name that does not match plugins/dotnet-dev. The standalone-skill copy command also uses the wrong source path.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:18-31 vs D:/GitHub/AgentMarketPlace/README.md:63-66"
+      },
+      {
+        "title": "No version or changelog anywhere in the plugin README",
+        "detail": "Version 1.2.0 exists only in plugin.json and marketplace.json. The README has no version badge and no changelog, so what changed in 1.1.0 (SQL Server support, per commit a257184) and 1.2.0 (path/metadata fixes, per f6ef22c/c5c35a6) is undocumented. Every other actively maintained plugin in this marketplace (ui-mockup, long-running, qa-ui-test) keeps a README changelog; this is the drift pattern already tracked in the marketplace-version-sync memory.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md (no version string present); plugin.json:3 = 1.2.0; marketplace.json:43 = 1.2.0"
+      },
+      {
+        "title": "SKILL.md is a 15.6 KB monolith with internal duplication against references/",
+        "detail": "Eight full code templates live inline in SKILL.md (lines 121-400: BaseEntity, IRepository, IUnitOfWork, generic Repository, DbContext, DI, appsettings, Aspire AppHost), making the always-loaded-on-trigger file ~480 lines. Several blocks duplicate reference content: EnableRetryOnFailure config appears in SKILL.md:300-325 and again in ef-core-patterns.md:399-410 and :559-571; audit-field stamping is implemented twice with no 'pick one' guidance (SaveChangesAsync override at SKILL.md:254-271 vs AuditableEntityInterceptor at ef-core-patterns.md:273-321) - applying both would double-stamp; Aspire AppHost appears in SKILL.md:366-400 and aspire-setup.md:34-81.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:121-400 (15,608 bytes total); references/ef-core-patterns.md:273-321,399-410,559-571; references/aspire-setup.md:34-81"
+      },
+      {
+        "title": "Code-template defects: redundant soft-delete filtering and 'new' Id property hiding",
+        "detail": "The DbContext template installs a global query filter for IsDeleted (SKILL.md:243-251), yet every Repository method also manually filters !e.IsDeleted (GetByIdAsync:184-185, GetAllAsync:187-188, ExistsAsync:209-210, Query:212-213) - redundant and confusing about which mechanism is authoritative. BaseEntity<TKey> uses 'public new TKey Id' (SKILL.md:135-138), shadowing the base long Id; property hiding via 'new' breaks EF Core mapping/polymorphism expectations and is a known anti-pattern that a generated project would inherit.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:135-138, 184-213, 243-251"
+      },
+      {
+        "title": "Three contradictory MCP configuration methods across plugin.json, README, and reference doc",
+        "detail": "plugin.json uses 'npx -y mcp-remote <url>' (stdio bridge spawning a node process every session); README.md:37-46 shows a streamable-http config; microsoft-learn-mcp.md:13-43 shows a third (claude mcp add CLI) plus a .mcp.json example that does not exist in the plugin (the server is inline in plugin.json). A reader cannot tell which is canonical. The mcp-remote bridge also adds avoidable startup overhead vs native HTTP transport.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/.claude-plugin/plugin.json:8-13; README.md:33-46; references/microsoft-learn-mcp.md:13-43"
+      },
+      {
+        "title": "plugin.json missing optional metadata; license mismatch",
+        "detail": "plugin.json has name/version/description/author but no homepage, repository, license, or keywords. README declares MIT license (README.md:103-105) but plugin.json carries no license field, and there is no LICENSE file in the plugin directory.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/.claude-plugin/plugin.json:1-14; README.md:103-105"
+      },
+      {
+        "title": "README architecture claims contradict dual-database positioning",
+        "detail": "README 'Architecture Preferences' states 'PostgreSQL - Primary database' while the plugin description, SKILL.md provider-selection section, and v1.1.0 release all position PostgreSQL and SQL Server as equal first-class options.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:99 vs plugin.json:4 and SKILL.md:32-47"
+      }
+    ],
+    "improvements": [
+      {
+        "title": "Restore trigger-rich frontmatter description with EN + TH triggers",
+        "detail": "In SKILL.md:3, re-add the pre-8948bc1 'Use when:' clause and English trigger list (.NET, C#, Entity Framework, EF Core, migration, repository pattern, unit of work, Clean Architecture, Aspire, Web API, DbContext, LINQ, Blazor, SQL Server, PostgreSQL) and add Thai triggers consistent with sibling plugins (e.g. \"สร้างโปรเจกต์ .NET\", \"เขียน C#\", \"ทำ migration\", \"ออกแบบ entity\", \"สร้าง Web API\"). This is the single highest-leverage fix for auto-triggering and brings frontmatter back in line with README.md:81-90.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Fix MCP tool documentation to name the real tools and delete the mcporter fallback",
+        "detail": "In SKILL.md:51-68 replace the mcporter bash snippet and 'mcp__microsoft-learn__search' with the actual tools: microsoft_docs_search (overview), microsoft_code_sample_search (code samples), microsoft_docs_fetch (full page), and a one-line workflow (search -> code sample -> fetch). In references/microsoft-learn-mcp.md remove the 'Alternative: mcporter CLI' section (lines 207-241) and correct line 229. Keeps the model from shelling out to a failing npx command.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Rewrite README install section and add version + changelog",
+        "detail": "Replace README.md:16-31 with the correct commands (/plugin marketplace add <this repo>, /plugin install dotnet-dev@agent-marketplace) and fix the standalone-skill copy path (plugins/dotnet-dev/skills/dotnet-dev). Add a version header (v1.2.0) and a short changelog covering 1.0.0 (initial), 1.1.0 (SQL Server + multi-database), 1.2.0 (MCP/metadata fixes), matching the convention used by ui-mockup/long-running READMEs.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Slim SKILL.md via a references/code-templates.md split and dedupe alternatives",
+        "detail": "Move inline patterns 4-8 (generic Repository implementation, DbContext, DependencyInjection, appsettings examples, Aspire AppHost - SKILL.md:171-400) into a new references/code-templates.md, keeping only BaseEntity/IRepository/IUnitOfWork signatures and principles in SKILL.md (~50% size cut). While doing so: state explicitly that AuditableEntityInterceptor (ef-core-patterns.md) and the SaveChangesAsync override are mutually exclusive choices; keep retry-on-failure config in one place only.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Add a two-sided integration section documenting long-running and system-design-doc handoffs",
+        "detail": "dotnet-dev currently references zero other plugins (grep confirms no matches for long-running/system-design-doc/feature_list/design_doc_list anywhere under plugins/dotnet-dev). Add a 'Works with' section to SKILL.md and README: (1) long-running /init and /continue invoke this skill for .NET projects; (2) system-design-doc hands off Entities -> C# models, Relationships -> EF configurations, Data Dictionary -> migrations (per system-design-doc SKILL.md:451-461); optionally instruct the skill to check for .design-docs/design_doc_list.json and derive entity classes from registered design docs when present, making the contract executable rather than conceptual.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Fix template defects in BaseEntity and Repository soft-delete",
+        "detail": "In SKILL.md: remove BaseEntity<TKey>'s 'public new TKey Id' shadowing (make Id strategy explicit via a single generic base or document the long-only default), and drop the manual !e.IsDeleted predicates from Repository methods since the global query filter already handles soft delete (or remove the filter and keep predicates - one mechanism only, with a note about IgnoreQueryFilters() for admin queries).",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Switch bundled MCP server to native HTTP transport and consolidate config docs",
+        "detail": "Change plugin.json mcpServers to {\"type\": \"http\", \"url\": \"https://learn.microsoft.com/api/mcp\"} to eliminate the npx/mcp-remote node process spawned every session, then make README.md:33-46 and microsoft-learn-mcp.md:11-43 show that single canonical config (delete the .mcp.json example that doesn't exist in the plugin). Also note the potential duplicate with an externally installed microsoft-docs plugin exposing identical tools.",
+        "priority": "low",
+        "effort": "small"
+      },
+      {
+        "title": "Complete plugin.json metadata",
+        "detail": "Add homepage/repository (the AgentMarketPlace repo), license: \"MIT\" (to match README.md:103-105), and keywords mirroring the marketplace tags, so the manifest is self-describing when installed outside this marketplace.",
+        "priority": "low",
+        "effort": "small"
+      }
+    ],
+    "integration_points": [
+      {
+        "target": "long-running (inbound)",
+        "mechanism": "long-running's /init, /init-existing, and /continue detect .NET projects via *.csproj/*.sln and mandate invoking the /dotnet-dev skill for feature breakdown and implementation ('If .NET project -> must use /dotnet-dev skill'); also listed in long-running's skills_to_use config template and Complete Workflow Phase 3.",
+        "status": "working",
+        "evidence": "plugins/long-running/skills/long-running/SKILL.md:779-811,851; plugins/long-running/commands/continue.md:281,314,339,364; plugins/long-running/commands/init.md:148,178,204,304,491; plugins/long-running/commands/init-existing.md:142,166,273,304; plugins/long-running/references/coding-agent-guide.md:73-93. The dotnet-dev:dotnet-dev skill exists and loads, so the invocation contract resolves. One-sided documentation only: dotnet-dev never mentions long-running (grep over plugins/dotnet-dev: 0 matches)."
+      },
+      {
+        "target": "system-design-doc (inbound)",
+        "mechanism": "Documented conceptual handoff: system-design-doc -> dotnet-dev passes Entities -> C# Model classes, Relationships -> EF Core configurations, Data Dictionary -> Database migrations, APIs -> Controller scaffolding; dotnet-dev also appears in system-design-doc's integration diagram and README related-plugins list.",
+        "status": "partial",
+        "evidence": "plugins/system-design-doc/skills/system-design-doc/SKILL.md:147,451-461; plugins/system-design-doc/README.md:430. Partial because the contract is documentation-only on one side: dotnet-dev has no instruction to read design_doc_list.json or .design-docs/ (grep over plugins/dotnet-dev for design_doc_list/.design-docs: 0 matches), so nothing operationalizes the Entities->EF-config mapping."
+      },
+      {
+        "target": "microsoft-learn MCP server (bundled)",
+        "mechanism": "plugin.json declares an inline mcpServers entry running 'npx -y mcp-remote https://learn.microsoft.com/api/mcp'; SKILL.md and references/microsoft-learn-mcp.md instruct when/how to query it for latest Microsoft docs.",
+        "status": "partial",
+        "evidence": "plugins/dotnet-dev/.claude-plugin/plugin.json:8-13 (server loads; tools microsoft_docs_search/microsoft_code_sample_search/microsoft_docs_fetch are live in sessions). Partial because the usage docs name a nonexistent tool 'mcp__microsoft-learn__search' and a mcporter CLI path (SKILL.md:55-62; references/microsoft-learn-mcp.md:216-237), so documented usage does not match the working server. Note: duplicates an externally installed microsoft-docs plugin exposing the identical server."
+      },
+      {
+        "target": "Shared workflow artifacts (feature_list.json, qa-tracker.json, design_doc_list.json, mockup_list.json, .design-docs/, .mockups/)",
+        "mechanism": "None - dotnet-dev neither reads nor writes any shared artifact file used by the long-running/qa-ui-test/system-design-doc/ui-mockup pipeline.",
+        "status": "unverified",
+        "evidence": "Grep over D:/GitHub/AgentMarketPlace/plugins/dotnet-dev for feature_list|qa-tracker|design_doc_list|mockup_list|.design-docs|.mockups: no matches. dotnet-dev participates in the primary workflow only as a passive knowledge skill invoked by long-running's coding agent."
+      },
+      {
+        "target": "brain / qa-ui-test / ui-mockup / flow-discovery / code-review",
+        "mechanism": "No direct references in either direction specific to dotnet-dev beyond brain's generic SessionStart preload of all plugins.",
+        "status": "unverified",
+        "evidence": "Grep over plugins/dotnet-dev for brain|qa-ui-test|ui-mockup|flow-discovery|code-review: 0 matches; repo-wide grep for 'dotnet-dev' hits only long-running, system-design-doc, marketplace.json, root README, and dotnet-dev itself."
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "Skill frontmatter lost its trigger phrases (regression in commit 8948bc1)",
+        "detail": "SKILL.md frontmatter description was reduced from a trigger-rich block (Use when: creating .NET projects... Triggers: \".NET\", \"C#\", \"Entity Framework\", \"EF Core\", \"migration\", ...) to a single short line with no 'Use when' clause and no trigger keywords. Model-invoked skill selection depends heavily on the description; sibling plugins (qa-ui-test, flow-discovery) include explicit EN+TH trigger lists. The plugin README still promises automatic activation on those keywords (README.md:81-90), so the docs now over-promise what the frontmatter delivers. There are also no Thai triggers despite the user/marketplace being Thai-first.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:3 (current short description); git show 8948bc1 diff removing the 'Use when:'/'Triggers:' block; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/README.md:81-90 (stale trigger-keyword promise)"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed all cited evidence. (1) plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:3 currently has only a one-line description with no 'Use when' clause and no trigger keywords (only incidental Thai words 'รองรับ ... และ ...', no Thai trigger phrases). (2) git show 8948bc1 (in main, latest commit touching the file) shows the exact diff removing the 7-line 'Use when:'/'Triggers:' block listing \".NET\", \"C#\", \"Entity Framework\", \"EF Core\", \"migration\", etc. (3) README.md:81-90 still contains the '📋 Trigger Keywords' section promising automatic activation on those keywords — now over-promising vs the frontmatter. (4) Sibling plugins qa-ui-test (qa-ui-test, qa-advanced, qa-nfr) and flow-discovery SKILL.md files all include 'USE THIS SKILL when' + 'Thai triggers:' blocks, so dotnet-dev diverges from repo convention. (5) The trigger list does not survive elsewhere: plugin.json and marketplace.json descriptions lack triggers, and there is only one SKILL.md in the plugin. The user's installed cache (cache/agent-marketplace/dotnet-dev/1.2.0) still ships the OLD rich description, which masks the regression locally, but the repo is the marketplace source and any fresh install gets the degraded description. The commit was a deliberate 'simplify' pass, but the README contradiction makes this a genuine current inconsistency rather than an intentional, consistent change.",
+        "correction": "Minor nuance only: the regression has not yet affected the user's currently installed copy — the plugin cache at C:/Users/mounc/.claude/plugins/cache/agent-marketplace/dotnet-dev/1.2.0 still contains the old trigger-rich SKILL.md (installed 2025-12-21, before commit 8948bc1, and never re-synced despite the version staying 1.2.0). This also implies a secondary issue: SKILL.md changed without a version bump, so installed copies will not pick up future frontmatter fixes until the version is bumped."
+      }
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "MCP usage docs reference nonexistent tool names and a dubious mcporter CLI invocation",
+        "detail": "SKILL.md tells the model to call 'npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...' and names the tool 'mcp__microsoft-learn__search'. The bundled server actually exposes microsoft_docs_search, microsoft_code_sample_search, and microsoft_docs_fetch (prefixed mcp__plugin_dotnet-dev_microsoft-learn__* when installed). A model following these instructions will either run a failing/hanging npx command or look for a tool that does not exist, instead of using the already-loaded MCP tools. references/microsoft-learn-mcp.md repeats the same wrong tool name and dedicates a whole 'Alternative: mcporter CLI' section to it.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/SKILL.md:55-62; D:/GitHub/AgentMarketPlace/plugins/dotnet-dev/skills/dotnet-dev/references/microsoft-learn-mcp.md:207-241 (mcporter section, 'mcp__microsoft-learn__search' at line 229)"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with direct file evidence. (1) SKILL.md lines 55-62 contain the exact mcporter invocation `npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...` (line 57) and the tool name `mcp__microsoft-learn__search` (line 61). (2) references/microsoft-learn-mcp.md has the 'Alternative: mcporter CLI' section at lines 207-241, repeats the same invocation at lines 216-218 and 234-236, and names `mcp__microsoft-learn__search` at line 229. (3) The plugin's .claude-plugin/plugin.json bundles the microsoft-learn server via `npx -y mcp-remote https://learn.microsoft.com/api/mcp`, and the actually-installed tools (verified against the live tool registry and the server's own MCP instructions in this environment) are mcp__plugin_dotnet-dev_microsoft-learn__microsoft_docs_search, __microsoft_code_sample_search, and __microsoft_docs_fetch — there is no tool named 'search', so both the documented MCP tool name and the mcporter call target a nonexistent tool. Even under a user-level config named 'microsoft-learn', the suffix would still be microsoft_docs_search, not search, so the documented name is wrong in every installation scenario. Grep across the plugin found no corrected version elsewhere; the wrong guidance is the only MCP usage guidance in the plugin."
+      }
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Restore trigger-rich frontmatter description with EN + TH triggers",
+        "detail": "In SKILL.md:3, re-add the pre-8948bc1 'Use when:' clause and English trigger list (.NET, C#, Entity Framework, EF Core, migration, repository pattern, unit of work, Clean Architecture, Aspire, Web API, DbContext, LINQ, Blazor, SQL Server, PostgreSQL) and add Thai triggers consistent with sibling plugins (e.g. \"สร้างโปรเจกต์ .NET\", \"เขียน C#\", \"ทำ migration\", \"ออกแบบ entity\", \"สร้าง Web API\"). This is the single highest-leverage fix for auto-triggering and brings frontmatter back in line with README.md:81-90.",
+        "priority": "high",
+        "effort": "small"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence on every point. (1) Current state: D:\\GitHub\\AgentMarketPlace\\plugins\\dotnet-dev\\skills\\dotnet-dev\\SKILL.md line 3 has only the short description \"Expert .NET Core development - ASP.NET Core MVC, Entity Framework Core, Clean Architecture, Repository/Unit of Work patterns, .NET Aspire รองรับ PostgreSQL และ SQL Server\" — no 'Use when:' clause, no English trigger list, no Thai trigger phrases. (2) Git history: `git show 8948bc1` confirms commit 8948bc18 (\"docs: Simplify and enhance descriptions...\") removed exactly the multi-line description containing \"Use when: creating .NET projects, writing C# code, designing Entity Framework models...\" and the Triggers list (\".NET\", \"C#\", \"Entity Framework\", \"ASP.NET\", \"EF Core\", \"migration\", \"repository pattern\", \"unit of work\", \"Clean Architecture\", \"Aspire\", \"Web API\", \"MVC\", \"dependency injection\", \"DbContext\", \"LINQ\", \"Blazor\", \"SQL Server\", \"PostgreSQL\") — matching the claim's cited keyword list. (3) README drift: plugins/dotnet-dev/README.md lines 81-90 still document a \"📋 Trigger Keywords\" section promising the skill \"จะถูก activate โดยอัตโนมัติ\" on those same keywords, so the frontmatter is genuinely out of line with the README — the simplification commit did not update README, refuting the \"intentional drift\" defense. (4) Sibling consistency: grep confirms 4 sibling SKILL.md files in the same repo (qa-ui-test/qa-ui-test, qa-nfr, qa-advanced, flow-discovery) carry explicit \"Thai triggers\" sections, so adding Thai triggers is consistent with repo conventions. (5) No false positive: the plugin contains only 7 files; grep for \"Use when|Triggers\" across plugins/dotnet-dev (plugin.json, references, README aside) returns no frontmatter-level trigger text elsewhere — the trigger-rich description does not live in another file. Minor nuance: the removal was part of a deliberate 4-plugin \"simplify\" commit, but since README still advertises the trigger keywords and sibling skills follow the trigger-rich pattern, the gap is real and the improvement claim stands."
+      }
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Fix MCP tool documentation to name the real tools and delete the mcporter fallback",
+        "detail": "In SKILL.md:51-68 replace the mcporter bash snippet and 'mcp__microsoft-learn__search' with the actual tools: microsoft_docs_search (overview), microsoft_code_sample_search (code samples), microsoft_docs_fetch (full page), and a one-line workflow (search -> code sample -> fetch). In references/microsoft-learn-mcp.md remove the 'Alternative: mcporter CLI' section (lines 207-241) and correct line 229. Keeps the model from shelling out to a failing npx command.",
+        "priority": "high",
+        "effort": "small"
+      },
+      "verdict": {
+        "valid": true,
+        "reasoning": "Confirmed with file evidence. (1) plugins/dotnet-dev/skills/dotnet-dev/SKILL.md lines 51-68 contain the mcporter bash snippet (line 57: 'npx mcporter call --stdio \"streamable-http https://learn.microsoft.com/api/mcp\" search query:...') and the nonexistent tool name 'mcp__microsoft-learn__search' (line 61). (2) references/microsoft-learn-mcp.md has the '## Alternative: mcporter CLI' section at lines 207-241, and line 229 is exactly '- ใช้ tool: mcp__microsoft-learn__search'. (3) The plugin's plugin.json bundles the microsoft-learn MCP server (npx mcp-remote https://learn.microsoft.com/api/mcp), whose actual tools are microsoft_docs_search, microsoft_code_sample_search, and microsoft_docs_fetch — there is no 'search' tool, so the documented name is wrong. (4) The correct tool names appear nowhere in the plugin's docs (grep verified), and since the server is bundled in plugin.json, the 'if MCP not configured' mcporter fallback premise is moot. No file already fixes this; the claim's proposed improvement is accurate and actionable."
+      }
+    }
+  ]
+}

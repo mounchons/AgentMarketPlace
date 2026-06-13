@@ -1,0 +1,304 @@
+{
+  "plugin": "long-running",
+  "analysis": {
+    "plugin": "long-running",
+    "version": "2.9.0 (plugin.json + marketplace.json); SKILL.md frontmatter says 2.6.0; README says 2.0.0; help.md says 2.6.0+/2.8.0",
+    "summary": "long-running v2.9.0 is the most contract-rich plugin in the marketplace: 19 commands, a 7-step Verification Pipeline, 4 release gates wired to qa-ui-test's qa-tracker.json, design-doc impact checks wired to system-design-doc's design_doc_list.json, and a UI Control Manifest handoff whose test categories match qa-ui-test exactly. The core machinery (continue/nfr-check/qa-coverage-check/emit-control-spec/scan-changes) is solid and genuinely two-sided. The plugin's weakness is severe internal documentation drift: README is frozen at v2.0.0 (7 minor versions behind, missing 7 commands, recommending two skills that do not exist), SKILL.md frontmatter says 2.6.0 and the skill body has zero mention of v2.7 scan-changes or v2.8 Gate 4, six commands have no frontmatter, no intra-plugin path uses ${CLAUDE_PLUGIN_ROOT}, and the headline v2.9.0 feature (split-layout design-doc resolution) was added only to SKILL.md and references/coding-agent-guide.md while continue.md — the command that actually executes Verification Pipeline Step 2 — still uses the legacy single-file find fallback and never points to the guide.",
+    "strengths": [
+      "plugin.json and marketplace.json versions are in sync at 2.9.0 (D:/GitHub/AgentMarketPlace/plugins/long-running/.claude-plugin/plugin.json:3, .claude-plugin/marketplace.json:67)",
+      "Gate 4 control manifest contract is exactly mirrored on the qa-ui-test side: mandatory categories render-binding/api-binding/permission/validation/cascade-loading-error in continue.md:1014-1024 match qa-ui-test/skills/qa-ui-test/references/control-spec-scenarios.md:15-33 verbatim",
+      "qa-tracker.json schema requirement (>=1.7.0) in nfr-check.md:78 and qa-coverage-check.md:68 matches qa-ui-test's shipped template (qa-tracker.json template declares schema_version 1.7.0 with nfr_results and traceability sections)",
+      "Strict consumer discipline: nfr-check.md:39 and qa-coverage-check.md:41 declare read-only on qa-tracker.json with idempotent re-runs; ID propagation rules (AC-NNN from system-design-doc, BUG-NNN from qa-ui-test, long-running only mirrors) documented in SKILL.md:756-759",
+      "Enforcement design is unusually rigorous: self-check checklists, output rejection criteria, and override flags (--force-coverage/--force-nfr/--force-bug-verify/--force-control-coverage) that require audit logging (continue.md:19-71, 1026-1049)",
+      "Has a written cross-plugin regression charter (tests/INTEGRATION_TEST.md) that explicitly tracks contract drift between /add-feature, /edit-feature and system-design-doc's /sync-with-features",
+      "No hooks directory — zero per-session overhead; all weight is opt-in via commands/skill",
+      "scan-changes.md is a well-designed upstream traceability enforcer with proper argument parsing ($ARGUMENTS), ignore patterns, and legacy-commit cutoff"
+    ],
+    "issues": [
+      {
+        "title": "README frozen at v2.0.0 — seven minor versions behind plugin.json 2.9.0",
+        "detail": "README.md:3 says 'Version 2.0.0' and the changelog (README.md:606-693) ends at v2.0.0 (2026-03-08). It omits every feature since: v2.1 model assignment//review, v2.2 CRITICAL RULES, v2.3 Verification Pipeline, v2.4 design-doc impact check, v2.6 release gates (/nfr-check, /qa-coverage-check), v2.7 /scan-changes, v2.8 /emit-control-spec + Gate 4, v2.9 split-layout awareness. The Commands tables (README.md:123-145) list only 12 of 19 commands — /help, /review, /nfr-check, /qa-coverage-check, /scan-changes, /emit-control-spec, /init-project are absent. The feature template at README.md:577-592 still shows the pre-v1.5 flat schema with no status/subtasks/epic fields.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/README.md:3, README.md:123-145, README.md:606-693 vs .claude-plugin/plugin.json:3 (2.9.0)"
+      },
+      {
+        "title": "SKILL.md frontmatter version 2.6.0 and skill body has no v2.7/v2.8 content",
+        "detail": "SKILL.md frontmatter (line 3) declares version 2.6.0 while the body header (line 9) says 2.9.0 and plugin.json says 2.9.0. The skill never mentions /scan-changes, /emit-control-spec, Gate 4, the UI Control Manifest, or references/ui-control-manifest.md (grep for 'ui-control-manifest|emit-control-spec|scan-changes' in SKILL.md returns zero matches). The changelog table (SKILL.md:889-895) jumps from 2.3.0 to 2.9.0, omitting 2.4-2.8. The Available Commands table (SKILL.md:47-61) is missing /add-feature, /edit-feature, /init-existing, /help, /scan-changes, /emit-control-spec. Since the skill is what auto-triggers on long-running mentions, agents get a v2.6-era picture of a v2.9 plugin.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/SKILL.md:3 vs :9; SKILL.md:889-895 (changelog gap); zero grep hits for emit-control-spec/scan-changes/ui-control-manifest in SKILL.md"
+      },
+      {
+        "title": "v2.9.0 split-layout resolution never wired into continue.md",
+        "detail": "The 2.9.0 changelog (SKILL.md:891) claims '/continue (coding-agent-guide) resolves design sections via design_doc_list.json documents[].sections[]'. The registry logic exists only in references/coding-agent-guide.md:38-47,79 and SKILL.md:668,698 — but continue.md contains zero references to design_doc_list.json, never instructs reading coding-agent-guide.md (grep for 'coding-agent-guide' in commands/ returns nothing), and Step 0.5 (continue.md:117-119) still uses the legacy `find . -name \"*design*.md\"`. Verification Pipeline Step 2 in continue.md:891-894 still keys on '.design-docs/ exists' with no layout-aware DD-count. The headline v2.9.0 feature is unreachable from the command that needs it.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:117-119, 891-894 (no design_doc_list.json anywhere in file) vs skills/long-running/references/coding-agent-guide.md:38-47 and SKILL.md:891"
+      },
+      {
+        "title": "No ${CLAUDE_PLUGIN_ROOT} — intra-plugin paths will not resolve from user projects",
+        "detail": "Commands reference plugin-internal files with bare relative or repo-relative paths: continue.md:770 and emit-control-spec.md:15,288 point to 'skills/long-running/references/ui-control-manifest.md', init.md:242 to 'references/feature-patterns.md and templates/feature_list.json', help.md:1306 to 'plugins/long-running/skills/...'. When the plugin is installed via marketplace, the working directory is the user's project, so these paths fail; the agent must guess or glob. All should be ${CLAUDE_PLUGIN_ROOT}/skills/long-running/...",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:770, commands/emit-control-spec.md:15,288, commands/init.md:242, commands/help.md:1306; grep for CLAUDE_PLUGIN_ROOT in the plugin returns zero hits"
+      },
+      {
+        "title": "17 references to nonexistent skills /test-runner and /ai-ui-test",
+        "detail": "continue.md (lines 331-332, 350-351, 380-381), init.md (195-196, 306, 493), init-existing.md (159-160, 275, 306), and README.md (330-332, 395) present /test-runner and /ai-ui-test as 'universal skills' and even write '/test-runner' into the generated .agent/config.json recommended_skills. Neither exists in the marketplace; the actual QA plugin is qa-ui-test, which the same files' newer sections integrate correctly. Agents following these instructions will attempt invalid skill invocations and emit config files recommending dead skills.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:331-332,350-351; commands/init.md:195-196,306,493; commands/init-existing.md:159-160,275,306; README.md:330-332,395"
+      },
+      {
+        "title": "Six commands have no frontmatter (no description, no allowed-tools)",
+        "detail": "dependencies.md, generate-features-from-design.md, generate-features-from-mockups.md, migrate.md, sync-mockups.md, and validate-coverage.md all start directly with '# /command' and have no YAML frontmatter. They get no description in command listings and no tool scoping, unlike the other 13 commands which consistently declare description + allowed-tools. These are exactly the v1.5.0-era commands, suggesting they were never touched since.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/dependencies.md:1, generate-features-from-design.md:1, generate-features-from-mockups.md:1, migrate.md:1, sync-mockups.md:1, validate-coverage.md:1 (all begin with '# /...' instead of '---')"
+      },
+      {
+        "title": "Flag-taking commands omit $ARGUMENTS placeholder",
+        "detail": "nfr-check.md (documents --module/--feature/--strict/--report-only), qa-coverage-check.md (--include-controls/--controls-only), review.md (/review #6), emit-control-spec.md (<feature-id>), help.md (11 modes like --qa/--controls), migrate.md, and continue.md (--force-coverage/--force-nfr/--force-bug-verify/--force-all per its own rejection criteria at lines 61-67) never include $ARGUMENTS, so user-supplied flags are not reliably injected into the prompt. Only add-feature, edit-feature, init, init-project, and scan-changes handle arguments properly.",
+        "severity": "medium",
+        "evidence": "grep '\\$ARGUMENTS' in commands/ matches only add-feature.md, edit-feature.md, init-project.md, init.md, scan-changes.md; contrast commands/nfr-check.md:18-24 and commands/continue.md:61-67 which document flags"
+      },
+      {
+        "title": "help.md is 80KB and stale; SKILL.md is 42KB monolith",
+        "detail": "commands/help.md is 80,590 bytes (~20k tokens) injected wholesale on every /long-running:help call, and it is version-stale: line 8 says '(v2.6.0+)', line 49 titles the guide 'v2.8.0', and there is zero v2.9.0/split-layout content (grep 'split|2.9' returns nothing). SKILL.md is 42,749 bytes (~11k tokens) loaded on every skill trigger with full Verification Pipeline, model-assignment, and gate detail inline instead of in references/ — violating progressive disclosure. The skill description also lacks concrete EN+TH trigger phrases ('USE THIS SKILL when... / Thai triggers:') that sibling plugins qa-ui-test and flow-discovery use.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/help.md (80590 bytes; lines 8, 49); skills/long-running/SKILL.md (42749 bytes; frontmatter description at line 4 has no trigger-phrase block)"
+      },
+      {
+        "title": "templates/feature_list.json (schema 2.4.0) missing v2.8 control_coverage and compat skew",
+        "detail": "The shipped template declares schema_version 2.4.0 (templates/feature_list.json:2) but contains no control_coverage block, no .agent/ui-controls manifest_path example, and no missing_categories example, even though continue.md Step 6 (lines 1098-1106) specifies them as the v2.8.0 schema shape. metadata.compatible_with says design_doc_list_schema '>=2.2.0' (line 991) while v2.9.0 split layout requires >=2.3.0 (SKILL.md:891). Initializers copying the template will produce files missing the Gate 4 contract fields.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/templates/feature_list.json:2,991 (grep control_coverage/ui-controls returns zero hits) vs commands/continue.md:1098-1106"
+      },
+      {
+        "title": "sync-with-features pending_updates contract still unverified (Scenario 7 skipped)",
+        "detail": "tests/INTEGRATION_TEST.md:278 records 'Scenario 7: skipped — yet to update sync-with-features' and line 250 warns 'Fail if: sync-with-features ไม่รู้จัก format → ต้องอัปเดต system-design-doc plugin ด้วย'. add-feature.md:115, edit-feature.md:156, and scan-changes.md:313 all route users to /sync-with-features to resolve design_doc_refs.pending_updates[], but compatibility of the pending_updates format with system-design-doc's command was never tested. The Run History section is empty.",
+        "severity": "medium",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/tests/INTEGRATION_TEST.md:230-250,278,290-292; commands/add-feature.md:115; commands/scan-changes.md:313"
+      },
+      {
+        "title": "Broken Anthropic blog URL in README and SKILL.md",
+        "detail": "Both files link to https://www.anthropic.com/engineering/effective-harnesses-for-long-runnings — the slug is wrong (actual article is 'effective-harnesses-for-long-running-agents'); the link 404s.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/README.md:7; skills/long-running/SKILL.md:18"
+      },
+      {
+        "title": "Project-specific content hardcoded in generic command",
+        "detail": "continue.md Step 0.5 (lines 170-225) embeds the user's own nav reference: 'docs/example/html/nav/src/frontend/src/components/' and specific brain queries ('nav template', 'profile dropdown') plus a Nav Template bug checklist sourced from a personal brain note. In any other project these paths/notes do not exist, sending agents on dead-end searches. This belongs in project CLAUDE.md or brain, not the plugin.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:170-225 (esp. 189: docs/example/html/nav/src/frontend/src/components/)"
+      },
+      {
+        "title": "Reference Files tables omit two reference files; version-label inconsistency in manifests",
+        "detail": "SKILL.md:602-611 Reference Files table omits references/module-decomposition.md and references/ui-control-manifest.md plus templates/modules.json and component_library.json; README.md:460-473 omits ui-control-manifest.md. Also plugin.json describes the gates as 'v2.5 release gates' while marketplace.json says 'v2.6 release gates' for the same feature set, and the plugin.json description is a 1000+ char changelog dump rather than a concise summary.",
+        "severity": "low",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/SKILL.md:602-611; README.md:460-473; .claude-plugin/plugin.json:4 ('v2.5 release gates') vs .claude-plugin/marketplace.json:66 ('v2.6 release gates')"
+      }
+    ],
+    "improvements": [
+      {
+        "title": "Single version-sync pass: README 2.0.0 -> 2.9.0, SKILL.md frontmatter 2.6.0 -> 2.9.0, help.md headers",
+        "detail": "Update README.md:3 header and add changelog entries for 2.1-2.9; fix SKILL.md:3 frontmatter version; fill SKILL.md:889-895 changelog gaps (2.4.0 design-doc impact check, 2.6.0 gates, 2.7.0/2.7.1 scan-changes, 2.8.0 Gate 4); bump help.md:8 '(v2.6.0+)' and :49 'v2.8.0' to v2.9.0 and add a v2.9 'What's new' entry. Consider a node script in CI (like the existing marketplace version-sync check) asserting plugin.json == SKILL.md frontmatter == README header.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Wire split-layout registry into continue.md",
+        "detail": "Port the registry-resolution block from references/coding-agent-guide.md:38-47 into continue.md Step 0.5 (replace the bare find at lines 117-119) and make Verification Pipeline Step 2 (continue.md:891-894) layout-aware (resolve 08-data-dictionary.md via documents[].sections[] when doc_layout=='split'). Alternatively add one line: 'Read ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/coding-agent-guide.md Step 0 for design-doc resolution.'",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Replace stale /test-runner and /ai-ui-test references with qa-ui-test commands",
+        "detail": "In continue.md:331-381, init.md:195-493, init-existing.md:159-306, README.md:330-395: replace '/ai-ui-test' with '/qa-ui-test:qa-create-scenario / qa-run', drop '/test-runner' (or map to the project's real test command), and remove '/test-runner' from the generated recommended_skills config template.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Adopt ${CLAUDE_PLUGIN_ROOT} for all intra-plugin file references",
+        "detail": "Fix continue.md:770, emit-control-spec.md:15,288, init.md:242, help.md:1306 to use ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/... so schema references resolve after marketplace install. Audit references in skills/ guides too.",
+        "priority": "high",
+        "effort": "small"
+      },
+      {
+        "title": "Add frontmatter to the six v1.5-era commands",
+        "detail": "dependencies.md, generate-features-from-design.md, generate-features-from-mockups.md, migrate.md, sync-mockups.md, validate-coverage.md need '---\\ndescription: ...\\nallowed-tools: ...\\n---'. migrate.md's body also still says 'migrate to schema v1.5.0' — update to current 2.4.0 target with the documented migration chain.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Add $ARGUMENTS handling to flag-taking commands",
+        "detail": "Add an 'Input received: $ARGUMENTS' + parse section (mirroring scan-changes.md:58-69) to nfr-check.md, qa-coverage-check.md, review.md, emit-control-spec.md, help.md, migrate.md, and continue.md (which must parse --force-coverage/--force-nfr/--force-bug-verify/--force-control-coverage/--skip-control-manifest/--force-all to honor its own gate-override semantics).",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Slim SKILL.md via progressive disclosure and add trigger phrases",
+        "detail": "Move the full Verification Pipeline detail (SKILL.md:401-531), model assignment/review detail (:307-353), and qa-gate detail (:702-776) into references/ (verification-pipeline.md exists implicitly inside continue.md — dedupe to one canonical reference), keeping one-paragraph summaries + pointers; target <15KB. Add v2.7/v2.8 command rows to the Available Commands table and ui-control-manifest.md + module-decomposition.md to the Reference Files table. Rewrite the frontmatter description with 'USE THIS SKILL when...' + Thai triggers ('ทำต่อจาก session ก่อน', 'สร้าง feature list', 'release gate', 'ตรวจ coverage') matching the qa-ui-test/flow-discovery pattern.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Split help.md (80KB) into per-mode reference files",
+        "detail": "Keep help.md as a <10KB dispatcher (mode table + overview) and move --qa, --controls, --gates, scan-changes, and per-command deep-dives into skills/long-running/references/help/*.md loaded via ${CLAUDE_PLUGIN_ROOT} only for the requested mode. Cuts ~15k tokens per /help invocation.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Update templates/feature_list.json for v2.8 contract",
+        "detail": "Add a qa_trace_coverage.control_coverage example (manifest_path, gap_control_ids, missing_categories) matching continue.md:1098-1106, bump metadata.compatible_with.design_doc_list_schema to '>=2.3.0' (split layout), and decide whether v2.8 warrants schema_version 2.5.0 with a /migrate path.",
+        "priority": "medium",
+        "effort": "small"
+      },
+      {
+        "title": "Execute INTEGRATION_TEST Scenario 7 and log the run",
+        "detail": "Run the pending_updates -> /sync-with-features round-trip against the current system-design-doc plugin, record results in the Run History section (tests/INTEGRATION_TEST.md:290), and fix whichever side owns the format break. This is the known open follow-up from the SDD split-files work.",
+        "priority": "medium",
+        "effort": "medium"
+      },
+      {
+        "title": "Extract project-specific nav/brain content from continue.md",
+        "detail": "Move the DashboardShell/Navbar brain-query block and 'docs/example/html/nav/...' reference paths (continue.md:170-225) into the user's project CLAUDE.md or a brain note; keep at most a generic 'if brain plugin available, query for existing nav patterns' instruction.",
+        "priority": "low",
+        "effort": "small"
+      },
+      {
+        "title": "Fix blog URL and trim manifest descriptions",
+        "detail": "Correct the Anthropic article slug in README.md:7 and SKILL.md:18. Shrink plugin.json description to 1-2 sentences (move feature history to README changelog) and align the 'v2.5 vs v2.6 release gates' wording between plugin.json:4 and marketplace.json:66.",
+        "priority": "low",
+        "effort": "small"
+      }
+    ],
+    "integration_points": [
+      {
+        "target": "qa-ui-test (NFR gate)",
+        "mechanism": "/nfr-check reads qa-tracker.json nfr_results (by_module, critical_failures; populated by /qa-ui-test:qa-nfr-assess) and writes features[].nfr_compliance; /continue Gate 2 blocks passes=true when blocks_release && score < required",
+        "status": "working",
+        "evidence": "commands/nfr-check.md:10,78,90 and continue.md:981-986 vs qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json:2 (schema_version 1.7.0), :132-174 (nfr_results schema with by_module + critical_failures)"
+      },
+      {
+        "target": "qa-ui-test (AC coverage gate)",
+        "mechanism": "/qa-coverage-check reads qa-tracker.traceability.ac_inventory (populated by /qa-ui-test:qa-trace), maps gate PASS/GAP/FAIL/CONCERNS to features[].qa_trace_coverage; /continue Gate 1 blocks on gap_acs/fail_acs",
+        "status": "working",
+        "evidence": "commands/qa-coverage-check.md:10,68,84-98 and continue.md:967-975 vs qa-ui-test/commands/qa-trace.md and qa-tracker.json template traceability section"
+      },
+      {
+        "target": "qa-ui-test (Gate 4 UI Control Manifest)",
+        "mechanism": "/continue Step 5.4 / /emit-control-spec emit .agent/ui-controls/feature-N.json; qa-ui-test:qa-create-scenario --from-control-spec consumes it and tags scenarios[].control_refs[]; /qa-coverage-check --include-controls closes the loop into qa_trace_coverage.control_coverage",
+        "status": "working",
+        "evidence": "commands/continue.md:763-824,999-1024 and skills/long-running/references/ui-control-manifest.md:1-60 vs qa-ui-test/skills/qa-ui-test/references/control-spec-scenarios.md:15-33 — mandatory categories (render-binding, api-binding, permission, validation, cascade-loading-error) identical on both sides"
+      },
+      {
+        "target": "qa-ui-test (bug-fix loop)",
+        "mechanism": "qa-bug-export writes features with epic='bug-fix' + linked_bug{} into feature_list.json; /continue Gate 3 blocks 'Verify BUG-XXX' subtasks until qa-tracker bugs[].status=='verified'; qa-bug-verify closes features back",
+        "status": "working",
+        "evidence": "continue.md:988-997, SKILL.md:744-759 vs qa-ui-test/commands/qa-bug-export.md (21 feature_list.json refs), qa-bug-verify.md (5 refs)"
+      },
+      {
+        "target": "system-design-doc (design_doc_list.json contract)",
+        "mechanism": "/add-feature and /edit-feature (v2.4.0) run design-doc impact check against entities[]/api_endpoints[]/crud_operations; /init and /generate-features-from-design read crud_operations before creating CRUD features; AC-NNN IDs mirrored into acceptance_criteria_id[]",
+        "status": "working",
+        "evidence": "commands/add-feature.md:42-93,174,289; commands/edit-feature.md:68-110,331; commands/generate-features-from-design.md:35-58; references/initializer-guide.md:356-360 vs system-design-doc templates/design_doc_list.json"
+      },
+      {
+        "target": "system-design-doc (split-layout registry, v2.9.0)",
+        "mechanism": "Resolve sections via design_doc_list.json documents[].sections[] (doc_layout=='split', requires registry >=2.3.0) instead of reading whole doc; layout-aware DD-count in Verification Pipeline Step 2",
+        "status": "partial",
+        "evidence": "Implemented in references/coding-agent-guide.md:38-47,79 and SKILL.md:668,698,891; system-design-doc side has doc_layout/sections in 12 files incl. split-design-doc.md — but commands/continue.md has zero design_doc_list.json references and still uses find fallback (continue.md:117-119), and /continue never instructs reading coding-agent-guide.md"
+      },
+      {
+        "target": "system-design-doc (/sync-with-features pending_updates)",
+        "mechanism": "add/edit-feature write design_doc_refs.pending_updates[] and route users to /sync-with-features (exists at system-design-doc/commands/sync-with-features.md) for bidirectional sync",
+        "status": "partial",
+        "evidence": "commands/add-feature.md:115,311; commands/scan-changes.md:313,475; sync-with-features.md exists — but tests/INTEGRATION_TEST.md:278 'Scenario 7: skipped — yet to update sync-with-features' (format compatibility never verified)"
+      },
+      {
+        "target": "ui-mockup (.mockups/ + mockup_list.json)",
+        "mechanism": "/generate-features-from-mockups and /sync-mockups consume mockup_list.json; /continue Step 0.5/3.5 reads .mockups/*.mockup.md + _design-tokens.yaml as structural spec; Step 5.4.5 cross-validates control manifest against mockup component specs (Hybrid B drift detection: missing-implementation/permission-wider block passes=true)",
+        "status": "working",
+        "evidence": "commands/continue.md:121-167,661-676,830-876; commands/sync-mockups.md; ui-mockup ships mockup_list.json template and SKILL.md:1066 links acceptance_criteria_id to feature_list features"
+      },
+      {
+        "target": "dotnet-dev",
+        "mechanism": "Technology detection (*.csproj/*.sln) mandates /dotnet-dev skill for .NET implementation in /continue Step 0.6, /init, /init-existing",
+        "status": "working",
+        "evidence": "commands/continue.md:281,314,337-344; SKILL.md:779-812; README.md:300-314; dotnet-dev plugin exists with matching skill — one-way documented invocation, no shared artifact needed"
+      },
+      {
+        "target": "code-review",
+        "mechanism": "Documented as 'universal skill' to review before commit; no artifact contract (long-running's own /review command handles model review internally)",
+        "status": "unverified",
+        "evidence": "commands/continue.md:330,350,380; README.md:330 — generic mention only; the built-in code-review skill exists but no invocation contract is specified"
+      },
+      {
+        "target": "brain",
+        "mechanism": "/continue Step 0.5 mandates brain queries before implementing nav/layout features (nav template, profile dropdown, design tokens) with fallback to mockup_list.json-derived navigation; brain side preloads at SessionStart independently",
+        "status": "partial",
+        "evidence": "commands/continue.md:170-225 — works only in the author's project: hardcodes docs/example/html/nav/src/frontend/src/components/ and a personal brain note checklist that won't exist elsewhere"
+      },
+      {
+        "target": "flow-discovery",
+        "mechanism": "flow-discovery exports discovered features into the backlog via /add-feature (one-way, flow-discovery initiates)",
+        "status": "working",
+        "evidence": "flow-discovery/skills/flow-discovery/SKILL.md:76 ('long-running : features → /add-feature'); /add-feature exists and accepts $ARGUMENTS"
+      },
+      {
+        "target": "test-runner / ai-ui-test (nonexistent)",
+        "mechanism": "Listed as universal skills and written into generated .agent/config.json recommended_skills",
+        "status": "broken",
+        "evidence": "commands/continue.md:331-332,350-351,380-381; commands/init.md:195-196,306,493; commands/init-existing.md:159-160,275,306; README.md:330-332,395 — neither plugin/skill exists in the marketplace; superseded by qa-ui-test"
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "README frozen at v2.0.0 — seven minor versions behind plugin.json 2.9.0",
+        "detail": "README.md:3 says 'Version 2.0.0' and the changelog (README.md:606-693) ends at v2.0.0 (2026-03-08). It omits every feature since: v2.1 model assignment//review, v2.2 CRITICAL RULES, v2.3 Verification Pipeline, v2.4 design-doc impact check, v2.6 release gates (/nfr-check, /qa-coverage-check), v2.7 /scan-changes, v2.8 /emit-control-spec + Gate 4, v2.9 split-layout awareness. The Commands tables (README.md:123-145) list only 12 of 19 commands — /help, /review, /nfr-check, /qa-coverage-check, /scan-changes, /emit-control-spec, /init-project are absent. The feature template at README.md:577-592 still shows the pre-v1.5 flat schema with no status/subtasks/epic fields.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/README.md:3, README.md:123-145, README.md:606-693 vs .claude-plugin/plugin.json:3 (2.9.0)"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "SKILL.md frontmatter version 2.6.0 and skill body has no v2.7/v2.8 content",
+        "detail": "SKILL.md frontmatter (line 3) declares version 2.6.0 while the body header (line 9) says 2.9.0 and plugin.json says 2.9.0. The skill never mentions /scan-changes, /emit-control-spec, Gate 4, the UI Control Manifest, or references/ui-control-manifest.md (grep for 'ui-control-manifest|emit-control-spec|scan-changes' in SKILL.md returns zero matches). The changelog table (SKILL.md:889-895) jumps from 2.3.0 to 2.9.0, omitting 2.4-2.8. The Available Commands table (SKILL.md:47-61) is missing /add-feature, /edit-feature, /init-existing, /help, /scan-changes, /emit-control-spec. Since the skill is what auto-triggers on long-running mentions, agents get a v2.6-era picture of a v2.9 plugin.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/skills/long-running/SKILL.md:3 vs :9; SKILL.md:889-895 (changelog gap); zero grep hits for emit-control-spec/scan-changes/ui-control-manifest in SKILL.md"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "issue",
+        "title": "v2.9.0 split-layout resolution never wired into continue.md",
+        "detail": "The 2.9.0 changelog (SKILL.md:891) claims '/continue (coding-agent-guide) resolves design sections via design_doc_list.json documents[].sections[]'. The registry logic exists only in references/coding-agent-guide.md:38-47,79 and SKILL.md:668,698 — but continue.md contains zero references to design_doc_list.json, never instructs reading coding-agent-guide.md (grep for 'coding-agent-guide' in commands/ returns nothing), and Step 0.5 (continue.md:117-119) still uses the legacy `find . -name \"*design*.md\"`. Verification Pipeline Step 2 in continue.md:891-894 still keys on '.design-docs/ exists' with no layout-aware DD-count. The headline v2.9.0 feature is unreachable from the command that needs it.",
+        "severity": "high",
+        "evidence": "D:/GitHub/AgentMarketPlace/plugins/long-running/commands/continue.md:117-119, 891-894 (no design_doc_list.json anywhere in file) vs skills/long-running/references/coding-agent-guide.md:38-47 and SKILL.md:891"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Single version-sync pass: README 2.0.0 -> 2.9.0, SKILL.md frontmatter 2.6.0 -> 2.9.0, help.md headers",
+        "detail": "Update README.md:3 header and add changelog entries for 2.1-2.9; fix SKILL.md:3 frontmatter version; fill SKILL.md:889-895 changelog gaps (2.4.0 design-doc impact check, 2.6.0 gates, 2.7.0/2.7.1 scan-changes, 2.8.0 Gate 4); bump help.md:8 '(v2.6.0+)' and :49 'v2.8.0' to v2.9.0 and add a v2.9 'What's new' entry. Consider a node script in CI (like the existing marketplace version-sync check) asserting plugin.json == SKILL.md frontmatter == README header.",
+        "priority": "high",
+        "effort": "small"
+      },
+      "verdict": null
+    },
+    {
+      "claim": {
+        "kind": "improvement",
+        "title": "Wire split-layout registry into continue.md",
+        "detail": "Port the registry-resolution block from references/coding-agent-guide.md:38-47 into continue.md Step 0.5 (replace the bare find at lines 117-119) and make Verification Pipeline Step 2 (continue.md:891-894) layout-aware (resolve 08-data-dictionary.md via documents[].sections[] when doc_layout=='split'). Alternatively add one line: 'Read ${CLAUDE_PLUGIN_ROOT}/skills/long-running/references/coding-agent-guide.md Step 0 for design-doc resolution.'",
+        "priority": "high",
+        "effort": "small"
+      },
+      "verdict": null
+    }
+  ]
+}
