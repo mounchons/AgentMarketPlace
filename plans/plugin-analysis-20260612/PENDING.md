@@ -27,6 +27,17 @@
 - [x] **dotnet-dev → v1.3.0**: ดูรายละเอียดท้ายไฟล์ (section "งานที่ทำใน v1.3.0")
 - [x] **brain → v3.1.0**: ดูรายละเอียดท้ายไฟล์ (section "งานที่ทำใน v3.1.0")
 
+## ✅ ทำเสร็จ Session 3 (2026-06-13)
+
+- [x] **ข้อ 3 (Feature #4) → system-design-doc v2.1.0 → v2.2.0** + **qa-ui-test v2.6.0 → v2.6.1** (ข้อ 2 ฝั่ง qa contract แก้ไปด้วย):
+  - README + help.md refresh ครบ 22 commands (commands จริง = 22 ไม่ใช่ 21 ตาม verdict correction)
+  - main entry + reverse-engineer + import-plan migrate เป็น split layout default (no contradiction)
+  - frontmatter ครบทุก command + แก้ allowed-tools (brainstorm-design, sitemap-scan Agent→Task)
+  - qa-trace.md registry-first AC/UC resolution + flat AC-NNN ทั้ง plugin + scenario.use_case_id field
+  - ${CLAUDE_PLUGIN_ROOT} paths + marketplace sync
+  - **ผ่าน adversarial verification 2 รอบ** (Opus subagents) — commits ราย subtask + review-fix ใน main
+  - ⚠️ ข้อ 2 ที่เหลือ (integration map ครบ 6 ตัว) ยังค้าง — รอ Feature #6 (วิเคราะห์ ui-mockup + qa-ui-test ก่อน)
+
 ## 📋 ค้างทำครั้งหน้า (เรียงตามความสำคัญ)
 
 > ✅ **Wired เข้า long-running แล้ว (2026-06-12):** งานทั้งหมดด้านล่างถูกแปลงเป็น epic
