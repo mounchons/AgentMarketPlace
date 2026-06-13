@@ -471,9 +471,9 @@ Additional validations:
 
 | Resource | Description |
 |----------|-------------|
-| `references/document-sections.md` | Details of required sections |
-| `references/troubleshooting.md` | Common problem solutions |
-| `references/mermaid-patterns.md` | Correct Mermaid syntax |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Details of required sections |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/troubleshooting.md` | Common problem solutions |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Correct Mermaid syntax |
 
 ---
 

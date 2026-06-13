@@ -49,7 +49,7 @@ new_id = "{PREFIX}-{next_num zero-padded to 3 digits}"
 ### Step 3: Construct node object
 - Set `id` = resolved ID
 - Set required fields from args
-- Validate against `references/sitemap-schema.json` definition (`#/definitions/<type>`)
+- Validate against `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/sitemap-schema.json` definition (`#/definitions/<type>`)
 
 If validation fails → print error + exit (do not write file).
 

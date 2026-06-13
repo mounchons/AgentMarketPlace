@@ -41,16 +41,16 @@ Create a comprehensive standardized system design document. Supports both creati
    - Define main modules
 
 2. **Create Document Structure (split layout — default)**
-   - Use `templates/index-template.md` (→ `00-index.md`) + `templates/sections/NN-<key>.md` (one per section)
-   - Fill in data per sections in `references/document-sections.md`
-   - `templates/design-doc-template.md` is LEGACY — use only when user asks for `doc_layout:"single"`
+   - Use `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` (→ `00-index.md`) + `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/NN-<key>.md` (one per section)
+   - Fill in data per sections in `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md`
+   - `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` is LEGACY — use only when user asks for `doc_layout:"single"`
 
 3. **Create Diagrams**
-   - Use patterns from `references/mermaid-patterns.md`
+   - Use patterns from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md`
    - ER Diagram, Flow Diagram, DFD, Sitemap, Sequence Diagram
 
 4. **Create Data Dictionary**
-   - Use template from `references/data-dictionary-template.md`
+   - Use template from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/data-dictionary-template.md`
 
 5. **Save Files + Register Document**
    - Follow `create-design-doc.md` Step 6–7 exactly: write `.design-docs/<project-slug>/00-index.md` + `NN-<key>.md` (10 files) — keep the `<!-- sdd-section -->` marker on line 1 of every section file
@@ -89,7 +89,7 @@ cat *.csproj 2>/dev/null | head -20
 | `go.mod` | Go |
 | `Cargo.toml` | Rust |
 
-3. **Analyze Key Files** (see `references/codebase-analysis.md`)
+3. **Analyze Key Files** (see `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/codebase-analysis.md`)
 
 | Component | Files to read | Diagram to create |
 |-----------|--------------|-------------------|
@@ -288,12 +288,12 @@ Read these files for additional details:
 
 | Resource | Description |
 |----------|-------------|
-| `references/codebase-analysis.md` | How to analyze code for document creation |
-| `references/mermaid-patterns.md` | All diagram patterns |
-| `references/document-sections.md` | Details for each document section |
-| `references/data-dictionary-template.md` | Data Dictionary format |
-| `templates/index-template.md` | Index/TOC template (`00-index.md`) |
-| `templates/sections/NN-<key>.md` | Per-section templates (split layout — default) |
-| `templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/codebase-analysis.md` | How to analyze code for document creation |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | All diagram patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Details for each document section |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/data-dictionary-template.md` | Data Dictionary format |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` | Index/TOC template (`00-index.md`) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/NN-<key>.md` | Per-section templates (split layout — default) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

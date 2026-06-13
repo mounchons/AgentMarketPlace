@@ -31,8 +31,8 @@ Check and synchronize data between `design_doc_list.json` and `feature_list.json
 ### Step 1: Read Files
 
 ```bash
-# Read design_doc_list.json
-cat design_doc_list.json
+# Read design_doc_list.json (registry อยู่ที่ .design-docs/ — root path เป็น legacy fallback)
+cat .design-docs/design_doc_list.json 2>/dev/null || cat design_doc_list.json
 
 # Read feature_list.json
 cat feature_list.json

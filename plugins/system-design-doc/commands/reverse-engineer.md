@@ -47,7 +47,7 @@ cat go.mod 2>/dev/null | head -10
 
 ### Step 3: Analyze Key Files
 
-**Read `references/codebase-analysis.md` for details**
+**Read `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/codebase-analysis.md` for details**
 
 #### For ER Diagram & Data Dictionary
 
@@ -115,8 +115,8 @@ cat go.mod 2>/dev/null | head -10
 ```
 
 **Use templates from:**
-- `templates/index-template.md` + `templates/sections/NN-<key>.md`
-- `templates/design-doc-template.md` — LEGACY, only when user asks for `doc_layout:"single"` (output `.design-docs/system-design-<slug>.md`)
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` + `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/NN-<key>.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` — LEGACY, only when user asks for `doc_layout:"single"` (output `.design-docs/system-design-<slug>.md`)
 
 ### Step 6: Validate Against Code
 
@@ -300,10 +300,10 @@ sql = "SELECT u.Id, u.Username FROM Users u INNER JOIN Roles r ON u.RoleId = r.I
 
 | Resource | Description |
 |----------|-------------|
-| `references/codebase-analysis.md` | Detailed analysis guide for each framework |
-| `references/mermaid-patterns.md` | Diagram patterns |
-| `references/troubleshooting.md` | Common problem solutions |
-| `templates/index-template.md` + `templates/sections/` | Split-layout templates (default) |
-| `templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/codebase-analysis.md` | Detailed analysis guide for each framework |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Diagram patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/troubleshooting.md` | Common problem solutions |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` + `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/` | Split-layout templates (default) |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | LEGACY single-file template (`doc_layout:"single"` only) |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

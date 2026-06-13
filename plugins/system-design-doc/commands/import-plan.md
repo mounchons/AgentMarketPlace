@@ -86,10 +86,10 @@ Read these files from the plugin directory to use as templates:
 
 | File | Purpose |
 |------|---------|
-| `templates/design-doc-template.md` | Standard 10-section structure |
-| `references/mermaid-patterns.md` | Standard Mermaid diagram syntax |
-| `references/document-sections.md` | Details for each section |
-| `references/architecture-patterns.md` | Supported architecture patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | Standard 10-section structure |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Standard Mermaid diagram syntax |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Details for each section |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` | Supported architecture patterns |
 
 ### 2.2 Extract from Implementation Plan (Type A)
 
@@ -218,8 +218,8 @@ Legacy single-file `.design-docs/system-design-[project-name].md` — only when 
 ### 5.1 Generation Rules
 
 - **ALWAYS reformat every section** — do NOT copy verbatim from source
-- Use Mermaid syntax per `references/mermaid-patterns.md`
-- Use structure per `templates/design-doc-template.md`
+- Use Mermaid syntax per `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md`
+- Use structure per `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md`
 - Include content for all 10 sections even if some sections are minimal
 - Do NOT create actual code (implementation code)
 
@@ -339,7 +339,7 @@ Create or update the file `.design-docs/design_doc_list.json`
 
 ### Schema v2.3.0
 
-Use the structure from `templates/design_doc_list.json` (schema v2.3.0)
+Use the structure from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design_doc_list.json` (schema v2.3.0)
 
 **Example of key fields to include:**
 
@@ -418,7 +418,7 @@ Use the structure from `templates/design_doc_list.json` (schema v2.3.0)
 }
 ```
 
-**Important:** Use the full structure from `templates/design_doc_list.json` — the example above shows only key fields
+**Important:** Use the full structure from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design_doc_list.json` — the example above shows only key fields
 
 ### Important Rules for design_doc_list.json
 
@@ -535,10 +535,10 @@ git commit -m "docs: import design doc from [source-filename]
 
 | File | Purpose |
 |------|---------|
-| `references/document-sections.md` | Standard 10-section details |
-| `references/mermaid-patterns.md` | Mermaid syntax patterns for diagrams |
-| `references/architecture-patterns.md` | Supported architecture patterns |
-| `templates/design-doc-template.md` | Design document structure template |
-| `templates/design_doc_list.json` | Design doc registry template |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Standard 10-section details |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Mermaid syntax patterns for diagrams |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` | Supported architecture patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | Design document structure template |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design_doc_list.json` | Design doc registry template |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

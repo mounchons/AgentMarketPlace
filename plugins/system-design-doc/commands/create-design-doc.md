@@ -120,10 +120,10 @@ ls -la .design-docs/brainstorm-*.md 2>/dev/null
 ### Step 2: Define Document Structure
 
 **Read templates (split layout — default):**
-- `templates/index-template.md` — index/TOC file (`00-index.md`)
-- `templates/sections/NN-<key>.md` — one template per section
-- `references/document-sections.md` — content spec per section
-- `templates/design-doc-template.md` — LEGACY single-file template (only if user asks for `doc_layout:"single"`)
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` — index/TOC file (`00-index.md`)
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/NN-<key>.md` — one template per section
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` — content spec per section
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` — LEGACY single-file template (only if user asks for `doc_layout:"single"`)
 
 **Document Structure (10 Sections):**
 
@@ -151,8 +151,8 @@ ls -la .design-docs/brainstorm-*.md 2>/dev/null
 ### Step 4: Create Diagrams
 
 **Use patterns from:**
-- `references/mermaid-patterns.md` - Diagram patterns
-- `references/architecture-patterns.md` - Architecture patterns (Microservices, Clean Architecture, DDD)
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` - Diagram patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` - Architecture patterns (Microservices, Clean Architecture, DDD)
 
 **Diagrams to create:**
 
@@ -168,7 +168,7 @@ ls -la .design-docs/brainstorm-*.md 2>/dev/null
 ### Step 5: Create Data Dictionary
 
 **Use template from:**
-- `references/data-dictionary-template.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/data-dictionary-template.md`
 
 **For each table:**
 - Column definitions
@@ -181,14 +181,14 @@ ls -la .design-docs/brainstorm-*.md 2>/dev/null
 
 1. Compute `<project-slug>` = kebab-case of the project name (e.g. "HR Management" → `hr-management`). If `.design-docs/<slug>/` already exists for a different doc, append `-2`, `-3`, … to keep it unique.
 2. Create folder `.design-docs/<project-slug>/`.
-3. For each section, copy `templates/sections/NN-<key>.md`, replace `__PROJECT_SLUG__`/`__PROJECT_NAME__` (and any `__…__` tokens), fill real content, and write to `.design-docs/<project-slug>/NN-<key>.md`. Keep the `<!-- sdd-section: … -->` marker on line 1 and the `## N.` / `### N.x` headings intact.
-4. Create `.design-docs/<project-slug>/00-index.md` from `templates/index-template.md` with the Sections table linking all 10 files and statuses set to ✅ for completed sections.
+3. For each section, copy `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sections/NN-<key>.md`, replace `__PROJECT_SLUG__`/`__PROJECT_NAME__` (and any `__…__` tokens), fill real content, and write to `.design-docs/<project-slug>/NN-<key>.md`. Keep the `<!-- sdd-section: … -->` marker on line 1 and the `## N.` / `### N.x` headings intact.
+4. Create `.design-docs/<project-slug>/00-index.md` from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` with the Sections table linking all 10 files and statuses set to ✅ for completed sections.
 
 **Legacy single-file mode** (only when explicitly requested): write `.design-docs/system-design-<slug>.md` from `design-doc-template.md` and set `doc_layout:"single"` in Step 7.
 
 ### Step 7: Update design_doc_list.json (schema 2.3.0)
 
-Set the `documents[]` entry to the **registry** shape (see `templates/design_doc_list.json`):
+Set the `documents[]` entry to the **registry** shape (see `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design_doc_list.json`):
 ```json
 {
   "id": "DOC-001",
@@ -259,10 +259,10 @@ Before considering the work complete, verify:
 
 | Resource | Description |
 |----------|-------------|
-| `references/document-sections.md` | Details for each section |
-| `references/mermaid-patterns.md` | All diagram patterns |
-| `references/architecture-patterns.md` | Microservices, Clean Architecture, DDD patterns |
-| `references/data-dictionary-template.md` | Data Dictionary format |
-| `templates/design-doc-template.md` | Full document template |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Details for each section |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | All diagram patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` | Microservices, Clean Architecture, DDD patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/data-dictionary-template.md` | Data Dictionary format |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/design-doc-template.md` | Full document template |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

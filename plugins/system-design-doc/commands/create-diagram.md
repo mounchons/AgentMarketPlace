@@ -396,8 +396,8 @@ classDiagram
 
 | Resource | Description |
 |----------|-------------|
-| `references/mermaid-patterns.md` | All diagram patterns |
-| `references/architecture-patterns.md` | Architecture patterns |
-| `references/troubleshooting.md` | Mermaid syntax error fixes |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | All diagram patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/architecture-patterns.md` | Architecture patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/troubleshooting.md` | Mermaid syntax error fixes |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

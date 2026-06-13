@@ -7,7 +7,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 
 Auto-discover Pages / APIs / Middlewares / External Functions / Components from codebase and populate `.design-docs/sitemap.json`.
 
-Inherits framework detection logic from `/reverse-engineer` (see `references/codebase-analysis.md`).
+Inherits framework detection logic from `/reverse-engineer` (see `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/codebase-analysis.md`).
 
 ## Usage
 

@@ -35,7 +35,7 @@ Read the monolith. Split on top-level headings `## N.` (N = 1..10) into the 10 c
 1. `<project-slug>` = kebab-case of project name; create `.design-docs/<project-slug>/`.
 2. For each section, write `NN-<key>.md` = marker line + `# Section N — <Title>` + backlink + the parsed section content (preserve `## N.` / `### N.x` headings verbatim).
    - Marker: `<!-- sdd-section: <key> | doc: <project-slug> | schema: 2.3.0 -->`
-3. Write `00-index.md` from `templates/index-template.md` (TOC links all 10 files; statuses ✅).
+3. Write `00-index.md` from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/index-template.md` (TOC links all 10 files; statuses ✅).
 
 ### Step 4: Update design_doc_list.json (schema 2.3.0)
 

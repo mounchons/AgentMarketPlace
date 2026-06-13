@@ -260,9 +260,9 @@ flowchart TD
 
 | Resource | Description |
 |----------|-------------|
-| `references/document-sections.md` | Details for each section |
-| `references/mermaid-patterns.md` | Diagram patterns |
-| `references/data-dictionary-template.md` | Data Dictionary format |
-| `references/troubleshooting.md` | Problem solutions |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/document-sections.md` | Details for each section |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/mermaid-patterns.md` | Diagram patterns |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/data-dictionary-template.md` | Data Dictionary format |
+| `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/references/troubleshooting.md` | Problem solutions |
 
 > 💬 **Note**: This command responds in Thai (คำสั่งนี้จะตอบกลับเป็นภาษาไทย)

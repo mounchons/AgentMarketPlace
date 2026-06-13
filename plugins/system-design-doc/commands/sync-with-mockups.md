@@ -31,8 +31,8 @@ Check and synchronize data between `design_doc_list.json` and `.mockups/mockup_l
 ### Step 1: Read Files
 
 ```bash
-# Read design_doc_list.json
-cat design_doc_list.json
+# Read design_doc_list.json (registry อยู่ที่ .design-docs/ — root path เป็น legacy fallback)
+cat .design-docs/design_doc_list.json 2>/dev/null || cat design_doc_list.json
 
 # Read mockup_list.json
 cat .mockups/mockup_list.json

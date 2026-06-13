@@ -5,7 +5,7 @@ allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
 
 # /sitemap-init
 
-Create a new `.design-docs/sitemap.json` from `templates/sitemap-template.json`, substituting placeholders with project metadata.
+Create a new `.design-docs/sitemap.json` from `${CLAUDE_PLUGIN_ROOT}/skills/system-design-doc/templates/sitemap-template.json`, substituting placeholders with project metadata.
 
 ## Usage
 

@@ -1,7 +1,7 @@
 {
   "name": "system-design-doc",
-  "version": "2.1.0",
-  "description": "Create standardized system design documents — Reverse Engineering, Import from plan, Brainstorming with Mermaid diagrams, Architecture patterns (Microservices/Event-driven/Clean/DDD), qa-ui-test v2.5 integration (AC + UC IDs), v2.0 adds sitemap.json machine-readable schema with 8 node types (Master/Template/Nav/Component + Page/API/Middleware/External Function), 8 new commands (/sitemap-init, /sitemap-add-node, /sitemap-link, /sitemap-scan, /sync-sitemap, /sitemap-validate, /sitemap-graph, /sitemap-export), 5 new validation rules (R31-R35)",
+  "version": "2.2.0",
+  "description": "Create standardized 10-section system design documents (22 commands) — split per-section layout (default) + machine-readable registry schema 2.3.0. Supports Reverse Engineering, Import Plan, 8-phase Brainstorming, Mermaid diagrams, sitemap.json graph (8 node types, R31-R35), and AC/UC source of truth for qa-ui-test traceability. Integrates with ui-mockup, long-running, qa-ui-test. See README for full changelog.",
   "author": {
     "name": "Mounchons"
   }
