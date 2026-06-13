@@ -63,7 +63,7 @@
 
 ### ✅ Features ใหม่จาก Feature #6 (verified-high findings → backlog):
 - **#9 ui-mockup v1.11.0**: ✅ เสร็จ (opus, PASS 94/100) — create-html-mockup ลบ Agent(*) + ${CLAUDE_PLUGIN_ROOT} paths, README/help → v1.11.0 (8 commands), mockup_list QA fields + split-aware paths, SKILL refs fix. adversarial 2 verifiers refuted=0
-- **#10 qa-ui-test v2.7.0**: Agent(*)→Task(*) ×13, README v2.7.0 (omits 5/18 commands), version drift (12-mode↔13-mode), ${CLAUDE_PLUGIN_ROOT}, scenario-template sync
+- **#10 qa-ui-test v2.7.0**: ✅ เสร็จ (opus, adversarial 3 verifiers — readme/template clean, version 1 low fixed) — Agent(*)→Task ×13, README v2.7.0 (เพิ่ม 5/18 commands + schema 1.7.0 + changelog), version sync 2.7.0 + 13-mode, ${CLAUDE_PLUGIN_ROOT} paths, scenario-template → schema 1.7.0, namespace /qa-coverage-check (0 bare/13 namespaced). commits 62fb653/67e6f76/bcc2d1e/afc879c + review-fix 2358d2b
 - **#11 cross-plugin contract**: qa-create-scenario อ่าน mockup_list.json hints (ปิด BROKEN edge) + qa-trace อ่าน use_case_id (ปิด dead UC leg)
 
 ### 3. แก้ system-design-doc (วิเคราะห์เสร็จแล้ว — ลงมือได้เลย)

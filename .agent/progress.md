@@ -391,3 +391,36 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - Feature #10 (opus): qa-ui-test v2.7.0 — Agent(*)→Task(*) ×13 commands, README v2.7.0 (omits 5/18), version drift → `analysis-qa-ui-test.json`
 
 ---
+
+## Session 10 — Feature #10: qa-ui-test v2.6.1 → v2.7.0 (doc-sync + Agent→Task + version sync + scenario-template)
+**Date**: 2026-06-13
+**Type**: Coding (Feature #10) — epic `plugin-suite-improvements`
+**Model**: opus main-loop + adversarial verification (force_opus_all policy)
+
+### What was done (4 subtasks + 1 review-fix):
+- ✅ 10.1 `Agent(*)`→`Task` ใน allowed-tools ของ 13 action commands (tool ชื่อไม่มีจริง → block subagent dispatch) (`62fb653`)
+- ✅ 10.2 README rewrite v2.2.0 → v2.7.0 — 5 sections ใหม่ (5.14–5.18 = qa-trace/qa-nfr-assess/qa-create-advanced/qa-continue-advanced/qa-advanced-howto) ครบ 18 commands + TOC + schema 1.7.0 + changelog §14 + `${CLAUDE_PLUGIN_ROOT}` cp path (`67e6f76`)
+- ✅ 10.3 version sync 2.7.0 (plugin.json/marketplace/SKILL/qa-help) + plugin desc "12-mode"→"13-mode" (ตรง marketplace) + `${CLAUDE_PLUGIN_ROOT}` paths (qa-help ×3) + namespace `/qa-coverage-check`→`/long-running:` (`bcc2d1e`)
+- ✅ 10.4 scenario-template.md → qa-tracker schema 1.7.0 (risk{}/complexity_factors/acceptance_criteria_id flat AC-NNN/use_case_id/control_refs/control_test_category/assigned_model); ลบ legacy Priority-only + fixed module codebook (`afc879c`)
+- 🔧 review-fix(#10.3): adversarial verifier จับ bare `/qa-coverage-check` ตกหล่นที่ qa-help:619 → sweep เจออีก 3 จุด (qa-create-scenario/qa-edit-scenario/control-spec-scenarios) → 0 bare, 13 namespaced (`2358d2b`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown/json plugin) | `claude plugin validate qa-ui-test` ✅ passed | JSON ทั้ง 2 valid
+- AC1 `grep Agent(*)` = 0 ✅ | AC2 README 18 commands + schema 1.7.0 + 5 sections ✅ | AC3 version 2.7.0 sync + 13-mode ✅ | AC4 `${CLAUDE_PLUGIN_ROOT}` adopted, 0 intra-plugin hardcoded paths ✅ | AC5 validate + marketplace sync ✅
+- QA+NFR gates: N/A (plugin-internal bug-fix; no acceptance_criteria_id / no qa-tracker.json in repo)
+- **Pipeline Result: PASSED**
+
+### Adversarial Verification (workflow `wf_34865b58-962`, 3 refuting verifiers):
+- README accuracy + Agent→Task + hallucinated flags → **clean**
+- scenario-template vs schema 1.7.0 → **clean**
+- version sync + CLAUDE_PLUGIN_ROOT correctness → **1 low** (bare `/qa-coverage-check` ที่ qa-help:619) → **fixed** (+ 3 จุดเพิ่มจาก sweep)
+- long-running cross-ref (qa-help:1706) ยืนยันคงไว้ถูกต้อง (CLAUDE_PLUGIN_ROOT ใช้แทน inter-plugin path ไม่ได้)
+
+### Current status:
+- Features passed: **10/11** | epic plugin-suite-improvements: **7/8** | opus done: 9
+- pending: 1 (#11 cross-plugin contract — depends_on [10] ✅ พร้อมทำ)
+
+### Next feature:
+- Feature #11 (opus): cross-plugin contract — (1) qa-create-scenario อ่าน `.mockups/mockup_list.json` seed hints (ปิด BROKEN edge ui-mockup→qa-ui-test); (2) qa-trace.md อ่าน `scenarios[].use_case_id` first-class (ปิด dead UC leg) → `integration-map.json`
+
+---

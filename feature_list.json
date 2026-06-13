@@ -50,7 +50,7 @@
       "description": "แก้ไข plugins ตามผลวิเคราะห์ multi-agent ใน plans/plugin-analysis-20260612/ — อ่าน PENDING.md ก่อนเริ่มทุก feature ห้ามวิเคราะห์ซ้ำ (dotnet-dev v1.3.0 + brain v3.1.0 ทำเสร็จแล้วรอบแรก)",
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8, 9, 10, 11],
-      "progress": { "total": 8, "passed": 6, "in_progress": 0 }
+      "progress": { "total": 8, "passed": 7, "in_progress": 0 }
     }
   ],
 
@@ -764,14 +764,14 @@
       "module": "qa-ui-test", "layer": "presentation", "category": "bug-fix",
       "description": "แก้ qa-ui-test v2.6.1 → v2.7.0 ตามผลวิเคราะห์ (verified): Agent(*)→Task(*) ใน 13 action commands, README v2.2.0→v2.7.0 (omits 5/18 commands + schema เก่า), version drift (plugin '12-mode' vs marketplace '13-mode'), ${CLAUDE_PLUGIN_ROOT} paths, scenario-template.md stale vs JSON schema — อ่าน plans/plugin-analysis-20260612/analysis-qa-ui-test.json ก่อน ห้ามวิเคราะห์ซ้ำ",
       "priority": "high", "complexity": "medium", "risk_level": "low",
-      "status": "pending", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
-        { "id": "10.1", "description": "Agent(*)→Task(*) ใน 13 action command frontmatter ทั้งหมด", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/commands"] },
-        { "id": "10.2", "description": "README rewrite v2.7.0 — ครบ 18 commands + schema ปัจจุบัน (qa-tracker 1.7.0) + changelog", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/README.md"] },
-        { "id": "10.3", "description": "Version drift fix: plugin.json/marketplace '12-mode'↔'13-mode', SKILL.md, qa-help.md headers → 2.7.0 + ${CLAUDE_PLUGIN_ROOT} paths (qa-help.md)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/qa-ui-test/skills/qa-ui-test/SKILL.md", "plugins/qa-ui-test/commands/qa-help.md", "plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] },
-        { "id": "10.4", "description": "scenario-template.md sync vs qa-tracker.json schema (risk/complexity_factors/acceptance_criteria_id/use_case_id/control_refs) + bump 2.7.0", "done": false, "committed_at": null, "commits": [], "depends_on": ["10.1", "10.2", "10.3"], "files": ["plugins/qa-ui-test/skills/qa-ui-test/references/scenario-template.md", "plugins/qa-ui-test/.claude-plugin/plugin.json"] }
+        { "id": "10.1", "description": "Agent(*)→Task(*) ใน 13 action command frontmatter ทั้งหมด", "done": true, "committed_at": "2026-06-13T17:26:21+07:00", "commits": ["62fb653"], "depends_on": [], "files": ["plugins/qa-ui-test/commands"] },
+        { "id": "10.2", "description": "README rewrite v2.7.0 — ครบ 18 commands + schema ปัจจุบัน (qa-tracker 1.7.0) + changelog", "done": true, "committed_at": "2026-06-13T17:39:08+07:00", "commits": ["67e6f76"], "depends_on": [], "files": ["plugins/qa-ui-test/README.md"] },
+        { "id": "10.3", "description": "Version drift fix: plugin.json/marketplace '12-mode'↔'13-mode', SKILL.md, qa-help.md headers → 2.7.0 + ${CLAUDE_PLUGIN_ROOT} paths (qa-help.md)", "done": true, "committed_at": "2026-06-13T17:41:40+07:00", "commits": ["bcc2d1e"], "depends_on": [], "files": ["plugins/qa-ui-test/skills/qa-ui-test/SKILL.md", "plugins/qa-ui-test/commands/qa-help.md", "plugins/qa-ui-test/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json"] },
+        { "id": "10.4", "description": "scenario-template.md sync vs qa-tracker.json schema (risk/complexity_factors/acceptance_criteria_id/use_case_id/control_refs) + bump 2.7.0", "done": true, "committed_at": "2026-06-13T17:43:28+07:00", "commits": ["afc879c"], "depends_on": ["10.1", "10.2", "10.3"], "files": ["plugins/qa-ui-test/skills/qa-ui-test/references/scenario-template.md", "plugins/qa-ui-test/.claude-plugin/plugin.json"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "10.4",
       "acceptance_criteria": [
         "grep Agent(*) ใน plugins/qa-ui-test = 0 (ใช้ Task(*))",
         "README v2.7.0 ครบ 18 commands + schema ตรง",
@@ -779,14 +779,25 @@
         "intra-plugin paths ใช้ ${CLAUDE_PLUGIN_ROOT}",
         "claude plugin validate ผ่าน + marketplace sync"
       ],
-      "time_tracking": { "estimated_time": "75min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "75min", "actual_time": "~23min", "started_at": "2026-06-13T10:25:48Z", "completed_at": "2026-06-13T10:49:07Z" },
       "dependencies": [],
       "references": ["plans/plugin-analysis-20260612/analysis-qa-ui-test.json", "plans/plugin-analysis-20260612/integration-map.json"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "n/a", "passes": false, "verification_results": null, "tested_at": null,
+      "sync_status": "synced", "passes": true, "tested_at": "2026-06-13T10:49:07Z",
+      "verification_results": {
+        "build": "n/a (markdown/json plugin — no build)",
+        "claude_plugin_validate": "passed",
+        "ac1_agent_tool": "grep Agent(*) ใน plugins/qa-ui-test = 0 (13 commands ใช้ Task)",
+        "ac2_readme": "v2.7.0 ครบ 18 commands (5 sections ใหม่ 5.14-5.18 + TOC) + schema 1.7.0 + changelog §14",
+        "ac3_version_sync": "plugin/marketplace/SKILL/qa-help = 2.7.0; 13-mode ตรงกัน (plugin+marketplace); ไม่เหลือ v2.6.0/12-mode",
+        "ac4_plugin_root": "${CLAUDE_PLUGIN_ROOT} adopted (qa-help 3 + README 2); 0 intra-plugin hardcoded paths; long-running cross-ref คงไว้ถูกต้อง",
+        "ac5_marketplace_sync": "version match plugin↔marketplace 2.7.0 + v2.7.0 changelog note",
+        "adversarial_verify": "3 refuting verifiers (readme/version/template): readme clean, template clean, version found 1 low (bare /qa-coverage-check ที่ qa-help:619) → fixed + swept 3 more bare refs (now 0 bare, 13 namespaced)",
+        "qa_nfr_gates": "n/a (plugin-internal bug-fix; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "จาก Feature #6 analysis — 2 verified-high findings (Agent(*) ×13, README drift). ห้ามวิเคราะห์ซ้ำ (อ่าน analysis-qa-ui-test.json)"
+      "notes": "จาก Feature #6 analysis — 2 verified-high findings (Agent(*) ×13, README drift) + 3 medium (version drift, scenario-template stale, no CLAUDE_PLUGIN_ROOT). แก้ครบ v2.7.0. Adversarial verify จับ bare /qa-coverage-check ตกหล่น 4 จุด → review-fix(#10.3) 2358d2b. opus + detailed per force_opus_all policy."
     },
     {
       "id": 11,
@@ -821,14 +832,14 @@
 
   "summary": {
     "total": 11,
-    "passed": 9,
+    "passed": 10,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 2,
-    "last_updated": "2026-06-13T10:16:05Z",
+    "pending": 1,
+    "last_updated": "2026-06-13T10:49:07Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 10, "done": 8, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 10, "done": 9, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
