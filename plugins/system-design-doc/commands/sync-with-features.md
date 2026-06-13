@@ -1,3 +1,8 @@
+---
+description: Sync APIs and entities with long-running — design_doc_list.json ↔ feature_list.json (bidirectional cross-references)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
+---
+
 # /sync-with-features
 
 Check and synchronize data between `design_doc_list.json` and `feature_list.json`

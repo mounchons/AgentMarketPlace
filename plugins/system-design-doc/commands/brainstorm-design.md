@@ -1,6 +1,6 @@
 ---
 description: Interactive brainstorming and Q&A session for system design
-allowed-tools: Read(*), Glob(*), Grep(*), WebSearch(*)
+allowed-tools: Read(*), Write(*), Bash(*), Glob(*), Grep(*), WebSearch(*)
 ---
 
 # Brainstorm Design — Interactive Discovery Session

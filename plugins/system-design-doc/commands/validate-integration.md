@@ -1,3 +1,8 @@
+---
+description: Validate cross-references across all 4 plugins (system-design-doc, ui-mockup, long-running, qa-ui-test) — read-only report
+allowed-tools: Bash(*), Read(*), Glob(*), Grep(*)
+---
+
 # /validate-integration
 
 Validate cross-references and consistency across 4 plugins: system-design-doc, ui-mockup, long-running, **qa-ui-test**
@@ -45,7 +50,7 @@ cat qa-tracker.json
 
 ```
 Check schema versions:
-- design_doc_list.json: 2.2.0
+- design_doc_list.json: 2.3.0 (accept >= 2.2.0)
 - mockup_list.json:     1.7.0  (or 1.8.0 with QA factor inference)
 - feature_list.json:    1.10.0 (or 2.4.0 with NFR + coverage gates)
 - qa-tracker.json:      1.7.0  (optional)
@@ -275,7 +280,7 @@ Mockup Categories:
 
 1. SCHEMA COMPATIBILITY
    ─────────────────────
-   design_doc_list.json: v2.2.0 ✅
+   design_doc_list.json: v2.3.0 ✅
    mockup_list.json:     v1.7.0 ✅
    feature_list.json:    v2.4.0 ✅
    qa-tracker.json:      v1.7.0 ✅ (or "missing — qa checks skipped")

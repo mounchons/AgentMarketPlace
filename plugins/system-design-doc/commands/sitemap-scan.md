@@ -1,6 +1,6 @@
 ---
 description: Auto-scan codebase to populate sitemap.json nodes
-allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Agent(*)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), Task(*)
 ---
 
 # /sitemap-scan

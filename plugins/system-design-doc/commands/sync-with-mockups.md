@@ -1,3 +1,8 @@
+---
+description: Sync entities and pages with ui-mockup — design_doc_list.json ↔ .mockups/mockup_list.json (bidirectional cross-references)
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*)
+---
+
 # /sync-with-mockups
 
 Check and synchronize data between `design_doc_list.json` and `.mockups/mockup_list.json`
