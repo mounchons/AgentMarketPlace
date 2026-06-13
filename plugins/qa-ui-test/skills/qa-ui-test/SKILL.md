@@ -1,6 +1,6 @@
 ---
 name: qa-ui-test
-version: 2.5.0
+version: 2.7.0
 description: |
   QA UI Testing plugin ด้วย Playwright — long-running agent style tracking, brainstorming,
   model assignment, parallel subagents, master data CRUD testing, master-detail grid testing, opus review
