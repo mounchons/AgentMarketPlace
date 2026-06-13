@@ -700,6 +700,7 @@ public class Customer
     public int Id { get; set; }
     public Address ShippingAddress { get; set; } = null!;
     public Address? BillingAddress { get; set; }   // EF 10 รองรับ optional complex type
+    // ⚠️ EF 10: optional complex type ต้องมีอย่างน้อย 1 required property ใน type นั้น (เช่น Address.Street)
 }
 
 protected override void OnModelCreating(ModelBuilder modelBuilder)
