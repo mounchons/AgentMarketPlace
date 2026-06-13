@@ -455,9 +455,10 @@ var api = builder.AddProject<Projects.WebApi>("api")
 builder.Build().Run();
 ```
 
-> ⚠️ `references/aspire-setup.md` ยังเป็น Aspire 8.x — Aspire ปัจจุบันคือ 13.x
-> (ติดตั้งผ่าน Aspire CLI: `aspire new` / `aspire run` / `aspire update`,
-> AppHost ใช้ `Sdk="Aspire.AppHost.Sdk"`) — ตรวจ version ล่าสุดด้วย `microsoft_docs_search` ก่อนใช้
+> 📖 ดู `references/aspire-setup.md` (Aspire 13 / .NET 10 — verified vs Microsoft Learn):
+> Aspire CLI (`aspire new`/`run`/`update`), AppHost `Sdk="Aspire.AppHost.Sdk/13.0.0"`,
+> `Enrich*DbContext` แก้ double-register, `WaitFor`/`WithLifetime(ContainerLifetime.Persistent)`/`WithHttpHealthCheck`
+> — Aspire ปล่อยเวอร์ชันบ่อย ตรวจ version ล่าสุดด้วย `microsoft_docs_search` ก่อนสร้างโปรเจคจริง
 
 ---
 

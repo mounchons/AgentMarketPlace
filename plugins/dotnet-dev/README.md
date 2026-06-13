@@ -1,6 +1,6 @@
 # .NET Core Development Expert Skill
 
-**Version: 1.3.0**
+**Version: 1.4.0**
 
 Expert-level .NET Core development skill สำหรับ Claude Code พร้อม Microsoft Learn MCP integration
 
@@ -57,7 +57,7 @@ Tools ที่ได้: `microsoft_docs_search`, `microsoft_code_sample_search
 
 ### References
 - `ef-core-patterns.md` - Advanced EF Core patterns (PostgreSQL + SQL Server)
-- `aspire-setup.md` - .NET Aspire configuration (⚠️ ยังเป็น 8.x — รอ update เป็น Aspire 13)
+- `aspire-setup.md` - .NET Aspire 13 / .NET 10 configuration (Aspire CLI, Enrich*DbContext, WaitFor, built-in OpenAPI)
 - `testing-patterns.md` - Testing strategies (xUnit + Testcontainers + Respawn)
 - `microsoft-learn-mcp.md` - MCP usage guide
 
@@ -105,6 +105,13 @@ Based on user's development patterns:
 7. **MVC Controllers** - default ของทีม (Minimal APIs สำหรับ service เล็ก)
 
 ## 📝 Changelog
+
+### v1.4.0 (2026-06-13)
+- 📝 Rewrite **`references/aspire-setup.md` → Aspire 13 / .NET 10** (ทุก API verified vs Microsoft Learn): Aspire CLI (`aspire new`/`run`/`update`), AppHost `Sdk="Aspire.AppHost.Sdk/13.0.0"` (net10.0), `WaitFor` + `WithLifetime(ContainerLifetime.Persistent)` + `WithHttpHealthCheck`
+- 🐛 ลบ `AddDockerComposeEnvironment("infra","./docker-compose.yml")` signature ที่ไม่มีจริง
+- ✨ `Enrich*DbContext<T>()` แก้ double-register DbContext กับ `AddInfrastructure()` (Repo/UoW) — built-in OpenAPI แทน Swashbuckle ใน Program.cs ตัวอย่าง
+- ✨ เพิ่ม **EF Core 10 patterns** (`ef-core-patterns.md` section 13): named query filters (soft delete + tenant), `ComplexProperty`+`ToJson()` แทน `OwnsOne`, `ExecuteUpdateAsync` regular lambda, SQL Server 2025 `json` type + `UseAzureSql` (ปิด gap dual-DB), Npgsql `xmin` concurrency token
+- 🧹 ลบ warning 'aspire-setup.md ยังเป็น 8.x' ใน SKILL.md + README
 
 ### v1.3.0 (2026-06-12)
 - ⬆️ Baseline เป็น **.NET 10 LTS + EF Core 10** (package pins 8.* → 10.*)
