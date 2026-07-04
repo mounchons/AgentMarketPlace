@@ -400,6 +400,50 @@ Output notes:
 - `{Project} - Notification Systems`
 - `{Project} - File Storage`
 
+### Phase 7.5: Release & Deployment Scan (Agent 7.5) — v3.2
+**Goal:** ตอบคำถาม support ที่พบบ่อยสุด — "ลูกค้าใช้ version ไหน / bug นี้แก้ใน release ไหน" และ "ระบบ deploy ไปไหน มี environment อะไรบ้าง config ต่างกันตรงไหน"
+
+#### Step 7.5a: Release History
+
+Scan patterns:
+```
+git tag -l --sort=-creatordate    → version tags + creation dates
+CHANGELOG*, HISTORY*, RELEASES*    → changelog entries
+*.csproj <Version>/<AssemblyVersion> → .NET assembly version
+package.json "version"             → npm package version
+plugin.json / manifest "version"   → plugin/app manifest version
+```
+
+เนื้อหา note: ตาราง `version | date | highlights` (เรียงใหม่→เก่า) + ระบุ **current version ณ HEAD** (จาก version field ที่ HEAD) + latest tag
+
+Output note: `{Project} - Release History` — folderPath `/projects/{name}/releases/`, tags `[{project}, release]`
+
+ไม่พบ tag/CHANGELOG/version field เลย → note ระบุ "ไม่พบข้อมูล release ในโค้ด (ไม่มี tag/CHANGELOG/version field) — บันทึกเพิ่มด้วย /brain-save" (ไม่เงียบหาย)
+
+#### Step 7.5b: Deployment Topology
+
+Scan patterns:
+```
+Dockerfile*, docker-compose*.yml       → container images, services, ports
+.github/workflows/*.yml, .gitlab-ci.yml → CI/CD pipeline steps, deploy targets
+azure-pipelines*.yml, Jenkinsfile       → build/release pipeline
+*.pubxml (publish profiles)             → publish target (server/IIS/folder)
+appsettings.{env}.json                  → per-environment config (เทียบ diff ระหว่าง env)
+web.config + web.{env}.config transforms → config transform per environment
+Procfile, netlify.toml, vercel.json, app.yaml → PaaS deploy config
+```
+
+เนื้อหา note:
+- **Deploy target:** deploy ไปไหน (server/cloud/registry/PaaS)
+- **Environments:** env ที่มี (Development/Staging/Production ฯลฯ) + config ต่างกันตรงไหน (เทียบ appsettings.{env} / transforms)
+- **Pipeline:** สรุป CI/CD steps (build → test → deploy)
+- **DB per env:** connection string ชี้ DB server/ชื่ออะไรต่อ env
+- **⚠️ Mask secrets:** เก็บ**ชื่อ** server/DB/endpoint/key-name เท่านั้น — **ห้ามเก็บ password, connection string เต็มที่มี credential, API secret, token**; แทนค่า secret ด้วย `***` หรือ `<masked>`
+
+Output note: `{Project} - Deployment Topology` — folderPath `/projects/{name}/deployment/`, tags `[{project}, deployment]`
+
+ไม่พบ deployment config เลย → note ระบุ "ไม่พบ deployment config ในโค้ด (ไม่มี Dockerfile/pipeline/publish profile) — บันทึกเพิ่มด้วย /brain-save" (ไม่เงียบหาย)
+
 ### Phase 8: Document Scan (Agent 8)
 **Goal:** Extract knowledge from project documentation files
 
