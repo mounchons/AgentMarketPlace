@@ -103,4 +103,5 @@ ALL responses MUST be in Thai language.
 - `/projects/{name}/frontend/` — UI, pages, components
 - `/projects/{name}/releases/` — release history, version timeline
 - `/projects/{name}/deployment/` — deployment topology, environments, CI/CD
+- `/projects/{name}/requirements/` — requirements, acceptance criteria, use cases (from design docs)
 - `/projects/{name}/changelog/` — version changelogs (auto-generated)

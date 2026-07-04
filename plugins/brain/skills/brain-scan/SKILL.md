@@ -91,6 +91,7 @@ Map each changed file to which phase should re-run:
 | Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json, web.{env}.config | Phase 7.5 (Deployment) — + Phase 3 ถ้า connection string เปลี่ยน (Database Connections สดด้วย) |
 | CHANGELOG*, HISTORY*, RELEASES*, new git tag (detect ด้วย `git tag --contains`, §3a — ไม่ใช่ file diff), *.csproj &lt;Version&gt;, package.json version | Phase 7.5 (Release — re-run ทุก incremental) |
 | README*, launchSettings.json, Makefile, global.json, .nvmrc, *.ps1, *.sh | Phase 2 (Dev Setup) |
+| .design-docs/design_doc_list.json, .design-docs/**/*.md | Phase 8 (Design Doc Registry — Requirements/Design Diagrams) |
 | *.md, *.docx, *.txt | Phase 8 (Documents) |
 | Program.cs, Startup.cs, Global.asax | Phase 2 + 3 (Architecture + Config) |
 | No changes detected | Skip scan, report "up to date" |
@@ -456,7 +457,26 @@ Output note: `{Project} - Deployment Topology` — folderPath `/projects/{name}/
 ### Phase 8: Document Scan (Agent 8)
 **Goal:** Extract knowledge from project documentation files
 
-Scan ALL documentation files:
+#### Step 8a: Design Doc Registry (first-class — v3.2)
+
+**ก่อน** generic .md scan → เช็ค `.design-docs/design_doc_list.json` (schema 2.3.0 ของ system-design-doc plugin) — ถ้าพบ ใช้เป็น structured source แทนการอ่าน .md ดิบ:
+
+1. **Requirements/AC/UC:** จาก `documents[].sections[]` (key=`requirements`) + `documents[].acceptance_criteria[]` (AC-NNN) + `documents[].use_cases[]` (UC-NNN)
+   → note `{Project} - Requirements: {doc-name}` ใน `/projects/{name}/requirements/`, tags `[{project}, requirement]`
+   → เก็บ: FR/AC list (id + title + type), UC list (id + title + main_flow), section file paths สำหรับอ้างอิง
+
+2. **Design diagrams (ไม่ generate ซ้ำ):** จาก `diagrams.*` ที่ `exists:true` + `format:"mermaid"` + มี `file_path` — เป็น Mermaid สำเร็จรูปจาก design doc (er_diagram, flow_diagrams[], sequence_diagrams[], dfd, sitemap, state_diagrams[], class_diagrams[])
+   → อ่าน Mermaid จากไฟล์ `file_path` ที่ registry ชี้ (อยู่ใต้ `documents[].doc_dir/`) แล้ว embed เข้า note `{Project} - Design Diagrams: {doc-name}` ใน `/projects/{name}/documents/`
+   → **label ที่มา** `[Design-doc]` — ต่างจาก `[Code-derived]` ของ ER/sequence จาก Phase 3/4 (#13)
+   → **ไม่ generate ใหม่** ถ้า design doc มี diagram อยู่แล้ว; link `[[{Project} - ER Diagram]]` (code-derived, Phase 3) ↔ design-doc ER เพื่อเทียบ design vs จริง
+
+3. **De-dup:** design doc files (sections[].file, diagrams[].file_path — ทั้งหมดใต้ `doc_dir/`) ที่ดึงแล้วใน 8a → **ไม่ต้องเข้า generic .md scan (Step 8b) ซ้ำ**
+
+4. ไม่พบ `.design-docs/design_doc_list.json` → ข้าม 8a ไป 8b ทำงานแบบเดิมทุกประการ
+
+#### Step 8b: Generic Document Scan
+
+Scan documentation files (ยกเว้นไฟล์ที่ 8a ดึงไปแล้ว):
 ```
 **/*.md, **/*.docx, **/*.txt, **/*.pdf
 **/docs/**, **/documentation/**
@@ -465,13 +485,15 @@ Scan ALL documentation files:
 
 Output notes:
 - `{Project} - Documentation Index` (README ถูก index ที่นี่เป็น document — ส่วน setup steps ไปอยู่ `{Project} - Dev Setup & Run Guide` ของ Phase 2; link ถึงกันด้วย `[[wiki link]]`)
-- `{Project} - Requirements: {topic}`
+- `{Project} - Requirements: {topic}` (จาก 8a ถ้ามี design doc / จาก .md ดิบถ้าไม่มี)
+- `{Project} - Design Diagrams: {doc-name}` (จาก 8a — design-doc Mermaid, ถ้ามี)
 - `{Project} - Deployment Guide` (จาก .md ที่มนุษย์เขียน — คู่กับ code-derived `{Project} - Deployment Topology` ของ Phase 7.5; link ถึงกันใน Phase 9)
 
 ### Phase 9: Cross-Reference & Link Building
 - Build master index
 - Add `[[wiki links]]` between related notes
 - **Link diagram notes (v3.2):** `[[{Project} - ER Diagram]]` ↔ `[[{Project} - Entity Models]]` (สองทิศ) และ dependency map ↔ ER note + `[[{Project} - Entity Models]]` ของ module ที่ entity ถูกใช้
+- **Link design-doc notes (v3.2):** `[[{Project} - Design Diagrams: {doc}]]` (design-doc, Phase 8) ↔ `[[{Project} - ER Diagram]]` (code-derived, Phase 3) เพื่อเทียบ design vs จริง; `[[{Project} - Requirements: {doc}]]` ↔ feature/dependency notes ที่ implement requirement นั้น
 - Create `{Project} - Knowledge Map (Auto-generated)` summary
 - Verify links with `mcp__graph-brain__explore-graph`:
   - For each saved note, call `explore-graph` nodeId="{note-id}" depth=1
@@ -509,8 +531,9 @@ For each note that was **updated** (not created new):
 ├── 🌐 integration/ — APIs, Notifications, File Storage
 ├── 🚀 releases/ — Release History (v3.2)
 ├── 📦 deployment/ — Deployment Topology (v3.2)
+├── 📋 requirements/ — Requirements, AC, UC from design docs (v3.2)
 ├── 📝 changelog/ — Version changelogs
-└── 📄 documents/ — .md, .docx, .txt indexed
+└── 📄 documents/ — .md, .docx, .txt, Design Diagrams indexed
 
 💡 ถัดไป:
    /brain ทำไมเข้า JobList ไม่ได้    ← ถาม permission ได้เลย
@@ -561,5 +584,6 @@ Before saving each note:
 /projects/{name}/integration/   — external APIs, notifications, file storage
 /projects/{name}/releases/      — release history, version timeline (v3.2)
 /projects/{name}/deployment/    — deployment topology, environments, CI/CD (v3.2)
+/projects/{name}/requirements/  — requirements, AC, use cases from design docs (v3.2)
 /projects/{name}/documents/     — indexed documentation files
 ```
