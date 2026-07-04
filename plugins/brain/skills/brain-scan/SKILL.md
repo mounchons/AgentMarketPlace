@@ -299,10 +299,37 @@ Output notes:
 
 #### Step 4c: Build dependency maps per page/feature
 
+**Sequence Diagram (v3.2):** **ทุก** dependency map note ต้องแนบ Mermaid `sequenceDiagram` ของ call chain ที่ trace ได้ใน 4b — ไม่จำกัดเฉพาะ feature หลัก ครบทุก entry point:
+
+```markdown
+## Sequence Diagram
+```mermaid
+sequenceDiagram
+    participant P as JobList.aspx
+    participant F as JobList.aspx.vb
+    participant S as JobManager
+    participant R as JobRepository
+    participant D as DB (JobDB)
+    P->>F: btnSearch_Click()
+    F->>S: SearchJobs(criteria)
+    S->>R: GetJobsByStatus(status)
+    R->>D: SELECT vw_JobList
+    D-->>R: rows
+    R-->>S: List(Of Job)
+    S-->>F: JobSearchResult
+    F-->>P: bind GridView
+```
+```
+
+กฎ:
+- participants ตามชั้นจริงที่ trace ได้: Page/Endpoint → Function → Service/Manager → Repository → Entity/Table/StoredProc → DB
+- ใส่ parameters/return หลักบน arrow เมื่อระบุได้จากโค้ด (ไม่บังคับทุก arrow)
+- Diagram อยู่ใน note `{Project} - Dependency Map: {Feature}` เดิม (title คงที่ — upsert ไม่ duplicate) และนับเป็นส่วนหนึ่งของ content ก่อน Scan Metadata footer
+
 #### Step 4d: Cross-reference and group by Feature, Entity, Service, Database
 
 Output notes:
-- `{Project} - Dependency Map: {Feature}`
+- `{Project} - Dependency Map: {Feature}` (แต่ละ note มี sequenceDiagram ในตัว — v3.2)
 - `{Project} - Entity Usage Map`
 - `{Project} - Service Call Map`
 
