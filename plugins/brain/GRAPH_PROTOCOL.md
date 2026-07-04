@@ -13,7 +13,7 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
 
 1. **projectName** — ใช้จาก basename ของ current working directory หรือ user ระบุ
 2. **tags** — อย่างน้อย 2 ตัว: `[{project-name-lowercase}, {domain-tag}]`
-   - domain tags: architecture, workflow, database, integration, frontend, permission, dependency, document
+   - domain tags: architecture, workflow, database, integration, frontend, permission, dependency, document, diagram
 3. **folderPath** — ตาม convention: `/projects/{project-name}/{category}/`
    - categories: core, workflow, database, dependencies, permissions, integration, frontend, documents, changelog
 4. **Duplicate check** — เรียก `mcp__graph-brain__search-knowledge` query="{title}" limit=3 ก่อน save เสมอ

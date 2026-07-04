@@ -89,6 +89,10 @@ Map each changed file to which phase should re-run:
 | Program.cs, Startup.cs, Global.asax | Phase 2 + 3 (Architecture + Config) |
 | No changes detected | Skip scan, report "up to date" |
 
+**Diagram regen (v3.2):** การ re-run แต่ละ phase ครอบ diagram ของ phase นั้นด้วย —
+- Phase 3 re-run → regen **ER Diagram** notes ที่กระทบ (เฉพาะ module ที่ entity/model เปลี่ยน; overview note อัปเดตเมื่อ module-level relationships เปลี่ยน)
+- Phase 4 re-run → regen **sequenceDiagram** ใน dependency map notes ที่กระทบ (เฉพาะ page/controller/service ที่เปลี่ยน)
+
 #### 3c: Run only affected phases
 ```
 🧠 Smart Scan — ตรวจพบการเปลี่ยนแปลง:
@@ -383,6 +387,7 @@ Output notes:
 ### Phase 9: Cross-Reference & Link Building
 - Build master index
 - Add `[[wiki links]]` between related notes
+- **Link diagram notes (v3.2):** `[[{Project} - ER Diagram]]` ↔ `[[{Project} - Entity Models]]` (สองทิศ) และ dependency map ↔ ER note ของ module ที่ entity ถูกใช้
 - Create `{Project} - Knowledge Map (Auto-generated)` summary
 - Verify links with `mcp__graph-brain__explore-graph`:
   - For each saved note, call `explore-graph` nodeId="{note-id}" depth=1
@@ -407,13 +412,14 @@ For each note that was **updated** (not created new):
 📊 สรุป:
    สร้างใหม่: {N} ชิ้น
    อัพเดท:    {M} ชิ้น
+   Diagrams:  {E} ER + {S} sequence (v3.2)
    Changelogs: {C} ชิ้น
    เอกสาร:   {D} ไฟล์ indexed
 
 📦 ความรู้ที่เก็บ:
 ├── 🏗️ core/ — Solution, Architecture
-├── 🗄️ database/ — Connections, Entities, Data Access
-├── 🔗 dependencies/ — Page→Function→API→Entity maps
+├── 🗄️ database/ — Connections, Entities, Data Access, ER Diagram
+├── 🔗 dependencies/ — Page→Function→API→Entity maps (+ sequence diagram ทุก map)
 ├── 🔒 permissions/ — Role Matrix, Page Auth, API Auth ⭐
 ├── 🔄 workflow/ — States, Business Rules
 ├── 🌐 integration/ — APIs, Notifications, File Storage
