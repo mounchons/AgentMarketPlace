@@ -58,7 +58,7 @@
       "description": "ขยาย brain-scan ให้เก็บครบทุกมิติสำหรับ support งานลูกค้าเก่า (diagrams, release, deployment, dev setup, design-doc integration) + Freshness Protocol ผูก commit hash — อ่าน plans/brain-v32-20260704/DESIGN.md ก่อนเริ่มทุก feature ห้ามออกแบบซ้ำ",
       "bounded_context": "Plugin Development",
       "features": [12, 13, 14, 15],
-      "progress": { "total": 4, "passed": 1, "in_progress": 0 }
+      "progress": { "total": 4, "passed": 2, "in_progress": 0 }
     }
   ],
 
@@ -895,13 +895,13 @@
       "module": "brain", "layer": "application", "category": "feature",
       "description": "Diagrams — brain-scan Phase 3 สร้าง note '{Project} - ER Diagram' เป็น Mermaid erDiagram (≤20 entities note เดียว, >20 แยก per-module + overview); Phase 4 แนบ Mermaid sequenceDiagram ของ call chain ในทุก dependency map note (user confirmed: ทุก map ไม่ใช่แค่ feature หลัก); Smart Scan regen diagrams เมื่อไฟล์ต้นทางเปลี่ยน — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F13",
       "priority": "high", "complexity": "medium", "risk_level": "low",
-      "status": "pending", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
-        { "id": "13.1", "description": "brain-scan Phase 3: สร้าง '{Project} - ER Diagram' ใน /projects/{name}/database/ — Mermaid erDiagram จาก entities (names, PK/FK, relationships + cardinality); split rule >20 entities → per-module notes + overview; link [[Entity Models]] ↔ ER notes", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
-        { "id": "13.2", "description": "brain-scan Phase 4: ทุก dependency map note แนบ Mermaid sequenceDiagram (participants: Page→Function→Service→Repository→Entity→DB, params/return หลักเมื่อระบุได้)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
-        { "id": "13.3", "description": "Smart Scan mapping: entity/model files เปลี่ยน → regen ER ที่กระทบ, page/controller/service เปลี่ยน → regen sequence ใน map ที่กระทบ; Phase 9 links ER ↔ dependency maps ↔ entity models; Phase 10 report เพิ่ม diagram counts; GRAPH_PROTOCOL domain tag 'diagram'", "done": false, "committed_at": null, "commits": [], "depends_on": ["13.1", "13.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] }
+        { "id": "13.1", "description": "brain-scan Phase 3: สร้าง '{Project} - ER Diagram' ใน /projects/{name}/database/ — Mermaid erDiagram จาก entities (names, PK/FK, relationships + cardinality); split rule >20 entities → per-module notes + overview; link [[Entity Models]] ↔ ER notes", "done": true, "committed_at": "2026-07-04T10:13:43+07:00", "commits": ["558f089", "2a3e41b"], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "13.2", "description": "brain-scan Phase 4: ทุก dependency map note แนบ Mermaid sequenceDiagram (participants: Page→Function→Service→Repository→Entity→DB, params/return หลักเมื่อระบุได้)", "done": true, "committed_at": "2026-07-04T10:14:18+07:00", "commits": ["ab89885", "2a3e41b"], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "13.3", "description": "Smart Scan mapping: entity/model files เปลี่ยน → regen ER ที่กระทบ, page/controller/service เปลี่ยน → regen sequence ใน map ที่กระทบ; Phase 9 links ER ↔ dependency maps ↔ entity models; Phase 10 report เพิ่ม diagram counts; GRAPH_PROTOCOL domain tag 'diagram'", "done": true, "committed_at": "2026-07-04T10:15:05+07:00", "commits": ["66a5fa6"], "depends_on": ["13.1", "13.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "13.3",
       "acceptance_criteria": [
         "Phase 3 สร้าง ER Diagram note (grep 'erDiagram' ใน brain-scan SKILL.md > 0) + split rule >20 entities ระบุชัด",
         "Phase 4 ระบุ sequenceDiagram ในทุก dependency map note (grep 'sequenceDiagram' > 0) — ไม่มีเงื่อนไขจำกัดเฉพาะ feature หลัก",
@@ -909,15 +909,25 @@
         "Smart Scan mapping ครอบ diagram regen + Phase 9/10 อัปเดต",
         "ทุก diagram note มี Scan Metadata footer ตาม Freshness Protocol (#12)"
       ],
-      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "45min", "actual_time": "~16min", "started_at": "2026-07-04T03:12:50Z", "completed_at": "2026-07-04T03:29:10Z" },
       "dependencies": [12],
       "references": ["plans/brain-v32-20260704/DESIGN.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "pending", "passes": false, "tested_at": null,
-      "verification_results": null,
+      "sync_status": "pending", "passes": true, "tested_at": "2026-07-04T03:29:10Z",
+      "verification_results": {
+        "build": "n/a (markdown plugin — no build)",
+        "claude_plugin_validate": "passed",
+        "ac1_er_diagram": "Phase 3 'ER Diagram Generation (v3.2)' — Mermaid erDiagram + PK/FK/cardinality (grep erDiagram = 2) + split rule ≤20/>20 per-module + overview + orphan cleanup",
+        "ac2_sequence_all_maps": "Step 4c sequenceDiagram ใน**ทุก** dependency map (grep sequenceDiagram = 4) — ระบุ 'ไม่จำกัดเฉพาะ feature หลัก ครบทุก entry point'",
+        "ac3_upsert_titles": "title คงที่ทั้ง ER + dependency map (upsert-by-title ไม่ duplicate)",
+        "ac4_smart_scan": "Diagram regen note ใต้ table 3b + แถวใหม่ POCO/Models/Entities/Migration → Phase 3 (ER regen chain ทำงานจริง) + Phase 9 diagram links + Phase 10 diagram counts",
+        "ac5_footer": "ER + sequence อยู่ก่อน Scan Metadata footer; ทุก diagram note ได้ footer จาก global rule (#12)",
+        "adversarial_verify": "3 refuting verifiers (mermaid-syntax / spec-completeness / consistency-with-f12, wf_55f4c33f-6a1, 225k tokens) — ทดสอบกับ mermaid v11.16.0 parser จริง: 3 medium (List(Of Job)/List<Job> ใน ER attributes พัง parser → scalar-only + tilde escape rule; Smart Scan 3b ไม่มี POCO pattern → ER ไม่ regen; orphan per-module ER notes เมื่อ module rename/ยุบ) + 4 low (semicolon พัง sequence, entity ชื่อมี space แตกเงียบ, tag diagram ไม่มี producer, folderPath ไม่ explicit) + 3 cosmetic → แก้ครบ 11/11 (2d7787e) + เจอเอง 1 ก่อน verify: nested code fence กลืน Split rule (2a3e41b)",
+        "qa_nfr_gates": "n/a (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "user เลือก 'ทุก dependency map' (ยอม scan ช้าเพื่อความครบ — เป้าหมายคือไม่ต้องกลับไปอ่านโค้ดอีก)"
+      "notes": "user เลือก 'ทุก dependency map' (ยอม scan ช้าเพื่อความครบ). Verifier รัน mermaid CLI จริงพิสูจน์ generic types พัง erDiagram → กฎ scalar-only + tilde escape; nested fence bug เจอเองก่อน verify (4-backtick outer)"
     },
     {
       "id": 14,
@@ -986,14 +996,14 @@
 
   "summary": {
     "total": 15,
-    "passed": 12,
+    "passed": 13,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 3,
-    "last_updated": "2026-07-04T03:08:45Z",
+    "pending": 2,
+    "last_updated": "2026-07-04T03:29:10Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 14, "done": 11, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 14, "done": 12, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }

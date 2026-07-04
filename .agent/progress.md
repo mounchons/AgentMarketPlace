@@ -488,3 +488,33 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 
 ### Next feature:
 - Feature #13 (opus): Diagrams — Phase 3 ER diagram (Mermaid, split >20 entities) + Phase 4 sequenceDiagram ทุก dependency map + Smart Scan regen — depends_on [12] ✅ พร้อมทำ
+
+## Session 13 — Feature #13: brain v3.2 Diagrams (epic brain-v32: 2/4)
+**Date**: 2026-07-04
+**Type**: Coding (Feature #13) — epic `brain-v32` (spec: plans/brain-v32-20260704/DESIGN.md §F13)
+**Model**: Fable 5 main-loop (>= opus per force_opus_all) + adversarial verification
+
+### What was done (3 subtasks + 1 self-fix + 1 review-fix):
+- ✅ 13.1 Phase 3 "ER Diagram Generation (v3.2)" — Mermaid erDiagram (PK/FK/cardinality), split rule ≤20 note เดียว / >20 per-module + overview, link Entity Models ↔ ER (`558f089`)
+- ✅ 13.2 Step 4c sequenceDiagram ใน**ทุก** dependency map note — participants ครบชั้น, params บน arrow เมื่อรู้, วางก่อน Scan Metadata footer (`ab89885`)
+- ✅ 13.3 Smart Scan Diagram regen note + Phase 9 diagram links + Phase 10 diagram counts + GRAPH_PROTOCOL tag `diagram` (`66a5fa6`)
+- 🔧 self-fix: nested code fence — 3-backtick outer ถูก ```mermaid ปิดก่อนเวลา กลืน Split rule + Output notes เข้า code block → 4-backtick outer (`2a3e41b`, เจอเองก่อน verify)
+- 🔧 review-fix(#13): mermaid hardening — scalar-only ER attributes + tilde escape, quote entity ชื่อมี space, no-semicolon ใน sequence, POCO/Migration pattern ใน 3b (ปิด ER regen chain gap), orphan module ER cleanup, folderPath + tag producers (`2d7787e`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown plugin) | `claude plugin validate` ✅ | feature_list.json valid
+- AC1 erDiagram + split rule ✅ | AC2 sequenceDiagram ทุก map ไม่มีเงื่อนไขจำกัด ✅ | AC3 upsert titles ✅ | AC4 Smart Scan regen + Phase 9/10 ✅ | AC5 footer ✅
+- QA+NFR gates: N/A | **Pipeline Result: PASSED**
+
+### Adversarial Verification (workflow `wf_55f4c33f-6a1`, 3 refuting verifiers, 225k tokens):
+- mermaid-syntax → ทดสอบกับ **mermaid v11.16.0 จริง**: ตัวอย่างทั้งสองผ่าน parser แต่ **1 medium**: `List(Of Job)`/`List<Job>` ใน erDiagram attributes พังจริง (escape ถูก = `List~Job~`) + 2 low (semicolon, entity space แตกเงียบเป็น 2 entities)
+- spec-completeness → **1 medium**: table 3b ไม่มี POCO pattern → แก้ Models/Customer.cs ไม่ trigger ER regen + 1 low (folderPath) + 2 cosmetic; AC ทั้ง 5 ผ่านตามตัวอักษร
+- consistency-with-f12 → **1 medium**: orphan per-module ER notes เมื่อ module rename/ยุบ (3e ครอบแค่ file-level) + ยืนยัน: ไม่ขัด footer-last rule, upsert สอดคล้อง, no unintended changes
+- **แก้ครบ 11/11** (`2d7787e`) → re-grep + validate ผ่าน
+
+### Current status:
+- Features passed: **13/15** | epic brain-v32: **2/4** | opus done: 12
+- pending: 2 (#14 release/deploy/dev-setup, #15 design-doc integration + v3.2.0 release)
+
+### Next feature:
+- Feature #14 (opus): Phase 7.5 Release History + Deployment Topology + Phase 2 Dev Setup — depends_on [12] ✅ พร้อมทำ
