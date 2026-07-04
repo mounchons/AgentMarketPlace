@@ -86,6 +86,9 @@ Map each changed file to which phase should re-run:
 | *BasePage*, *MasterPage*, *Login*, *Auth* | Phase 5 (Authorization) |
 | *Manager*, *Service* (business logic) | Phase 4 (Dependencies) + Phase 6 (Workflow) |
 | *Mail*, *SMS*, *Notify*, *FTP* | Phase 7 (Integration) |
+| Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json, web.{env}.config | Phase 7.5 (Deployment) |
+| CHANGELOG*, HISTORY*, RELEASES*, new git tag, *.csproj &lt;Version&gt;, package.json version | Phase 7.5 (Release) |
+| README*, launchSettings.json, Makefile, global.json, .nvmrc, *.ps1, *.sh | Phase 2 (Dev Setup) |
 | *.md, *.docx, *.txt | Phase 8 (Documents) |
 | Program.cs, Startup.cs, Global.asax | Phase 2 + 3 (Architecture + Config) |
 | No changes detected | Skip scan, report "up to date" |
@@ -492,12 +495,14 @@ For each note that was **updated** (not created new):
    เอกสาร:   {D} ไฟล์ indexed
 
 📦 ความรู้ที่เก็บ:
-├── 🏗️ core/ — Solution, Architecture
+├── 🏗️ core/ — Solution, Architecture, Dev Setup & Run Guide
 ├── 🗄️ database/ — Connections, Entities, Data Access, ER Diagram
 ├── 🔗 dependencies/ — Page→Function→API→Entity maps (+ sequence diagram ทุก map)
 ├── 🔒 permissions/ — Role Matrix, Page Auth, API Auth ⭐
 ├── 🔄 workflow/ — States, Business Rules
 ├── 🌐 integration/ — APIs, Notifications, File Storage
+├── 🚀 releases/ — Release History (v3.2)
+├── 📦 deployment/ — Deployment Topology (v3.2)
 ├── 📝 changelog/ — Version changelogs
 └── 📄 documents/ — .md, .docx, .txt indexed
 
@@ -548,5 +553,7 @@ Before saving each note:
 /projects/{name}/permissions/   — role matrix, page auth, API auth, troubleshooting
 /projects/{name}/workflow/      — states, business rules
 /projects/{name}/integration/   — external APIs, notifications, file storage
+/projects/{name}/releases/      — release history, version timeline (v3.2)
+/projects/{name}/deployment/    — deployment topology, environments, CI/CD (v3.2)
 /projects/{name}/documents/     — indexed documentation files
 ```

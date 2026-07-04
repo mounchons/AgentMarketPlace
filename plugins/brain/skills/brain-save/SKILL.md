@@ -101,4 +101,6 @@ ALL responses MUST be in Thai language.
 - `/projects/{name}/database/` — connections, models, data access
 - `/projects/{name}/integration/` — external APIs, notifications
 - `/projects/{name}/frontend/` — UI, pages, components
+- `/projects/{name}/releases/` — release history, version timeline
+- `/projects/{name}/deployment/` — deployment topology, environments, CI/CD
 - `/projects/{name}/changelog/` — version changelogs (auto-generated)
