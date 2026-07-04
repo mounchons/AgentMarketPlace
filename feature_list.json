@@ -51,6 +51,14 @@
       "bounded_context": "Plugin Development",
       "features": [4, 5, 6, 7, 8, 9, 10, 11],
       "progress": { "total": 8, "passed": 8, "in_progress": 0 }
+    },
+    {
+      "id": "brain-v32",
+      "name": "Brain v3.2 — Support-Ready Knowledge",
+      "description": "ขยาย brain-scan ให้เก็บครบทุกมิติสำหรับ support งานลูกค้าเก่า (diagrams, release, deployment, dev setup, design-doc integration) + Freshness Protocol ผูก commit hash — อ่าน plans/brain-v32-20260704/DESIGN.md ก่อนเริ่มทุก feature ห้ามออกแบบซ้ำ",
+      "bounded_context": "Plugin Development",
+      "features": [12, 13, 14, 15],
+      "progress": { "total": 4, "passed": 0, "in_progress": 0 }
     }
   ],
 
@@ -838,19 +846,144 @@
       },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
       "notes": "จาก Feature #6 integration-map — 1 BROKEN edge + 1 dead UC leg. ปิดทั้งคู่ฝั่ง qa-ui-test consumer (v2.7.1). opus + adversarial (3 verifiers, refuted findings fixed). ui-mockup write-side UC emission เป็น follow-up แยก (ไม่อยู่ scope นี้)"
+    },
+    {
+      "id": 12,
+      "epic": "brain-v32",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "Freshness Protocol — ทุก note ที่ brain-scan สร้าง/อัปเดตลงท้ายด้วย Scan Metadata footer (Scanned-At-Commit/Scanned-At/Source-Files); /brain + /brain-load เช็คความสดเทียบ HEAD ด้วย git rev-list count → ถ้า stale เตือน + ถามก่อน scan ([1] incremental scan [2] ตอบจากข้อมูลเดิม) จำคำตอบต่อ session; Smart Scan เปลี่ยนมาใช้ commit จาก note เป็น primary source แทน .brain/activity-log.json (ที่ gitignore — หายเมื่อย้ายเครื่อง); backward compatible กับ notes เก่าที่ไม่มี footer — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F12",
+      "priority": "high", "complexity": "medium", "risk_level": "medium",
+      "status": "in_progress", "blocked_reason": null,
+      "subtasks": [
+        { "id": "12.1", "description": "GRAPH_PROTOCOL.md: เพิ่ม §5 Freshness Protocol — Scan Metadata footer exact format, freshness check algorithm (rev-parse/rev-list/cat-file), ask-before-scan + remember-per-session, non-git date-based fallback, backward compat (ข้าม check เมื่อไม่มี footer), never block", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/GRAPH_PROTOCOL.md"] },
+        { "id": "12.2", "description": "brain-scan/SKILL.md: ทุก phase ที่ save note แนบ Scan Metadata footer (hash เดียวกันทั้ง run จาก git rev-parse --short HEAD); Smart Scan Step 3a ใช้ Scanned-At-Commit จาก note ล่าสุดเป็น primary (git diff <hash>..HEAD) → fallback activity log → latest note date; brain-update refresh footer เมื่อ note เดิมมี", "done": false, "committed_at": null, "commits": [], "depends_on": ["12.1"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-update/SKILL.md"] },
+        { "id": "12.3", "description": "brain/SKILL.md Step 1.5 + brain-load/SKILL.md Step 2.5: freshness check หลังโหลด notes — parse footer ใหม่สุด, เทียบ HEAD, stale → เตือน N commits + ถาม [1]/[2], จำคำตอบต่อ session, hash ไม่อยู่ใน history → 'ไม่สามารถระบุความสดได้', error ใดๆ → ข้าม check", "done": false, "committed_at": null, "commits": [], "depends_on": ["12.1"], "files": ["plugins/brain/skills/brain/SKILL.md", "plugins/brain/skills/brain-load/SKILL.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "GRAPH_PROTOCOL.md มี §5 Freshness Protocol (grep 'Freshness Protocol' > 0) ครบ: footer format, algorithm, ask-before-scan, non-git fallback, backward compat",
+        "brain-scan SKILL.md ระบุ Scan Metadata footer ทุก note (grep 'Scanned-At-Commit' > 0) + Smart Scan primary source = commit จาก note",
+        "brain/SKILL.md และ brain-load/SKILL.md มี freshness check (grep 'Scanned-At-Commit' >= 1 ต่อไฟล์) + prompt ถามก่อน scan + จำคำตอบต่อ session",
+        "notes เก่าไม่มี footer → ข้าม check เงียบๆ (ระบุชัดในทั้ง protocol และ skills)",
+        "degrade behavior เดิมคงอยู่ — git/MCP error ไม่ block"
+      ],
+      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": "2026-07-04T02:21:34Z", "completed_at": null },
+      "dependencies": [],
+      "references": ["plans/brain-v32-20260704/DESIGN.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "pending", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "หัวใจของ epic — แก้ pain point 'ไม่กล้าเชื่อ brain ต้องกลับไปอ่านโค้ด' ด้วย commit-based freshness. Stale policy = ถามก่อน scan (user confirmed 2026-07-04)"
+    },
+    {
+      "id": 13,
+      "epic": "brain-v32",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "Diagrams — brain-scan Phase 3 สร้าง note '{Project} - ER Diagram' เป็น Mermaid erDiagram (≤20 entities note เดียว, >20 แยก per-module + overview); Phase 4 แนบ Mermaid sequenceDiagram ของ call chain ในทุก dependency map note (user confirmed: ทุก map ไม่ใช่แค่ feature หลัก); Smart Scan regen diagrams เมื่อไฟล์ต้นทางเปลี่ยน — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F13",
+      "priority": "high", "complexity": "medium", "risk_level": "low",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "13.1", "description": "brain-scan Phase 3: สร้าง '{Project} - ER Diagram' ใน /projects/{name}/database/ — Mermaid erDiagram จาก entities (names, PK/FK, relationships + cardinality); split rule >20 entities → per-module notes + overview; link [[Entity Models]] ↔ ER notes", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "13.2", "description": "brain-scan Phase 4: ทุก dependency map note แนบ Mermaid sequenceDiagram (participants: Page→Function→Service→Repository→Entity→DB, params/return หลักเมื่อระบุได้)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "13.3", "description": "Smart Scan mapping: entity/model files เปลี่ยน → regen ER ที่กระทบ, page/controller/service เปลี่ยน → regen sequence ใน map ที่กระทบ; Phase 9 links ER ↔ dependency maps ↔ entity models; Phase 10 report เพิ่ม diagram counts; GRAPH_PROTOCOL domain tag 'diagram'", "done": false, "committed_at": null, "commits": [], "depends_on": ["13.1", "13.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Phase 3 สร้าง ER Diagram note (grep 'erDiagram' ใน brain-scan SKILL.md > 0) + split rule >20 entities ระบุชัด",
+        "Phase 4 ระบุ sequenceDiagram ในทุก dependency map note (grep 'sequenceDiagram' > 0) — ไม่มีเงื่อนไขจำกัดเฉพาะ feature หลัก",
+        "diagram notes ใช้ title คงที่ (upsert-by-title — update ไม่ duplicate)",
+        "Smart Scan mapping ครอบ diagram regen + Phase 9/10 อัปเดต",
+        "ทุก diagram note มี Scan Metadata footer ตาม Freshness Protocol (#12)"
+      ],
+      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [12],
+      "references": ["plans/brain-v32-20260704/DESIGN.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "pending", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "user เลือก 'ทุก dependency map' (ยอม scan ช้าเพื่อความครบ — เป้าหมายคือไม่ต้องกลับไปอ่านโค้ดอีก)"
+    },
+    {
+      "id": 14,
+      "epic": "brain-v32",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "Release + Deployment + Dev Setup — brain-scan Phase 7.5 ใหม่: '{Project} - Release History' (git tags + CHANGELOG + version fields) ใน /releases/ และ '{Project} - Deployment Topology' (Dockerfile/compose/workflows/pipelines/pubxml/appsettings.{env}/web.config transforms — mask secrets) ใน /deployment/; Phase 2 ขยาย '{Project} - Dev Setup & Run Guide' (build/run/test/debug + prerequisites) ใน /core/; Smart Scan mapping ใหม่ — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F14",
+      "priority": "high", "complexity": "medium", "risk_level": "low",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "14.1", "description": "Phase 7.5 Release History: scan git tag -l --sort=-creatordate + CHANGELOG* + version fields (*.csproj <Version>, package.json, plugin.json) → note ตาราง version|date|highlights + current version ณ HEAD → /projects/{name}/releases/", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "14.2", "description": "Phase 7.5 Deployment Topology: scan Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json diff, web.config transforms, Procfile, netlify.toml, vercel.json → note: deploy target, environments + config diff, pipeline steps, DB ต่อ env (mask secrets — เก็บชื่อ server/DB ไม่เก็บ password); ไม่พบ config → note ระบุ 'ไม่พบ — บันทึกเพิ่มด้วย /brain-save'", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "14.3", "description": "Phase 2 ขยาย Dev Setup & Run Guide (README setup, package.json scripts, launchSettings.json, Makefile/*.ps1/*.sh, global.json/.nvmrc/TargetFramework) → /core/; Smart Scan mapping ใหม่ (CI/CD files → 7.5, README/launchSettings/Makefile/global.json → Phase 2, CHANGELOG/tags → 7.5); GRAPH_PROTOCOL + brain-scan + brain-save categories releases/deployment + tags release/deployment; Phase 10 report tree เพิ่ม releases/, deployment/", "done": false, "committed_at": null, "commits": [], "depends_on": ["14.1", "14.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Phase 7.5 อยู่ใน brain-scan SKILL.md (grep 'Phase 7.5' > 0) มี output 2 notes: Release History + Deployment Topology",
+        "Phase 2 มี Dev Setup & Run Guide output note",
+        "Deployment scan ระบุ mask secrets + fallback note เมื่อไม่พบ config (ไม่เงียบหาย)",
+        "GRAPH_PROTOCOL + brain-scan + brain-save มี folder categories releases/deployment + domain tags release/deployment",
+        "Smart Scan mapping table ครอบไฟล์ CI/CD → Phase 7.5 และ README/launchSettings → Phase 2",
+        "ทุก note ใหม่มี Scan Metadata footer ตาม Freshness Protocol (#12)"
+      ],
+      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [12],
+      "references": ["plans/brain-v32-20260704/DESIGN.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "pending", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "ตอบคำถาม support ที่พบบ่อย: 'ลูกค้าใช้ version ไหน bug แก้หรือยัง' + 'deploy ไปไหน env อะไรบ้าง' + 'โปรเจกต์นี้ build/run ยังไง'"
+    },
+    {
+      "id": 15,
+      "epic": "brain-v32",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "Design-doc integration + v3.2.0 release — brain-scan Phase 8 เช็ค .design-docs/design_doc_list.json (schema 2.3.0 ของ system-design-doc) เป็น first-class: requirement/AC sections → '{Project} - Requirements: {doc}' ใน /requirements/, ดึง Mermaid diagrams สำเร็จรูปจาก registry (ไม่ generate ซ้ำ) + label [Code-derived] vs [Design-doc] + link กับ diagram notes จาก #13; ปิดท้าย bump 3.2.0 + marketplace sync + README changelog + validate — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F15",
+      "priority": "high", "complexity": "medium", "risk_level": "medium",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "15.1", "description": "Phase 8 first-class design docs: เช็ค .design-docs/design_doc_list.json ก่อน generic .md scan — อ่าน registry sections[] + diagrams.*.file_path → requirements notes ใน /projects/{name}/requirements/ + embed Mermaid จาก design docs + label ที่มา + link [[ER Diagram]]/[[Dependency Map]] จาก #13; design docs ที่ดึงแล้วไม่เข้า generic scan ซ้ำ; ไม่พบ registry → Phase 8 ทำงานแบบเดิม; GRAPH_PROTOCOL category requirements + tag requirement + brain-save folder list", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] },
+        { "id": "15.2", "description": "Version release: plugin.json 3.1.0 → 3.2.0, marketplace.json brain entry sync (version + description สรุป v3.2 features), README.md changelog v3.2.0 + อัปเดตตาราง commands ถ้ามี flag ใหม่", "done": false, "committed_at": null, "commits": [], "depends_on": ["15.1"], "files": ["plugins/brain/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "plugins/brain/README.md"] },
+        { "id": "15.3", "description": "Validate ทั้ง epic: claude plugin validate ผ่าน; node sync check plugin.json vs marketplace.json == 3.2.0; ทุก skill ที่แก้อ้าง ${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md (ไม่ใช่ bare filename); ALL responses Thai คงครบ; degrade behavior (MCP ล่ม never block) คงเดิมทุก skill", "done": false, "committed_at": null, "commits": [], "depends_on": ["15.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain/SKILL.md", "plugins/brain/skills/brain-load/SKILL.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Phase 8 อ่าน design_doc_list.json ก่อน generic scan (grep 'design_doc_list.json' ใน brain-scan > 0) + fallback เดิมเมื่อไม่พบ",
+        "ดึง Mermaid จาก design docs แทน generate ซ้ำ + label [Code-derived]/[Design-doc] + links ถึงกัน",
+        "GRAPH_PROTOCOL + brain-save มี category /requirements/ + tag requirement",
+        "plugin.json == marketplace.json == 3.2.0 (node sync check) + README changelog v3.2.0",
+        "claude plugin validate ผ่าน + ${CLAUDE_PLUGIN_ROOT} paths + Thai responses + never-block degrade ครบทุก skill ที่แก้"
+      ],
+      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [12, 13, 14],
+      "references": ["plans/brain-v32-20260704/DESIGN.md", "plugins/system-design-doc/skills/system-design-doc/SKILL.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "pending", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "release feature ของ epic — ต้องทำหลัง #12-#14 ผ่านครบ (version bump + changelog ครอบทุก feature). ระวัง marketplace version drift (บทเรียนจาก memory: verify ด้วย node loop)"
     }
   ],
 
   "summary": {
-    "total": 11,
+    "total": 15,
     "passed": 11,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 0,
-    "last_updated": "2026-06-13T11:31:11Z",
+    "pending": 4,
+    "last_updated": "2026-07-04T02:10:31Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 10, "done": 10, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 14, "done": 10, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
