@@ -20,6 +20,26 @@ ALL responses MUST be in Thai language regardless of input language.
 - Follow `[[wiki links]]` in loaded notes — load linked notes for complete context (max 3 hops)
 - If results < 3 and at least 1 result exists → use `mcp__graph-brain__explore-graph` nodeId="{best-result-id}" depth=2 to find connected knowledge through relationships
 
+### Step 1.5: Freshness Check (v3.2 — Freshness Protocol §5.2)
+
+ก่อนใช้ notes ตอบ — เช็คว่าความรู้ยังตรงกับโค้ดปัจจุบัน:
+
+1. Parse `Scanned-At-Commit` จาก `## Scan Metadata` ของ notes ที่โหลด (ใช้ค่าใหม่สุด)
+2. **ไม่มี footer เลย** (notes เก่า pre-v3.2 หรือจาก brain-save) → ข้าม check เงียบๆ ไป Step 2
+3. `git rev-parse --short HEAD` ตรงกับ hash → สด → ไป Step 2 (ไม่แสดงอะไร)
+4. ไม่ตรง → `git rev-list {hash}..HEAD --count` = N → เตือน + **ถามก่อน**:
+   ```
+   ⚠️ ความรู้ใน Brain เก่ากว่าโค้ด {N} commits (scan ล่าสุด: {date} @ {hash})
+   [1] Incremental scan ก่อนตอบ (แนะนำ — สแกนเฉพาะไฟล์ที่เปลี่ยน)
+   [2] ตอบจากข้อมูลเดิม (อาจไม่ตรงโค้ดปัจจุบัน)
+   ```
+   - เลือก [1] → รัน `/brain-scan` (Smart incremental) แล้วค่อยกลับมาตอบ
+   - เลือก [2] → ตอบจาก notes เดิม + กำกับในคำตอบว่า "ข้อมูล ณ {date} — โค้ดเปลี่ยนไปแล้ว {N} commits"
+5. hash ไม่อยู่ใน history (`git cat-file -e {hash}^{commit}` fail) → เตือน "ไม่สามารถระบุความสดได้" + ถามชุดเดียวกัน
+6. **จำคำตอบตลอด session** — ถามครั้งเดียว query ถัดไปใน session เดียวกันใช้คำตอบเดิม ไม่ถามซ้ำ
+7. Non-git: เทียบ `Scanned-At` กับ mtime ของ `Source-Files` → มีไฟล์ใหม่กว่า → เตือน date-based
+8. git error ใดๆ → ข้าม check ไป Step 2 (never block)
+
 ### Step 2: Evaluate Completeness
 Rate the brain results against the user's question:
 - **Complete** (brain answers the question fully) → go to Step 4

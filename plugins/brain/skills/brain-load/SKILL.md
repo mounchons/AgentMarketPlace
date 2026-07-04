@@ -31,8 +31,22 @@ ALL responses MUST be in Thai language.
    - Call `mcp__graph-brain__get-knowledge` for top 5 results
    - Priority order: architecture → workflow → data model → integrations → config
 
+3.5. **Freshness Check (v3.2 — Freshness Protocol §5.2)**
+   - Parse `Scanned-At-Commit` จาก `## Scan Metadata` ของ notes ที่โหลด (ใช้ค่าใหม่สุด)
+   - ไม่มี footer เลย → ข้ามเงียบๆ (notes เก่า/conversation knowledge — backward compatible)
+   - `git rev-parse --short HEAD` ตรง → สด ไม่แสดงอะไร
+   - ไม่ตรง → `git rev-list {hash}..HEAD --count` = N → เตือน + ถาม:
+     ```
+     ⚠️ ความรู้ใน Brain เก่ากว่าโค้ด {N} commits (scan ล่าสุด: {date} @ {hash})
+     [1] Incremental scan ตอนนี้ (แนะนำ)  [2] ใช้ความรู้เดิมไปก่อน
+     ```
+   - **จำคำตอบตลอด session** — /brain query ถัดไปไม่ถามซ้ำ (ใช้คำตอบนี้)
+   - hash ไม่อยู่ใน history → "ไม่สามารถระบุความสดได้" + ถามชุดเดียวกัน; non-git → เทียบ `Scanned-At` กับ mtime ของ Source-Files
+   - git/MCP error ใดๆ → ข้าม check (never block session start)
+
 4. **Report to user (Thai)**
    - If found: list loaded notes with descriptions
+   - Freshness status (from Step 3.5): "🔖 ความสด: ตรงกับ HEAD ({hash})" หรือ "⚠️ เก่ากว่าโค้ด {N} commits" หรือไม่แสดงถ้าไม่มี footer
    - If project context available (from Step 1.5):
      - Show: "🏗️ Tech Stack: [{technologies}]"
      - Show: "🔗 Connected Projects: [{related project names}]"
