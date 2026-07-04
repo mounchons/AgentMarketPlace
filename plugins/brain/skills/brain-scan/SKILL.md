@@ -246,7 +246,7 @@ Web.config, appsettings.json   → connection strings, DB servers
 
 จาก entities ที่สแกนได้ สร้าง Mermaid `erDiagram` — entity names, PK/FK, relationships พร้อม cardinality:
 
-```markdown
+````markdown
 ## ER Diagram
 ```mermaid
 erDiagram
@@ -262,7 +262,7 @@ erDiagram
         datetime OrderDate
     }
 ```
-```
+````
 
 **Split rule:**
 - **≤20 entities** → note เดียว: `{Project} - ER Diagram`
@@ -305,7 +305,7 @@ Output notes:
 
 **Sequence Diagram (v3.2):** **ทุก** dependency map note ต้องแนบ Mermaid `sequenceDiagram` ของ call chain ที่ trace ได้ใน 4b — ไม่จำกัดเฉพาะ feature หลัก ครบทุก entry point:
 
-```markdown
+````markdown
 ## Sequence Diagram
 ```mermaid
 sequenceDiagram
@@ -323,7 +323,7 @@ sequenceDiagram
     S-->>F: JobSearchResult
     F-->>P: bind GridView
 ```
-```
+````
 
 กฎ:
 - participants ตามชั้นจริงที่ trace ได้: Page/Endpoint → Function → Service/Manager → Repository → Entity/Table/StoredProc → DB
