@@ -231,6 +231,31 @@ Startup.cs, WebApiConfig.cs    → middleware, routing config
 
 Output note: `{Project} - Solution Structure`
 
+#### Dev Setup & Run Guide (v3.2)
+
+**Goal:** ตอบคำถาม support "โปรเจกต์นี้ build/run/test/debug ยังไง ต้องมีอะไรก่อน" — คนที่กลับมาดูงานเก่าไม่ต้องไล่อ่านเอง
+
+Scan patterns:
+```
+README*, CONTRIBUTING*, docs/setup*   → setup steps ที่เขียนไว้
+package.json (scripts), Makefile        → build/run/test/lint commands
+launchSettings.json, *.ps1, *.sh        → run profiles, dev scripts
+global.json, .nvmrc, .tool-versions     → SDK/runtime versions ที่ pin
+*.csproj <TargetFramework>              → .NET version
+.env.example, appsettings.Development.* → local config ที่ต้องตั้ง (ชื่อ key เท่านั้น — ดู mask secrets ใน Phase 7.5)
+docker-compose*.yml (dev services)      → dependencies ที่ต้องรัน local (DB, redis ฯลฯ)
+```
+
+เนื้อหา note:
+- **Prerequisites:** SDK/runtime versions, tools ที่ต้องติดตั้ง (จาก global.json/.nvmrc/TargetFramework)
+- **Build:** คำสั่ง build (dotnet build / npm run build / make)
+- **Run:** คำสั่ง run + local URL/port (จาก launchSettings.json profiles)
+- **Test:** คำสั่ง test + framework
+- **Local config:** ไฟล์/env ที่ต้องตั้งก่อนรัน (ชื่อ key เท่านั้น ไม่เก็บค่า secret)
+- ไม่พบข้อมูล setup เลย → note ระบุ "ไม่พบ setup docs/scripts ในโค้ด — บันทึกเพิ่มด้วย /brain-save" (ไม่เงียบหาย)
+
+Output note: `{Project} - Dev Setup & Run Guide` — folderPath `/projects/{name}/core/`, tags `[{project}, architecture]`
+
 ### Phase 3: Database & Data Layer Scan (Agent 2)
 **Goal:** Connections, models, entities, repositories, views
 
