@@ -54,15 +54,24 @@ When brain already has knowledge for this project:
 ```
 
 #### 3a: Detect changes since last scan
-Use git to find what changed:
-```bash
-git log --since="{last_scan_date}" --name-only --pretty=format: | sort -u
-git diff --name-only
-git diff --staged --name-only
-git ls-files --others --exclude-standard
-```
 
-If git is not available, fall back to file modification timestamps.
+หา "last scan state" ตามลำดับ (Freshness Protocol §5.3 — commit เป็น primary source):
+
+1. **Primary — commit จาก note:** อ่าน `Scanned-At-Commit` จาก note ล่าสุดของโปรเจกต์ (notes ที่โหลดใน Step 1) แล้ว:
+   ```bash
+   git diff --name-only {last_scan_commit}..HEAD
+   git diff --name-only            # unstaged
+   git diff --staged --name-only   # staged
+   git ls-files --others --exclude-standard   # untracked
+   ```
+   แม่นสุด — hash ติดไปกับ brain server ใช้ได้ทุกเครื่อง (ไม่พึ่งไฟล์ local)
+2. **Fallback — activity log:** `.brain/activity-log.json` หา last completed scan date (local เท่านั้น — gitignore)
+3. **Fallback สุดท้าย — date-based:**
+   ```bash
+   git log --since="{latest_note_date}" --name-only --pretty=format: | sort -u
+   ```
+
+If git is not available, fall back to file modification timestamps (เทียบกับ `Scanned-At` date จาก note)
 
 #### 3b: Classify changed files into scan phases
 Map each changed file to which phase should re-run:
@@ -99,6 +108,7 @@ For each affected note:
 - Load existing content
 - Re-scan the relevant files
 - **Merge**: keep unchanged parts, update changed parts, add new parts
+- **Refresh Scan Metadata footer** → `{scan_commit}` + วันนี้ (แทนที่ footer เดิม — ห้ามมี footer ซ้ำ 2 อัน)
 - Save with updated content + updated timestamp in note
 
 #### 3e: Detect deleted/renamed files
@@ -193,6 +203,7 @@ Or use the Write/Edit tool to append the entry to the array.
 - Call `mcp__graph-brain__brain-stats` to verify connection
 - If failed → offer retry or cancel (never block)
 - Detect project type from files: .sln (.NET), package.json (Node), *.csproj, etc.
+- **Capture scan commit (v3.2):** `git rev-parse --short HEAD` → เก็บเป็น `{scan_commit}` ใช้กับ **ทุก note** ใน run นี้ (Freshness Protocol §5.1) — non-git project → skip (notes จะไม่มีบรรทัด Scanned-At-Commit)
 - Run Smart Scan Strategy (check existing brain state + git changes)
 - Count files to estimate scan time, confirm with user if large
 
@@ -356,6 +367,22 @@ After Phase 10 report, ALWAYS write the "completed" log entry to `.brain/activit
 If scan was cancelled or failed at any point, write the "failed/cancelled" entry instead.
 Never skip logging — this is how users track what was scanned across sessions.
 
+## Scan Metadata Footer (v3.2 — ทุก note ที่ scan สร้าง/อัปเดต)
+
+ทุก note จาก brain-scan **ทุก phase** ต้องลงท้าย content ด้วย footer ตาม Freshness Protocol §5.1 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`:
+
+```markdown
+## Scan Metadata
+- Scanned-At-Commit: `{scan_commit}`
+- Scanned-At: {YYYY-MM-DD}
+- Source-Files: `{ไฟล์หลักที่ note นี้สรุปมา — ระดับ folder ได้ถ้าเยอะ}`
+```
+
+- `{scan_commit}` จาก Phase 1 — **hash เดียวกันทั้ง run** (ห้ามเรียก rev-parse ใหม่ระหว่าง run)
+- Note ที่ **update** → แทนที่ footer เดิมด้วยอันใหม่ (ห้ามซ้อนสอง footer)
+- Non-git project → ละบรรทัด Scanned-At-Commit
+- Footer นี้คือสิ่งที่ `/brain` และ `/brain-load` ใช้เช็คความสด (Freshness Protocol §5.2) — ห้ามข้าม
+
 ## Deduplicate Strategy
 Before saving each note:
 - Search brain for existing note with same title
@@ -364,6 +391,7 @@ Before saving each note:
 - All saves must follow Graph Protocol Save Rules:
   - projectName, tags (min 2), folderPath per convention
   - Add [[wiki links]] to related notes found during scan
+  - **Scan Metadata footer ท้าย content ทุก note** (v3.2 — ดู section ด้านบน)
 
 ## Folder Categories for Saved Notes
 ```
