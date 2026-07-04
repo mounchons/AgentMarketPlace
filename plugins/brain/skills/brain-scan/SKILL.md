@@ -238,10 +238,42 @@ Web.config, appsettings.json   → connection strings, DB servers
 *Migration*                    → DB migration history
 ```
 
+#### ER Diagram Generation (v3.2)
+
+จาก entities ที่สแกนได้ สร้าง Mermaid `erDiagram` — entity names, PK/FK, relationships พร้อม cardinality:
+
+```markdown
+## ER Diagram
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    CUSTOMER {
+        int CustomerId PK
+        string Name
+    }
+    ORDER {
+        int OrderId PK
+        int CustomerId FK
+        datetime OrderDate
+    }
+```
+```
+
+**Split rule:**
+- **≤20 entities** → note เดียว: `{Project} - ER Diagram`
+- **>20 entities** → แยกต่อ module: `{Project} - ER Diagram: {Module}` (จัดกลุ่มตาม domain/folder/DbContext) + overview note `{Project} - ER Diagram` แสดง module-level relationships (module ไหนอ้าง entity ของ module ไหน)
+
+**กฎ:**
+- Title คงที่ตามรูปแบบข้างบนเสมอ (upsert-by-title — สแกนซ้ำ = update note เดิม ไม่สร้างซ้ำ)
+- Link `[[{Project} - Entity Models]]` ↔ ER notes (ทั้งสองทิศ)
+- ทุก ER note มี Scan Metadata footer (§5.1) เหมือน note อื่น
+
 Output notes:
 - `{Project} - Database Connections`
 - `{Project} - Entity Models`
 - `{Project} - Data Access Patterns`
+- `{Project} - ER Diagram` (+ `{Project} - ER Diagram: {Module}` เมื่อ >20 entities)
 
 ### Phase 4: Dependency Tracing (Agent 3 + 4)
 **Goal:** Map cross-layer call chains from UI → Business Logic → API → Data → Entity
