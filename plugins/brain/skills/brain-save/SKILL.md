@@ -62,7 +62,7 @@ ALL responses MUST be in Thai language.
    1. Call `mcp__graph-brain__get-knowledge` noteId="{existing-note-id}" → snapshot current content
    2. Determine changelog number: search existing changelogs for this note
    3. Create changelog note with diff summary
-   4. Update original note with new content + Version History section + link to changelog
+   4. Update original note with new content + Version History section + link to changelog — ถ้า note เดิมมี `## Scan Metadata` (มาจาก brain-scan) → **คง footer เดิมไว้เป็น section สุดท้ายตามเดิม** (ห้ามลบ และห้าม refresh hash — brain-save ไม่ใช่การ scan โค้ด; ดู Freshness Protocol §5.1)
    5. Call `mcp__graph-brain__explore-graph` nodeId="{note-id}" depth=1 → verify relationships still valid
    6. Report in Thai: what changed, changelog created, relationships updated
 

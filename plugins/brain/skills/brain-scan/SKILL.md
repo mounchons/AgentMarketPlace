@@ -57,9 +57,9 @@ When brain already has knowledge for this project:
 
 หา "last scan state" ตามลำดับ (Freshness Protocol §5.3 — commit เป็น primary source):
 
-1. **Primary — commit จาก note:** อ่าน `Scanned-At-Commit` จาก note ล่าสุดของโปรเจกต์ (notes ที่โหลดใน Step 1) แล้ว:
+1. **Primary — commit จาก note:** เรียก `mcp__graph-brain__get-knowledge` บน note ที่ update ล่าสุดจากผล search ใน Step 1 (search-knowledge ให้แค่ผลค้น — ต้อง get-knowledge จึงได้ full content) → parse `Scanned-At-Commit` จาก `## Scan Metadata` ท้าย content ("ล่าสุด" = `Scanned-At` ล่าสุด ตาม §5.2 ข้อ 2) แล้ว:
    ```bash
-   git diff --name-only {last_scan_commit}..HEAD
+   git diff --name-only "{last_scan_commit}..HEAD"
    git diff --name-only            # unstaged
    git diff --staged --name-only   # staged
    git ls-files --others --exclude-standard   # untracked
@@ -93,7 +93,7 @@ Map each changed file to which phase should re-run:
 ```
 🧠 Smart Scan — ตรวจพบการเปลี่ยนแปลง:
 
-📝 ไฟล์ที่เปลี่ยน: {N} ไฟล์ (ตั้งแต่ {last_scan_date})
+📝 ไฟล์ที่เปลี่ยน: {N} ไฟล์ (ตั้งแต่ scan ล่าสุด: {last_scan_commit} หรือ {last_scan_date} ตามแหล่งที่ใช้ใน 3a)
 
 🔄 Phases ที่ต้องรีสแกน:
    ✅ Phase 4: Dependencies (changed files)
@@ -112,6 +112,11 @@ For each affected note:
 - Save with updated content + updated timestamp in note
 
 #### 3e: Detect deleted/renamed files
+มี `{last_scan_commit}` จาก primary path → ใช้ commit-based (แม่นกว่า — date เพี้ยนได้หลัง rebase/squash):
+```bash
+git diff --name-status --diff-filter=DR "{last_scan_commit}..HEAD"
+```
+ไม่มี commit (fallback path) → date-based ({last_scan_date} = `Scanned-At` จาก note หรือ activity log):
 ```bash
 git log --since="{last_scan_date}" --diff-filter=DR --name-only
 ```
@@ -203,7 +208,7 @@ Or use the Write/Edit tool to append the entry to the array.
 - Call `mcp__graph-brain__brain-stats` to verify connection
 - If failed → offer retry or cancel (never block)
 - Detect project type from files: .sln (.NET), package.json (Node), *.csproj, etc.
-- **Capture scan commit (v3.2):** `git rev-parse --short HEAD` → เก็บเป็น `{scan_commit}` ใช้กับ **ทุก note** ใน run นี้ (Freshness Protocol §5.1) — non-git project → skip (notes จะไม่มีบรรทัด Scanned-At-Commit)
+- **Capture scan commit (v3.2):** `git rev-parse --short HEAD` → เก็บเป็น `{scan_commit}` ใช้กับ **ทุก note** ใน run นี้ (Freshness Protocol §5.1) — non-git project หรือ rev-parse ล้มเหลว (เช่น repo ยังไม่มี commit) → skip (notes จะไม่มีบรรทัด Scanned-At-Commit)
 - Run Smart Scan Strategy (check existing brain state + git changes)
 - Count files to estimate scan time, confirm with user if large
 
@@ -332,7 +337,7 @@ For each note that was **updated** (not created new):
    - Snapshot was already taken in Phase 3d (update existing notes)
    - Determine changelog number for each updated note
    - Create changelog note with diff summary
-   - Update original note with Version History section
+   - Update original note with Version History section (**วางก่อน `## Scan Metadata` เสมอ** — Scan Metadata ต้องคงเป็น section สุดท้ายตาม §5.1)
 2. Track: `changelogs_created` count for report
 
 ### Phase 10: Report Results (Thai)
@@ -375,8 +380,10 @@ Never skip logging — this is how users track what was scanned across sessions.
 ## Scan Metadata
 - Scanned-At-Commit: `{scan_commit}`
 - Scanned-At: {YYYY-MM-DD}
-- Source-Files: `{ไฟล์หลักที่ note นี้สรุปมา — ระดับ folder ได้ถ้าเยอะ}`
+- Source-Files: `{path1}`, `{path2}`, ...
 ```
+
+- `Source-Files`: ไฟล์หลักที่ note สรุปมา — backtick แยกต่อ path; ถ้าเยอะใช้ระดับ folder ได้ (เช่น `Controllers/`)
 
 - `{scan_commit}` จาก Phase 1 — **hash เดียวกันทั้ง run** (ห้ามเรียก rev-parse ใหม่ระหว่าง run)
 - Note ที่ **update** → แทนที่ footer เดิมด้วยอันใหม่ (ห้ามซ้อนสอง footer)

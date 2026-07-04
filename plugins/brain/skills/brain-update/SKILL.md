@@ -43,7 +43,7 @@ ALL responses MUST be in Thai language.
      - Add `[[{Changelog Title}]]` wiki link to changelog
      - Update Version History section at end of note
      - Ensure tags and folderPath follow Graph Protocol Save Rules
-     - **Refresh Scan Metadata footer** (Freshness Protocol §5.1): ถ้า note เดิมมี `## Scan Metadata` → แทนที่ด้วย footer ใหม่ (`git rev-parse --short HEAD` + วันนี้; non-git → refresh เฉพาะ Scanned-At) — note ที่ไม่มี footer เดิม (conversation knowledge) ไม่ต้องเพิ่ม
+     - **Refresh Scan Metadata footer** (Freshness Protocol §5.1): ถ้า note เดิมมี `## Scan Metadata` → แทนที่ด้วย footer ใหม่ (`git rev-parse --short HEAD` + วันนี้; non-git → refresh เฉพาะ Scanned-At) — **ทำเป็นขั้นสุดท้ายหลังวาง Version History section แล้ว: `## Scan Metadata` ต้องเป็น section สุดท้ายของ note เสมอ (§5.1)** — note ที่ไม่มี footer เดิม (conversation knowledge) ไม่ต้องเพิ่ม
 
 6. **Verify relationships**
    - `mcp__graph-brain__explore-graph` nodeId="{note-id}" depth=1

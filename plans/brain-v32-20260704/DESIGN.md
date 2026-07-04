@@ -26,7 +26,7 @@
 | `plugins/brain/GRAPH_PROTOCOL.md` | เพิ่ม §5 Freshness Protocol + folder categories ใหม่ (`/requirements/`, `/releases/`, `/deployment/`) + domain tags ใหม่ (requirement, release, deployment, diagram) |
 | `plugins/brain/skills/brain-scan/SKILL.md` | Phase 2 ขยาย (Dev Setup), Phase 3 ขยาย (ER diagram), Phase 4 ขยาย (sequence ทุก map), Phase 7.5 ใหม่ (Release & Deployment), Phase 8 ขยาย (design-doc first-class), Scan Metadata footer, Smart Scan mapping ใหม่ |
 | `plugins/brain/skills/brain/SKILL.md` | Step 1.5: freshness check + ask-before-scan |
-| `plugins/brain/skills/brain-load/SKILL.md` | Step 2.5: freshness check ตอน session start |
+| `plugins/brain/skills/brain-load/SKILL.md` | Step 3.5: freshness check ตอน session start (เดิมเขียน 2.5 — ย้ายเพราะต้องรอ Step 3 โหลด note content ก่อนจึง parse footer ได้) |
 | `plugins/brain/.claude-plugin/plugin.json` | 3.1.0 → 3.2.0 |
 | `.claude-plugin/marketplace.json` | sync version 3.2.0 + description (brain entry ~line 310) |
 | `plugins/brain/README.md` | changelog v3.2.0 + ตาราง commands (ถ้า flag ใหม่) |
@@ -48,7 +48,7 @@
 - **Scope:** เฉพาะ note ที่ derive จากโค้ด (brain-scan ทุก phase) — `brain-save` (conversation knowledge) ไม่บังคับ; `brain-update` ถ้า note เดิมมี footer → refresh footer
 - non-git project: ละ `Scanned-At-Commit` เหลือ `Scanned-At` + `Source-Files`
 
-### Freshness check (brain Step 1.5 / brain-load Step 2.5)
+### Freshness check (brain Step 1.5 / brain-load Step 3.5)
 
 1. หลังโหลด notes → parse `Scanned-At-Commit` จาก notes ที่โหลด (ใช้ค่าที่ใหม่สุด)
 2. Note ไม่มี footer (pre-v3.2 หรือจาก brain-save) → ข้าม check เงียบๆ (backward compatible)
@@ -59,7 +59,7 @@
    [1] Incremental scan ก่อนตอบ (แนะนำ — สแกนเฉพาะไฟล์ที่เปลี่ยน)
    [2] ตอบจากข้อมูลเดิม (อาจไม่ตรงโค้ดปัจจุบัน)
    ```
-5. hash ไม่อยู่ใน history (`git cat-file -e <hash>` fail — คนละ repo/force push) → เตือนแบบ "ไม่สามารถระบุความสดได้" + ถามเหมือนกัน
+5. hash ไม่อยู่ใน history (`git cat-file -e "<hash>^{commit}"` fail — **ต้อง quote: PowerShell แตก `^{commit}` เป็น token**; คนละ repo/force push) → เตือนแบบ "ไม่สามารถระบุความสดได้" + ถามเหมือนกัน — implementation รัน cat-file ก่อน rev-list เพื่อแยกเคสนี้จาก git error ทั่วไป
 6. **จำคำตอบต่อ session** — ผู้ใช้เลือกแล้วไม่ถามซ้ำใน session เดียวกัน (ทั้ง [1] และ [2])
 7. non-git: เทียบ `Scanned-At` กับ mtime ของ `Source-Files` — ถ้ามีไฟล์ใหม่กว่า → เตือนแบบ date-based
 8. MCP/git error ใดๆ → ข้าม check ทำงานแบบเดิม (never block)

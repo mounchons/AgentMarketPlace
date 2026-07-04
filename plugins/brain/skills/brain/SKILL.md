@@ -20,25 +20,28 @@ ALL responses MUST be in Thai language regardless of input language.
 - Follow `[[wiki links]]` in loaded notes — load linked notes for complete context (max 3 hops)
 - If results < 3 and at least 1 result exists → use `mcp__graph-brain__explore-graph` nodeId="{best-result-id}" depth=2 to find connected knowledge through relationships
 
-### Step 1.5: Freshness Check (v3.2 — Freshness Protocol §5.2)
+### Step 1.5: Freshness Check (v3.2 — Freshness Protocol §5.2 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`)
 
 ก่อนใช้ notes ตอบ — เช็คว่าความรู้ยังตรงกับโค้ดปัจจุบัน:
 
-1. Parse `Scanned-At-Commit` จาก `## Scan Metadata` ของ notes ที่โหลด (ใช้ค่าใหม่สุด)
-2. **ไม่มี footer เลย** (notes เก่า pre-v3.2 หรือจาก brain-save) → ข้าม check เงียบๆ ไป Step 2
-3. `git rev-parse --short HEAD` ตรงกับ hash → สด → ไป Step 2 (ไม่แสดงอะไร)
-4. ไม่ตรง → `git rev-list {hash}..HEAD --count` = N → เตือน + **ถามก่อน**:
+1. เช็คเฉพาะ notes ของ project ปัจจุบัน (projectName ตรง basename ของ cwd) — notes ข้าม project ข้าม check
+2. Parse `Scanned-At-Commit` จาก `## Scan Metadata` ของ notes ที่โหลด — ใช้อันที่ `Scanned-At` ล่าสุด (อันใด hash ตรง HEAD → ถือว่าสดทันที)
+3. **ไม่มี footer เลย** (notes เก่า pre-v3.2 หรือจาก brain-save) → ข้าม check เงียบๆ ไป Step 2
+4. ตรวจ hash มีจริงก่อน: `git cat-file -e "{hash}^{commit}"` — **ต้อง quote argument** (PowerShell แตก `^{commit}` ถ้าไม่ quote) — fail → ข้อ 7
+5. `git rev-parse --short HEAD` ตรงกับ hash → สด → ไป Step 2 (ไม่แสดงอะไร)
+6. ไม่ตรง → `git rev-list "{hash}..HEAD" --count` = N — **N > 0** → เตือน + **ถามก่อน**:
    ```
    ⚠️ ความรู้ใน Brain เก่ากว่าโค้ด {N} commits (scan ล่าสุด: {date} @ {hash})
    [1] Incremental scan ก่อนตอบ (แนะนำ — สแกนเฉพาะไฟล์ที่เปลี่ยน)
    [2] ตอบจากข้อมูลเดิม (อาจไม่ตรงโค้ดปัจจุบัน)
    ```
-   - เลือก [1] → รัน `/brain-scan` (Smart incremental) แล้วค่อยกลับมาตอบ
+   - เลือก [1] → รัน `/brain-scan` (Smart incremental) → **โหลด notes ที่อัปเดตใหม่ (ทำ Step 1 ซ้ำ)** แล้วค่อยตอบ
    - เลือก [2] → ตอบจาก notes เดิม + กำกับในคำตอบว่า "ข้อมูล ณ {date} — โค้ดเปลี่ยนไปแล้ว {N} commits"
-5. hash ไม่อยู่ใน history (`git cat-file -e {hash}^{commit}` fail) → เตือน "ไม่สามารถระบุความสดได้" + ถามชุดเดียวกัน
-6. **จำคำตอบตลอด session** — ถามครั้งเดียว query ถัดไปใน session เดียวกันใช้คำตอบเดิม ไม่ถามซ้ำ
-7. Non-git: เทียบ `Scanned-At` กับ mtime ของ `Source-Files` → มีไฟล์ใหม่กว่า → เตือน date-based
-8. git error ใดๆ → ข้าม check ไป Step 2 (never block)
+   - **N = 0 ทั้งที่ hash ≠ HEAD** (checkout เก่า/คนละ branch — ความรู้ใหม่กว่าโค้ดที่เปิดอยู่) → เตือน "ความรู้ใน Brain มาจาก commit {hash} ที่ไม่ตรงกับ HEAD ปัจจุบัน (checkout เก่าหรือคนละ branch)" + ถามชุดเดียวกัน — ห้ามใช้ "เก่ากว่า 0 commits"
+7. hash ไม่อยู่ใน history (ข้อ 4 fail) → เตือน "ไม่สามารถระบุความสดได้" + ถามชุดเดียวกัน
+8. **จำคำตอบตลอด session** — รวมคำตอบที่ user ให้ไว้ตอน `/brain-load` ต้น session: เคยตอบแล้วห้ามถามซ้ำ ใช้คำตอบนั้นเลย
+9. Non-git: เทียบ `Scanned-At` กับ mtime ของ `Source-Files` → มีไฟล์ใหม่กว่า → เตือน date-based แล้วถามชุดเดียวกัน
+10. git/MCP error อื่นใดนอกเหนือจากข้อ 4 → ข้าม check ไป Step 2 (never block)
 
 ### Step 2: Evaluate Completeness
 Rate the brain results against the user's question:

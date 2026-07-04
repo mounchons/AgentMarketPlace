@@ -31,18 +31,20 @@ ALL responses MUST be in Thai language.
    - Call `mcp__graph-brain__get-knowledge` for top 5 results
    - Priority order: architecture → workflow → data model → integrations → config
 
-3.5. **Freshness Check (v3.2 — Freshness Protocol §5.2)**
-   - Parse `Scanned-At-Commit` จาก `## Scan Metadata` ของ notes ที่โหลด (ใช้ค่าใหม่สุด)
+3.5. **Freshness Check (v3.2 — Freshness Protocol §5.2 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`)**
+   - เช็คเฉพาะ notes ของ project ปัจจุบัน — parse `Scanned-At-Commit` จาก `## Scan Metadata` (ใช้อันที่ `Scanned-At` ล่าสุด)
    - ไม่มี footer เลย → ข้ามเงียบๆ (notes เก่า/conversation knowledge — backward compatible)
-   - `git rev-parse --short HEAD` ตรง → สด ไม่แสดงอะไร
-   - ไม่ตรง → `git rev-list {hash}..HEAD --count` = N → เตือน + ถาม:
+   - ตรวจ hash ก่อน: `git cat-file -e "{hash}^{commit}"` (**ต้อง quote** — PowerShell แตก token) — fail → "ไม่สามารถระบุความสดได้" + ถามชุดด้านล่าง
+   - `git rev-parse --short HEAD` ตรง → สด — ไม่เตือน/ไม่ถาม (สถานะไปแสดงเป็นบรรทัดเดียวใน Step 4)
+   - ไม่ตรง → `git rev-list "{hash}..HEAD" --count` = N → เตือน + ถาม:
      ```
      ⚠️ ความรู้ใน Brain เก่ากว่าโค้ด {N} commits (scan ล่าสุด: {date} @ {hash})
-     [1] Incremental scan ตอนนี้ (แนะนำ)  [2] ใช้ความรู้เดิมไปก่อน
+     [1] Incremental scan ก่อนตอบ (แนะนำ — สแกนเฉพาะไฟล์ที่เปลี่ยน)
+     [2] ตอบจากข้อมูลเดิม (อาจไม่ตรงโค้ดปัจจุบัน)
      ```
+     (N = 0 ทั้งที่ hash ≠ HEAD = checkout เก่า/คนละ branch → ใช้ข้อความตาม §5.2 ข้อ 6 — ห้าม "เก่ากว่า 0 commits")
    - **จำคำตอบตลอด session** — /brain query ถัดไปไม่ถามซ้ำ (ใช้คำตอบนี้)
-   - hash ไม่อยู่ใน history → "ไม่สามารถระบุความสดได้" + ถามชุดเดียวกัน; non-git → เทียบ `Scanned-At` กับ mtime ของ Source-Files
-   - git/MCP error ใดๆ → ข้าม check (never block session start)
+   - Edge cases อื่น (non-git → เทียบ `Scanned-At` กับ mtime ของ Source-Files, git/MCP error → ข้าม check) → ตาม §5.2 ข้อ 9-10 (never block session start)
 
 4. **Report to user (Thai)**
    - If found: list loaded notes with descriptions
