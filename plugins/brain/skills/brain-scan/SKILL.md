@@ -81,6 +81,7 @@ Map each changed file to which phase should re-run:
 | *.sln, *.csproj, packages.config | Phase 2 (Architecture) |
 | Web.config connection strings, appsettings.json | Phase 3 (Database) |
 | *Context*, *.edmx, *Repository* | Phase 3 (Database) |
+| *Model*, *Entity*, Models/, Entities/, Domain/, *Migration* (POCO entity classes) | Phase 3 (Database — รวม regen ER ที่กระทบ) |
 | *.aspx, *.aspx.vb/cs, *Controller* | Phase 4 (Dependencies) + Phase 5 (Auth) |
 | *BasePage*, *MasterPage*, *Login*, *Auth* | Phase 5 (Authorization) |
 | *Manager*, *Service* (business logic) | Phase 4 (Dependencies) + Phase 6 (Workflow) |
@@ -269,9 +270,13 @@ erDiagram
 - **>20 entities** → แยกต่อ module: `{Project} - ER Diagram: {Module}` (จัดกลุ่มตาม domain/folder/DbContext) + overview note `{Project} - ER Diagram` แสดง module-level relationships (module ไหนอ้าง entity ของ module ไหน)
 
 **กฎ:**
+- **Attributes = scalar columns เท่านั้น** (PK/FK/คอลัมน์จริง) — **ห้ามใส่ navigation properties/generic collections**: `List(Of Job) Jobs` หรือ `List<Job> Jobs` ทำ Mermaid parse พังทันที; ถ้าจำเป็นต้องแสดง generic type ให้ escape ด้วย tilde `List~Job~` และ type ห้ามมี space หรือ `<>`
+- Entity/table ชื่อมี space หรืออักขระพิเศษ → ครอบ double quotes (`"Order Detail"`) — unquoted จะถูกแตกเป็นคนละ entity เงียบๆ โดยไม่ error
 - Title คงที่ตามรูปแบบข้างบนเสมอ (upsert-by-title — สแกนซ้ำ = update note เดิม ไม่สร้างซ้ำ)
+- folderPath: `/projects/{name}/database/` (เดียวกับ notes อื่นของ Phase 3); tags: `[{project}, database, diagram]`
 - Link `[[{Project} - Entity Models]]` ↔ ER notes (ทั้งสองทิศ)
-- ทุก ER note มี Scan Metadata footer (§5.1) เหมือน note อื่น
+- **Cleanup orphan modules:** หลัง regen → search notes ที่ title ขึ้นต้น `{Project} - ER Diagram:` แล้ว mark `[DELETED]` หรือลบอันที่ module ไม่อยู่ในผล scan ปัจจุบัน (รวมเคส entities ลดจน ≤20 แล้วยุบกลับเป็น note เดียว)
+- Diagram อยู่ใน content ก่อน Scan Metadata footer — ทุก ER note มี footer (§5.1) เหมือน note อื่น
 
 Output notes:
 - `{Project} - Database Connections`
@@ -326,8 +331,9 @@ sequenceDiagram
 ````
 
 กฎ:
-- participants ตามชั้นจริงที่ trace ได้: Page/Endpoint → Function → Service/Manager → Repository → Entity/Table/StoredProc → DB
-- ใส่ parameters/return หลักบน arrow เมื่อระบุได้จากโค้ด (ไม่บังคับทุก arrow)
+- participants ตามชั้นจริงที่ trace ได้: Page/Endpoint → Function → Service/Manager → Repository → Entity/Table/StoredProc → DB (Entity/Table แยกเป็น participant เมื่อ chain ผ่าน entity class จริง — ตัวอย่างข้างบนยุบเป็น message label เพราะเป็น view-based query)
+- ใส่ parameters/return หลักบน arrow เมื่อระบุได้จากโค้ด (ไม่บังคับทุก arrow) — **ห้ามมี `;` ใน message text และ participant alias** (Mermaid ตีความ `;` เป็นตัวคั่น statement → parse พัง): SQL/โค้ดที่มี `;` ให้ตัดออกหรือสรุปเป็นข้อความสั้น
+- tags ของ dependency map note ที่มี sequence diagram: เพิ่ม `diagram` (เช่น `[{project}, dependency, diagram]`)
 - Diagram อยู่ใน note `{Project} - Dependency Map: {Feature}` เดิม (title คงที่ — upsert ไม่ duplicate) และนับเป็นส่วนหนึ่งของ content ก่อน Scan Metadata footer
 
 #### Step 4d: Cross-reference and group by Feature, Entity, Service, Database
@@ -387,7 +393,7 @@ Output notes:
 ### Phase 9: Cross-Reference & Link Building
 - Build master index
 - Add `[[wiki links]]` between related notes
-- **Link diagram notes (v3.2):** `[[{Project} - ER Diagram]]` ↔ `[[{Project} - Entity Models]]` (สองทิศ) และ dependency map ↔ ER note ของ module ที่ entity ถูกใช้
+- **Link diagram notes (v3.2):** `[[{Project} - ER Diagram]]` ↔ `[[{Project} - Entity Models]]` (สองทิศ) และ dependency map ↔ ER note + `[[{Project} - Entity Models]]` ของ module ที่ entity ถูกใช้
 - Create `{Project} - Knowledge Map (Auto-generated)` summary
 - Verify links with `mcp__graph-brain__explore-graph`:
   - For each saved note, call `explore-graph` nodeId="{note-id}" depth=1
@@ -468,7 +474,7 @@ Before saving each note:
 ## Folder Categories for Saved Notes
 ```
 /projects/{name}/core/          — architecture, solution, infrastructure
-/projects/{name}/database/      — connections, entities, models, views
+/projects/{name}/database/      — connections, entities, models, views, ER diagrams
 /projects/{name}/dependencies/  — dependency maps, call chains, entity usage
 /projects/{name}/permissions/   — role matrix, page auth, API auth, troubleshooting
 /projects/{name}/workflow/      — states, business rules
