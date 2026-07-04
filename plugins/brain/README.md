@@ -1,6 +1,6 @@
 # Brain — Graph-First Knowledge Management
 
-**Version: 3.1.0**
+**Version: 3.2.0**
 
 Plugin จัดการความรู้แบบ Graph-First บน Graph Brain (Neo4j-backed Second Brain) — ใช้ยุทธศาสตร์ **Brain First**: ถามความรู้จาก brain ก่อนเสมอ แล้วค่อยอ่าน codebase เมื่อความรู้ไม่พอ จากนั้นเสนอบันทึกสิ่งที่ค้นพบกลับเข้า brain
 
@@ -40,7 +40,7 @@ claude mcp add graph-brain --scope user \
 | `/brain-search <keyword>` | ค้นหาแบบ 4-step escalation (text → tags → graph traversal → similar) |
 | `/brain-explain <topic>` | อธิบายระบบ/feature/workflow เชิงลึก |
 | `/brain-explore <จุดเริ่ม>` | เดิน graph ทีละ node ตาม relationships |
-| `/brain-scan [path\|--docs\|--deps\|--full]` | สแกน codebase/เอกสารเข้า brain พร้อม dependency tracing (Smart Scan แบบ incremental จาก git diff) |
+| `/brain-scan [path\|--docs\|--deps\|--full]` | สแกน codebase/เอกสารเข้า brain พร้อม dependency tracing (Smart Scan แบบ incremental จาก git diff). v3.2: Mermaid ER/sequence diagrams, Phase 7.5 Release/Deployment, Dev Setup, design-doc integration, Scan Metadata footer (freshness) |
 | `/brain-save [topic]` | บันทึกความรู้ใหม่จากบทสนทนา |
 | `/brain-update <note>` | อัปเดต note เดิมให้ตรงกับโค้ดปัจจุบัน (ผ่าน Versioning Protocol) |
 | `/brain-history <note>` | ดู version history + changelogs ของ note |
@@ -78,6 +78,16 @@ User ถามเกี่ยวกับโปรเจกต์
 | **system-design-doc** | optional upstream — query ความรู้เดิมก่อน brainstorm design |
 
 ## 📝 Changelog
+
+### v3.2.0 (2026-07-04) — Support-Ready Knowledge
+เป้าหมาย: กลับมา support งานลูกค้าเก่าโดยไม่ต้องอ่านโค้ดใหม่ทุกรอบ — brain ตอบครบทุกมิติและ**บอกได้ว่าความรู้ยังตรงกับโค้ดไหม**
+- 🔖 **Freshness Protocol** (GRAPH_PROTOCOL §5) — ทุก note จาก brain-scan มี `## Scan Metadata` footer ผูก commit hash; `/brain` + `/brain-load` เทียบกับ HEAD → ถ้าเก่ากว่าโค้ดเตือน "เก่ากว่า N commits" + ถามก่อนตอบ ([1] incremental scan [2] ตอบจากข้อมูลเดิม); Smart Scan ใช้ commit จาก note เป็น primary source แทน `.brain/activity-log.json` (ที่หายเมื่อย้ายเครื่อง)
+- 📊 **Mermaid diagrams** — Phase 3 สร้าง ER Diagram (split >20 entities per-module); Phase 4 แนบ sequence diagram ใน**ทุก** dependency map
+- 🚀 **Phase 7.5 Release & Deployment** — Release History (git tags/CHANGELOG/version + current@HEAD) + Deployment Topology (Dockerfile/CI-CD/pubxml/appsettings ต่อ env)
+- 🛠️ **Dev Setup & Run Guide** (Phase 2) — build/run/test/debug + prerequisites
+- 📋 **Design-doc integration** (Phase 8) — อ่าน `.design-docs/design_doc_list.json` first-class: requirements/AC/UC + ดึง Mermaid สำเร็จรูป (ไม่ generate ซ้ำ, label `[Design-doc]` vs `[Code-derived]`)
+- 🔒 **Secret Masking Protocol** (GRAPH_PROTOCOL §6) — กฎกลางกัน credential หลุดเข้า brain: connection string เก็บแค่ Server+DB, endpoint strip credential, literal-vs-reference, pre-save sanity check, irreversibility warning
+- 📁 folder categories ใหม่: `/releases/`, `/deployment/`, `/requirements/`
 
 ### v3.1.0 (2026-06-12)
 - 📄 เพิ่ม README นี้ (เดิมเป็น plugin เดียวที่ไม่มี — รวม prerequisites ของ MCP server ที่ขาดหาย)

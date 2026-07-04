@@ -309,8 +309,8 @@
     {
       "name": "brain",
       "source": "./plugins/brain",
-      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.1.0: เพิ่ม README + MCP prerequisites, แก้ GRAPH_PROTOCOL.md paths เป็น ${CLAUDE_PLUGIN_ROOT}, document upsert-by-title semantics, trigger phrases EN+TH, argument-hint frontmatter",
-      "version": "3.1.0",
+      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.2.0: Support-Ready Knowledge — Freshness Protocol (Scan Metadata footer ผูก commit hash + stale warning ก่อนตอบ), Mermaid ER + sequence diagrams ทุก dependency map, Phase 7.5 Release History + Deployment Topology, Dev Setup Guide, design_doc_list.json integration, Secret Masking Protocol §6",
+      "version": "3.2.0",
       "category": "knowledge",
       "tags": [
         "graph-brain",
@@ -322,7 +322,10 @@
         "mcp",
         "cross-session",
         "wiki-links",
-        "thai"
+        "thai",
+        "freshness-tracking",
+        "mermaid-diagrams",
+        "support-ready"
       ],
       "author": {
         "name": "Mounchons"

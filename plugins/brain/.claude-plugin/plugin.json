@@ -1,7 +1,7 @@
 {
   "name": "brain",
-  "description": "Graph-First knowledge management — Relationship-centric search, traversal-first navigation, knowledge versioning, cross-project intelligence, Brain First strategy",
-  "version": "3.1.0",
+  "description": "Graph-First knowledge management — Relationship-centric search, traversal-first navigation, knowledge versioning, cross-project intelligence, Brain First strategy. v3.2 Support-Ready: Freshness Protocol, Mermaid ER/sequence diagrams, Release/Deployment/Dev-Setup scan, design-doc integration, Secret Masking",
+  "version": "3.2.0",
   "author": {
     "name": "Mounchons"
   },
