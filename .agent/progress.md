@@ -547,3 +547,37 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 
 ### Next feature:
 - Feature #15 (opus): Phase 8 design_doc_list.json first-class + bump v3.2.0 + marketplace sync + README changelog + validate — depends_on [12,13,14] ✅ ครบ พร้อมทำ (ตัวปิด epic)
+
+## Session 15 — Feature #15: brain v3.2 Design-doc Integration + v3.2.0 Release (epic brain-v32: 4/4 ครบ 🎉)
+**Date**: 2026-07-04
+**Type**: Coding (Feature #15, ตัวปิด epic) — epic `brain-v32` (spec: plans/brain-v32-20260704/DESIGN.md §F15)
+**Model**: Opus 4.8 main-loop + adversarial verification
+
+### What was done (3 subtasks + 1 review-fix):
+- ✅ 15.1 Phase 8 Step 8a design_doc_list.json first-class — requirements/AC/UC → /requirements/, ดึง Mermaid สำเร็จรูป (ไม่ generate ซ้ำ) + label [Design-doc]/[Code-derived] + de-dup + fallback; category requirements + tag requirement (`d0dc741`)
+- ✅ 15.2 bump 3.1.0 → 3.2.0 — plugin.json + marketplace.json (version/desc/tags) + README (header/command note/changelog v3.2.0) (`222ac44`)
+- ✅ 15.3 validate ทั้ง epic — version triad ✅ SYNC, ${CLAUDE_PLUGIN_ROOT} paths, Thai, never-block degrade (`222ac44`)
+- 🔧 review-fix(#15): schema 2.3.0 fidelity — **CRITICAL** exists:true drop array diagrams (flow/sequence/state/class ไม่มี field exists ใน schema) → split presence model (singleton=exists, array=file_path); file_path = .design-docs/+path ไม่ใช่ doc_dir/+path (double-prefix); de-dup normalize + object path; +high_level_architecture (`f585a92`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A | `claude plugin validate` ✅ | JSON valid | fences balanced (44 even)
+- AC1 design_doc first-class ✅ | AC2 Mermaid pulled + labels ✅ | AC3 requirements category ✅ | AC4 version sync 3.2.0 ✅ | AC5 epic hygiene ✅
+- QA+NFR gates: N/A | **Pipeline Result: PASSED**
+
+### Adversarial Verification (workflow `wf_0e082ce6-079`, 3 refuting verifiers):
+- schema-fidelity → **1 CRITICAL** (exists:true filter ตรงข้าม schema จริง — array diagrams flow/sequence/state/class ไม่มี exists → จะ drop เงียบๆ ตรงข้าม AC #2) + 2 medium (file_path double-prefix; de-dup + diagrams[] object path) + 1 low (ตก high_level_architecture) → แก้ครบ 4/4 (`f585a92`)
+- release-hygiene + epic-coherence → agent **hit session limit (reset 3pm)** → **manual-verified แทน**: version triad node check ✅ SYNC 3.2.0, ไม่มี 3.1.0 ค้าง (grep), GRAPH_PROTOCOL §1-§6 ต่อเนื่อง, categories 12 ตัวตรงกัน 3 ที่ (protocol/brain-scan/brain-save)
+
+### Current status:
+- Features passed: **15/15** 🎉 | epic brain-v32: **4/4 ครบ** | opus done: 14 | sonnet done+reviewed: 1
+- **pending: 0 — epic brain-v32 เสร็จสมบูรณ์**
+
+### Epic brain-v32 สรุป (brain v3.1.0 → v3.2.0 "Support-Ready Knowledge"):
+- #12 Freshness Protocol (Scan Metadata footer + commit-based stale check + ask-before-scan)
+- #13 Mermaid ER + sequence diagrams ทุก dependency map
+- #14 Phase 7.5 Release/Deployment + Dev Setup + GRAPH_PROTOCOL §6 Secret Masking Protocol
+- #15 design_doc_list.json integration + release v3.2.0
+- รวม 26 commits (ba54382 → HEAD), adversarial verify ทุก feature (51 findings แก้ครบ: 1 critical + 5 medium security + อื่นๆ)
+
+### Next feature:
+- ไม่มี — epic brain-v32 (Features #12–#15) เสร็จครบ. งานที่ค้าง (out-of-scope): push ขึ้น remote (ยังไม่ push ทั้ง 26 commits)

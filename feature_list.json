@@ -58,7 +58,7 @@
       "description": "ขยาย brain-scan ให้เก็บครบทุกมิติสำหรับ support งานลูกค้าเก่า (diagrams, release, deployment, dev setup, design-doc integration) + Freshness Protocol ผูก commit hash — อ่าน plans/brain-v32-20260704/DESIGN.md ก่อนเริ่มทุก feature ห้ามออกแบบซ้ำ",
       "bounded_context": "Plugin Development",
       "features": [12, 13, 14, 15],
-      "progress": { "total": 4, "passed": 3, "in_progress": 0 }
+      "progress": { "total": 4, "passed": 4, "in_progress": 0 }
     }
   ],
 
@@ -979,13 +979,13 @@
       "module": "brain", "layer": "application", "category": "feature",
       "description": "Design-doc integration + v3.2.0 release — brain-scan Phase 8 เช็ค .design-docs/design_doc_list.json (schema 2.3.0 ของ system-design-doc) เป็น first-class: requirement/AC sections → '{Project} - Requirements: {doc}' ใน /requirements/, ดึง Mermaid diagrams สำเร็จรูปจาก registry (ไม่ generate ซ้ำ) + label [Code-derived] vs [Design-doc] + link กับ diagram notes จาก #13; ปิดท้าย bump 3.2.0 + marketplace sync + README changelog + validate — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F15",
       "priority": "high", "complexity": "medium", "risk_level": "medium",
-      "status": "pending", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
-        { "id": "15.1", "description": "Phase 8 first-class design docs: เช็ค .design-docs/design_doc_list.json ก่อน generic .md scan — อ่าน registry sections[] + diagrams.*.file_path → requirements notes ใน /projects/{name}/requirements/ + embed Mermaid จาก design docs + label ที่มา + link [[ER Diagram]]/[[Dependency Map]] จาก #13; design docs ที่ดึงแล้วไม่เข้า generic scan ซ้ำ; ไม่พบ registry → Phase 8 ทำงานแบบเดิม; GRAPH_PROTOCOL category requirements + tag requirement + brain-save folder list", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] },
-        { "id": "15.2", "description": "Version release: plugin.json 3.1.0 → 3.2.0, marketplace.json brain entry sync (version + description สรุป v3.2 features), README.md changelog v3.2.0 + อัปเดตตาราง commands ถ้ามี flag ใหม่", "done": false, "committed_at": null, "commits": [], "depends_on": ["15.1"], "files": ["plugins/brain/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "plugins/brain/README.md"] },
-        { "id": "15.3", "description": "Validate ทั้ง epic: claude plugin validate ผ่าน; node sync check plugin.json vs marketplace.json == 3.2.0; ทุก skill ที่แก้อ้าง ${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md (ไม่ใช่ bare filename); ALL responses Thai คงครบ; degrade behavior (MCP ล่ม never block) คงเดิมทุก skill", "done": false, "committed_at": null, "commits": [], "depends_on": ["15.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain/SKILL.md", "plugins/brain/skills/brain-load/SKILL.md"] }
+        { "id": "15.1", "description": "Phase 8 first-class design docs: เช็ค .design-docs/design_doc_list.json ก่อน generic .md scan — อ่าน registry sections[] + diagrams.*.file_path → requirements notes ใน /projects/{name}/requirements/ + embed Mermaid จาก design docs + label ที่มา + link [[ER Diagram]]/[[Dependency Map]] จาก #13; design docs ที่ดึงแล้วไม่เข้า generic scan ซ้ำ; ไม่พบ registry → Phase 8 ทำงานแบบเดิม; GRAPH_PROTOCOL category requirements + tag requirement + brain-save folder list", "done": true, "committed_at": "2026-07-04T11:05:55+07:00", "commits": ["d0dc741"], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] },
+        { "id": "15.2", "description": "Version release: plugin.json 3.1.0 → 3.2.0, marketplace.json brain entry sync (version + description สรุป v3.2 features), README.md changelog v3.2.0 + อัปเดตตาราง commands ถ้ามี flag ใหม่", "done": true, "committed_at": "2026-07-04T11:07:00+07:00", "commits": ["222ac44"], "depends_on": ["15.1"], "files": ["plugins/brain/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "plugins/brain/README.md"] },
+        { "id": "15.3", "description": "Validate ทั้ง epic: claude plugin validate ผ่าน; node sync check plugin.json vs marketplace.json == 3.2.0; ทุก skill ที่แก้อ้าง ${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md (ไม่ใช่ bare filename); ALL responses Thai คงครบ; degrade behavior (MCP ล่ม never block) คงเดิมทุก skill", "done": true, "committed_at": "2026-07-04T11:07:00+07:00", "commits": ["222ac44"], "depends_on": ["15.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain/SKILL.md", "plugins/brain/skills/brain-load/SKILL.md"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "15.3",
       "acceptance_criteria": [
         "Phase 8 อ่าน design_doc_list.json ก่อน generic scan (grep 'design_doc_list.json' ใน brain-scan > 0) + fallback เดิมเมื่อไม่พบ",
         "ดึง Mermaid จาก design docs แทน generate ซ้ำ + label [Code-derived]/[Design-doc] + links ถึงกัน",
@@ -993,28 +993,38 @@
         "plugin.json == marketplace.json == 3.2.0 (node sync check) + README changelog v3.2.0",
         "claude plugin validate ผ่าน + ${CLAUDE_PLUGIN_ROOT} paths + Thai responses + never-block degrade ครบทุก skill ที่แก้"
       ],
-      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "45min", "actual_time": "~30min", "started_at": "2026-07-04T04:03:39Z", "completed_at": "2026-07-04T08:08:30Z" },
       "dependencies": [12, 13, 14],
       "references": ["plans/brain-v32-20260704/DESIGN.md", "plugins/system-design-doc/skills/system-design-doc/SKILL.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "pending", "passes": false, "tested_at": null,
-      "verification_results": null,
+      "sync_status": "pending", "passes": true, "tested_at": "2026-07-04T08:08:30Z",
+      "verification_results": {
+        "build": "n/a (markdown plugin — no build)",
+        "claude_plugin_validate": "passed",
+        "ac1_designdoc_firstclass": "Phase 8 Step 8a อ่าน .design-docs/design_doc_list.json (grep design_doc_list.json = 3) ก่อน generic scan + fallback เดิมเมื่อไม่พบ (ข้อ 4)",
+        "ac2_mermaid_pulled": "ดึง Mermaid จาก design docs (ไม่ generate ซ้ำ) + label [Design-doc]/[Code-derived] + links; presence model แยก singleton(exists)/array(file_path) หลัง review-fix",
+        "ac3_requirements_category": "GRAPH_PROTOCOL category requirements + tag requirement + brain-save folder list (grep = 3 new categories)",
+        "ac4_version_sync": "plugin.json == marketplace.json == README == 3.2.0 (node triad check ✅) + ไม่มี 3.1.0 ค้าง (grep excl changelog) + README changelog v3.2.0 ครอบ 6 features",
+        "ac5_epic_hygiene": "claude plugin validate ผ่าน + ${CLAUDE_PLUGIN_ROOT} paths (grep bare = 0) + Thai responses ครบ 5 skills + never-block degrade ครบ + fences balanced (44 even)",
+        "adversarial_verify": "3 refuting verifiers (schema-fidelity/release-hygiene/epic-coherence, wf_0e082ce6-079). schema-fidelity: 1 CRITICAL (exists:true drop array diagrams flow/sequence/state/class — ไม่มี field exists ใน schema → split presence model) + 2 medium (file_path double-prefix doc_dir; de-dup normalize + diagrams[] object path) + 1 low (ตก high_level_architecture) → แก้ครบ 4/4 (f585a92). release-hygiene + epic-coherence: agent hit session limit (reset 3pm) → verify ด้วยมือแทน: version triad ✅ SYNC, ไม่มี 3.1.0 ค้าง, GRAPH_PROTOCOL §1-§6 ต่อเนื่อง, categories 12 ตัวตรงกัน 3 ที่",
+        "qa_nfr_gates": "n/a (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "release feature ของ epic — ต้องทำหลัง #12-#14 ผ่านครบ (version bump + changelog ครอบทุก feature). ระวัง marketplace version drift (บทเรียนจาก memory: verify ด้วย node loop)"
+      "notes": "ตัวปิด epic brain-v32 — design-doc integration + release v3.2.0. Adversarial จับ critical bug: exists:true filter ตรงข้าม schema จริง (array diagrams ไม่มี exists) จะ drop flow/sequence เงียบๆ → แก้เป็น split presence model. 2/3 verifiers ติด session limit → manual-verified (version sync + section numbering). marketplace version drift lesson (memory): verify ด้วย node triad ✅"
     }
   ],
 
   "summary": {
     "total": 15,
-    "passed": 14,
+    "passed": 15,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 1,
-    "last_updated": "2026-07-04T04:01:21Z",
+    "pending": 0,
+    "last_updated": "2026-07-04T08:08:30Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 14, "done": 13, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 14, "done": 14, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
