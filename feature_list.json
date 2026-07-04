@@ -58,7 +58,7 @@
       "description": "ขยาย brain-scan ให้เก็บครบทุกมิติสำหรับ support งานลูกค้าเก่า (diagrams, release, deployment, dev setup, design-doc integration) + Freshness Protocol ผูก commit hash — อ่าน plans/brain-v32-20260704/DESIGN.md ก่อนเริ่มทุก feature ห้ามออกแบบซ้ำ",
       "bounded_context": "Plugin Development",
       "features": [12, 13, 14, 15],
-      "progress": { "total": 4, "passed": 2, "in_progress": 0 }
+      "progress": { "total": 4, "passed": 3, "in_progress": 0 }
     }
   ],
 
@@ -935,14 +935,14 @@
       "flow_id": null, "state_produces": [], "state_consumes": [],
       "module": "brain", "layer": "application", "category": "feature",
       "description": "Release + Deployment + Dev Setup — brain-scan Phase 7.5 ใหม่: '{Project} - Release History' (git tags + CHANGELOG + version fields) ใน /releases/ และ '{Project} - Deployment Topology' (Dockerfile/compose/workflows/pipelines/pubxml/appsettings.{env}/web.config transforms — mask secrets) ใน /deployment/; Phase 2 ขยาย '{Project} - Dev Setup & Run Guide' (build/run/test/debug + prerequisites) ใน /core/; Smart Scan mapping ใหม่ — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F14",
-      "priority": "high", "complexity": "medium", "risk_level": "low",
-      "status": "pending", "blocked_reason": null,
+      "priority": "high", "complexity": "medium", "risk_level": "medium",
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
-        { "id": "14.1", "description": "Phase 7.5 Release History: scan git tag -l --sort=-creatordate + CHANGELOG* + version fields (*.csproj <Version>, package.json, plugin.json) → note ตาราง version|date|highlights + current version ณ HEAD → /projects/{name}/releases/", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
-        { "id": "14.2", "description": "Phase 7.5 Deployment Topology: scan Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json diff, web.config transforms, Procfile, netlify.toml, vercel.json → note: deploy target, environments + config diff, pipeline steps, DB ต่อ env (mask secrets — เก็บชื่อ server/DB ไม่เก็บ password); ไม่พบ config → note ระบุ 'ไม่พบ — บันทึกเพิ่มด้วย /brain-save'", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
-        { "id": "14.3", "description": "Phase 2 ขยาย Dev Setup & Run Guide (README setup, package.json scripts, launchSettings.json, Makefile/*.ps1/*.sh, global.json/.nvmrc/TargetFramework) → /core/; Smart Scan mapping ใหม่ (CI/CD files → 7.5, README/launchSettings/Makefile/global.json → Phase 2, CHANGELOG/tags → 7.5); GRAPH_PROTOCOL + brain-scan + brain-save categories releases/deployment + tags release/deployment; Phase 10 report tree เพิ่ม releases/, deployment/", "done": false, "committed_at": null, "commits": [], "depends_on": ["14.1", "14.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] }
+        { "id": "14.1", "description": "Phase 7.5 Release History: scan git tag -l --sort=-creatordate + CHANGELOG* + version fields (*.csproj <Version>, package.json, plugin.json) → note ตาราง version|date|highlights + current version ณ HEAD → /projects/{name}/releases/", "done": true, "committed_at": "2026-07-04T10:43:31+07:00", "commits": ["9efe598"], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "14.2", "description": "Phase 7.5 Deployment Topology: scan Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json diff, web.config transforms, Procfile, netlify.toml, vercel.json → note: deploy target, environments + config diff, pipeline steps, DB ต่อ env (mask secrets — เก็บชื่อ server/DB ไม่เก็บ password); ไม่พบ config → note ระบุ 'ไม่พบ — บันทึกเพิ่มด้วย /brain-save'", "done": true, "committed_at": "2026-07-04T10:43:31+07:00", "commits": ["9efe598"], "depends_on": [], "files": ["plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "14.3", "description": "Phase 2 ขยาย Dev Setup & Run Guide (README setup, package.json scripts, launchSettings.json, Makefile/*.ps1/*.sh, global.json/.nvmrc/TargetFramework) → /core/; Smart Scan mapping ใหม่ (CI/CD files → 7.5, README/launchSettings/Makefile/global.json → Phase 2, CHANGELOG/tags → 7.5); GRAPH_PROTOCOL + brain-scan + brain-save categories releases/deployment + tags release/deployment; Phase 10 report tree เพิ่ม releases/, deployment/", "done": true, "committed_at": "2026-07-04T10:45:00+07:00", "commits": ["636ef58", "b675f12"], "depends_on": ["14.1", "14.2"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/GRAPH_PROTOCOL.md"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "14.3",
       "acceptance_criteria": [
         "Phase 7.5 อยู่ใน brain-scan SKILL.md (grep 'Phase 7.5' > 0) มี output 2 notes: Release History + Deployment Topology",
         "Phase 2 มี Dev Setup & Run Guide output note",
@@ -951,15 +951,26 @@
         "Smart Scan mapping table ครอบไฟล์ CI/CD → Phase 7.5 และ README/launchSettings → Phase 2",
         "ทุก note ใหม่มี Scan Metadata footer ตาม Freshness Protocol (#12)"
       ],
-      "time_tracking": { "estimated_time": "45min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "45min", "actual_time": "~20min", "started_at": "2026-07-04T03:41:10Z", "completed_at": "2026-07-04T04:01:21Z" },
       "dependencies": [12],
       "references": ["plans/brain-v32-20260704/DESIGN.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "pending", "passes": false, "tested_at": null,
-      "verification_results": null,
+      "sync_status": "pending", "passes": true, "tested_at": "2026-07-04T04:01:21Z",
+      "verification_results": {
+        "build": "n/a (markdown plugin — no build)",
+        "claude_plugin_validate": "passed",
+        "ac1_phase75": "Phase 7.5 Release & Deployment Scan (grep 'Phase 7.5' = 4) — Release History (git tags/CHANGELOG/version fields + current@HEAD) + Deployment Topology (11 scan patterns + mask secrets)",
+        "ac2_dev_setup": "Phase 2 'Dev Setup & Run Guide' — Prerequisites/Build/Run/Test/Debug/Local config + fallback",
+        "ac3_mask_fallback": "Deployment scan อ้าง Secret Masking Protocol §6 + fallback note ครบ 3 (release/deployment/dev-setup) ไม่เงียบหาย",
+        "ac4_categories_tags": "GRAPH_PROTOCOL + brain-scan + brain-save folder categories releases/deployment + domain tags release/deployment",
+        "ac5_smart_scan": "3b mapping: CI/CD → 7.5, CHANGELOG/tags → 7.5 (+ git tag --contains detection), README/launchSettings/global.json → Phase 2; Phase 10 report tree เพิ่ม releases/deployment/dev-setup",
+        "ac6_footer": "ทุก note ใหม่ได้ Scan Metadata footer จาก global rule (#12)",
+        "adversarial_verify": "3 refuting verifiers (security-mask-secrets / spec-completeness / consistency-integrity, wf_13f79c06-e2a, 241k tokens) — 6 medium security (mask เป็นกฎ localized จุดเดียว: Environments diff = secret, connection string เก็บทั้งเส้นเหลือ username, endpoint ฝัง SAS/userinfo, ไม่ครอบ AccountKey/ClientSecret + literal-vs-ref, secret ลบยากไม่มีคำเตือน, Phase 3 sibling path unmasked) + 2 medium (git tag detection ถูกตัดจาก 3a → Release History silent-stale; Phase 3 connection string unmasked) + 3 low + 2 cosmetic → แก้ครบ 15/15 (da8b7d9): ยก mask เป็น GRAPH_PROTOCOL §6 Secret Masking Protocol กฎกลาง (coverage def ไม่ใช่ enum, connection-string split field, endpoint strip credential, literal-vs-reference, config-diff key-not-value, pre-save sanity check, irreversibility+purge warning) + Phase 3/7.5b/Dev-Setup อ้าง §6 + git tag --contains ใน 3a",
+        "qa_nfr_gates": "n/a (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "ตอบคำถาม support ที่พบบ่อย: 'ลูกค้าใช้ version ไหน bug แก้หรือยัง' + 'deploy ไปไหน env อะไรบ้าง' + 'โปรเจกต์นี้ build/run ยังไง'"
+      "notes": "ตอบคำถาม support: 'ลูกค้าใช้ version ไหน bug แก้หรือยัง' + 'deploy ไปไหน env อะไรบ้าง' + 'build/run ยังไง'. Adversarial verify จับ security risk ร้ายแรงสุดของ epic: Phase 7.5 อ่านไฟล์ที่มี credential จริงแล้ว save ลง external Neo4j (ลบยาก) → ยก mask เป็น §6 กฎกลาง + pre-save sanity check + purge warning. risk_level bump low→medium เพราะ secret-handling surface"
     },
     {
       "id": 15,
@@ -996,14 +1007,14 @@
 
   "summary": {
     "total": 15,
-    "passed": 13,
+    "passed": 14,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 2,
-    "last_updated": "2026-07-04T03:29:10Z",
+    "pending": 1,
+    "last_updated": "2026-07-04T04:01:21Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 14, "done": 12, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 14, "done": 13, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }

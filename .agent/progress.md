@@ -518,3 +518,32 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 
 ### Next feature:
 - Feature #14 (opus): Phase 7.5 Release History + Deployment Topology + Phase 2 Dev Setup — depends_on [12] ✅ พร้อมทำ
+
+## Session 14 — Feature #14: brain v3.2 Release/Deployment/Dev-Setup (epic brain-v32: 3/4)
+**Date**: 2026-07-04
+**Type**: Coding (Feature #14) — epic `brain-v32` (spec: plans/brain-v32-20260704/DESIGN.md §F14)
+**Model**: Opus 4.8 main-loop + adversarial verification
+
+### What was done (3 subtasks + 1 review-fix):
+- ✅ 14.1+14.2 Phase 7.5 Release & Deployment Scan — Release History (git tags/CHANGELOG/version fields + current@HEAD → /releases/) + Deployment Topology (Dockerfile/CI-CD/pubxml/appsettings-per-env/transforms → /deployment/, mask secrets), fallback notes (`9efe598`)
+- ✅ 14.3-devsetup Phase 2 Dev Setup & Run Guide (build/run/test/debug + prerequisites → /core/) (`636ef58`)
+- ✅ 14.3 Smart Scan mapping rows + Phase 10 report tree + folder categories + domain tags release/deployment (`b675f12`)
+- 🔧 review-fix(#14): **security hardening** — ยก mask เป็น GRAPH_PROTOCOL §6 Secret Masking Protocol กฎกลาง + git tag detection + Debug bullet + phases_run 7.5 + cross-links (`da8b7d9`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown plugin) | `claude plugin validate` ✅ | feature_list.json valid | fences balanced (44 even)
+- AC1 Phase 7.5 ✅ | AC2 Dev Setup ✅ | AC3 mask+fallback ✅ | AC4 categories/tags ✅ | AC5 Smart Scan+report ✅ | AC6 footer ✅
+- QA+NFR gates: N/A | **Pipeline Result: PASSED**
+
+### Adversarial Verification (workflow `wf_13f79c06-e2a`, 3 refuting verifiers, 241k tokens):
+- security-mask-secrets → **6 medium** (ร้ายแรงสุดของ epic): mask เป็นกฎ localized จุดเดียว — (1) Environments diff = secret เอง อยู่เหนือกฎ mask (2) "แทนค่า secret ด้วย ***" = เก็บ connection string ทั้งเส้น เหลือ username หลุด (3) endpoint ฝัง SAS sig/userinfo (4) ไม่ครอบ AccountKey/ClientSecret + ไม่แยก literal vs ${{ secrets.X }} (5) secret ลบยาก (external Neo4j + version snapshot) ไม่มีคำเตือน (6) Phase 3 sibling path อ่าน connection string unmasked
+- spec-completeness → **1 medium** (git tag --contains ถูกตัดจาก 3a → Release History silent-stale เมื่อ tag ทับ commit ที่ scan แล้ว) + 1 cosmetic (Debug bullet) + 1 low (phases_run)
+- consistency-integrity → 2 medium (ซ้ำ tag + Phase 3 mask) + 3 low + 1 cosmetic; hygiene ผ่าน (fences, Thai, degrade, CLAUDE_PLUGIN_ROOT)
+- **แก้ครบ 15/15** (`da8b7d9`): GRAPH_PROTOCOL §6 (coverage def, connection-string split, endpoint strip, literal-vs-ref, config-diff key-not-value, pre-save sanity check, irreversibility+purge warning) + Phase 3/7.5b/Dev-Setup อ้าง §6 + git tag detection → re-grep + validate ผ่าน
+
+### Current status:
+- Features passed: **14/15** | epic brain-v32: **3/4** | opus done: 13
+- pending: 1 (#15 design-doc integration + v3.2.0 release — ตัวปิด epic)
+
+### Next feature:
+- Feature #15 (opus): Phase 8 design_doc_list.json first-class + bump v3.2.0 + marketplace sync + README changelog + validate — depends_on [12,13,14] ✅ ครบ พร้อมทำ (ตัวปิด epic)
