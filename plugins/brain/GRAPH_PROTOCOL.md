@@ -111,3 +111,52 @@ Search Strategy (4 ขั้น — เรียงจากเร็วไป�
 →[TAGGED]→ #{tag-name}
 →[IN_FOLDER]→ /{folder-path}/
 ```
+
+## 5. Freshness Protocol
+
+ตรวจว่า knowledge ใน brain ยังตรงกับโค้ดปัจจุบันหรือไม่ — ใช้กับ **code-derived notes** (จาก brain-scan) เท่านั้น
+
+### 5.1 Scan Metadata Footer
+
+ทุก note ที่ **brain-scan สร้างหรืออัปเดต** ต้องลงท้ายด้วย section นี้ (วางท้ายสุดของ content เสมอ):
+
+```markdown
+## Scan Metadata
+- Scanned-At-Commit: `<git short hash>`
+- Scanned-At: <YYYY-MM-DD>
+- Source-Files: `<path1>`, `<path2>`, ...
+```
+
+กฎ:
+- hash จาก `git rev-parse --short HEAD` — เรียก**ครั้งเดียวต่อ scan run** ทุก note ใน run เดียวกันใช้ hash เดียวกัน
+- **Scope:** เฉพาะ note ที่ derive จากโค้ด (brain-scan ทุก phase)
+  - `brain-save` (conversation knowledge) — **ไม่บังคับ** footer
+  - `brain-update` — ถ้า note เดิมมี footer → refresh footer เป็น HEAD ปัจจุบัน
+- Non-git project: ละบรรทัด `Scanned-At-Commit` — เหลือ `Scanned-At` + `Source-Files`
+- `Source-Files`: ไฟล์หลักที่ note สรุปมา (ไม่ต้องครบทุกไฟล์ถ้าเยอะ — เอาระดับ folder ได้ เช่น `Controllers/`)
+
+### 5.2 Freshness Check (ฝั่ง query — ใช้ใน brain, brain-load)
+
+หลังโหลด notes จาก brain ก่อนใช้ตอบ:
+
+1. Parse `Scanned-At-Commit` จาก notes ที่โหลด — ใช้ค่าที่ใหม่ที่สุด
+2. Note ไม่มี footer (pre-v3.2 หรือมาจาก brain-save) → **ข้าม check เงียบๆ** (backward compatible — ห้าม error)
+3. `git rev-parse --short HEAD` ตรงกับ hash → สด — ใช้ตอบได้เลย ไม่ต้องแสดงอะไร
+4. ไม่ตรง → `git rev-list <hash>..HEAD --count` = N แล้ว**เตือน + ถามก่อน**:
+   ```
+   ⚠️ ความรู้ใน Brain เก่ากว่าโค้ด {N} commits (scan ล่าสุด: {date} @ {hash})
+   [1] Incremental scan ก่อนตอบ (แนะนำ — สแกนเฉพาะไฟล์ที่เปลี่ยน)
+   [2] ตอบจากข้อมูลเดิม (อาจไม่ตรงโค้ดปัจจุบัน)
+   ```
+5. hash ไม่อยู่ใน history (`git cat-file -e <hash>^{commit}` ล้มเหลว — คนละเครื่อง/force push) → เตือน "ไม่สามารถระบุความสดได้ (commit {hash} ไม่อยู่ใน history)" + ถามชุดเดียวกัน
+6. **จำคำตอบต่อ session** — user เลือก [1] หรือ [2] แล้ว ไม่ถามซ้ำอีกตลอด session นั้น (ทุก query ถัดไปใช้คำตอบเดิม)
+7. Non-git project: เทียบ `Scanned-At` กับ modification time ของ `Source-Files` — ถ้ามีไฟล์ใหม่กว่า → เตือน date-based แล้วถามชุดเดียวกัน
+8. git/MCP error ใดๆ ระหว่าง check → **ข้าม check** ทำงานแบบเดิม (never block)
+
+### 5.3 ฝั่ง scan — commit เป็น primary source ของ "last scan"
+
+brain-scan Smart Scan หา last scan state ตามลำดับ:
+
+1. **Primary:** `Scanned-At-Commit` จาก note ล่าสุดของโปรเจกต์ → `git diff --name-only <hash>..HEAD` หาไฟล์ที่เปลี่ยน (แม่นสุด — ติดไปกับ brain server ใช้ได้ทุกเครื่อง)
+2. Fallback: `.brain/activity-log.json` (local เท่านั้น — ถูก gitignore หายเมื่อย้ายเครื่อง)
+3. Fallback สุดท้าย: latest note date + `git log --since="{date}"`
