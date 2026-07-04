@@ -58,7 +58,7 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
 ### Step 3: Update Original Note
 - เรียก `mcp__graph-brain__save-knowledge` ด้วย **title เดิม** + content ใหม่ที่:
   - เพิ่ม `[[{Changelog Title}]]` link ใน content
-  - เพิ่ม/อัพเดท Version History section ท้าย note:
+  - เพิ่ม/อัพเดท Version History section ท้าย note (ถ้า note มี `## Scan Metadata` → Version History อยู่**ก่อน** Scan Metadata เสมอ — Scan Metadata ต้องเป็น section สุดท้าย ดู §5.1):
     ```markdown
     ## Version History
     - v{N} ({YYYY-MM-DD}): {summary} → [[{Original Title} — Changelog #{N} ({YYYY-MM-DD})]]
@@ -118,7 +118,7 @@ Search Strategy (4 ขั้น — เรียงจากเร็วไป�
 
 ### 5.1 Scan Metadata Footer
 
-ทุก note ที่ **brain-scan สร้างหรืออัปเดต** ต้องลงท้ายด้วย section นี้ (วางท้ายสุดของ content เสมอ):
+ทุก note ที่ **brain-scan สร้างหรืออัปเดต** ต้องลงท้ายด้วย section นี้ — **`## Scan Metadata` ต้องเป็น section สุดท้ายของ note เสมอ** (ถ้ามี `## Version History` ให้อยู่ก่อน Scan Metadata):
 
 ```markdown
 ## Scan Metadata
@@ -139,24 +139,27 @@ Search Strategy (4 ขั้น — เรียงจากเร็วไป�
 
 หลังโหลด notes จาก brain ก่อนใช้ตอบ:
 
-1. Parse `Scanned-At-Commit` จาก notes ที่โหลด — ใช้ค่าที่ใหม่ที่สุด
-2. Note ไม่มี footer (pre-v3.2 หรือมาจาก brain-save) → **ข้าม check เงียบๆ** (backward compatible — ห้าม error)
-3. `git rev-parse --short HEAD` ตรงกับ hash → สด — ใช้ตอบได้เลย ไม่ต้องแสดงอะไร
-4. ไม่ตรง → `git rev-list <hash>..HEAD --count` = N แล้ว**เตือน + ถามก่อน**:
+1. **Scope:** เช็คเฉพาะ notes ของ project ปัจจุบัน (projectName ตรงกับ basename ของ cwd) — notes ข้าม project ให้ข้าม check (hash จาก repo อื่นเทียบกับ repo นี้ไม่ได้)
+2. Parse `Scanned-At-Commit` จาก notes ที่โหลด — "ใหม่ที่สุด" = อันที่ `Scanned-At` ล่าสุด; ถ้าอันใด hash ตรง HEAD → ถือว่าสดทันที; วันเดียวกันหลาย hash → ใช้อันใดก็ได้ (worst case คือเตือนเกินจริงแล้วถาม — ยอมรับได้)
+3. Note ไม่มี footer (pre-v3.2 หรือมาจาก brain-save) → **ข้าม check เงียบๆ** (backward compatible — ห้าม error)
+4. **ตรวจ hash ก่อนคำนวณ:** `git cat-file -e "<hash>^{commit}"` — **ต้อง quote argument เสมอ** (PowerShell แตก `^{commit}` เป็น token ถ้าไม่ quote → คำสั่งพังทุกครั้งแม้ hash ถูก) — fail → ไปข้อ 7
+5. `git rev-parse --short HEAD` ตรงกับ hash → สด — ใช้ตอบได้เลย ไม่ต้องแสดงอะไร
+6. ไม่ตรง → `git rev-list "<hash>..HEAD" --count` = N — **N > 0** → เตือน + **ถามก่อน**:
    ```
    ⚠️ ความรู้ใน Brain เก่ากว่าโค้ด {N} commits (scan ล่าสุด: {date} @ {hash})
    [1] Incremental scan ก่อนตอบ (แนะนำ — สแกนเฉพาะไฟล์ที่เปลี่ยน)
    [2] ตอบจากข้อมูลเดิม (อาจไม่ตรงโค้ดปัจจุบัน)
    ```
-5. hash ไม่อยู่ใน history (`git cat-file -e <hash>^{commit}` ล้มเหลว — คนละเครื่อง/force push) → เตือน "ไม่สามารถระบุความสดได้ (commit {hash} ไม่อยู่ใน history)" + ถามชุดเดียวกัน
-6. **จำคำตอบต่อ session** — user เลือก [1] หรือ [2] แล้ว ไม่ถามซ้ำอีกตลอด session นั้น (ทุก query ถัดไปใช้คำตอบเดิม)
-7. Non-git project: เทียบ `Scanned-At` กับ modification time ของ `Source-Files` — ถ้ามีไฟล์ใหม่กว่า → เตือน date-based แล้วถามชุดเดียวกัน
-8. git/MCP error ใดๆ ระหว่าง check → **ข้าม check** ทำงานแบบเดิม (never block)
+   **N = 0 ทั้งที่ hash ≠ HEAD** (checkout tag/branch เก่า — ความรู้**ใหม่กว่า**โค้ดที่เปิดอยู่) → เตือน "ความรู้ใน Brain มาจาก commit {hash} ที่ไม่ตรงกับ HEAD ปัจจุบัน (checkout เก่าหรือคนละ branch)" + ถามชุดเดียวกัน — ห้ามใช้ข้อความ "เก่ากว่า 0 commits"
+7. hash ไม่อยู่ใน history (ข้อ 4 fail — คนละเครื่อง/force push) → เตือน "ไม่สามารถระบุความสดได้ (commit {hash} ไม่อยู่ใน history)" + ถามชุดเดียวกัน
+8. **จำคำตอบต่อ session** — user เลือก [1] หรือ [2] จาก skill ใดก็ตาม (brain-load ตอน session start หรือ brain query) แล้ว ไม่ถามซ้ำอีกตลอด session นั้น (ทุก query ถัดไปใช้คำตอบเดิม)
+9. Non-git project: เทียบ `Scanned-At` กับ modification time ของ `Source-Files` — ถ้ามีไฟล์ใหม่กว่า → เตือน date-based แล้วถามชุดเดียวกัน
+10. git/MCP error อื่นใดนอกเหนือจากข้อ 4 (เช่น rev-list/rev-parse fail ทั้งที่ hash มีจริง) → **ข้าม check** ทำงานแบบเดิม (never block)
 
 ### 5.3 ฝั่ง scan — commit เป็น primary source ของ "last scan"
 
 brain-scan Smart Scan หา last scan state ตามลำดับ:
 
-1. **Primary:** `Scanned-At-Commit` จาก note ล่าสุดของโปรเจกต์ → `git diff --name-only <hash>..HEAD` หาไฟล์ที่เปลี่ยน (แม่นสุด — ติดไปกับ brain server ใช้ได้ทุกเครื่อง)
+1. **Primary:** `Scanned-At-Commit` จาก note ล่าสุดของโปรเจกต์ (นิยาม "ล่าสุด" เดียวกับ §5.2 ข้อ 2 — ต้อง `get-knowledge` โหลด full content จึงเห็น footer) → `git diff --name-only "<hash>..HEAD"` หาไฟล์ที่เปลี่ยน (แม่นสุด — ติดไปกับ brain server ใช้ได้ทุกเครื่อง)
 2. Fallback: `.brain/activity-log.json` (local เท่านั้น — ถูก gitignore หายเมื่อย้ายเครื่อง)
 3. Fallback สุดท้าย: latest note date + `git log --since="{date}"`
