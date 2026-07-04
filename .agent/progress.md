@@ -457,3 +457,34 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 - ไม่มี — epic `plugin-suite-improvements` (Features #4–#11) เสร็จครบทุกตัว. งานต่อยอด (out-of-scope, ผ่าน /add-feature): ui-mockup emit `page.use_case_ids[]` (ปิด UC leg ฝั่ง write), brain low-pri (PENDING ข้อ 6), long-running help/SKILL progressive-disclosure split
 
 ---
+
+## Session 12 — Feature #12: brain v3.2 Freshness Protocol (epic brain-v32 เริ่ม 1/4)
+**Date**: 2026-07-04
+**Type**: Coding (Feature #12) — epic `brain-v32` (spec: plans/brain-v32-20260704/DESIGN.md)
+**Model**: Fable 5 main-loop (>= opus per force_opus_all) + adversarial verification
+
+### What was done (3 subtasks + 2 review-fix):
+- ✅ 12.1 GRAPH_PROTOCOL.md เพิ่ม §5 Freshness Protocol — §5.1 Scan Metadata footer (Scanned-At-Commit/Scanned-At/Source-Files), §5.2 query-side check + ask-before-scan, §5.3 scan-side commit-primary (`812c40c`)
+- ✅ 12.2 brain-scan: Phase 1 capture `{scan_commit}` ครั้งเดียวต่อ run + footer ทุก note + Smart Scan 3a primary = commit จาก note + 3d refresh footer; brain-update Step 5 refresh footer (`3f60adf`)
+- ✅ 12.3 brain Step 1.5 + brain-load Step 3.5 freshness check — stale → เตือน N commits + ถาม [1] scan / [2] ตอบจากข้อมูลเดิม, จำคำตอบต่อ session (spec เขียน brain-load 2.5 → ย้ายเป็น 3.5 เพราะต้องรอโหลด note content ก่อน) (`c4359b3`)
+- 🔧 review-fix(#12.1): protocol hardening — quote `git cat-file -e "<hash>^{commit}"` (PowerShell แตก token ถ้าไม่ quote — verifier พิสูจน์ด้วยการรันจริง exit 129), Version History ก่อน Scan Metadata เสมอ, N=0 direction case (checkout เก่า), cat-file-first exec order, newest-hash definition, per-project scope (`f5bbed2`)
+- 🔧 review-fix(#12.2): sync 4 skills + DESIGN.md ตาม §5.2 hardened 10 ข้อ — get-knowledge ใน 3a primary, 3e commit-based diff-filter, reload notes หลังเลือก [1], cross-skill remember (brain-load ↔ brain), brain-save preserve footer, brain-load Step 3.5/4 conflict แก้แล้ว (`733705a`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown plugin) | `claude plugin validate ./plugins/brain` ✅ passed | feature_list.json valid
+- AC1 §5 Freshness Protocol ครบ 3 subsections ✅ | AC2 brain-scan footer + commit-primary (grep Scanned-At-Commit = 4) ✅ | AC3 brain + brain-load freshness check + ask + remember ✅ | AC4 backward compat (no footer → skip เงียบ) ✅ | AC5 never block ✅
+- QA+NFR gates: N/A (plugin-internal; no acceptance_criteria_id / no qa-tracker.json)
+- **Pipeline Result: PASSED**
+
+### Adversarial Verification (workflow `wf_ec7ab686-9e8`, 3 refuting verifiers, 269k tokens):
+- protocol-consistency → 3 low + 3 cosmetic (brain-load Step 4 vs 3.5 conflict, DESIGN 2.5 drift, 3e date-based leftover)
+- git-correctness → **1 medium** (unquoted `^{commit}` พังใน PowerShell — ทดสอบจริง) + 4 low (N=0 กลับทิศ, exec order กำกวม, newest ไม่นิยาม, cross-project scope) + 2 cosmetic
+- ux-backward-compat → **1 medium** (VH vs Scan Metadata แย่งท้าย note) + 6 low + 1 cosmetic; ยืนยัน: flow เดิมไม่พัง, backward compat จริง, never block จริง, Thai คงครบ
+- **แก้ครบ 21/21** → re-grep ยืนยัน (quoted cat-file 3 ไฟล์, N=0 3 ไฟล์, VH-before-footer 5 จุด) + validate ผ่าน
+
+### Current status:
+- Features passed: **12/15** | epic brain-v32: **1/4** | opus done: 11
+- pending: 3 (#13 diagrams, #14 release/deploy/dev-setup, #15 design-doc integration + v3.2.0 release)
+
+### Next feature:
+- Feature #13 (opus): Diagrams — Phase 3 ER diagram (Mermaid, split >20 entities) + Phase 4 sequenceDiagram ทุก dependency map + Smart Scan regen — depends_on [12] ✅ พร้อมทำ

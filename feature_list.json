@@ -58,7 +58,7 @@
       "description": "ขยาย brain-scan ให้เก็บครบทุกมิติสำหรับ support งานลูกค้าเก่า (diagrams, release, deployment, dev setup, design-doc integration) + Freshness Protocol ผูก commit hash — อ่าน plans/brain-v32-20260704/DESIGN.md ก่อนเริ่มทุก feature ห้ามออกแบบซ้ำ",
       "bounded_context": "Plugin Development",
       "features": [12, 13, 14, 15],
-      "progress": { "total": 4, "passed": 0, "in_progress": 0 }
+      "progress": { "total": 4, "passed": 1, "in_progress": 0 }
     }
   ],
 
@@ -854,13 +854,13 @@
       "module": "brain", "layer": "application", "category": "feature",
       "description": "Freshness Protocol — ทุก note ที่ brain-scan สร้าง/อัปเดตลงท้ายด้วย Scan Metadata footer (Scanned-At-Commit/Scanned-At/Source-Files); /brain + /brain-load เช็คความสดเทียบ HEAD ด้วย git rev-list count → ถ้า stale เตือน + ถามก่อน scan ([1] incremental scan [2] ตอบจากข้อมูลเดิม) จำคำตอบต่อ session; Smart Scan เปลี่ยนมาใช้ commit จาก note เป็น primary source แทน .brain/activity-log.json (ที่ gitignore — หายเมื่อย้ายเครื่อง); backward compatible กับ notes เก่าที่ไม่มี footer — spec เต็มใน plans/brain-v32-20260704/DESIGN.md §F12",
       "priority": "high", "complexity": "medium", "risk_level": "medium",
-      "status": "in_progress", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
-        { "id": "12.1", "description": "GRAPH_PROTOCOL.md: เพิ่ม §5 Freshness Protocol — Scan Metadata footer exact format, freshness check algorithm (rev-parse/rev-list/cat-file), ask-before-scan + remember-per-session, non-git date-based fallback, backward compat (ข้าม check เมื่อไม่มี footer), never block", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/GRAPH_PROTOCOL.md"] },
-        { "id": "12.2", "description": "brain-scan/SKILL.md: ทุก phase ที่ save note แนบ Scan Metadata footer (hash เดียวกันทั้ง run จาก git rev-parse --short HEAD); Smart Scan Step 3a ใช้ Scanned-At-Commit จาก note ล่าสุดเป็น primary (git diff <hash>..HEAD) → fallback activity log → latest note date; brain-update refresh footer เมื่อ note เดิมมี", "done": false, "committed_at": null, "commits": [], "depends_on": ["12.1"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-update/SKILL.md"] },
-        { "id": "12.3", "description": "brain/SKILL.md Step 1.5 + brain-load/SKILL.md Step 2.5: freshness check หลังโหลด notes — parse footer ใหม่สุด, เทียบ HEAD, stale → เตือน N commits + ถาม [1]/[2], จำคำตอบต่อ session, hash ไม่อยู่ใน history → 'ไม่สามารถระบุความสดได้', error ใดๆ → ข้าม check", "done": false, "committed_at": null, "commits": [], "depends_on": ["12.1"], "files": ["plugins/brain/skills/brain/SKILL.md", "plugins/brain/skills/brain-load/SKILL.md"] }
+        { "id": "12.1", "description": "GRAPH_PROTOCOL.md: เพิ่ม §5 Freshness Protocol — Scan Metadata footer exact format, freshness check algorithm (rev-parse/rev-list/cat-file), ask-before-scan + remember-per-session, non-git date-based fallback, backward compat (ข้าม check เมื่อไม่มี footer), never block", "done": true, "committed_at": "2026-07-04T09:23:18+07:00", "commits": ["812c40c"], "depends_on": [], "files": ["plugins/brain/GRAPH_PROTOCOL.md"] },
+        { "id": "12.2", "description": "brain-scan/SKILL.md: ทุก phase ที่ save note แนบ Scan Metadata footer (hash เดียวกันทั้ง run จาก git rev-parse --short HEAD); Smart Scan Step 3a ใช้ Scanned-At-Commit จาก note ล่าสุดเป็น primary (git diff <hash>..HEAD) → fallback activity log → latest note date; brain-update refresh footer เมื่อ note เดิมมี", "done": true, "committed_at": "2026-07-04T09:24:28+07:00", "commits": ["3f60adf"], "depends_on": ["12.1"], "files": ["plugins/brain/skills/brain-scan/SKILL.md", "plugins/brain/skills/brain-update/SKILL.md"] },
+        { "id": "12.3", "description": "brain/SKILL.md Step 1.5 + brain-load/SKILL.md Step 3.5 (spec เขียน 2.5 — ปรับตาม structure จริง: ต้องอยู่หลังโหลด note content): freshness check หลังโหลด notes — parse footer ใหม่สุด, เทียบ HEAD, stale → เตือน N commits + ถาม [1]/[2], จำคำตอบต่อ session, hash ไม่อยู่ใน history → 'ไม่สามารถระบุความสดได้', error ใดๆ → ข้าม check", "done": true, "committed_at": "2026-07-04T09:25:15+07:00", "commits": ["c4359b3"], "depends_on": ["12.1"], "files": ["plugins/brain/skills/brain/SKILL.md", "plugins/brain/skills/brain-load/SKILL.md"] }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "12.3",
       "acceptance_criteria": [
         "GRAPH_PROTOCOL.md มี §5 Freshness Protocol (grep 'Freshness Protocol' > 0) ครบ: footer format, algorithm, ask-before-scan, non-git fallback, backward compat",
         "brain-scan SKILL.md ระบุ Scan Metadata footer ทุก note (grep 'Scanned-At-Commit' > 0) + Smart Scan primary source = commit จาก note",
@@ -868,15 +868,25 @@
         "notes เก่าไม่มี footer → ข้าม check เงียบๆ (ระบุชัดในทั้ง protocol และ skills)",
         "degrade behavior เดิมคงอยู่ — git/MCP error ไม่ block"
       ],
-      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": "2026-07-04T02:21:34Z", "completed_at": null },
+      "time_tracking": { "estimated_time": "60min", "actual_time": "~47min", "started_at": "2026-07-04T02:21:34Z", "completed_at": "2026-07-04T03:08:45Z" },
       "dependencies": [],
       "references": ["plans/brain-v32-20260704/DESIGN.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "pending", "passes": false, "tested_at": null,
-      "verification_results": null,
+      "sync_status": "pending", "passes": true, "tested_at": "2026-07-04T03:08:45Z",
+      "verification_results": {
+        "build": "n/a (markdown plugin — no build)",
+        "claude_plugin_validate": "passed",
+        "ac1_protocol": "GRAPH_PROTOCOL.md §5 Freshness Protocol ครบ 3 subsections (5.1 footer format / 5.2 query-side check 10 ข้อ / 5.3 scan-side commit-primary)",
+        "ac2_brain_scan": "Scan Metadata footer ทุก note (grep Scanned-At-Commit = 4) + Phase 1 capture {scan_commit} ครั้งเดียวต่อ run + Smart Scan 3a primary = commit จาก note ผ่าน get-knowledge + 3e commit-based diff-filter",
+        "ac3_query_side": "brain Step 1.5 + brain-load Step 3.5 (spec เขียน 2.5 — ย้ายเพราะต้องรอโหลด note content; DESIGN.md sync แล้ว) + ask-before-scan [1]/[2] + จำคำตอบต่อ session ข้าม skill (brain-load ↔ brain)",
+        "ac4_backward_compat": "notes ไม่มี footer → ข้าม check เงียบๆ — ระบุใน §5.2(3) + brain + brain-load",
+        "ac5_never_block": "degrade paths ครบ: cat-file fail → warn+ask (§5.2 ข้อ 7), git/MCP error อื่น → silent skip (ข้อ 10)",
+        "adversarial_verify": "3 refuting verifiers (protocol-consistency / git-correctness / ux-backward-compat, wf_ec7ab686-9e8, 269k tokens): 0 critical, 2 medium (unquoted cat-file ^{commit} พังใน PowerShell — พิสูจน์ด้วยการรันจริง exit 129; VH vs Scan Metadata ordering ambiguity), 10 low, 9 cosmetic → แก้ครบ 21/21 (f5bbed2 + 733705a) แล้ว re-grep ยืนยัน: quoted cat-file 3 ไฟล์, N=0 case 3 ไฟล์, VH-before-footer 5 จุด",
+        "qa_nfr_gates": "n/a (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "หัวใจของ epic — แก้ pain point 'ไม่กล้าเชื่อ brain ต้องกลับไปอ่านโค้ด' ด้วย commit-based freshness. Stale policy = ถามก่อน scan (user confirmed 2026-07-04)"
+      "notes": "หัวใจของ epic — แก้ pain point 'ไม่กล้าเชื่อ brain ต้องกลับไปอ่านโค้ด' ด้วย commit-based freshness. Stale policy = ถามก่อน scan (user confirmed 2026-07-04). Adversarial verify ยก PowerShell quoting (medium, ทดสอบจริง) + section ordering (medium) → hardened §5.2 เป็น 10 ข้อ: per-project scope, cat-file-first order, N=0 direction case, newest-hash definition"
     },
     {
       "id": 13,
@@ -976,14 +986,14 @@
 
   "summary": {
     "total": 15,
-    "passed": 11,
+    "passed": 12,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 4,
-    "last_updated": "2026-07-04T02:10:31Z",
+    "pending": 3,
+    "last_updated": "2026-07-04T03:08:45Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 14, "done": 10, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 14, "done": 11, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }
