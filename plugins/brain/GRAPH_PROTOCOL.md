@@ -163,3 +163,32 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 1. **Primary:** `Scanned-At-Commit` จาก note ล่าสุดของโปรเจกต์ (นิยาม "ล่าสุด" เดียวกับ §5.2 ข้อ 2 — ต้อง `get-knowledge` โหลด full content จึงเห็น footer) → `git diff --name-only "<hash>..HEAD"` หาไฟล์ที่เปลี่ยน (แม่นสุด — ติดไปกับ brain server ใช้ได้ทุกเครื่อง)
 2. Fallback: `.brain/activity-log.json` (local เท่านั้น — ถูก gitignore หายเมื่อย้ายเครื่อง)
 3. Fallback สุดท้าย: latest note date + `git log --since="{date}"`
+
+> **Tag detection (v3.2):** `git diff` จับได้แค่ไฟล์ — **tag เป็น ref ไม่ใช่ไฟล์** จึงไม่ surface ใน diff. Smart Scan ต้องเช็ค tag ใหม่แยก: `git tag --contains "{last_scan_commit}"` (tag ที่ชี้ commit หลัง scan ล่าสุด) หรือเทียบ latest tag creatordate กับ note. **Phase 7.5 Release re-run ทุก incremental scan เสมอ** (`git tag -l` ต้นทุนต่ำมาก) เพื่อกัน Release History ค้าง stale เมื่อ tag ทับ commit ที่ scan ไปแล้ว (เคสปกติของการ cut release)
+
+## 6. Secret Masking Protocol
+
+**กฎกลาง — ทุก skill/phase ที่อ่าน config, deployment, connection, CI/CD, หรือ credential file ต้องปฏิบัติ ก่อน save เข้า brain**
+
+> ⚠️ **ทำไมสำคัญ:** notes ไป external Neo4j ที่ share ทุกเครื่อง search/traverse ได้ + upsert เก็บ version snapshot อัตโนมัติ + `get-note-history`/`restore-note-version` + changelog "Previous Content Summary" → **secret ที่หลุดเข้าไปแล้วลบด้วยการ edit note ไม่ได้ ค้างถาวรใน version history** ถ้าพลาด save secret ให้แจ้ง user ทันทีเพื่อ purge/rotate credential
+
+### 6.1 นิยาม "secret" (ครอบคลุม — ไม่ใช่ enumeration ปิด)
+
+ค่าลับใดๆ ที่ถ้าหลุดแล้วเข้าถึงระบบได้:
+- `password`, `pwd`, `Password=`
+- `*Key`, `AccountKey=`, `SecretAccessKey`, `aws_secret_access_key`, `private_key`, `-----BEGIN ... KEY-----`
+- `*Secret`, `ClientSecret`, `client_secret`
+- `token`, `SAS sig=`, bearer token, JWT, `AKIA...` (AWS access key id)
+- **username/User Id/Uid/AccountName** — เป็นครึ่งหนึ่งของ credential ต้อง mask ด้วย
+
+### 6.2 กฎ extract (mask ก่อน save — ไม่ใช่ mask ทีหลัง)
+
+1. **Connection string:** extract **เฉพาะ Server + Database name เป็น field แยก** (เช่น `DB: Orders @ prod-sql.internal`) — **ห้ามเก็บ connection string เป็นสตริงเดียวแม้ mask password แล้ว** (จะเหลือ username/security posture หลุด)
+2. **Endpoint/URL:** strip credential ที่ฝังใน URL ก่อนเก็บ — ตัด userinfo (`user:pass@`), SAS query signature (`sig=`/`se=`/`sp=`), pre-signed token; เก็บเฉพาะ `scheme+host+path`
+3. **Literal vs reference:** `${{ secrets.X }}`, `${VAR}`, vault ref, `appsettings` key ที่ชี้ env var = เก็บ**ชื่อ ref** ได้ (ปลอดภัย); ค่า **literal** ใน `environment:`/`ENV`/`ARG`/`<appSettings>` = **mask**
+4. **Config diff ต่อ env:** เก็บ **ชื่อ key/setting ที่ต่าง** ไม่ใช่ค่า — ถ้า delta เป็น secret เก็บแค่ `"key X ต่างต่อ env"` ห้ามค่าจริง
+5. แทนค่า secret ที่ต้องแสดงตำแหน่งด้วย `***` หรือ `<masked>` (แต่ข้อ 1-2 คือ "ไม่เก็บทั้งเส้น" ไม่ใช่ "เก็บแล้ว mask")
+
+### 6.3 Pre-save sanity check
+
+ก่อน save note ที่ derive จาก config/deployment → scan content หา pattern: `Password=`, `AccountKey=`, `sig=`, `AKIA`, `-----BEGIN`, `User Id=`, `://[^/]*:[^/]*@` — ถ้าเจอ = ยังไม่ได้ mask → แก้ก่อน save

@@ -71,6 +71,8 @@ When brain already has knowledge for this project:
    git log --since="{latest_note_date}" --name-only --pretty=format: | sort -u
    ```
 
+**Tag detection (v3.2):** `git diff` จับ tag ไม่ได้ (tag เป็น ref ไม่ใช่ file) — เช็คแยก `git tag --contains "{last_scan_commit}"` เพื่อจับ tag ใหม่ที่ทับ commit ที่ scan ไปแล้ว (เคสปกติของการ cut release); **Phase 7.5 Release re-run ทุก incremental scan เสมอ** (`git tag -l` ต้นทุนต่ำ) เพื่อกัน Release History ค้าง stale (Freshness Protocol §5.3)
+
 If git is not available, fall back to file modification timestamps (เทียบกับ `Scanned-At` date จาก note)
 
 #### 3b: Classify changed files into scan phases
@@ -86,8 +88,8 @@ Map each changed file to which phase should re-run:
 | *BasePage*, *MasterPage*, *Login*, *Auth* | Phase 5 (Authorization) |
 | *Manager*, *Service* (business logic) | Phase 4 (Dependencies) + Phase 6 (Workflow) |
 | *Mail*, *SMS*, *Notify*, *FTP* | Phase 7 (Integration) |
-| Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json, web.{env}.config | Phase 7.5 (Deployment) |
-| CHANGELOG*, HISTORY*, RELEASES*, new git tag, *.csproj &lt;Version&gt;, package.json version | Phase 7.5 (Release) |
+| Dockerfile*, docker-compose*, .github/workflows/*, azure-pipelines*, Jenkinsfile, *.pubxml, appsettings.{env}.json, web.{env}.config | Phase 7.5 (Deployment) — + Phase 3 ถ้า connection string เปลี่ยน (Database Connections สดด้วย) |
+| CHANGELOG*, HISTORY*, RELEASES*, new git tag (detect ด้วย `git tag --contains`, §3a — ไม่ใช่ file diff), *.csproj &lt;Version&gt;, package.json version | Phase 7.5 (Release — re-run ทุก incremental) |
 | README*, launchSettings.json, Makefile, global.json, .nvmrc, *.ps1, *.sh | Phase 2 (Dev Setup) |
 | *.md, *.docx, *.txt | Phase 8 (Documents) |
 | Program.cs, Startup.cs, Global.asax | Phase 2 + 3 (Architecture + Config) |
@@ -171,7 +173,7 @@ Every brain-scan MUST write activity logs to `.brain/activity-log.json` at proje
   "status": "completed",
   "details": {
     "scan_mode": "smart|full|incremental|folder|docs|deps|auth|force",
-    "phases_run": [1,2,3,4,5,6,7,8,9,10],
+    "phases_run": [1,2,3,4,5,6,7,7.5,8,9,10],
     "notes_created": "<N>",
     "notes_updated": "<M>",
     "notes_skipped": "<K identical>",
@@ -245,7 +247,7 @@ package.json (scripts), Makefile        → build/run/test/lint commands
 launchSettings.json, *.ps1, *.sh        → run profiles, dev scripts
 global.json, .nvmrc, .tool-versions     → SDK/runtime versions ที่ pin
 *.csproj <TargetFramework>              → .NET version
-.env.example, appsettings.Development.* → local config ที่ต้องตั้ง (ชื่อ key เท่านั้น — ดู mask secrets ใน Phase 7.5)
+.env.example, appsettings.Development.* → local config ที่ต้องตั้ง (ชื่อ key เท่านั้น — Secret Masking Protocol §6)
 docker-compose*.yml (dev services)      → dependencies ที่ต้องรัน local (DB, redis ฯลฯ)
 ```
 
@@ -254,7 +256,8 @@ docker-compose*.yml (dev services)      → dependencies ที่ต้อง�
 - **Build:** คำสั่ง build (dotnet build / npm run build / make)
 - **Run:** คำสั่ง run + local URL/port (จาก launchSettings.json profiles)
 - **Test:** คำสั่ง test + framework
-- **Local config:** ไฟล์/env ที่ต้องตั้งก่อนรัน (ชื่อ key เท่านั้น ไม่เก็บค่า secret)
+- **Debug:** วิธี attach debugger / debug launch profile (จาก launchSettings.json profiles)
+- **Local config:** ไฟล์/env ที่ต้องตั้งก่อนรัน (ชื่อ key เท่านั้น ไม่เก็บค่า secret — §6)
 - ไม่พบข้อมูล setup เลย → note ระบุ "ไม่พบ setup docs/scripts ในโค้ด — บันทึกเพิ่มด้วย /brain-save" (ไม่เงียบหาย)
 
 Output note: `{Project} - Dev Setup & Run Guide` — folderPath `/projects/{name}/core/`, tags `[{project}, architecture]`
@@ -270,6 +273,8 @@ Web.config, appsettings.json   → connection strings, DB servers
 *Repository*, *UnitOfWork*     → data access patterns
 *Migration*                    → DB migration history
 ```
+
+**⚠️ Mask secrets (v3.2):** `connection strings, DB servers` มี credential — `{Project} - Database Connections` note ต้องทำตาม **Secret Masking Protocol §6** ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`: เก็บ **Server + Database name แยก field** (§6.2 ข้อ 1) ห้ามเก็บ connection string ทั้งเส้น + ไม่เก็บ `<appSettings>`/`<connectionStrings>` values เต็ม + pre-save sanity check (§6.3)
 
 #### ER Diagram Generation (v3.2)
 
@@ -436,12 +441,13 @@ web.config + web.{env}.config transforms → config transform per environment
 Procfile, netlify.toml, vercel.json, app.yaml → PaaS deploy config
 ```
 
-เนื้อหา note:
-- **Deploy target:** deploy ไปไหน (server/cloud/registry/PaaS)
-- **Environments:** env ที่มี (Development/Staging/Production ฯลฯ) + config ต่างกันตรงไหน (เทียบ appsettings.{env} / transforms)
-- **Pipeline:** สรุป CI/CD steps (build → test → deploy)
-- **DB per env:** connection string ชี้ DB server/ชื่ออะไรต่อ env
-- **⚠️ Mask secrets:** เก็บ**ชื่อ** server/DB/endpoint/key-name เท่านั้น — **ห้ามเก็บ password, connection string เต็มที่มี credential, API secret, token**; แทนค่า secret ด้วย `***` หรือ `<masked>`
+**⚠️ Mask secrets ก่อน extract:** ไฟล์ deployment เหล่านี้มี credential จริง — ต้องทำตาม **Secret Masking Protocol §6** ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` ทุกขั้นก่อน save (นิยาม secret §6.1, กฎ extract §6.2 — connection string เก็บแค่ Server+DB แยก field, endpoint strip credential, literal-vs-reference, config diff เก็บชื่อ key ไม่ใช่ค่า, pre-save sanity check §6.3). **อ่าน §6 ก่อนเขียน note นี้**
+
+เนื้อหา note (ทุก bullet ผ่าน §6 masking):
+- **Deploy target:** deploy ไปไหน (server/cloud/registry/PaaS) — endpoint strip credential (§6.2 ข้อ 2)
+- **Environments:** env ที่มี (Development/Staging/Production ฯลฯ) + **ชื่อ key/setting** ที่ต่างต่อ env (§6.2 ข้อ 4 — ไม่ใช่ค่า; delta ที่เป็น secret เก็บแค่ "key X ต่าง")
+- **Pipeline:** สรุป CI/CD steps (build → test → deploy) — env/secret ใน pipeline เป็น reference เก็บชื่อได้ literal ต้อง mask (§6.2 ข้อ 3)
+- **DB per env:** Server + Database name แยก field (§6.2 ข้อ 1 — ห้ามเก็บ connection string ทั้งเส้น)
 
 Output note: `{Project} - Deployment Topology` — folderPath `/projects/{name}/deployment/`, tags `[{project}, deployment]`
 
@@ -458,9 +464,9 @@ Scan ALL documentation files:
 ```
 
 Output notes:
-- `{Project} - Documentation Index`
+- `{Project} - Documentation Index` (README ถูก index ที่นี่เป็น document — ส่วน setup steps ไปอยู่ `{Project} - Dev Setup & Run Guide` ของ Phase 2; link ถึงกันด้วย `[[wiki link]]`)
 - `{Project} - Requirements: {topic}`
-- `{Project} - Deployment Guide`
+- `{Project} - Deployment Guide` (จาก .md ที่มนุษย์เขียน — คู่กับ code-derived `{Project} - Deployment Topology` ของ Phase 7.5; link ถึงกันใน Phase 9)
 
 ### Phase 9: Cross-Reference & Link Building
 - Build master index
