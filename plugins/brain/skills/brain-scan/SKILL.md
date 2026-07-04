@@ -465,12 +465,16 @@ Output note: `{Project} - Deployment Topology` — folderPath `/projects/{name}/
    → note `{Project} - Requirements: {doc-name}` ใน `/projects/{name}/requirements/`, tags `[{project}, requirement]`
    → เก็บ: FR/AC list (id + title + type), UC list (id + title + main_flow), section file paths สำหรับอ้างอิง
 
-2. **Design diagrams (ไม่ generate ซ้ำ):** จาก `diagrams.*` ที่ `exists:true` + `format:"mermaid"` + มี `file_path` — เป็น Mermaid สำเร็จรูปจาก design doc (er_diagram, flow_diagrams[], sequence_diagrams[], dfd, sitemap, state_diagrams[], class_diagrams[])
-   → อ่าน Mermaid จากไฟล์ `file_path` ที่ registry ชี้ (อยู่ใต้ `documents[].doc_dir/`) แล้ว embed เข้า note `{Project} - Design Diagrams: {doc-name}` ใน `/projects/{name}/documents/`
+2. **Design diagrams (ไม่ generate ซ้ำ):** `diagrams` เป็น **object** — มี 2 รูปแบบ presence ต่างกัน (อย่าใช้ `exists` กับทุกตัว):
+   - **Singleton** (`high_level_architecture`, `er_diagram`, `sitemap`, `dfd.level_0`) — มี field `exists` → เลือกเมื่อ `exists:true`
+   - **Array** (`flow_diagrams[]`, `sequence_diagrams[]`, `state_diagrams[]`, `class_diagrams[]`, `dfd.level_1[]`, `dfd.level_2[]`) — **ไม่มี field `exists`** → เลือกทุก element ที่มี `file_path` (มี element = มีจริง)
+   - ทั้งหมด `format:"mermaid"` — ครบ 8 diagram keys ของ schema
+   → **file_path resolution:** `file_path` เป็น path **relative to `.design-docs/`** และ segment แรกคือ doc_dir อยู่แล้ว (เช่น `[project-slug]/07-er-diagram.md`) → อ่านที่ **`.design-docs/` + file_path** (ห้าม join กับ doc_dir ซ้ำ — จะได้ slug ซ้อน)
+   → embed Mermaid เข้า note `{Project} - Design Diagrams: {doc-name}` ใน `/projects/{name}/documents/`
    → **label ที่มา** `[Design-doc]` — ต่างจาก `[Code-derived]` ของ ER/sequence จาก Phase 3/4 (#13)
    → **ไม่ generate ใหม่** ถ้า design doc มี diagram อยู่แล้ว; link `[[{Project} - ER Diagram]]` (code-derived, Phase 3) ↔ design-doc ER เพื่อเทียบ design vs จริง
 
-3. **De-dup:** design doc files (sections[].file, diagrams[].file_path — ทั้งหมดใต้ `doc_dir/`) ที่ดึงแล้วใน 8a → **ไม่ต้องเข้า generic .md scan (Step 8b) ซ้ำ**
+3. **De-dup:** ไฟล์ที่ 8a ดึงแล้ว — `documents[].sections[].file` + diagram file_path ทุกตัว (`diagrams.er_diagram.file_path`, `diagrams.flow_diagrams[].file_path`, `diagrams.sequence_diagrams[].file_path`, `diagrams.dfd.level_0.file_path`, ฯลฯ — เป็น object path ไม่ใช่ `diagrams[]`) → normalize เป็น `.design-docs/` + path ให้ตรงกับ on-disk path ที่ 8b glob แล้ว **ไม่ต้องเข้า generic .md scan (Step 8b) ซ้ำ**
 
 4. ไม่พบ `.design-docs/design_doc_list.json` → ข้าม 8a ไป 8b ทำงานแบบเดิมทุกประการ
 
