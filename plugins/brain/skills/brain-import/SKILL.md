@@ -59,17 +59,18 @@ Import คือด้านเสี่ยงของ interchange — bundle �
    - `[[wikilink]]` ที่อยู่ในไฟล์อยู่แล้ว → เก็บตามเดิม
 
 5. **Reverse mapping ต่อ note (§8.2 — ห้าม define ตารางซ้ำ ใช้ของ protocol)**
-   - `type` → tag `content/{kebab-case(type)}`; `Note`/`Index` → ไม่เพิ่ม; tags มี `content/*` อยู่แล้ว → ใช้ของ tags ไม่ derive ซ้ำ
+   - `type` → kebab-case ตรง enum `category` ของ `save-knowledge` (pattern/overview/howto/...) → ส่งเป็น param `category`; ไม่ตรง → tag `content/{kebab-case(type)}`; `Note`/`Index` → ไม่เพิ่ม; tags มี `content/*` อยู่แล้ว → ใช้ของ tags ไม่ derive ซ้ำ (§8.2)
    - `note_type` มี → ใช้ตรงตัว; ไม่มี → default `literature` (ความรู้จาก external source ตาม §1)
-   - `resource` → บรรทัด `Source: <URL>` ใน content **+ ส่งเป็น `source` param ของ `save-knowledge`** (tool มี field นี้จริง — provenance query ได้; convention ฝั่ง save/export เต็มรูปแบบกำหนดใน Feature #18)
+   - `resource` → ส่งเป็น `source` param ของ `save-knowledge` + บรรทัด `Source: <URL>` ใน content **เฉพาะเมื่อ content ยังไม่มีบรรทัดนั้น** (bundle จาก brain-export มี `Source:` ใน body อยู่แล้ว — ห้ามเขียนซ้ำ); convention ฝั่ง save/export เต็มรูปแบบกำหนดใน Feature #18
    - `timestamp` → **ไม่ round-trip** — server กำหนด createdAt/updatedAt เอง (จดใน report ว่า timestamp ต้นทางอยู่ใน bundle)
-   - `tags` → ใช้ทั้งชุดจาก frontmatter แล้วเติมให้ครบ Save Rules §1: ไม่มี `{target-project-lowercase}` → เพิ่ม; ไม่มี domain tag และ directory ตรง category ใน §1 → เพิ่ม domain tag จาก directory (map พหูพจน์→เอกพจน์ ย้อนกฎ §8.1 ข้อ 3 เช่น `dependencies/`→`dependency`); ยังได้ไม่ครบ 2 tags → รายงานใน dry-run
+   - `tags` → **ใช้ทั้งชุดจาก frontmatter ตามเดิม (lossless-first — ห้าม "ปรับปรุง" tags ของ bundle)** เติมเฉพาะเมื่อขาด minimum ของ Save Rules §1: ไม่มี `{target-project-lowercase}` → เพิ่ม; เติมแล้วยัง < 2 tags → เพิ่ม domain tag inferred จาก directory (map พหูพจน์→เอกพจน์ ย้อนกฎ §8.1 ข้อ 3 เช่น `dependencies/`→`dependency`); ยังไม่ครบ → import ตามที่มี + รายงานใน dry-run — ทุก tag ที่เติมต้องแสดงใน dry-run report
    - **folderPath จาก directory tree:** `{bundle}/{dir}/note.md` → `/projects/{target-project}/{dir}/` (คง nested path ตามจริง); ไฟล์ที่ root ของ bundle → `/projects/{target-project}/`; directory ที่ไม่ตรง category convention §1 → import ตามจริง + flag ใน report
 
 ### Phase B — Gate (ตัดสินว่าอะไรจะถูกเขียน)
 
 6. **Conflict detection (catalog-first — §3 Step 0)**
    - `mcp__graph-brain__get-project-catalog` project="{target}" → เทียบ title ทุก note: ไม่ชน = **create**, ชน = **upsert** (default) หรือ **skip** (`--no-overwrite`)
+   - **note ที่ upsert → คง folderPath เดิมจาก catalog เสมอ** (§8.2 — ห้ามย้าย folder เป็น side effect; graph จริงมี casing ปน); bundle dir ต่างจาก folder เดิม → แจ้งใน dry-run report เฉยๆ
    - catalog tool ไม่มี (server เก่ากว่า v1.1.0) → fallback `search-knowledge` query="{title}" ทีละใบ (ช้ากว่า — เตือน user เมื่อ note เยอะ)
 
 7. **Tag gate preview (client-side, best-effort)**
@@ -88,7 +89,7 @@ Import คือด้านเสี่ยงของ interchange — bundle �
 
 10. **Write phase (หลัง user ยืนยันเท่านั้น)**
     - ทีละ note: `mcp__graph-brain__save-knowledge` — title/content(หลังแปลง link)/tags(หลังเติม)/folderPath/projectName={target}/type={note_type}/source={resource ถ้ามี}; note ที่ upsert → ส่ง `reason="brain-import: OKF bundle {bundle-path} ({YYYY-MM-DD})"` (server เก็บ version เดิมใน NoteHistory อัตโนมัติ — §2 upsert semantics; bulk import ไม่สร้าง changelog note ต่อใบ)
-    - อ่าน `Tag normalization:` ใน response ทุกใบ → สะสม; ต่างจาก preview ข้อ 7 → รายงาน user ตอนจบ
+    - อ่าน `Tag normalization:` ใน response ทุกใบ → สะสม**เฉพาะบรรทัด normalize (alias→canonical) กับ drop (blocked)**; บรรทัด `... is a NEW tag` เป็นรายงาน registry ฝั่ง server ที่มี known quirk (รายงาน NEW ซ้ำสำหรับ tag ที่มีอยู่แล้ว — round-trip test 2026-07-11) ห้ามใช้ตัดสิน gate; normalize/drop ที่ต่างจาก preview ข้อ 7 → รายงาน user ตอนจบ
     - save fail รายใบ → ข้าม + list ใน report แล้วทำใบต่อไป (ห้ามทั้ง import ล้มเพราะใบเดียว)
     - MOC note (จากข้อ 3) → เขียนเป็นใบสุดท้าย (หลังทุก note มีจริง — wikilink ใน MOC จะ resolve เป็น LINKS_TO ครบ)
 

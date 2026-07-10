@@ -265,7 +265,7 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 
 | OKF field | จาก graph | หมายเหตุ |
 |---|---|---|
-| `type` (บังคับ) | namespace tag `content/{x}` → TitleCase (ค่า hyphenated: ตัด `-` แล้ว capitalize ทุกคำ เช่น `content/how-to` → `HowTo`) | ไม่มี tag `content/*` → `Note`; มีหลายตัว → ตัวแรกตามลำดับ alphabetical (ห้ามพึ่งลำดับที่ server คืน — ไม่ stable, ทำ git diff เพี้ยน) |
+| `type` (บังคับ) | **ลำดับแหล่ง:** (1) `category` ของ note (catalog แสดงเป็น `{note_type}/{category}` เช่น `permanent/pattern`) → TitleCase; (2) ไม่มี category → namespace tag `content/{x}` → TitleCase (ค่า hyphenated: ตัด `-` แล้ว capitalize ทุกคำ เช่น `content/how-to` → `HowTo`); (3) ไม่มีทั้งคู่ → `Note` | tag `content/*` หลายตัว → ตัวแรกตามลำดับ alphabetical (ห้ามพึ่งลำดับที่ server คืน — ไม่ stable, ทำ git diff เพี้ยน) — พบจาก round-trip test (2026-07-11): graph มี category field จริง (`pattern`/`overview`) ที่ mapping เดิมมองข้าม |
 | `title` | note title ตรงตัว | ห้ามแปลง — คือ identity |
 | `description` | summary 1 บรรทัด (จาก catalog หรือประโยคแรกของ content) | |
 | `resource` | pointer กลับต้นทาง ถ้า note มีบรรทัด `Source: <URL>` | convention เต็มจะกำหนดใน Feature #18 (resource field) — ระหว่างนี้ใช้บรรทัด `Source: <URL>` ใน content; ไม่มี → ละ field |
@@ -279,10 +279,12 @@ Body = content ของ note ตรงตัว (รวม `## Version History`
 - **strip MCP display metadata** — `get-knowledge` แถมของที่ไม่ใช่ content: header block ต้นไฟล์ (`# {title}` + บรรทัด `**Type:** ... | **Tags:** ...` + `**Created:** ...`) และ trailer `**Links to:** ...` ท้ายไฟล์ (มี noteId ดิบ) — ต้องตัดทั้งสองส่วนก่อนเขียน ไม่งั้น title ซ้ำสองชั้น + noteId หลุดเข้า bundle
 
 **Reverse mapping (import — ใช้ใน brain-import):**
-- `type` → tag `content/{kebab-case(type)}` (เช่น `Pattern` → `content/pattern`, `HowTo` → `content/how-to`); `type: Note`/`Index` → ไม่เพิ่ม tag; ถ้า tags ใน frontmatter มี `content/*` อยู่แล้ว → ใช้ของ tags ไม่ derive ซ้ำ
+- `type` → ถ้า kebab-case(type) ตรง enum `category` ของ `save-knowledge` (concept/entity/pattern/decision/howto/overview/synthesis) → ส่งเป็น param `category` (ไม่ต้องเพิ่ม tag `content/*` ซ้ำ — category เป็น first-class field); ไม่ตรง enum → tag `content/{kebab-case(type)}` (เช่น `Runbook` → `content/runbook`); `type: Note`/`Index` → ไม่เพิ่มอะไร; ถ้า tags ใน frontmatter มี `content/*` อยู่แล้ว → ใช้ของ tags ไม่ derive ซ้ำ
+- **folderPath ขา upsert:** note ที่ title ชนของเดิม → **คง folderPath เดิมจาก catalog** (ห้ามย้าย folder เป็น side effect ของ import — graph จริงมี casing ปน เช่น `/projects/AgentMarketPlace/` กับ `/projects/agentmarketplace/`; ส่ง path ที่ derive ใหม่จะสร้าง casing ที่สาม); bundle dir ต่างจาก folder เดิม → รายงานใน dry-run ไม่ย้ายเอง — note ใหม่เท่านั้นที่ใช้ folderPath จาก directory tree
 - `note_type` มี → ใช้ตรงตัว; ไม่มี (bundle จากระบบอื่น) → default `literature` (ความรู้จาก external source ตามนิยาม §1)
-- `resource` → บรรทัด `Source: <URL>` ใน content (จนกว่า #18 กำหนด structured field)
-- tags ทุกตัวผ่าน Tag Taxonomy write gate (§1) เสมอ
+- `resource` → ส่งเป็น param `source` ของ `save-knowledge` (ตรวจแล้ว 2026-07-11: tool มี field นี้จริง — provenance queries) + บรรทัด `Source: <URL>` ใน content เฉพาะเมื่อยังไม่มี (กันซ้ำกับ bundle ที่ body มี `Source:` อยู่แล้ว); convention เต็มกำหนดใน #18
+- `timestamp` → ไม่ round-trip — server กำหนด createdAt/updatedAt เองตอน save; `description` → ไม่ส่ง (server derive summary เอง)
+- tags ทุกตัวผ่าน Tag Taxonomy write gate (§1) เสมอ — **lossless-first**: ใช้ชุดจาก frontmatter ตามเดิม เติมได้เฉพาะเมื่อขาด minimum §1 (project tag / ครบ 2 ตัว) และต้องรายงานทุก tag ที่เติม
 
 ### 8.3 Link Conversion
 
@@ -295,10 +297,12 @@ Body = content ของ note ตรงตัว (รวม `## Version History`
 - MOC note (`"{Project} — MOC (Map of Content)"`) → `index.md` ที่ root ของ bundle (ไม่ export ซ้ำเป็นไฟล์ปกติ); sub-MOC (`"{Project} — MOC: {Category}"`) → `{category}/index.md`
 - **MOC candidate ที่ไม่ตรง pattern** (note ติด tag `moc`/`index` หรือ title มี "Knowledge Map"/"Index" ที่ทำหน้าที่ catalog อยู่แล้ว) → **ถาม user** ว่าใช้เป็น `index.md` หรือ export เป็นไฟล์ปกติ + generate index แยก (ห้ามเดาเอง — กัน index ซ้อนสองชั้นใน bundle)
 - ไม่มี MOC → generate `index.md` จาก catalog (1 บรรทัด/note: `[Title](path) — summary`) + ระบุใน frontmatter `type: Index` ว่า generated — **แนะนำรัน `/brain-moc` ก่อน export** เพื่อได้ index ที่ curate แล้ว
-- Import: `index.md` ที่ derive จาก MOC (title ตรง MOC pattern) → สร้าง/อัปเดต MOC note ตาม §2 (ไม่ import เป็น note ธรรมดา); `index.md` ที่เป็น **generated index** (frontmatter `type: Index`) → **ข้าม** — ไม่ fabricate MOC note ที่ไม่เคยมีใน graph ต้นทาง (แนะนำ user รัน `/brain-moc` แทนถ้าต้องการ)
+- Import: `index.md` ที่ derive จาก MOC (title ตรง MOC pattern) → สร้าง/อัปเดต MOC note ตาม §2 (ไม่ import เป็น note ธรรมดา); `index.md` ที่เป็น **generated index** (frontmatter `type: Index`) → **ข้าม** — ไม่ fabricate MOC note ที่ไม่เคยมีใน graph ต้นทาง (แนะนำ user รัน `/brain-moc` แทนถ้าต้องการ); `index.md` ที่ไม่เข้าทั้งสองเงื่อนไข (bundle จากระบบอื่น — เป็นเนื้อหาจริงตาม OKF progressive disclosure) → import เป็น note ปกติ
 
 ### 8.5 กติกาความปลอดภัย + ความสด
 
 - **Pre-write secret check:** ก่อนเขียน bundle ลง disk → scan ทุกไฟล์ด้วย pattern §6.3 — เจอ = หยุด รายงาน user (bundle ไป git/แชร์ต่อ ยิ่งอันตรายกว่า note ใน server)
 - Bundle มี staleness ตั้งแต่วินาทีที่ export — ใส่ header ใน `index.md`: `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth คือ graph`
-- Export **ไม่แก้ graph** (read-only); Import **ทุก write ผ่าน write gate**: tags ผ่าน Tag Taxonomy (§1), title ชน → upsert ตาม Versioning Protocol (§2), dry-run ก่อนเสมอ (propose-don't-execute ตาม §7.1)
+- Export **ไม่แก้ graph** (read-only); Import **ทุก write ผ่าน write gate**: tags ผ่าน Tag Taxonomy (§1), title ชน → upsert, dry-run ก่อนเสมอ (propose-don't-execute ตาม §7.1)
+- **Bulk import upsert** ใช้ upsert semantics ของ §2 (save-knowledge title เดิม → server เก็บ version เดิมใน NoteHistory อัตโนมัติ) + ส่ง `reason="brain-import: ..."` — **ไม่สร้าง changelog note ต่อใบ** (changelog-note layer ของ §2 มีไว้สำหรับ interactive edit; bulk import N ใบจะ flood graph ด้วย changelog N ใบ) — audit trail อยู่ที่ NoteHistory + activity log
+- **Secret check ขา import (§6.3):** note ที่ scan เจอ secret → ตัดออกจาก write เสมอ ห้าม override (secret เข้า graph แล้วลบถาวรไม่ได้ — §6); user ต้องแก้ไฟล์ใน bundle แล้วรันใหม่

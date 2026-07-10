@@ -127,9 +127,12 @@ import ใช้ mapping เดียวกันย้อนทาง; resource
 4. **Import conflict policy** — title ชนกับ note เดิม: upsert (ทับ + NoteHistory เก็บ
    version เดิม) หรือสร้างใหม่ห้อย suffix? → เสนอ upsert เป็น default (สอดคล้อง
    versioning ที่มี) + `--no-overwrite` option
-5. **`resource` เก็บที่ไหน** — graph-brain MCP `save-knowledge` มี field metadata
-   อะไรบ้างต้องตรวจจริงก่อน (ถ้าไม่มี structured field → ใช้ convention บรรทัดแรกใน
-   content + server-side เพิ่ม field ภายหลัง)
+5. **`resource` เก็บที่ไหน** — **ตรวจแล้ว (2026-07-11, #17):** `save-knowledge` มี
+   param `source` จริง ("Where this knowledge came from — URL, bookmark id, ... Enables
+   provenance queries") + มี `reason` สำหรับ upsert version history → #17 import ส่ง
+   `resource` เข้า `source` param + คงบรรทัด `Source: <URL>` ใน content (กันซ้ำเมื่อมีอยู่แล้ว);
+   #18 กำหนด convention ฝั่ง save/scan/export ให้ครบวง (export ควรอ่านจาก field ก่อน fallback
+   ไปบรรทัด `Source:` — ตอนนี้ `get-knowledge` ยังไม่ expose field นี้ → จดเป็นงานฝั่ง SecondBrain)
 
 ---
 
@@ -150,6 +153,25 @@ MOC-candidate ต้องถาม user, timestamp remark
    โผล่แค่บาง note (5/11 ไม่มี — อาจไม่มี IN_FOLDER relationship จริงใน graph → ควรมี
    backfill migration)
 4. `list-projects` note count ไม่ตรงจำนวนจริง (บอก 4 แต่ search-by-tags เจอ 11)
+
+## 5.2 Round-trip findings (2026-07-11 — import bundle 11 notes กลับ AgentMarketplace จริง)
+
+ผลทดสอบ #17.3: 11/11 upsert สำเร็จ id เดิมทุกใบ, note count คงที่ 11, folder ไม่ขยับ, tags ตรงเดิม 100%,
+NoteHistory เก็บ v1 snapshot + reason, `--no-overwrite` dry-run → skip 11/11, minimal-OKF (type อย่างเดียว) parse ผ่าน
+
+**แก้ใน spec แล้ว (GRAPH_PROTOCOL §8 + SKILL):** upsert คง folderPath เดิมจาก catalog (graph จริงมี
+casing ปน `/projects/AgentMarketPlace/` vs `/projects/agentmarketplace/`), OKF `type` ↔ `category`
+field (export derive จาก category ก่อน content/* tag; import ส่ง category param เมื่อตรง enum),
+lossless-first tag augmentation, `Source:` line กันซ้ำ, foreign index.md → note ปกติ, bulk upsert
+ไม่สร้าง changelog note ต่อใบ
+
+**ข้อสังเกตฝั่ง server (เพิ่มจาก §5.1):**
+5. `save-knowledge` response รายงาน**ทุก** tag เป็น `is a NEW tag` แม้ tag มีอยู่ก่อน (เช่น `agentmarketplace`
+   รายงาน NEW ซ้ำทุก call; แต่ `permissions` ไม่ถูกรายงาน) → บรรทัด NEW ใช้ตัดสินอะไรไม่ได้ ให้ดูเฉพาะ
+   normalize/drop lines
+6. **upsert preserve field ที่ omit** — `category` (pattern/overview) รอดหลัง upsert ที่ไม่ส่ง param ✅
+7. server **re-parse wikilinks ตอน save** — Data Templates note เดิมมี LINKS_TO 1 edge ทั้งที่ content มี
+   2 wikilinks; หลัง re-save ได้ 2 edges (import ช่วยซ่อม link edge ที่หายเป็น side effect เชิงบวก)
 
 ## 6. สิ่งที่ *ไม่ทำ* ใน v3.4
 

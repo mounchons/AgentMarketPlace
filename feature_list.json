@@ -2496,8 +2496,8 @@
         {
           "id": "17.3",
           "description": "Conflict policy: title ชน note เดิม → default upsert (NoteHistory versioning รองรับอยู่แล้ว) + --no-overwrite ข้าม; ทดสอบ round-trip จริง: export project (จาก #16) → import กลับ → เทียบ note count/links/tags ต้อง lossless ในขอบเขต mapping",
-          "done": false,
-          "committed_at": null,
+          "done": true,
+          "committed_at": "2026-07-10T23:21:39.400Z",
           "commits": [],
           "depends_on": [
             "17.2"
@@ -2520,7 +2520,7 @@
           ]
         }
       ],
-      "last_committed_subtask": "17.2",
+      "last_committed_subtask": "17.3",
       "acceptance_criteria": [
         "Import bundle ที่มีแค่ field type (minimum OKF) ได้ — field อื่น optional ตามสเปก",
         "ทุก tag ที่เข้า graph ผ่าน taxonomy resolution — ไม่มี alias/blocklist tag หลุดเข้า (ตรวจด้วย /brain-lint หลัง import)",
@@ -2679,7 +2679,7 @@
     "in_progress": 1,
     "blocked": 0,
     "pending": 1,
-    "last_updated": "2026-07-10T23:03:59.994Z",
+    "last_updated": "2026-07-10T23:21:39.400Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": {

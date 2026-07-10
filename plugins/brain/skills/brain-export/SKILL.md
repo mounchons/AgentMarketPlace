@@ -35,7 +35,7 @@ ALL responses MUST be in Thai language.
    - MCP ล่ม/ไม่ตอบ → แจ้ง user แล้วจบ อย่า retry วน (never block)
 
 2. **Get catalog**
-   - `mcp__graph-brain__get-project-catalog` project="{name}" → ได้ทุก note: title + summary + folder
+   - `mcp__graph-brain__get-project-catalog` project="{name}" → ได้ทุก note: title + summary + folder + `{note_type}/{category}` (category ใช้เป็นแหล่งแรกของ OKF `type` ตาม §8.2 — เช่น `permanent/pattern` → `type: Pattern`)
    - tool ไม่มี (server เก่ากว่า v1.1.0) → fallback: `search-by-tags` tags=["{project-lowercase}"] + `search-knowledge` เพื่อรวบรวมรายชื่อ note ให้ครบที่สุด แล้วแจ้ง user ว่า catalog ไม่มี อาจตกหล่น; folder ของแต่ละ note ใช้ **fallback chain §8.1** (explore-graph → tag inference) + รายงานเมื่อเป็นการเดา
    - 0 notes → แจ้ง user + แนะนำ `/brain-scan` ก่อน; จบ
    - **> 100 notes → เตือน token cost** (ต้อง `get-knowledge` ทีละใบ) แล้วถาม user ก่อนดำเนินการ; เสนอทางเลือก: export เฉพาะบาง category
