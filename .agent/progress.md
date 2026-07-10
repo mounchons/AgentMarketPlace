@@ -627,3 +627,32 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 ### Current status:
 - Features passed: **16/18** | epic brain-v34-okf: 1/3 | opus done: 15
 - Next: **Feature #17 — /brain-import จาก OKF bundle** (ใช้ §8 reverse mapping ที่เพิ่มแล้ว + round-trip test กับ bundle จาก #16)
+
+---
+
+## Session: 2026-07-11 (Feature #17 — brain-import OKF bundle)
+**Type**: Coding | **Model**: Fable 5 main-loop (>= opus per force_opus_all) + adversarial verification
+
+### What was done (4 subtasks + review-fix):
+- ✅ 17.1+17.2 skills/brain-import/SKILL.md — Phase A parse (walk/frontmatter/title fallback/log.md/index.md §8.4) + Phase B gate (catalog-first conflict, tag preview, §6.3 secret scan) + Phase C dry-run default → confirm → write (`25598e7`; commit รวมเพราะ 3 phases interlock — precedent Session 14)
+- ✅ 17.3 conflict policy + **round-trip test จริง**: import bundle 11 notes กลับ AgentMarketplace — 11/11 upsert id เดิม, lossless (count/links/tags), NoteHistory snapshot+reason, --no-overwrite skip 11/11, minimal-OKF parse ✅; spec fixes จาก findings: upsert คง folderPath เดิม (graph มี casing ปน!), OKF type↔category field 2 ทิศ, lossless-first tags, Source: dedup (`032af31`)
+- ✅ 17.4 README เพิ่ม /brain-import (18 skills) ไม่ bump version — รอ #18 (`94fbccd`)
+- 🔧 review-fix(#17): 1 high + 6 medium + 12 low + 4 cosmetic แก้ครบ (`b0a1d15`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown plugin) | `claude plugin validate` ✅ ×3 | fences balanced
+- AC1 minimal-OKF (type เดียว) parse + **create จริงใน OkfTest** ✅ | AC2 lint metadata-tags=0 ✅ | AC3 dry-run default + report ครบ ✅ | AC4 NoteHistory + --no-overwrite ✅ | AC5 round-trip lossless ✅
+- QA+NFR gates: N/A (plugin-internal) | **Pipeline Result: PASSED**
+
+### Adversarial Verification (wf_f3010ab6-4f0, 3 refuting verifiers + read-only MCP, 339k tokens):
+- spec-consistency → 1 medium (root-absolute OKF links ไม่ถูกแปลง) + 4 low + 2 cosmetic
+- write-gate-safety → **1 high** (secret bypass ผ่าน resource frontmatter — verifier พิสูจน์ด้วยการรันจริง) + 4 medium (§6.3 patterns แคบ, masked-value block ถาวรขัด §6.2.5, intra-bundle dup ทับเงียบ, cross-project upsert PLAUSIBLE) + 2 low
+- acceptance-criteria → 2 medium (create-heavy LINKS_TO ไม่ backfill, AC1 create path ยังไม่เขียนจริง) + 5 low/cosmetic
+- **แก้ครบ 23/23** + ทดสอบเพิ่ม: negative bundle 15 ไฟล์ (ทุก case ผ่าน), **probe พิสูจน์ upsert-by-title = GLOBAL scope** (ทับข้าม project ได้จริง → import default skip on cross-project hit) + tags union on upsert → RESEARCH §5.2 ข้อ 8-10
+
+### Current status:
+- Features passed: **17/18** | epic brain-v34-okf: **2/3** | opus done: 16
+- pending: 1 (#18 resource field convention + release v3.4.0 — ตัวปิด epic, depends_on [16,17] ✅ ครบ)
+
+### Next feature:
+- Feature #18 (opus): resource field convention (GRAPH_PROTOCOL §1/§5 + brain-save/brain-scan) + bump v3.4.0 + marketplace sync + README changelog — ใช้ผลตรวจ #17 ว่า save-knowledge มี `source` param จริง (RESEARCH §5 ข้อ 5)

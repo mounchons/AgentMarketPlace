@@ -105,8 +105,8 @@
       ],
       "progress": {
         "total": 3,
-        "passed": 1,
-        "in_progress": 1
+        "passed": 2,
+        "in_progress": 0
       }
     }
   ],
@@ -2466,7 +2466,7 @@
       "priority": "high",
       "complexity": "medium",
       "risk_level": "medium",
-      "status": "in_progress",
+      "status": "passed",
       "blocked_reason": null,
       "subtasks": [
         {
@@ -2530,9 +2530,9 @@
       ],
       "time_tracking": {
         "estimated_time": "60min",
-        "actual_time": null,
+        "actual_time": "45min",
         "started_at": "2026-07-10T23:00:31.512Z",
-        "completed_at": null
+        "completed_at": "2026-07-10T23:45:10.413Z"
       },
       "dependencies": [
         16
@@ -2558,13 +2558,18 @@
       "interactions": [],
       "version_history": [],
       "sync_status": "n/a",
-      "passes": false,
-      "tested_at": null,
-      "verification_results": null,
+      "passes": true,
+      "tested_at": "2026-07-10T23:45:10.413Z",
+      "verification_results": {
+        "pipeline": "PASSED",
+        "build": "n/a (markdown plugin) — claude plugin validate passed x3",
+        "acceptance_criteria": "5/5 — AC1 minimal-OKF parse+create จริง (OkfTest), AC2 lint metadata-tags=0, AC3 dry-run default+report ครบ, AC4 NoteHistory snapshot+reason และ --no-overwrite skip 11/11, AC5 round-trip 11 notes lossless (count/links/tags)",
+        "adversarial": "wf_f3010ab6-4f0 — 3 refuting verifiers (spec-consistency/write-gate-safety/acceptance-criteria) pass-with-findings: 0 critical, 1 high, 6 medium, 12 low, 4 cosmetic — แก้ครบ (b0a1d15); พิสูจน์เพิ่ม: upsert scope GLOBAL, tags union"
+      },
       "assigned_model": "opus",
       "is_reference_impl": false,
       "review": null,
-      "notes": "Import คือด้านเสี่ยงของ interchange (เขียนเข้า graph) — write gate (taxonomy + dry-run + propose-don't-execute) เป็นหัวใจ ไม่ใช่ nice-to-have. ใช้ mapping ตาราง 16.1 ย้อนทาง ห้าม define ซ้ำ",
+      "notes": "Import คือด้านเสี่ยงของ interchange — write gate 3 ชั้น (taxonomy/secret/dry-run) implement + adversarial-verified. Round-trip test จริง + negative bundle 15 ไฟล์. Server findings ใหม่ 5 ข้อ -> RESEARCH SS5.2 (เด่น: upsert-by-title GLOBAL scope).",
       "added_at": "2026-07-10T21:15:49+07:00"
     },
     {
@@ -2675,17 +2680,17 @@
   ],
   "summary": {
     "total": 18,
-    "passed": 16,
-    "in_progress": 1,
+    "passed": 17,
+    "in_progress": 0,
     "blocked": 0,
     "pending": 1,
-    "last_updated": "2026-07-10T23:22:10.359Z",
+    "last_updated": "2026-07-10T23:45:10.413Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": {
         "assigned": 17,
-        "done": 15,
-        "in_progress": 1,
+        "done": 16,
+        "in_progress": 0,
         "pending_review": 0
       },
       "sonnet": {
