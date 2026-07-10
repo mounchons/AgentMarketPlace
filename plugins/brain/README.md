@@ -32,7 +32,7 @@ claude mcp add graph-brain --scope user \
 /plugin install brain@agent-marketplace
 ```
 
-## 🧠 Commands (16 skills)
+## 🧠 Commands (17 skills)
 
 | Command | หน้าที่ |
 |---------|---------|
@@ -49,6 +49,7 @@ claude mcp add graph-brain --scope user \
 | `/brain-projects [--tech\|--compare]` | ดูทุกโปรเจกต์ใน brain + cross-project intelligence |
 | `/brain-lint [project]` | v3.3: ตรวจสุขภาพ graph — tag ซ้ำ, metadata ปน tag, โน้ตกำพร้า, link น้อย, mirror note, wikilink เสีย — เสนอ fix แล้วให้ user ยืนยันก่อนเสมอ |
 | `/brain-moc [project]` | v3.3: สร้าง/refresh Map of Content ต่อโปรเจกต์ — โน้ตเดียว link ครบทุกใบ (index-first retrieval, token saver) |
+| `/brain-export [project\|--all-projects]` | v3.4: export ความรู้เป็น [OKF bundle](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) — portable markdown + frontmatter ลง git/แชร์/เปิด visualizer ได้โดยไม่ต้องมี MCP (read-only, กติกาใน GRAPH_PROTOCOL §8) |
 | `/brain-log [filter]` | ดู activity log ข้าม sessions (`.brain/activity-log.json`) |
 | `/brain-help` | รายการคำสั่งทั้งหมด |
 | `/brain-howto [topic]` | สอนใช้งานทีละขั้นเป็นภาษาไทย |
