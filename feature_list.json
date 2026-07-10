@@ -59,6 +59,14 @@
       "bounded_context": "Plugin Development",
       "features": [12, 13, 14, 15],
       "progress": { "total": 4, "passed": 4, "in_progress": 0 }
+    },
+    {
+      "id": "brain-v34-okf",
+      "name": "Brain v3.4 — Open Knowledge Format (OKF) Interchange",
+      "description": "รับ OKF (Google, v0.1 — formalized llm-wiki) เป็นชั้น export/import interchange ของ brain: ความรู้ใน Neo4j ออกเป็น portable markdown bundle (git/แชร์/static visualizer) + รับ bundle ภายนอกเข้า graph ผ่าน taxonomy+lint write gate + resource field convention — ไม่แทน backend (graph เหนือกว่า: traversal/versioning/freshness) — อ่าน plans/brain-v34-okf-20260710/RESEARCH.md ก่อนเริ่มทุก feature ห้ามค้นคว้าซ้ำ",
+      "bounded_context": "Plugin Development",
+      "features": [16, 17, 18],
+      "progress": { "total": 3, "passed": 0, "in_progress": 0 }
     }
   ],
 
@@ -1012,19 +1020,117 @@
       },
       "assigned_model": "opus", "is_reference_impl": false, "review": null,
       "notes": "ตัวปิด epic brain-v32 — design-doc integration + release v3.2.0. Adversarial จับ critical bug: exists:true filter ตรงข้าม schema จริง (array diagrams ไม่มี exists) จะ drop flow/sequence เงียบๆ → แก้เป็น split presence model. 2/3 verifiers ติด session limit → manual-verified (version sync + section numbering). marketplace version drift lesson (memory): verify ด้วย node triad ✅"
+    },
+    {
+      "id": 16,
+      "epic": "brain-v34-okf",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "/brain-export → OKF bundle — dump ความรู้ per-project จาก graph เป็น OKF v0.1 directory (note → .md + YAML frontmatter type/title/description/resource/tags/timestamp, LINKS_TO/wikilink → relative markdown link, MOC → index.md, folderPath → directory tree), option --all-projects, output default .brain-export/{project}/ — ใช้ได้กับ git/แชร์ข้ามทีม/Google static HTML visualizer — spec เต็มใน plans/brain-v34-okf-20260710/RESEARCH.md §4 F1 + Open Decisions §5.1-5.3",
+      "priority": "high", "complexity": "medium", "risk_level": "medium",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "16.1", "description": "ออกแบบ OKF mapping เป็น section ใหม่ใน GRAPH_PROTOCOL.md: ตาราง graph↔OKF (note→file, namespace tag content/*→type + fallback Note, wikilink [[Title]]→relative link + unresolved คงไว้และรายงาน, MOC→index.md, timestamp จาก updated_at) — ตัดสิน Open Decisions §5.2 §5.3 ที่นี่จุดเดียว", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/GRAPH_PROTOCOL.md"] },
+        { "id": "16.2", "description": "สร้าง skills/brain-export/SKILL.md — เลือก strategy ตาม Open Decision §5.1: ถ้า server (SecondBrain) มี/เพิ่ม endpoint export ได้ → เรียกผ่าน MCP; ถ้าไม่ → plugin-side วนด้วย MCP tools ที่มี (list-projects → search → get-knowledge) พร้อมเตือน token cost; รองรับ --all-projects + custom output dir; mask secrets ตาม GRAPH_PROTOCOL §6 ก่อนเขียนไฟล์", "done": false, "committed_at": null, "commits": [], "depends_on": ["16.1"], "files": ["plugins/brain/skills/brain-export/SKILL.md"] },
+        { "id": "16.3", "description": "ทดสอบ export กับข้อมูลจริง 1 project (เช่น AgentMarketPlace) → structural validation: ทุกไฟล์มี frontmatter type, links เป็น relative path ที่ resolve ได้, index.md ครบ, ไม่มี secret leak — บันทึกผลใน verification_results", "done": false, "committed_at": null, "commits": [], "depends_on": ["16.2"], "files": [] },
+        { "id": "16.4", "description": "README.md เพิ่ม /brain-export + อัปเดตตาราง commands (ยังไม่ bump version — รอ #18)", "done": false, "committed_at": null, "commits": [], "depends_on": ["16.2"], "files": ["plugins/brain/README.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Bundle ตรงสเปก OKF v0.1: ทุกไฟล์ .md มี YAML frontmatter อย่างน้อย type; title/description/tags/timestamp ครบเมื่อ note มีข้อมูล",
+        "MOC ของ project ถูกแปลงเป็น index.md; ทุก LINKS_TO/wikilink ที่ resolve ได้กลายเป็น relative markdown link; ที่ resolve ไม่ได้ถูกรายงาน (ไม่เงียบหาย)",
+        "Export จริงกับ ≥ 1 project สำเร็จ + structural validation ผ่านทุกข้อ",
+        "ไม่มี secret ใน bundle (Secret Masking Protocol §6 ครอบก่อนเขียนไฟล์)",
+        "GRAPH_PROTOCOL.md มี OKF mapping section ที่ตัดสิน type mapping + link conversion ชัดเจน"
+      ],
+      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [],
+      "references": ["plans/brain-v34-okf-20260710/RESEARCH.md", "plans/brain-v33-llmwiki-20260710/SERVER_ANALYSIS.md", "plugins/brain/GRAPH_PROTOCOL.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "n/a", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "หลักคิด: OKF = pg_dump ของ brain (rich graph storage + dumb-portable interchange) — ไม่ย้าย backend. Server-side endpoint (SecondBrain) เป็น option ตาม §5.1 ถ้าเลือกทางนั้นให้จดฝั่ง server แยก repo เหมือน v3.3",
+      "added_at": "2026-07-10T21:15:49+07:00"
+    },
+    {
+      "id": 17,
+      "epic": "brain-v34-okf",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "/brain-import จาก OKF bundle — ingest bundle ภายนอก (มาตรฐาน OKF v0.1 เช่นจาก enrichment agent อื่น/ทีมอื่น/brain-export เอง) เข้า graph: parse frontmatter + markdown links → notes + LINKS_TO, tags ผ่าน taxonomy write gate (alias→canonical, reject blocklist), dry-run เป็น default + propose-don't-execute, conflict = upsert by title (NoteHistory เก็บ version เดิม) + --no-overwrite option — spec เต็มใน plans/brain-v34-okf-20260710/RESEARCH.md §4 F2 + Open Decision §5.4",
+      "priority": "high", "complexity": "medium", "risk_level": "medium",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "17.1", "description": "สร้าง skills/brain-import/SKILL.md — walk bundle directory, parse YAML frontmatter (type→namespace tag ตาม mapping ย้อนทางของ 16.1) + body, แปลง relative links → wikilinks/LINKS_TO, กำหนด folderPath จาก directory tree + target project (ถามหรือ --project)", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/skills/brain-import/SKILL.md"] },
+        { "id": "17.2", "description": "Write gate: ทุก tag ผ่าน tag-taxonomy resolution (alias→canonical, reject date/status blocklist), dry-run report เป็น default (สรุป: จะสร้างกี่ note, ชนกี่ note, tags ที่ถูก normalize/reject) → user confirm ก่อนเขียนจริง (propose-don't-execute ตาม lint principle)", "done": false, "committed_at": null, "commits": [], "depends_on": ["17.1"], "files": ["plugins/brain/skills/brain-import/SKILL.md"] },
+        { "id": "17.3", "description": "Conflict policy: title ชน note เดิม → default upsert (NoteHistory versioning รองรับอยู่แล้ว) + --no-overwrite ข้าม; ทดสอบ round-trip จริง: export project (จาก #16) → import กลับ → เทียบ note count/links/tags ต้อง lossless ในขอบเขต mapping", "done": false, "committed_at": null, "commits": [], "depends_on": ["17.2"], "files": ["plugins/brain/skills/brain-import/SKILL.md"] },
+        { "id": "17.4", "description": "README.md เพิ่ม /brain-import (ยังไม่ bump version — รอ #18)", "done": false, "committed_at": null, "commits": [], "depends_on": ["17.3"], "files": ["plugins/brain/README.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "Import bundle ที่มีแค่ field type (minimum OKF) ได้ — field อื่น optional ตามสเปก",
+        "ทุก tag ที่เข้า graph ผ่าน taxonomy resolution — ไม่มี alias/blocklist tag หลุดเข้า (ตรวจด้วย /brain-lint หลัง import)",
+        "Dry-run เป็น default + รายงานครบ (create/conflict/tag changes) ก่อนเขียนจริง",
+        "Upsert เก็บ version เดิมใน NoteHistory; --no-overwrite ทำงานถูกต้อง",
+        "Round-trip test ผ่าน: export → import → note count + links + canonical tags ตรงกัน"
+      ],
+      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [16],
+      "references": ["plans/brain-v34-okf-20260710/RESEARCH.md", "plugins/brain/GRAPH_PROTOCOL.md", "plugins/brain/skills/brain-lint/SKILL.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "n/a", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "Import คือด้านเสี่ยงของ interchange (เขียนเข้า graph) — write gate (taxonomy + dry-run + propose-don't-execute) เป็นหัวใจ ไม่ใช่ nice-to-have. ใช้ mapping ตาราง 16.1 ย้อนทาง ห้าม define ซ้ำ",
+      "added_at": "2026-07-10T21:15:49+07:00"
+    },
+    {
+      "id": 18,
+      "epic": "brain-v34-okf",
+      "flow_id": null, "state_produces": [], "state_consumes": [],
+      "module": "brain", "layer": "application", "category": "feature",
+      "description": "resource field convention + release v3.4.0 — GRAPH_PROTOCOL §1 Save Rules: note ที่ derive จาก external source (URL/doc/dashboard/ticket) ต้องมี resource pointer กลับต้นทางเป็น structured convention (ต่อยอด Freshness Protocol §5 จาก commit-hash ครอบ external source ด้วย) + brain-save/brain-scan อ้างกติกาใหม่ + bump 3.4.0 (plugin.json + marketplace.json + README changelog) + validate ทั้ง epic — spec ใน plans/brain-v34-okf-20260710/RESEARCH.md §4 F3 + Open Decision §5.5",
+      "priority": "medium", "complexity": "simple", "risk_level": "low",
+      "status": "pending", "blocked_reason": null,
+      "subtasks": [
+        { "id": "18.1", "description": "ตรวจจริงก่อน (Open Decision §5.5): graph-brain MCP save-knowledge รองรับ structured field อะไรบ้าง → เลือกที่เก็บ resource (metadata field ถ้ามี / convention บรรทัด 'Source:' ใน content ถ้าไม่มี) + จดผลใน RESEARCH.md", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plans/brain-v34-okf-20260710/RESEARCH.md"] },
+        { "id": "18.2", "description": "GRAPH_PROTOCOL §1 เพิ่มกติกา resource + §5 Freshness ขยายครอบ external source (staleness check เทียบ resource ที่ fetch ซ้ำได้); brain-save + brain-scan SKILL.md อ้างกติกาใหม่; brain-export (#16) map resource → frontmatter, brain-import (#17) map ย้อนทาง", "done": false, "committed_at": null, "commits": [], "depends_on": ["18.1"], "files": ["plugins/brain/GRAPH_PROTOCOL.md", "plugins/brain/skills/brain-save/SKILL.md", "plugins/brain/skills/brain-scan/SKILL.md"] },
+        { "id": "18.3", "description": "Release v3.4.0: plugin.json 3.3.0→3.4.0 + marketplace.json brain entry sync (version + description) + README changelog v3.4.0 (3 features) + node triad check + claude plugin validate + ${CLAUDE_PLUGIN_ROOT} paths + Thai responses + never-block degrade ครบทุก skill ที่แตะใน epic", "done": false, "committed_at": null, "commits": [], "depends_on": ["18.2"], "files": ["plugins/brain/.claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "plugins/brain/README.md"] }
+      ],
+      "last_committed_subtask": null,
+      "acceptance_criteria": [
+        "GRAPH_PROTOCOL §1 มีกติกา resource pointer สำหรับ external-derived notes + §5 ครอบ external source staleness",
+        "brain-save/brain-scan อ้างกติกา resource; export/import map resource ↔ frontmatter สองทาง",
+        "plugin.json == marketplace.json == README == 3.4.0 (node triad check) + ไม่มี 3.3.0 ค้างนอก changelog",
+        "claude plugin validate ผ่าน + ${CLAUDE_PLUGIN_ROOT} paths + Thai responses + never-block degrade ครบ",
+        "README changelog v3.4.0 ครอบทั้ง 3 features ของ epic"
+      ],
+      "time_tracking": { "estimated_time": "30min", "actual_time": null, "started_at": null, "completed_at": null },
+      "dependencies": [16, 17],
+      "references": ["plans/brain-v34-okf-20260710/RESEARCH.md", "plugins/brain/GRAPH_PROTOCOL.md"],
+      "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
+      "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
+      "sync_status": "n/a", "passes": false, "tested_at": null,
+      "verification_results": null,
+      "assigned_model": "opus", "is_reference_impl": false, "review": null,
+      "notes": "ตัวปิด epic brain-v34-okf — ทำหลัง #16/#17 เพื่อ release ครั้งเดียว (pattern เดียวกับ #15 ปิด brain-v32). ถ้า §5.5 พบว่า server ต้องเพิ่ม field → จดเป็นงานฝั่ง SecondBrain แยก repo ไม่ block release (ใช้ content convention ไปก่อน)",
+      "added_at": "2026-07-10T21:15:49+07:00"
     }
   ],
 
   "summary": {
-    "total": 15,
+    "total": 18,
     "passed": 15,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 0,
-    "last_updated": "2026-07-04T08:08:30Z",
+    "pending": 3,
+    "last_updated": "2026-07-10T21:15:49+07:00",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 14, "done": 14, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 17, "done": 14, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }

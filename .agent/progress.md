@@ -581,3 +581,24 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 
 ### Next feature:
 - ไม่มี — epic brain-v32 (Features #12–#15) เสร็จครบ. งานที่ค้าง (out-of-scope): push ขึ้น remote (ยังไม่ push ทั้ง 26 commits)
+
+---
+
+## Session: 2026-07-10 (Feature Added — epic brain-v34-okf)
+
+### Feature Added
+- **Epic ใหม่**: `brain-v34-okf` — Brain v3.4 Open Knowledge Format (OKF) Interchange (features 16, 17, 18)
+- Feature #16: /brain-export → OKF bundle (per-project graph → portable markdown bundle) — priority: high
+- Feature #17: /brain-import จาก OKF bundle (taxonomy write gate + dry-run + upsert) — priority: high, deps: [16]
+- Feature #18: resource field convention + release v3.4.0 — priority: medium, deps: [16, 17]
+- Category: feature | assigned_model: opus ทุกตัว (force_opus_all=true) + adversarial verification
+- Research doc: plans/brain-v34-okf-20260710/RESEARCH.md (สร้างใน session นี้ — อ่านก่อนเริ่มทุก feature ห้ามค้นคว้าซ้ำ)
+- ที่มา: บทความ Google Cloud "How the Open Knowledge Format can improve data sharing" (OKF v0.1 = formalized llm-wiki ต่อยอด brain v3.3 พอดี)
+- หลักคิด: OKF = pg_dump ของ brain — interchange layer ไม่แทน Neo4j backend
+- Design doc impact: none (integration.design_doc_path = null)
+- Pending sync actions: 0
+- Added at: 2026-07-10T21:15:49+07:00
+
+### Current status:
+- Total: 18 | passed: 15 | pending: 3 (#16, #17, #18)
+- Next: /continue เริ่ม Feature #16 (brain-export)
