@@ -223,3 +223,60 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 
 - รัน lint เต็มชุดเป็นรอบ (แนะนำสัปดาห์ละครั้ง หรือหลัง brain-scan ใหญ่)
 - ทุกรอบ lint ลง activity log (`.brain/activity-log.json`) command="brain-lint" พร้อม findings count ต่อ check
+
+## 8. OKF Interchange Mapping (v3.4)
+
+ใช้กับ skill `brain-export` (graph → bundle) และ `brain-import` (bundle → graph)
+
+**หลักการ:** [Open Knowledge Format v0.1](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) เป็น **interchange format ไม่ใช่ backend** — graph (Neo4j) ยังเป็น source of truth; OKF bundle = snapshot แบบ portable (เทียบ `pg_dump` ของ database) เอาไปลง git / แชร์ข้ามทีม / เปิดด้วย OKF visualizer ได้โดยไม่ต้องมี MCP server
+
+### 8.1 Bundle Layout
+
+1 project = 1 bundle directory (default: `.brain-export/{project}/`):
+
+```
+.brain-export/{project}/
+├── index.md              ← จาก MOC note (§8.4)
+├── core/
+│   ├── index.md          ← จาก sub-MOC (ถ้ามี hub-of-hubs)
+│   └── {slug}.md         ← 1 note = 1 ไฟล์
+├── workflow/
+├── database/
+└── changelog/            ← changelog notes export ด้วย (lossless round-trip)
+```
+
+- directory = category จาก `folderPath` (`/projects/{project}/{category}/` → `{category}/`); note ที่อยู่ root ของ project (เช่น MOC) → root ของ bundle
+- **filename slug** จาก title: lowercase (เฉพาะ ASCII), whitespace → `-`, ตัดอักขระต้องห้ามของ filesystem (`\ / : * ? " < > |`) และ `#`/backtick, ยุบ `-` ซ้ำ, ตัด `-` หัวท้าย; อักษรไทยคงไว้ตามเดิม; ชื่อชน → ต่อท้าย `-2`, `-3`
+- ⚠️ **identity ของ note = frontmatter `title` ไม่ใช่ filename** — slug ใช้แค่ให้ไฟล์ไม่ชนกัน; import ต้อง match note ด้วย title เสมอ (upsert by title ตาม §2)
+
+### 8.2 Frontmatter Mapping (graph → YAML)
+
+| OKF field | จาก graph | หมายเหตุ |
+|---|---|---|
+| `type` (บังคับ) | namespace tag `content/{x}` → TitleCase เช่น `content/pattern` → `Pattern` | ไม่มี tag `content/*` → `Note`; มีหลายตัว → ตัวแรก |
+| `title` | note title ตรงตัว | ห้ามแปลง — คือ identity |
+| `description` | summary 1 บรรทัด (จาก catalog หรือประโยคแรกของ content) | |
+| `resource` | pointer กลับต้นทาง ถ้า note มีบรรทัด `Source: <URL>` (convention #18) | ไม่มี → ละ field |
+| `tags` | tags ทั้งหมดตาม canonical (รวม namespace tags — **ไม่ตัด `content/*` ออก**) | lossless: type เป็นค่า derive ซ้ำได้ |
+| `timestamp` | `updatedAt` ของ note (fallback: `createdAt`) ISO8601 | |
+| `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` | OKF อนุญาต key เพิ่ม — importer อื่นข้ามได้ |
+| `project` (extension) | projectName | ให้ bundle self-describing |
+
+Body = content ของ note ตรงตัว (รวม `## Version History`, `## Scan Metadata` — เป็นเนื้อหา) **ยกเว้น** wikilinks ถูกแปลงตาม §8.3
+
+### 8.3 Link Conversion
+
+- **Export:** `[[Title]]` ที่ resolve เป็น note ใน project เดียวกัน → relative markdown link `[Title](../{category}/{slug}.md)` (same dir → `{slug}.md`); resolve ไม่ได้ (โน้ตข้าม project / broken link) → **คง `[[Title]]` ตามเดิม** + รายงานใน export report (ห้ามเงียบหาย — โยง broken-wikilinks check ของ §7)
+- **Import:** relative `.md` link → อ่าน frontmatter title ของไฟล์เป้าหมาย → `[[Title]]`; `[[...]]` ที่คงอยู่ในไฟล์ → เก็บตามเดิม (server สร้าง LINKS_TO อัตโนมัติเมื่อ title มีจริง)
+
+### 8.4 MOC ↔ index.md
+
+- MOC note (`"{Project} — MOC (Map of Content)"`) → `index.md` ที่ root ของ bundle (ไม่ export ซ้ำเป็นไฟล์ปกติ); sub-MOC (`"{Project} — MOC: {Category}"`) → `{category}/index.md`
+- ไม่มี MOC → generate `index.md` จาก catalog (1 บรรทัด/note: `[Title](path) — summary`) + ระบุใน frontmatter `type: Index` ว่า generated — **แนะนำรัน `/brain-moc` ก่อน export** เพื่อได้ index ที่ curate แล้ว
+- Import: `index.md` → สร้าง/อัปเดต MOC note ตาม §2 (ไม่ import เป็น note ธรรมดา)
+
+### 8.5 กติกาความปลอดภัย + ความสด
+
+- **Pre-write secret check:** ก่อนเขียน bundle ลง disk → scan ทุกไฟล์ด้วย pattern §6.3 — เจอ = หยุด รายงาน user (bundle ไป git/แชร์ต่อ ยิ่งอันตรายกว่า note ใน server)
+- Bundle มี staleness ตั้งแต่วินาทีที่ export — ใส่ header ใน `index.md`: `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth คือ graph`
+- Export **ไม่แก้ graph** (read-only); Import **ทุก write ผ่าน write gate**: tags ผ่าน Tag Taxonomy (§1), title ชน → upsert ตาม Versioning Protocol (§2), dry-run ก่อนเสมอ (propose-don't-execute ตาม §7.1)

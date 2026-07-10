@@ -1028,7 +1028,7 @@
       "module": "brain", "layer": "application", "category": "feature",
       "description": "/brain-export → OKF bundle — dump ความรู้ per-project จาก graph เป็น OKF v0.1 directory (note → .md + YAML frontmatter type/title/description/resource/tags/timestamp, LINKS_TO/wikilink → relative markdown link, MOC → index.md, folderPath → directory tree), option --all-projects, output default .brain-export/{project}/ — ใช้ได้กับ git/แชร์ข้ามทีม/Google static HTML visualizer — spec เต็มใน plans/brain-v34-okf-20260710/RESEARCH.md §4 F1 + Open Decisions §5.1-5.3",
       "priority": "high", "complexity": "medium", "risk_level": "medium",
-      "status": "pending", "blocked_reason": null,
+      "status": "in_progress", "blocked_reason": null,
       "subtasks": [
         { "id": "16.1", "description": "ออกแบบ OKF mapping เป็น section ใหม่ใน GRAPH_PROTOCOL.md: ตาราง graph↔OKF (note→file, namespace tag content/*→type + fallback Note, wikilink [[Title]]→relative link + unresolved คงไว้และรายงาน, MOC→index.md, timestamp จาก updated_at) — ตัดสิน Open Decisions §5.2 §5.3 ที่นี่จุดเดียว", "done": false, "committed_at": null, "commits": [], "depends_on": [], "files": ["plugins/brain/GRAPH_PROTOCOL.md"] },
         { "id": "16.2", "description": "สร้าง skills/brain-export/SKILL.md — เลือก strategy ตาม Open Decision §5.1: ถ้า server (SecondBrain) มี/เพิ่ม endpoint export ได้ → เรียกผ่าน MCP; ถ้าไม่ → plugin-side วนด้วย MCP tools ที่มี (list-projects → search → get-knowledge) พร้อมเตือน token cost; รองรับ --all-projects + custom output dir; mask secrets ตาม GRAPH_PROTOCOL §6 ก่อนเขียนไฟล์", "done": false, "committed_at": null, "commits": [], "depends_on": ["16.1"], "files": ["plugins/brain/skills/brain-export/SKILL.md"] },
@@ -1043,7 +1043,7 @@
         "ไม่มี secret ใน bundle (Secret Masking Protocol §6 ครอบก่อนเขียนไฟล์)",
         "GRAPH_PROTOCOL.md มี OKF mapping section ที่ตัดสิน type mapping + link conversion ชัดเจน"
       ],
-      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": null, "completed_at": null },
+      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": "2026-07-10T21:20:00+07:00", "completed_at": null },
       "dependencies": [],
       "references": ["plans/brain-v34-okf-20260710/RESEARCH.md", "plans/brain-v33-llmwiki-20260710/SERVER_ANALYSIS.md", "plugins/brain/GRAPH_PROTOCOL.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
