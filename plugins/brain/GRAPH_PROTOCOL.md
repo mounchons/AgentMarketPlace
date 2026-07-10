@@ -14,6 +14,9 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
 1. **projectName** — ใช้จาก basename ของ current working directory หรือ user ระบุ
 2. **tags** — อย่างน้อย 2 ตัว: `[{project-name-lowercase}, {domain-tag}]`
    - domain tags: architecture, workflow, database, integration, frontend, permission, dependency, document, diagram, release, deployment, requirement
+   - **Tag Taxonomy (v3.3):** server normalize tag อัตโนมัติ (alias → canonical เช่น `efcore`→`ef-core`, `k8s`→`kubernetes`) และ **drop tag ต้องห้าม**: date-string (`2026-06-03`), version tag (`net9`), status flag (`pending`, `auto-generated`) — ห้ามใช้เป็น tag ตั้งแต่ต้น (date → ใส่ใน content/source, status → content หรือ folder)
+   - **เลือก tag จาก canonical list ใน description ของ tool `save-knowledge` ก่อนประดิษฐ์ใหม่เสมอ**; tech/project tag ใช้ namespace ได้: `tech/`, `project/`, `domain/`, `audience/`, `solution/`, `pattern/`, `content/`, `problem/`, `source/`
+   - หลัง save: อ่าน `Tag normalization:` ใน response — ถ้ามี tag ถูก normalize/drop ให้รายงาน user สั้นๆ; ถ้า tag ใหม่มี suggestion (`similar existing: ...`) ให้พิจารณาใช้ tag เดิมแทนแล้ว save ซ้ำ
 3. **folderPath** — ตาม convention: `/projects/{project-name}/{category}/`
    - categories: core, workflow, database, dependencies, permissions, integration, frontend, releases, deployment, requirements, documents, changelog
 4. **Duplicate check** — เรียก `mcp__graph-brain__search-knowledge` query="{title}" limit=3 ก่อน save เสมอ
@@ -78,12 +81,14 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
 
 ## 3. Search Rules
 
-Search Strategy (4 ขั้น — เรียงจากเร็วไปลึก):
+Search Strategy (เรียงจากเร็วไปลึก):
 
+0. **Catalog First (v3.3 — token saver):** ถ้าคำถามอยู่ในขอบเขต **project เดียวที่รู้ชื่อ** → เรียก `mcp__graph-brain__get-project-catalog` project="{name}" ก่อน — ได้ index ทุกโน้ต (title + summary 1 บรรทัด + folder) ในการเรียกเดียว → เลือกเฉพาะโน้ตที่เกี่ยวแล้ว `get-knowledge` ทีละใบ **แทนการ search วนหลายรอบ**; คำถามข้ามโปรเจกต์/ไม่รู้ขอบเขต → ข้ามไปขั้น 1
 1. **Text Search**: `mcp__graph-brain__search-knowledge` query="{keyword}" limit=10
    - ถ้าพบ >= 3 results ที่ตรงกับ query → หยุด ใช้ผลลัพธ์นี้
 2. **Tag Search**: `mcp__graph-brain__search-by-tags` tags=["{extracted-keywords}"]
    - ถ้าพบ results → หยุด
+   - server expand alias ให้อัตโนมัติ (ค้น `efcore` ครอบโน้ตที่ติด `ef-core`/`entity-framework` ด้วย) — ใช้ canonical tag เป็นหลักแต่ไม่ต้องกังวลข้อมูลเก่า
 3. **Graph Traversal**: `mcp__graph-brain__explore-graph` nodeId="{best-result-id}" depth=2
    - traverse จาก node ที่ใกล้เคียงที่สุด → ค้นหา connected nodes ผ่าน relationships
 4. **Similar Search**: `mcp__graph-brain__find-similar` noteId="{best-result-id}" limit=5
@@ -192,3 +197,29 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 ### 6.3 Pre-save sanity check
 
 ก่อน save note ที่ derive จาก config/deployment → scan content หา pattern: `Password=`, `AccountKey=`, `sig=`, `AKIA`, `-----BEGIN`, `User Id=`, `://[^/]*:[^/]*@` — ถ้าเจอ = ยังไม่ได้ mask → แก้ก่อน save
+
+## 7. Lint Protocol (v3.3)
+
+ใช้กับ skill `brain-lint` และทุกครั้งที่เรียก tool `mcp__graph-brain__brain-lint`
+
+### 7.1 กฎเหล็ก: Propose, Don't Auto-Execute
+
+- lint **รายงานอย่างเดียว** — ห้ามแก้/ลบ/merge อะไรโดยไม่ถาม user ก่อน **ทุกกรณี**
+- duplicate-tags มี false positive โดยธรรมชาติ (edit distance วัด "สะกดคล้าย" ไม่ใช่ "ความหมายเดียวกัน" เช่น `sonnet`↔`dotnet`) → ต้องให้คนตัดสินทีละคู่ ห้าม merge ทั้ง batch โดยไม่ไล่ดู
+- fix ที่ deterministic (คู่ที่ user ยืนยันแล้ว) เสนอเป็นชุดแล้วขอ confirm ครั้งเดียวได้
+
+### 7.2 เครื่องมือ fix ต่อ finding
+
+| Finding | วิธี fix หลัง user ยืนยัน |
+|---|---|
+| duplicate-tags | `mcp__graph-brain__merge-tags` from={alias} to={canonical} ทีละคู่ |
+| metadata-tags | แจ้ง user ให้รัน `POST /api/tags/migrate` (จัดการทั้ง registry รอบเดียว + เก็บค่าลง note ก่อนลบ) |
+| orphan-notes / low-link-density | เสนอ `[[wikilink]]` จาก link-suggestions → `update-knowledge` เพิ่ม link ใน content (ทำตาม Versioning Protocol §2) |
+| broken-wikilinks | แก้ typo หรือสร้างโน้ตเป้าหมาย — ถาม user ว่าเจตนาไหน |
+| mirror-notes | เสนอ merge เนื้อหาเข้าโน้ต synthesis ที่ใกล้เคียง → update โน้ตปลายทาง + archive ต้นทาง |
+| stale-notes | เช็คกับ Freshness Protocol §5 — code-derived → เสนอ incremental scan; อื่นๆ → ถาม user |
+
+### 7.3 Cadence
+
+- รัน lint เต็มชุดเป็นรอบ (แนะนำสัปดาห์ละครั้ง หรือหลัง brain-scan ใหญ่)
+- ทุกรอบ lint ลง activity log (`.brain/activity-log.json`) command="brain-lint" พร้อม findings count ต่อ check

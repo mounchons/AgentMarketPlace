@@ -1,6 +1,6 @@
 # Brain — Graph-First Knowledge Management
 
-**Version: 3.2.0**
+**Version: 3.3.0**
 
 Plugin จัดการความรู้แบบ Graph-First บน Graph Brain (Neo4j-backed Second Brain) — ใช้ยุทธศาสตร์ **Brain First**: ถามความรู้จาก brain ก่อนเสมอ แล้วค่อยอ่าน codebase เมื่อความรู้ไม่พอ จากนั้นเสนอบันทึกสิ่งที่ค้นพบกลับเข้า brain
 
@@ -32,7 +32,7 @@ claude mcp add graph-brain --scope user \
 /plugin install brain@agent-marketplace
 ```
 
-## 🧠 Commands (14 skills)
+## 🧠 Commands (16 skills)
 
 | Command | หน้าที่ |
 |---------|---------|
@@ -47,6 +47,8 @@ claude mcp add graph-brain --scope user \
 | `/brain-load [project]` | preload ความรู้ตอนเริ่ม session (hook ทำให้อัตโนมัติ) |
 | `/brain-status` | เช็คการเชื่อมต่อ + สถิติความรู้ |
 | `/brain-projects [--tech\|--compare]` | ดูทุกโปรเจกต์ใน brain + cross-project intelligence |
+| `/brain-lint [project]` | v3.3: ตรวจสุขภาพ graph — tag ซ้ำ, metadata ปน tag, โน้ตกำพร้า, link น้อย, mirror note, wikilink เสีย — เสนอ fix แล้วให้ user ยืนยันก่อนเสมอ |
+| `/brain-moc [project]` | v3.3: สร้าง/refresh Map of Content ต่อโปรเจกต์ — โน้ตเดียว link ครบทุกใบ (index-first retrieval, token saver) |
 | `/brain-log [filter]` | ดู activity log ข้าม sessions (`.brain/activity-log.json`) |
 | `/brain-help` | รายการคำสั่งทั้งหมด |
 | `/brain-howto [topic]` | สอนใช้งานทีละขั้นเป็นภาษาไทย |
@@ -78,6 +80,13 @@ User ถามเกี่ยวกับโปรเจกต์
 | **system-design-doc** | optional upstream — query ความรู้เดิมก่อน brainstorm design |
 
 ## 📝 Changelog
+
+### v3.3.0 (2026-07-10) — Knowledge Hygiene (llm-wiki patterns)
+เป้าหมาย (จาก improvement directive): **หาได้ตรง + เชื่อมโยงครบ + token น้อยลง** — เอา discipline ของ llm-wiki (Karpathy) มาลง graph; ต้องใช้กับ graph-brain server v3.3 ขึ้นไป (SecondBrain)
+- 🏷️ **Tag Taxonomy** (GRAPH_PROTOCOL §1) — server normalize alias → canonical (`efcore`→`ef-core`, `k8s`→`kubernetes`) + drop tag ต้องห้าม (date/version/status-flag) ทุก save path; canonical list ฝังใน description ของ `save-knowledge`; search-by-tags expand alias อัตโนมัติ (ค้น `efcore` เจอโน้ต `ef-core` ได้)
+- 🧹 **`/brain-lint`** (GRAPH_PROTOCOL §7 ใหม่) — 8 deterministic checks: duplicate-tags, metadata-tags, orphan-notes, low-link-density (permanent ≥ 3 links), mirror-notes, broken-wikilinks, link-suggestions, stale-notes — กฎเหล็ก **propose-don't-auto-execute**; fix ผ่าน `merge-tags` / `update-knowledge` หลัง user ยืนยันเท่านั้น
+- 🗺️ **`/brain-moc`** — Map of Content ต่อโปรเจกต์จาก tool `get-project-catalog` (title + AI summary + folder ครบในการเรียกเดียว); Search Rules เพิ่ม **Step 0: Catalog First** — คำถามใน project เดียวอ่าน catalog ก่อนแล้ว fetch เฉพาะโน้ตที่เกี่ยว แทน search วนหลายรอบ; MOC เป็น hub แก้ orphan ไปในตัว
+- 🔧 MCP tools ใหม่ที่ต้องมี: `brain-lint`, `merge-tags`, `get-project-catalog`; save response รายงาน `Tag normalization:` ให้ agent เรียนรู้ vocabulary
 
 ### v3.2.0 (2026-07-04) — Support-Ready Knowledge
 เป้าหมาย: กลับมา support งานลูกค้าเก่าโดยไม่ต้องอ่านโค้ดใหม่ทุกรอบ — brain ตอบครบทุกมิติและ**บอกได้ว่าความรู้ยังตรงกับโค้ดไหม**

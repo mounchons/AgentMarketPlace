@@ -309,8 +309,8 @@
     {
       "name": "brain",
       "source": "./plugins/brain",
-      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.2.0: Support-Ready Knowledge — Freshness Protocol (Scan Metadata footer ผูก commit hash + stale warning ก่อนตอบ), Mermaid ER + sequence diagrams ทุก dependency map, Phase 7.5 Release History + Deployment Topology, Dev Setup Guide, design_doc_list.json integration, Secret Masking Protocol §6",
-      "version": "3.2.0",
+      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.3.0: Knowledge Hygiene (llm-wiki patterns) — Tag Taxonomy (alias→canonical normalize + block date/version/status-flag tags + search alias expansion), /brain-lint 8 checks (duplicate tags, orphan notes, mirror notes, broken wikilinks ฯลฯ propose-don't-auto-execute), /brain-moc Map of Content + Catalog-First retrieval (token saver). ต้องใช้ graph-brain server v3.3+ (SecondBrain)",
+      "version": "3.3.0",
       "category": "knowledge",
       "tags": [
         "graph-brain",
@@ -325,7 +325,11 @@
         "thai",
         "freshness-tracking",
         "mermaid-diagrams",
-        "support-ready"
+        "support-ready",
+        "tag-taxonomy",
+        "lint",
+        "map-of-content",
+        "llm-wiki"
       ],
       "author": {
         "name": "Mounchons"

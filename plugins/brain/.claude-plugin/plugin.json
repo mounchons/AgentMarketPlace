@@ -1,7 +1,7 @@
 {
   "name": "brain",
-  "description": "Graph-First knowledge management — Relationship-centric search, traversal-first navigation, knowledge versioning, cross-project intelligence, Brain First strategy. v3.2 Support-Ready: Freshness Protocol, Mermaid ER/sequence diagrams, Release/Deployment/Dev-Setup scan, design-doc integration, Secret Masking",
-  "version": "3.2.0",
+  "description": "Graph-First knowledge management — Relationship-centric search, traversal-first navigation, knowledge versioning, cross-project intelligence, Brain First strategy. v3.3 Knowledge Hygiene: Tag Taxonomy (alias normalize + blocked metadata tags), brain-lint (8 graph hygiene checks, propose-don't-auto-execute), brain-moc (Map of Content + Catalog-First retrieval = token saver)",
+  "version": "3.3.0",
   "author": {
     "name": "Mounchons"
   },
