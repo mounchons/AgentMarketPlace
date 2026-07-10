@@ -25,8 +25,8 @@ ALL responses MUST be in Thai language.
 |---|---|
 | (no args) | export project = basename of cwd |
 | `{project}` | export project ที่ระบุ |
-| `--all-projects` | วน export ทุก project จาก `list-projects` |
-| `--output <dir>` | เปลี่ยน output จาก default `.brain-export/{project}/` |
+| `--all-projects` | วน export ทุก project จาก `list-projects` — **เตือน user ก่อน**: ความรู้ข้าม project (อาจเป็นงานลูกค้า/repo อื่น) จะถูกเขียนลง working tree ของ repo ปัจจุบัน |
+| `--output <dir>` | เปลี่ยน **parent directory** (default = `.brain-export`) — ไฟล์ลง `{output}/{project}/` เสมอ ทั้ง single และ --all-projects |
 
 ## Steps
 
@@ -50,11 +50,15 @@ ALL responses MUST be in Thai language.
    - MOC note → `index.md` ตาม §8.4 (ห้าม export ซ้ำเป็นไฟล์ปกติ); ไม่มี MOC → generate index.md จาก catalog + แนะนำ user รัน `/brain-moc` เพื่อได้ index ที่ curate แล้ว
 
 5. **Pre-write secret check (MANDATORY — §8.5)**
-   - scan เนื้อหาทุกไฟล์ที่จะเขียนด้วย pattern §6.3: `Password=`, `AccountKey=`, `sig=`, `AKIA`, `-----BEGIN`, `User Id=`, `://[^/]*:[^/]*@`
+   - scan เนื้อหาทุกไฟล์ที่จะเขียนด้วย **pattern ชุดเต็มใน §6.3** (key=value/key:value + URL/signature + token literals: AWS/GitHub/Slack/JWT/Bearer/PEM) — สำคัญเป็นพิเศษกับ notes เก่าที่ save ก่อนมี masking rules
    - **เจอ → หยุดทั้ง export** รายงาน note ที่มีปัญหา ให้ user แก้ note ใน brain ก่อน (bundle ไป git/แชร์ต่อ — อันตรายกว่า note ใน server)
 
 6. **Write bundle**
-   - เขียนลง `{output}/{project}/` ตาม layout §8.1 — ล้าง directory เป้าหมายก่อนเขียนเฉพาะเมื่อ user ยืนยัน (ถ้ามีไฟล์เดิมอยู่ให้ถามก่อน ห้ามทับเงียบๆ)
+   - เขียนลง `{output}/{project}/` ตาม layout §8.1 (+ path safety: project/category segments ผ่านกฎ slug)
+   - **Overwrite policy:** directory เป้าหมายมีไฟล์อยู่ →
+     - ดูเหมือน bundle เดิม (มี `index.md` ที่มี header `Exported:`) → ถาม user ยืนยันก่อนล้างแล้วเขียนใหม่
+     - **ไม่ใช่ bundle เดิม → abort** แจ้ง user ให้เปลี่ยน `--output` (ห้ามเสนอล้าง directory ที่ไม่ใช่ของ exporter — เสี่ยงลบไฟล์ user)
+     - user ปฏิเสธการล้าง → **abort** (ไม่ merge-write — จะทับ index.md/slug ชนกันเงียบๆ)
    - `index.md` ใส่ header ความสด: `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth คือ graph` (hash จาก `git rev-parse --short HEAD` ของ repo ปัจจุบัน; non-git → ละ commit)
 
 7. **Structural validation (ก่อนรายงานสำเร็จ)**
@@ -65,6 +69,7 @@ ALL responses MUST be in Thai language.
 
 8. **Report + activity log**
    - รายงาน (ไทย): จำนวน notes ต่อ category, path ของ bundle, unresolved wikilinks (ถ้ามี — ระบุว่าโยง broken-link check ของ `/brain-lint`), คำแนะนำถัดไป (ลง git / เปิด visualizer / `/brain-import` ฝั่งรับ)
+   - **ก่อนแนะนำ "ลง git":** เช็ค `git check-ignore <bundle-path>` — ถ้าถูก ignore (หลาย repo gitignore `.brain-export/` ไว้เพราะเป็น derived artifact) ให้บอก user ตรงๆ พร้อมทางเลือก: `--output` ไปที่ที่ track ได้ หรือ `git add -f` เมื่อตั้งใจ commit
    - Append `.brain/activity-log.json`: command="brain-export", details={project, note_count, output, unresolved_links}
 
 ## Cross-check กับ skills อื่น

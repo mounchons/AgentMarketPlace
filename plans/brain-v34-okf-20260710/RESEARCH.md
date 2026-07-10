@@ -112,12 +112,12 @@ import ใช้ mapping เดียวกันย้อนทาง; resource
 
 ## 5. Open Decisions (ตัดสินก่อน/ระหว่าง implement)
 
-1. **Export ทำที่ plugin หรือ server?** — plugin-side ทำได้ด้วย MCP tools ที่มี
-   (list-projects → search-knowledge/explore-graph → get-knowledge วนทีละ note) แต่
-   600+ notes จะช้า/เปลือง token; server-side (SecondBrain: endpoint
-   `GET /api/export/okf/{project}`) เร็วกว่าและ deterministic
-   → **เสนอ: server endpoint + MCP tool ใหม่ `export-okf`** ตาม pattern แบ่งชั้นของ
-   SERVER_ANALYSIS.md (deterministic = server, judgment = plugin)
+1. **Export ทำที่ plugin หรือ server?** — **ตัดสินแล้ว (2026-07-10, #16):** v3.4 ทำ
+   **plugin-side** (catalog → get-knowledge วนทีละ note + เตือน token cost เมื่อ > 100
+   notes ตาม SKILL step 2) — server ที่ต่ออยู่ยังไม่มี endpoint และไม่ block feature;
+   server endpoint `GET /api/export/okf/{project}` + MCP tool `export-okf` จดเป็น
+   **candidate ฝั่ง SecondBrain** (ดู §5.1 ข้อ 1-3 ที่ต้องแก้ฝั่ง server อยู่แล้ว —
+   ทำพร้อมกันได้) — SKILL ออกแบบให้สลับไปเรียก server tool ได้โดยไม่แก้ mapping (§8 คือ contract กลาง)
 2. **`type` mapping** — OKF บังคับ `type`; brain ไม่มี field ตรง → derive จาก
    namespace tag `content/…` (เช่น `content/pattern` → `type: Pattern`) fallback =
    `Note`; ต้องกำหนดตาราง map ใน GRAPH_PROTOCOL
