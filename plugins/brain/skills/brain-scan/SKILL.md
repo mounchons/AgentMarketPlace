@@ -562,6 +562,7 @@ Never skip logging — this is how users track what was scanned across sessions.
 ```
 
 - `Source-Files`: ไฟล์หลักที่ note สรุปมา — backtick แยกต่อ path; ถ้าเยอะใช้ระดับ folder ได้ (เช่น `Controllers/`)
+- **Provenance 2 mechanism แยกกัน (§1 ข้อ 7):** note จาก brain-scan derive จากไฟล์ใน repo → ใช้ `Source-Files` ใน footer นี้เท่านั้น **ห้าม**เพิ่มบรรทัด `Source:` ซ้ำ; ข้อยกเว้นเดียว — note ที่สรุปเนื้อหาจาก **external URL** ที่พบในเอกสาร (เช่น doc ชี้ design ภายนอก แล้ว scan ไป fetch มาสรุป) → บรรทัดแรก `Source: <URL>` + ส่ง param `source` ตาม §1 ข้อ 7 (คู่กับ footer ตามปกติ — freshness ใช้ §5.2 ตาม commit เพราะมี footer)
 
 - `{scan_commit}` จาก Phase 1 — **hash เดียวกันทั้ง run** (ห้ามเรียก rev-parse ใหม่ระหว่าง run)
 - Note ที่ **update** → แทนที่ footer เดิมด้วยอันใหม่ (ห้ามซ้อนสอง footer)

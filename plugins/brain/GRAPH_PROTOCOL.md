@@ -26,6 +26,11 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
    - `fleeting`: quick thought, temporary note
    - `literature`: from external source, documentation, article
    - `note`: general (ค่า default ของ server เมื่อไม่ระบุ)
+7. **Resource pointer (v3.4)** — note ที่ derive จาก **external source** (URL/บทความ, เอกสารภายนอก, dashboard, ticket, บทสนทนา) ต้องมี pointer กลับต้นทางแบบ **dual-write**:
+   - ส่ง param `source` ของ `save-knowledge` (structured — provenance query ฝั่ง server)
+   - **และ**บรรทัด `Source: <pointer>` เป็นบรรทัดแรกของ content — จำเป็นเพราะ `get-knowledge` ยังไม่ expose field `source` (ตรวจ 2026-07-11) บรรทัดใน content คือช่องทางเดียวที่ผู้อ่าน/`brain-export` (§8.2) เห็น
+   - รูปแบบ pointer: URL เต็ม / path ไฟล์ / `conversation YYYY-MM-DD` / ticket id — แหล่งหลัก 1 บรรทัด แหล่งเสริมเขียนในเนื้อหาปกติ; pointer ที่เป็น URL ต้องผ่าน §6.2 ข้อ 2 ก่อน (strip credential)
+   - **ขอบเขต:** ใช้กับ external source เท่านั้น — note ที่ derive จาก**โค้ด/ไฟล์ใน repo** ใช้ `Source-Files` ใน Scan Metadata footer (§5.1) อยู่แล้ว ห้ามใส่ซ้ำสองที่ (สอง mechanism นี้แยกกัน: `Source:` = ของนอก repo + freshness ตาม §5.4, `Source-Files` = ของใน repo + freshness ตาม commit §5.2)
 
 เมื่อ **UPDATE note เดิม**:
 - ห้าม overwrite โดยไม่สร้าง changelog → ทำตาม Versioning Protocol
@@ -150,7 +155,7 @@ Search Strategy (เรียงจากเร็วไปลึก):
 
 1. **Scope:** เช็คเฉพาะ notes ของ project ปัจจุบัน (projectName ตรงกับ basename ของ cwd) — notes ข้าม project ให้ข้าม check (hash จาก repo อื่นเทียบกับ repo นี้ไม่ได้)
 2. Parse `Scanned-At-Commit` จาก notes ที่โหลด — "ใหม่ที่สุด" = อันที่ `Scanned-At` ล่าสุด; ถ้าอันใด hash ตรง HEAD → ถือว่าสดทันที; วันเดียวกันหลาย hash → ใช้อันใดก็ได้ (worst case คือเตือนเกินจริงแล้วถาม — ยอมรับได้)
-3. Note ไม่มี footer (pre-v3.2 หรือมาจาก brain-save) → **ข้าม check เงียบๆ** (backward compatible — ห้าม error)
+3. Note ไม่มี footer (pre-v3.2 หรือมาจาก brain-save) → **ข้าม check เงียบๆ** (backward compatible — ห้าม error) — **ยกเว้น** note มีบรรทัด `Source:` pointer (external-derived ตาม §1 ข้อ 7) → เช็คแบบ external ตาม §5.4 แทน
 4. **ตรวจ hash ก่อนคำนวณ:** `git cat-file -e "<hash>^{commit}"` — **ต้อง quote argument เสมอ** (PowerShell แตก `^{commit}` เป็น token ถ้าไม่ quote → คำสั่งพังทุกครั้งแม้ hash ถูก) — fail → ไปข้อ 7
 5. `git rev-parse --short HEAD` ตรงกับ hash → สด — ใช้ตอบได้เลย ไม่ต้องแสดงอะไร
 6. ไม่ตรง → `git rev-list "<hash>..HEAD" --count` = N — **N > 0** → เตือน + **ถามก่อน**:
@@ -174,6 +179,22 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 3. Fallback สุดท้าย: latest note date + `git log --since="{date}"`
 
 > **Tag detection (v3.2):** `git diff` จับได้แค่ไฟล์ — **tag เป็น ref ไม่ใช่ไฟล์** จึงไม่ surface ใน diff. Smart Scan ต้องเช็ค tag ใหม่แยก: `git tag --contains "{last_scan_commit}"` (tag ที่ชี้ commit หลัง scan ล่าสุด) หรือเทียบ latest tag creatordate กับ note. **Phase 7.5 Release re-run ทุก incremental scan เสมอ** (`git tag -l` ต้นทุนต่ำมาก) เพื่อกัน Release History ค้าง stale เมื่อ tag ทับ commit ที่ scan ไปแล้ว (เคสปกติของการ cut release)
+
+### 5.4 External Source Freshness (v3.4)
+
+ครอบ note ที่ derive จาก **external source** (มีบรรทัด `Source:` ตาม §1 ข้อ 7 แต่**ไม่มี** Scan Metadata footer — ถ้ามี footer ให้ใช้ §5.2 ตาม commit ซึ่งแม่นกว่า):
+
+1. **ไม่มี commit ให้เทียบ** — ใช้เกณฑ์อายุ: ถ้า note ถูกใช้เป็นแหล่งหลักของคำตอบ และอายุ (จาก `Created:`/`updatedAt` ที่ server แสดง) **เกิน 90 วัน** → เตือน + ถามก่อน:
+   ```
+   ⚠️ ความรู้นี้มาจาก external source บันทึกเมื่อ {date} ({N} วันก่อน) — ต้นทางอาจเปลี่ยนแล้ว
+   Source: {pointer}
+   [1] เปิด/fetch source ซ้ำแล้ว update note ก่อนตอบ (แนะนำเมื่อ pointer เป็น URL/ไฟล์ที่เข้าถึงได้)
+   [2] ตอบจากข้อมูลเดิม (ระบุวันที่บันทึกในคำตอบ)
+   ```
+2. Pointer ที่ **fetch ซ้ำไม่ได้** (`conversation YYYY-MM-DD`, meeting, ticket ระบบปิด) → ข้าม check เงียบๆ — เตือนได้อย่างเดียวว่าข้อมูลเป็น snapshot ณ วันนั้นเมื่อ user ถามเจาะจง
+3. **จำคำตอบต่อ session** เหมือน §5.2 ข้อ 8 (ถามครั้งเดียวต่อ session ไม่ว่าจะเจอกี่ note)
+4. **Never block** — fetch fail / URL ตาย → แจ้งสั้นๆ ว่า source ไม่ available แล้วตอบจากข้อมูลเดิม (พร้อมระบุวันที่บันทึก); ห้าม error ห้ามวน retry
+5. user เลือก [1] → fetch แล้วต่างจาก note → update ผ่าน Versioning Protocol §2 (reason ระบุ "refresh from source")
 
 ## 6. Secret Masking Protocol
 
@@ -274,7 +295,7 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 | `type` (บังคับ) | **ลำดับแหล่ง:** (1) `category` ของ note (catalog แสดงเป็น `{note_type}/{category}` เช่น `permanent/pattern`) → TitleCase; (2) ไม่มี category → namespace tag `content/{x}` → TitleCase (ค่า hyphenated: ตัด `-` แล้ว capitalize ทุกคำ เช่น `content/how-to` → `HowTo`); (3) ไม่มีทั้งคู่ → `Note` | tag `content/*` หลายตัว → ตัวแรกตามลำดับ alphabetical (ห้ามพึ่งลำดับที่ server คืน — ไม่ stable, ทำ git diff เพี้ยน) — พบจาก round-trip test (2026-07-11): graph มี category field จริง (`pattern`/`overview`) ที่ mapping เดิมมองข้าม |
 | `title` | note title ตรงตัว | ห้ามแปลง — คือ identity |
 | `description` | summary 1 บรรทัด (จาก catalog หรือประโยคแรกของ content) | |
-| `resource` | pointer กลับต้นทาง ถ้า note มีบรรทัด `Source: <URL>` | convention เต็มจะกำหนดใน Feature #18 (resource field) — ระหว่างนี้ใช้บรรทัด `Source: <URL>` ใน content; ไม่มี → ละ field |
+| `resource` | pointer กลับต้นทาง จากบรรทัด `Source: <pointer>` ใน content (convention §1 ข้อ 7 — dual-write; อ่านจากบรรทัดเพราะ server ยังไม่ expose field `source` ผ่าน get-knowledge) | ไม่มีบรรทัด `Source:` → ละ field; เมื่อ server expose field แล้ว → อ่านจาก field ก่อน fallback มาบรรทัดนี้ |
 | `tags` | tags ทั้งหมดตาม canonical (รวม namespace tags — **ไม่ตัด `content/*` ออก**) | lossless: type เป็นค่า derive ซ้ำได้ |
 | `timestamp` | `updatedAt` ของ note (fallback: `createdAt`) ISO8601 | ⚠️ server ปัจจุบัน `get-knowledge` expose แค่ `Created:` → note ที่ update แล้วได้ timestamp เก่ากว่าจริง — จดเป็นงานฝั่ง SecondBrain; ระหว่างนี้ใช้ createdAt |
 | `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` / `note` (enum เต็มของ server — `note` = general default) | OKF อนุญาต key เพิ่ม — importer อื่นข้ามได้ |
@@ -288,7 +309,7 @@ Body = content ของ note ตรงตัว (รวม `## Version History`
 - `type` → ถ้า kebab-case(type) ตรง enum `category` ของ `save-knowledge` (concept/entity/pattern/decision/howto/overview/synthesis) → ส่งเป็น param `category` **เสมอ** (category เป็น first-class field); ไม่ตรง enum → tag `content/{kebab-case(type)}` (เช่น `Runbook` → `content/runbook`); `type: Note`/`Index` → ไม่เพิ่มอะไร; clause "ถ้า tags ใน frontmatter มี `content/*` อยู่แล้ว → ไม่ derive ซ้ำ" ใช้กับ**branch derive-tag เท่านั้น** — ไม่ suppress การส่ง category param
 - **folderPath ขา upsert:** note ที่ title ชนของเดิม → **คง folderPath เดิมจาก catalog** (ห้ามย้าย folder เป็น side effect ของ import — graph จริงมี casing ปน เช่น `/projects/AgentMarketPlace/` กับ `/projects/agentmarketplace/`; ส่ง path ที่ derive ใหม่จะสร้าง casing ที่สาม); bundle dir ต่างจาก folder เดิม → รายงานใน dry-run ไม่ย้ายเอง — note ใหม่เท่านั้นที่ใช้ folderPath จาก directory tree
 - `note_type` มีและอยู่ใน enum (`note`/`fleeting`/`literature`/`permanent`) → ใช้ตรงตัว; ไม่มีหรือค่านอก enum (bundle จากระบบอื่น) → default `literature` (ความรู้จาก external source ตามนิยาม §1) + จดใน report
-- `resource` → ส่งเป็น param `source` ของ `save-knowledge` (ตรวจแล้ว 2026-07-11: tool มี field นี้จริง — provenance queries) + บรรทัด `Source: <URL>` ใน content เฉพาะเมื่อยังไม่มี (กันซ้ำกับ bundle ที่ body มี `Source:` อยู่แล้ว); convention เต็มกำหนดใน #18
+- `resource` → dual-write ตาม §1 ข้อ 7: ส่งเป็น param `source` ของ `save-knowledge` + บรรทัด `Source: <pointer>` ใน content เฉพาะเมื่อยังไม่มี (กันซ้ำกับ bundle ที่ body มี `Source:` อยู่แล้ว)
 - `timestamp` → ไม่ round-trip — server กำหนด createdAt/updatedAt เองตอน save; `description` → ไม่ส่ง (server derive summary เอง)
 - tags ทุกตัวผ่าน Tag Taxonomy write gate (§1) เสมอ — **lossless-first**: ใช้ชุดจาก frontmatter ตามเดิม เติมได้เฉพาะเมื่อขาด minimum (project tag / ครบ 2 ตัว — ขา import ใช้เกณฑ์นับจำนวนเท่านั้น ไม่บังคับ domain-tag composition ของ §1 ซึ่งใช้กับขา save ปกติ) และต้องรายงานทุก tag ที่เติม
 

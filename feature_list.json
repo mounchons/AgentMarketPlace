@@ -2602,8 +2602,8 @@
         {
           "id": "18.2",
           "description": "GRAPH_PROTOCOL §1 เพิ่มกติกา resource + §5 Freshness ขยายครอบ external source (staleness check เทียบ resource ที่ fetch ซ้ำได้); brain-save + brain-scan SKILL.md อ้างกติกาใหม่; brain-export (#16) map resource → frontmatter, brain-import (#17) map ย้อนทาง",
-          "done": false,
-          "committed_at": null,
+          "done": true,
+          "committed_at": "2026-07-10T23:58:12.578Z",
           "commits": [],
           "depends_on": [
             "18.1"
@@ -2630,7 +2630,7 @@
           ]
         }
       ],
-      "last_committed_subtask": "18.1",
+      "last_committed_subtask": "18.2",
       "acceptance_criteria": [
         "GRAPH_PROTOCOL §1 มีกติกา resource pointer สำหรับ external-derived notes + §5 ครอบ external source staleness",
         "brain-save/brain-scan อ้างกติกา resource; export/import map resource ↔ frontmatter สองทาง",
@@ -2684,7 +2684,7 @@
     "in_progress": 1,
     "blocked": 0,
     "pending": 0,
-    "last_updated": "2026-07-10T23:55:41.486Z",
+    "last_updated": "2026-07-10T23:58:12.578Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": {

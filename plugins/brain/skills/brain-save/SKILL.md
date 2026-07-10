@@ -40,6 +40,7 @@ ALL responses MUST be in Thai language.
    - tags: [project-name, topic-keywords...] (lowercase, minimum 2 tags per Graph Protocol)
    - folderPath: `/projects/{project-name}/{category}/` (per Graph Protocol)
    - projectName: from working directory
+   - **Resource pointer (Graph Protocol §1 ข้อ 7):** ความรู้ derive จาก external source (URL/บทความ/เอกสารนอก repo/ticket/บทสนทนา) → dual-write: บรรทัดแรกของ content = `Source: <pointer>` **และ**ส่ง param `source` ตอน save; URL ต้อง strip credential ก่อน (§6.2 ข้อ 2); ความรู้จากบทสนทนา → `Source: conversation YYYY-MM-DD`; **ห้าม**ใช้กับความรู้จากโค้ดใน repo (นั่นคืองาน Scan Metadata ของ brain-scan — §5.1)
 
    **Auto-link related notes:**
    - Call `mcp__graph-brain__search-knowledge` query="{topic keywords}" limit=5
@@ -54,7 +55,7 @@ ALL responses MUST be in Thai language.
    - If [1] → call `mcp__graph-brain__save-bookmark` url="{url}" title="{title}" tags=[{tags}]
 
 4. **Save** (for new notes)
-   - Call `mcp__graph-brain__save-knowledge`
+   - Call `mcp__graph-brain__save-knowledge` — external-derived note ต้องส่ง `source` param คู่กับบรรทัด `Source:` ใน content (§1 ข้อ 7)
    - Report result in Thai with title, tags, links, relationships created
 
 4a. **Update with Versioning** (when updating existing note)
