@@ -171,7 +171,19 @@ lossless-first tag augmentation, `Source:` line กันซ้ำ, foreign inde
    normalize/drop lines
 6. **upsert preserve field ที่ omit** — `category` (pattern/overview) รอดหลัง upsert ที่ไม่ส่ง param ✅
 7. server **re-parse wikilinks ตอน save** — Data Templates note เดิมมี LINKS_TO 1 edge ทั้งที่ content มี
-   2 wikilinks; หลัง re-save ได้ 2 edges (import ช่วยซ่อม link edge ที่หายเป็น side effect เชิงบวก)
+   2 wikilinks; หลัง re-save ได้ 2 edges (import ช่วยซ่อม link edge ที่หายเป็น side effect เชิงบวก) —
+   นัยกลับด้าน: server **ไม่ backfill edge** ให้ note ที่ link ไป title ซึ่งเพิ่งถูกสร้างทีหลัง → create-heavy
+   bundle ต้อง re-save รอบสอง (ดู §8.3)
+8. ⚠️ **upsert-by-title เป็น GLOBAL scope (พิสูจน์ 2026-07-11 ด้วย probe ใน project ทิ้ง OkfTest):**
+   save title เดิมด้วย projectName=OkfTest2 → **Updated (v2) id เดิม** ไม่ create ใหม่ — projectName ไม่ scope
+   การ match → import ต้องเช็ค title ชนข้าม project ก่อน create เสมอ (ไม่งั้นทับ note ของ project อื่นเงียบๆ);
+   จดเป็นงานฝั่ง SecondBrain: ระบุ scope ใน tool description หรือทำ per-project upsert
+9. **tags เป็น union ตอน upsert** — tag เดิมไม่ถูกลบ (probe เดียวกัน: tags รวมเป็น okftest2+content/runbook+okftest);
+   การ "ลบ tag" ผ่าน save-knowledge ทำไม่ได้
+10. AC1 create path ทดสอบจริงแล้ว (2026-07-11): minimal-OKF (type อย่างเดียว, title จาก H1 fallback) →
+   "Created" ใน project OkfTest, tag `content/runbook` ผ่าน taxonomy, type default literature ✅
+   (หมายเหตุ audit: reason ใน NoteHistory ของ round-trip ใช้ UTC date `2026-07-10` — เวลาไทย 06:14 ของ 07-11
+   เป็น run เดียวกัน)
 
 ## 6. สิ่งที่ *ไม่ทำ* ใน v3.4
 

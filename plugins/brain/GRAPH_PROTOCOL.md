@@ -21,10 +21,11 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
    - categories: core, workflow, database, dependencies, permissions, integration, frontend, releases, deployment, requirements, documents, changelog
 4. **Duplicate check** — เรียก `mcp__graph-brain__search-knowledge` query="{title}" limit=3 ก่อน save เสมอ
 5. **Wiki links** — search related notes แล้วเพิ่ม `[[Related Note Title]]` ใน content
-6. **type** — เลือกให้ถูก:
+6. **type** — เลือกให้ถูก (enum ฝั่ง server มี 4 ค่า):
    - `permanent`: refined knowledge, architecture, patterns
    - `fleeting`: quick thought, temporary note
    - `literature`: from external source, documentation, article
+   - `note`: general (ค่า default ของ server เมื่อไม่ระบุ)
 
 เมื่อ **UPDATE note เดิม**:
 - ห้าม overwrite โดยไม่สร้าง changelog → ทำตาม Versioning Protocol
@@ -70,6 +71,9 @@ description: Shared rules for all brain skills — Save Rules, Versioning Protoc
 
 > **Upsert semantics (สำคัญ):** `save-knowledge` ด้วย **title เดิม** = update note เดิม (server upsert by title
 > และเก็บ content เก่าเป็น version snapshot อัตโนมัติ) — **ไม่สร้าง note ซ้ำ** ห้ามเปลี่ยน title ตอน update
+> ⚠️ **Scope = GLOBAL by title (พิสูจน์ 2026-07-11):** การ match ไม่ scope ต่อ project — save ด้วย title ที่มีอยู่ใน
+> project อื่น จะ **update note ของ project อื่นนั้น** แม้ส่ง projectName ต่างกัน; และ **tags เป็น union**
+> (tag เดิมไม่ถูกลบด้วย upsert) — ทุก skill ที่ save ด้วย title ใหม่ต้องเช็คก่อนว่า title ไม่ชนข้าม project
 > ทางเลือกที่ตรงกว่า: `mcp__graph-brain__update-knowledge` (ระบุ noteId) ให้ผลเดียวกันแบบ explicit
 > ฝั่ง history: server มี `get-note-history` / `restore-note-version` ใช้ดู/ย้อน version ได้โดยตรง —
 > changelog notes ในโปรโตคอลนี้เป็น layer เสริมที่ search ได้และ link ใน graph (ตั้งใจให้มีทั้งสองชั้น)
@@ -198,8 +202,10 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 
 ก่อน save note ที่ derive จาก config/deployment → scan content หา pattern ทั้งชุด — ถ้าเจอ = ยังไม่ได้ mask → แก้ก่อน save:
 
-- **key=value / key:value** (ครอบทั้ง `.env`/connection-string form และ JSON/YAML form): `Password\s*[:=]`, `Pwd\s*[:=]`, `passwd\s*[:=]`, `AccountKey\s*[:=]`, `client_secret\s*[:=]`, `User Id=`, `Uid=`
-- **URL/signature:** `sig=`, `://[^/]*:[^/]*@` (userinfo ใน URL)
+- **key=value / key:value** (ครอบทั้ง `.env`/connection-string form และ JSON/YAML form): `Password\s*[:=]`, `Pwd\s*[:=]`, `passwd\s*[:=]`, `AccountKey\s*[:=]`, `client_secret\s*[:=]`, `ClientSecret\s*[:=]`, `SecretAccessKey\s*[:=]`, `aws_secret_access_key\s*[:=]`, `ApiKey\s*[:=]`, `private_key\s*[:=]`, `User Id=`, `Uid=` (ชุดนี้ต้อง sync กับ §6.1 — เจอรูปใหม่ใน §6.1 ที่ scan ไม่จับ ให้เพิ่ม pattern ทันที)
+- **URL/signature:** `sig=`, `://[^/]*:[^/]*@` (userinfo ใน URL — **ฝั่ง user ว่างได้** เช่น `redis://:pass@host` ต้องจับ)
+- **Masked value ไม่ใช่ hit:** ค่าเป็น `***` หรือ `<masked>` หลัง key = mask แล้วตาม §6.2 ข้อ 5 → รายงานเป็น info ได้ แต่**ไม่ถือเป็น secret hit** (ไม่งั้นเอกสารที่ mask ถูกต้อง — รวมโน้ตที่อธิบาย §6 เอง — จะ export/import ไม่ได้เลย); นโยบาย block-no-override ใช้กับค่า literal เท่านั้น
+- **Scan ที่ payload สุดท้าย:** ต้อง scan สิ่งที่จะเขียนจริงหลังประกอบเสร็จ (content หลังแปลง link/เติมบรรทัด `Source:` + ค่า field ทุกตัวรวม `source`/`resource`/title/description) — ห้าม scan input กลางทางแล้วเติมข้อมูลทีหลัง
 - **Token literals** (จับตัว token เองไม่ว่าอยู่ใน key อะไร): `AKIA`/`ASIA` + 16 ตัวอักษร (AWS), `ghp_`/`github_pat_` (GitHub), `xox[baprs]-` (Slack), `sk-` (API key ทั่วไป/Anthropic/OpenAI), `eyJ` ต่อด้วย base64 ยาว (JWT), `Bearer ` + token ยาว, `-----BEGIN` (PEM key)
 
 > ชุด pattern นี้ใช้ทั้งขา save เข้า brain และขา export ลง bundle (§8.5) — ขา export สำคัญกว่าเพราะไฟล์ไป git/แชร์ต่อ และครอบ notes เก่าที่ save ก่อนมี masking rules
@@ -257,7 +263,7 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
   2. ไม่มี catalog tool → `explore-graph` depth=1 หา Folder node
   3. ยังไม่ได้ → **infer จาก tags**: tag `changelog` → `changelog/` เสมอ; ไม่งั้น tag ที่ตรงชื่อ category ใน §1 — **match ทั้งรูปเอกพจน์และพหูพจน์** (domain tag §1 เป็นเอกพจน์ `dependency`/`permission`/`document`/`release`/`requirement` แต่ category เป็นพหูพจน์ → map เอกพจน์เข้า category พหูพจน์ให้เสมอ); ถ้า match หลายตัว เลือกตัวที่คำนั้นปรากฏใน title ก่อน, ไม่มีในไทเทิลเลย → ตัวแรกตามลำดับ §1; ไม่ match เลย → `core/`
   4. ทุกครั้งที่ใช้ข้อ 3 → รายงาน user ว่า folder เป็นการเดา (อาจไม่ตรง graph จริง)
-- **filename slug** จาก title: lowercase (เฉพาะ ASCII), whitespace และ em-dash `—`/en-dash `–` → `-`, **ตัดทิ้ง**: อักขระต้องห้ามของ filesystem (`\ / : * ? " < > |`), `#`, backtick, วงเล็บ `( ) [ ]`, `+`, `&`, `,`, `%`, `'`, `@`, `;`, `=` (กัน URL-hostile filename), ยุบ `-` ซ้ำ, ตัด `-` หัวท้าย; อักษร non-ASCII (ไทย ฯลฯ) คงไว้ตามเดิม; slug ว่างหลังตัดทั้งหมด → ใช้ `untitled`; ชื่อชน → ต่อท้าย `-2`, `-3`
+- **filename slug** จาก title: lowercase (เฉพาะ ASCII), whitespace และ em-dash `—`/en-dash `–` → `-`, **ตัดทิ้ง**: อักขระต้องห้ามของ filesystem (`\ / : * ? " < > |`), `#`, backtick, วงเล็บ `( ) [ ]`, `+`, `&`, `,`, `%`, `'`, `@`, `;`, `=` (กัน URL-hostile filename), ยุบ `-` ซ้ำ, ตัด `-` หัวท้าย; อักษร non-ASCII (ไทย ฯลฯ) คงไว้ตามเดิม; slug ว่างหลังตัดทั้งหมด → ใช้ `untitled`; slug ที่ได้เท่ากับ `log` หรือ `index` → ต่อท้าย `-2` เสมอ (reserved โดยความหมาย OKF: `log.md` = change history, `index.md` = MOC/index — §8.4); ชื่อชน → ต่อท้าย `-2`, `-3`
 - **Path safety:** segment `{project}` และ `{category}` ใน output path ต้องผ่านกฎตัดอักขระชุดเดียวกับ slug (ห้ามมี `/ \ :` หรือ segment `..`) — ค่าสองตัวนี้มาจาก graph/argument ภายนอก ห้ามใช้ verbatim
 - ⚠️ **identity ของ note = frontmatter `title` ไม่ใช่ filename** — slug ใช้แค่ให้ไฟล์ไม่ชนกัน; import ต้อง match note ด้วย title เสมอ (upsert by title ตาม §2)
 
@@ -271,7 +277,7 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 | `resource` | pointer กลับต้นทาง ถ้า note มีบรรทัด `Source: <URL>` | convention เต็มจะกำหนดใน Feature #18 (resource field) — ระหว่างนี้ใช้บรรทัด `Source: <URL>` ใน content; ไม่มี → ละ field |
 | `tags` | tags ทั้งหมดตาม canonical (รวม namespace tags — **ไม่ตัด `content/*` ออก**) | lossless: type เป็นค่า derive ซ้ำได้ |
 | `timestamp` | `updatedAt` ของ note (fallback: `createdAt`) ISO8601 | ⚠️ server ปัจจุบัน `get-knowledge` expose แค่ `Created:` → note ที่ update แล้วได้ timestamp เก่ากว่าจริง — จดเป็นงานฝั่ง SecondBrain; ระหว่างนี้ใช้ createdAt |
-| `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` | OKF อนุญาต key เพิ่ม — importer อื่นข้ามได้ |
+| `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` / `note` (enum เต็มของ server — `note` = general default) | OKF อนุญาต key เพิ่ม — importer อื่นข้ามได้ |
 | `project` (extension) | projectName | ให้ bundle self-describing |
 
 Body = content ของ note ตรงตัว (รวม `## Version History`, `## Scan Metadata` — เป็นเนื้อหา) **ยกเว้น**:
@@ -279,25 +285,26 @@ Body = content ของ note ตรงตัว (รวม `## Version History`
 - **strip MCP display metadata** — `get-knowledge` แถมของที่ไม่ใช่ content: header block ต้นไฟล์ (`# {title}` + บรรทัด `**Type:** ... | **Tags:** ...` + `**Created:** ...`) และ trailer `**Links to:** ...` ท้ายไฟล์ (มี noteId ดิบ) — ต้องตัดทั้งสองส่วนก่อนเขียน ไม่งั้น title ซ้ำสองชั้น + noteId หลุดเข้า bundle
 
 **Reverse mapping (import — ใช้ใน brain-import):**
-- `type` → ถ้า kebab-case(type) ตรง enum `category` ของ `save-knowledge` (concept/entity/pattern/decision/howto/overview/synthesis) → ส่งเป็น param `category` (ไม่ต้องเพิ่ม tag `content/*` ซ้ำ — category เป็น first-class field); ไม่ตรง enum → tag `content/{kebab-case(type)}` (เช่น `Runbook` → `content/runbook`); `type: Note`/`Index` → ไม่เพิ่มอะไร; ถ้า tags ใน frontmatter มี `content/*` อยู่แล้ว → ใช้ของ tags ไม่ derive ซ้ำ
+- `type` → ถ้า kebab-case(type) ตรง enum `category` ของ `save-knowledge` (concept/entity/pattern/decision/howto/overview/synthesis) → ส่งเป็น param `category` **เสมอ** (category เป็น first-class field); ไม่ตรง enum → tag `content/{kebab-case(type)}` (เช่น `Runbook` → `content/runbook`); `type: Note`/`Index` → ไม่เพิ่มอะไร; clause "ถ้า tags ใน frontmatter มี `content/*` อยู่แล้ว → ไม่ derive ซ้ำ" ใช้กับ**branch derive-tag เท่านั้น** — ไม่ suppress การส่ง category param
 - **folderPath ขา upsert:** note ที่ title ชนของเดิม → **คง folderPath เดิมจาก catalog** (ห้ามย้าย folder เป็น side effect ของ import — graph จริงมี casing ปน เช่น `/projects/AgentMarketPlace/` กับ `/projects/agentmarketplace/`; ส่ง path ที่ derive ใหม่จะสร้าง casing ที่สาม); bundle dir ต่างจาก folder เดิม → รายงานใน dry-run ไม่ย้ายเอง — note ใหม่เท่านั้นที่ใช้ folderPath จาก directory tree
-- `note_type` มี → ใช้ตรงตัว; ไม่มี (bundle จากระบบอื่น) → default `literature` (ความรู้จาก external source ตามนิยาม §1)
+- `note_type` มีและอยู่ใน enum (`note`/`fleeting`/`literature`/`permanent`) → ใช้ตรงตัว; ไม่มีหรือค่านอก enum (bundle จากระบบอื่น) → default `literature` (ความรู้จาก external source ตามนิยาม §1) + จดใน report
 - `resource` → ส่งเป็น param `source` ของ `save-knowledge` (ตรวจแล้ว 2026-07-11: tool มี field นี้จริง — provenance queries) + บรรทัด `Source: <URL>` ใน content เฉพาะเมื่อยังไม่มี (กันซ้ำกับ bundle ที่ body มี `Source:` อยู่แล้ว); convention เต็มกำหนดใน #18
 - `timestamp` → ไม่ round-trip — server กำหนด createdAt/updatedAt เองตอน save; `description` → ไม่ส่ง (server derive summary เอง)
-- tags ทุกตัวผ่าน Tag Taxonomy write gate (§1) เสมอ — **lossless-first**: ใช้ชุดจาก frontmatter ตามเดิม เติมได้เฉพาะเมื่อขาด minimum §1 (project tag / ครบ 2 ตัว) และต้องรายงานทุก tag ที่เติม
+- tags ทุกตัวผ่าน Tag Taxonomy write gate (§1) เสมอ — **lossless-first**: ใช้ชุดจาก frontmatter ตามเดิม เติมได้เฉพาะเมื่อขาด minimum (project tag / ครบ 2 ตัว — ขา import ใช้เกณฑ์นับจำนวนเท่านั้น ไม่บังคับ domain-tag composition ของ §1 ซึ่งใช้กับขา save ปกติ) และต้องรายงานทุก tag ที่เติม
 
 ### 8.3 Link Conversion
 
 - **Export:** `[[Title]]` ที่ resolve เป็น note ใน project เดียวกัน → relative markdown link คำนวณ**จาก directory ของไฟล์ต้นทางเสมอ**: ต้นทางอยู่ root ของ bundle (เช่น `index.md`) → `{category}/{slug}.md`; ต้นทางอยู่ category → same dir = `{slug}.md`, ข้าม category = `../{category}/{slug}.md`; resolve ไม่ได้ (โน้ตข้าม project / broken link) → **คง `[[Title]]` ตามเดิม** + รายงานใน export report (ห้ามเงียบหาย — โยง broken-wikilinks check ของ §7)
 - **Link table ต้องรวม MOC:** title ที่ตรง MOC pattern (§8.4) map ไปที่ `index.md` (root) / `{category}/index.md` — **ไม่ใช่** slug ปกติ (ไม่งั้น wikilink `[[{Project} — MOC: Database]]` ใน MOC หลักจะชี้ไฟล์ที่ไม่มีจริง)
-- **Import:** relative `.md` link → อ่าน frontmatter title ของไฟล์เป้าหมาย → `[[Title]]`; `[[...]]` ที่คงอยู่ในไฟล์ → เก็บตามเดิม (server สร้าง LINKS_TO อัตโนมัติเมื่อ title มีจริง)
+- **Import:** `.md` link ทั้ง **relative** และ **root-absolute** (`[x](/tables/customers.md)` — นับจาก bundle root, เป็นรูปแบบตามตัวอย่าง OKF ของ Google) → resolve เข้า title table (title ตาม identity fallback ของ importer — ไม่จำกัดแค่ frontmatter) → `[[Title]]`; `[[...]]` ที่คงอยู่ในไฟล์ → เก็บตามเดิม
+- **Server สร้าง LINKS_TO เฉพาะ ณ เวลา save และไม่ backfill ย้อนหลัง** (พิสูจน์ 2026-07-11: note ที่ wikilink ชี้ title ซึ่งยังไม่มีจะไม่ได้ edge แม้ note เป้าหมายถูกสร้างทีหลัง) → bundle ที่มี **create** หลายใบ link ถึงกัน: หลังเขียนครบทุกใบ ให้ **re-save รอบสอง**เฉพาะใบที่มี wikilink ชี้ไป note ที่ถูก create ทีหลัง เพื่อให้ edge ครบ
 
 ### 8.4 MOC ↔ index.md
 
 - MOC note (`"{Project} — MOC (Map of Content)"`) → `index.md` ที่ root ของ bundle (ไม่ export ซ้ำเป็นไฟล์ปกติ); sub-MOC (`"{Project} — MOC: {Category}"`) → `{category}/index.md`
 - **MOC candidate ที่ไม่ตรง pattern** (note ติด tag `moc`/`index` หรือ title มี "Knowledge Map"/"Index" ที่ทำหน้าที่ catalog อยู่แล้ว) → **ถาม user** ว่าใช้เป็น `index.md` หรือ export เป็นไฟล์ปกติ + generate index แยก (ห้ามเดาเอง — กัน index ซ้อนสองชั้นใน bundle)
 - ไม่มี MOC → generate `index.md` จาก catalog (1 บรรทัด/note: `[Title](path) — summary`) + ระบุใน frontmatter `type: Index` ว่า generated — **แนะนำรัน `/brain-moc` ก่อน export** เพื่อได้ index ที่ curate แล้ว
-- Import: `index.md` ที่ derive จาก MOC (title ตรง MOC pattern) → สร้าง/อัปเดต MOC note ตาม §2 (ไม่ import เป็น note ธรรมดา); `index.md` ที่เป็น **generated index** (frontmatter `type: Index`) → **ข้าม** — ไม่ fabricate MOC note ที่ไม่เคยมีใน graph ต้นทาง (แนะนำ user รัน `/brain-moc` แทนถ้าต้องการ); `index.md` ที่ไม่เข้าทั้งสองเงื่อนไข (bundle จากระบบอื่น — เป็นเนื้อหาจริงตาม OKF progressive disclosure) → import เป็น note ปกติ
+- Import: `index.md` ที่ derive จาก MOC (title ตรง MOC pattern) → สร้าง/อัปเดต MOC note ตาม upsert semantics §2 + กติกา bulk import §8.5 (**ไม่สร้าง changelog note** — ไม่ใช่ §2 เต็มรูป) และไม่ import เป็น note ธรรมดา; `index.md` ที่เป็น **generated index** (frontmatter `type: Index`) → **ข้าม** — ไม่ fabricate MOC note ที่ไม่เคยมีใน graph ต้นทาง (แนะนำ user รัน `/brain-moc` แทนถ้าต้องการ); `index.md` ที่ไม่เข้าทั้งสองเงื่อนไข (bundle จากระบบอื่น — เป็นเนื้อหาจริงตาม OKF progressive disclosure) → import เป็น note ปกติ
 
 ### 8.5 กติกาความปลอดภัย + ความสด
 
