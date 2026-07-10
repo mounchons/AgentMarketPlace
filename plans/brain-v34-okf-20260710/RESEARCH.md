@@ -133,6 +133,24 @@ import ใช้ mapping เดียวกันย้อนทาง; resource
 
 ---
 
+## 5.1 Smoke-test findings (2026-07-10 — export จริง AgentMarketplace 11 notes)
+
+ผลทดสอบ #16.3: bundle 12 ไฟล์ validate ผ่านครบ (frontmatter/links/index/count), secret 0 hits,
+unresolved wikilink 1 (broken link ใน graph เอง: `[[AgentMarketPlace - Integration Workflows]]`)
+
+**แก้ใน spec แล้ว (GRAPH_PROTOCOL §8):** folder fallback chain (catalog → explore-graph → tag
+inference + precedence), slug rules ครอบ `—`/`()`/`+`/`&`, strip MCP display metadata,
+MOC-candidate ต้องถาม user, timestamp remark
+
+**งานฝั่ง SecondBrain (จดไว้ — ไม่ block v3.4):**
+1. `get-knowledge` ไม่ expose `updatedAt` (มีแค่ `Created:`) → note ที่ update แล้วได้
+   timestamp เก่ากว่าจริงใน OKF frontmatter
+2. `get-knowledge` ไม่คืน `folderPath` → export ต้องพึ่ง catalog/explore-graph/เดาจาก tag
+3. `explore-graph` ไม่แสดง relationship type labels (ขัด display format §4) และ Folder node
+   โผล่แค่บาง note (5/11 ไม่มี — อาจไม่มี IN_FOLDER relationship จริงใน graph → ควรมี
+   backfill migration)
+4. `list-projects` note count ไม่ตรงจำนวนจริง (บอก 4 แต่ search-by-tags เจอ 11)
+
 ## 6. สิ่งที่ *ไม่ทำ* ใน v3.4
 
 - **ย้าย backend เป็นไฟล์ OKF** — เสีย graph traversal/versioning/freshness/cross-project (ดู §2)

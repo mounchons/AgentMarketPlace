@@ -1,5 +1,6 @@
 .bigbrain/
 .brain/
+.brain-export/
 .monitor/
 .superpowers/
 node_modules/

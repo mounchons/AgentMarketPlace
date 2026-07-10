@@ -246,7 +246,12 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 ```
 
 - directory = category จาก `folderPath` (`/projects/{project}/{category}/` → `{category}/`); note ที่อยู่ root ของ project (เช่น MOC) → root ของ bundle
-- **filename slug** จาก title: lowercase (เฉพาะ ASCII), whitespace → `-`, ตัดอักขระต้องห้ามของ filesystem (`\ / : * ? " < > |`) และ `#`/backtick, ยุบ `-` ซ้ำ, ตัด `-` หัวท้าย; อักษรไทยคงไว้ตามเดิม; ชื่อชน → ต่อท้าย `-2`, `-3`
+- **Folder determination fallback chain** (smoke-tested 2026-07-10 — `get-knowledge` ไม่คืน folderPath และ `explore-graph` แสดง Folder node ไม่ครบทุก note):
+  1. `get-project-catalog` (มี folder ต่อ note ครบ) — ทางหลัก
+  2. ไม่มี catalog tool → `explore-graph` depth=1 หา Folder node
+  3. ยังไม่ได้ → **infer จาก tags**: tag `changelog` → `changelog/` เสมอ; ไม่งั้น tag ที่ตรงชื่อ category ใน §1 — ถ้า match หลายตัว เลือกตัวที่คำนั้นปรากฏใน title ก่อน, ไม่มีในไทเทิลเลย → ตัวแรกตามลำดับ §1; ไม่ match เลย → `core/`
+  4. ทุกครั้งที่ใช้ข้อ 3 → รายงาน user ว่า folder เป็นการเดา (อาจไม่ตรง graph จริง)
+- **filename slug** จาก title: lowercase (เฉพาะ ASCII), whitespace และ em-dash `—`/en-dash `–` → `-`, **ตัดทิ้ง**: อักขระต้องห้ามของ filesystem (`\ / : * ? " < > |`), `#`, backtick, วงเล็บ `( )`, `+`, `&`, `,` (กัน URL-hostile filename), ยุบ `-` ซ้ำ, ตัด `-` หัวท้าย; อักษรไทยคงไว้ตามเดิม; ชื่อชน → ต่อท้าย `-2`, `-3`
 - ⚠️ **identity ของ note = frontmatter `title` ไม่ใช่ filename** — slug ใช้แค่ให้ไฟล์ไม่ชนกัน; import ต้อง match note ด้วย title เสมอ (upsert by title ตาม §2)
 
 ### 8.2 Frontmatter Mapping (graph → YAML)
@@ -258,11 +263,13 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 | `description` | summary 1 บรรทัด (จาก catalog หรือประโยคแรกของ content) | |
 | `resource` | pointer กลับต้นทาง ถ้า note มีบรรทัด `Source: <URL>` (convention #18) | ไม่มี → ละ field |
 | `tags` | tags ทั้งหมดตาม canonical (รวม namespace tags — **ไม่ตัด `content/*` ออก**) | lossless: type เป็นค่า derive ซ้ำได้ |
-| `timestamp` | `updatedAt` ของ note (fallback: `createdAt`) ISO8601 | |
+| `timestamp` | `updatedAt` ของ note (fallback: `createdAt`) ISO8601 | ⚠️ server ปัจจุบัน `get-knowledge` expose แค่ `Created:` → note ที่ update แล้วได้ timestamp เก่ากว่าจริง — จดเป็นงานฝั่ง SecondBrain; ระหว่างนี้ใช้ createdAt |
 | `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` | OKF อนุญาต key เพิ่ม — importer อื่นข้ามได้ |
 | `project` (extension) | projectName | ให้ bundle self-describing |
 
-Body = content ของ note ตรงตัว (รวม `## Version History`, `## Scan Metadata` — เป็นเนื้อหา) **ยกเว้น** wikilinks ถูกแปลงตาม §8.3
+Body = content ของ note ตรงตัว (รวม `## Version History`, `## Scan Metadata` — เป็นเนื้อหา) **ยกเว้น**:
+- wikilinks ถูกแปลงตาม §8.3
+- **strip MCP display metadata** — `get-knowledge` แถมของที่ไม่ใช่ content: header block ต้นไฟล์ (`# {title}` + บรรทัด `**Type:** ... | **Tags:** ...` + `**Created:** ...`) และ trailer `**Links to:** ...` ท้ายไฟล์ (มี noteId ดิบ) — ต้องตัดทั้งสองส่วนก่อนเขียน ไม่งั้น title ซ้ำสองชั้น + noteId หลุดเข้า bundle
 
 ### 8.3 Link Conversion
 
@@ -272,6 +279,7 @@ Body = content ของ note ตรงตัว (รวม `## Version History`
 ### 8.4 MOC ↔ index.md
 
 - MOC note (`"{Project} — MOC (Map of Content)"`) → `index.md` ที่ root ของ bundle (ไม่ export ซ้ำเป็นไฟล์ปกติ); sub-MOC (`"{Project} — MOC: {Category}"`) → `{category}/index.md`
+- **MOC candidate ที่ไม่ตรง pattern** (note ติด tag `moc`/`index` หรือ title มี "Knowledge Map"/"Index" ที่ทำหน้าที่ catalog อยู่แล้ว) → **ถาม user** ว่าใช้เป็น `index.md` หรือ export เป็นไฟล์ปกติ + generate index แยก (ห้ามเดาเอง — กัน index ซ้อนสองชั้นใน bundle)
 - ไม่มี MOC → generate `index.md` จาก catalog (1 บรรทัด/note: `[Title](path) — summary`) + ระบุใน frontmatter `type: Index` ว่า generated — **แนะนำรัน `/brain-moc` ก่อน export** เพื่อได้ index ที่ curate แล้ว
 - Import: `index.md` → สร้าง/อัปเดต MOC note ตาม §2 (ไม่ import เป็น note ธรรมดา)
 

@@ -36,7 +36,7 @@ ALL responses MUST be in Thai language.
 
 2. **Get catalog**
    - `mcp__graph-brain__get-project-catalog` project="{name}" → ได้ทุก note: title + summary + folder
-   - tool ไม่มี (server เก่ากว่า v1.1.0) → fallback: `search-by-tags` tags=["{project-lowercase}"] + `search-knowledge` เพื่อรวบรวมรายชื่อ note ให้ครบที่สุด แล้วแจ้ง user ว่า catalog ไม่มี อาจตกหล่น
+   - tool ไม่มี (server เก่ากว่า v1.1.0) → fallback: `search-by-tags` tags=["{project-lowercase}"] + `search-knowledge` เพื่อรวบรวมรายชื่อ note ให้ครบที่สุด แล้วแจ้ง user ว่า catalog ไม่มี อาจตกหล่น; folder ของแต่ละ note ใช้ **fallback chain §8.1** (explore-graph → tag inference) + รายงานเมื่อเป็นการเดา
    - 0 notes → แจ้ง user + แนะนำ `/brain-scan` ก่อน; จบ
    - **> 100 notes → เตือน token cost** (ต้อง `get-knowledge` ทีละใบ) แล้วถาม user ก่อนดำเนินการ; เสนอทางเลือก: export เฉพาะบาง category
 
@@ -46,7 +46,7 @@ ALL responses MUST be in Thai language.
 
 4. **Fetch + convert ทีละ note**
    - `mcp__graph-brain__get-knowledge` noteId → full content, tags, type, timestamps
-   - สร้างไฟล์ตาม §8.2 (frontmatter) + §8.3 (แปลง `[[wikilink]]` → relative link ด้วยตารางจาก step 3; resolve ไม่ได้ → คง `[[...]]` + เก็บเข้า unresolved list)
+   - สร้างไฟล์ตาม §8.2 (frontmatter + **strip MCP display metadata** หัว/ท้าย output ของ get-knowledge) + §8.3 (แปลง `[[wikilink]]` → relative link ด้วยตารางจาก step 3; resolve ไม่ได้ → คง `[[...]]` + เก็บเข้า unresolved list)
    - MOC note → `index.md` ตาม §8.4 (ห้าม export ซ้ำเป็นไฟล์ปกติ); ไม่มี MOC → generate index.md จาก catalog + แนะนำ user รัน `/brain-moc` เพื่อได้ index ที่ curate แล้ว
 
 5. **Pre-write secret check (MANDATORY — §8.5)**
