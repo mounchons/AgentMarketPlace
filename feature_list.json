@@ -106,7 +106,7 @@
       "progress": {
         "total": 3,
         "passed": 2,
-        "in_progress": 0
+        "in_progress": 1
       }
     }
   ],
@@ -2585,14 +2585,14 @@
       "priority": "medium",
       "complexity": "simple",
       "risk_level": "low",
-      "status": "pending",
+      "status": "in_progress",
       "blocked_reason": null,
       "subtasks": [
         {
           "id": "18.1",
           "description": "ตรวจจริงก่อน (Open Decision §5.5): graph-brain MCP save-knowledge รองรับ structured field อะไรบ้าง → เลือกที่เก็บ resource (metadata field ถ้ามี / convention บรรทัด 'Source:' ใน content ถ้าไม่มี) + จดผลใน RESEARCH.md",
-          "done": false,
-          "committed_at": null,
+          "done": true,
+          "committed_at": "2026-07-10T23:55:41.486Z",
           "commits": [],
           "depends_on": [],
           "files": [
@@ -2630,7 +2630,7 @@
           ]
         }
       ],
-      "last_committed_subtask": null,
+      "last_committed_subtask": "18.1",
       "acceptance_criteria": [
         "GRAPH_PROTOCOL §1 มีกติกา resource pointer สำหรับ external-derived notes + §5 ครอบ external source staleness",
         "brain-save/brain-scan อ้างกติกา resource; export/import map resource ↔ frontmatter สองทาง",
@@ -2641,7 +2641,7 @@
       "time_tracking": {
         "estimated_time": "30min",
         "actual_time": null,
-        "started_at": null,
+        "started_at": "2026-07-10T23:55:07.893Z",
         "completed_at": null
       },
       "dependencies": [
@@ -2681,16 +2681,16 @@
   "summary": {
     "total": 18,
     "passed": 17,
-    "in_progress": 0,
+    "in_progress": 1,
     "blocked": 0,
-    "pending": 1,
-    "last_updated": "2026-07-10T23:45:10.413Z",
+    "pending": 0,
+    "last_updated": "2026-07-10T23:55:41.486Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": {
         "assigned": 17,
         "done": 16,
-        "in_progress": 0,
+        "in_progress": 1,
         "pending_review": 0
       },
       "sonnet": {

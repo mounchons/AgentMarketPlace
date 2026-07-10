@@ -130,9 +130,15 @@ import ใช้ mapping เดียวกันย้อนทาง; resource
 5. **`resource` เก็บที่ไหน** — **ตรวจแล้ว (2026-07-11, #17):** `save-knowledge` มี
    param `source` จริง ("Where this knowledge came from — URL, bookmark id, ... Enables
    provenance queries") + มี `reason` สำหรับ upsert version history → #17 import ส่ง
-   `resource` เข้า `source` param + คงบรรทัด `Source: <URL>` ใน content (กันซ้ำเมื่อมีอยู่แล้ว);
-   #18 กำหนด convention ฝั่ง save/scan/export ให้ครบวง (export ควรอ่านจาก field ก่อน fallback
-   ไปบรรทัด `Source:` — ตอนนี้ `get-knowledge` ยังไม่ expose field นี้ → จดเป็นงานฝั่ง SecondBrain)
+   `resource` เข้า `source` param + คงบรรทัด `Source: <URL>` ใน content (กันซ้ำเมื่อมีอยู่แล้ว)
+   **ตัดสินแล้ว (2026-07-11, #18) — convention = dual-write:**
+   - **เขียน:** ทุก save ที่ derive จาก external source → ส่ง param `source` (structured,
+     provenance query ได้) **และ**บรรทัด `Source: <pointer>` เป็นบรรทัดแรกของ content
+   - **อ่าน:** จากบรรทัด `Source:` ใน content — เพราะ `get-knowledge` ยังไม่ expose field
+     `source` (ตรวจจริง #16.3) → บรรทัดใน content เป็นช่องทางเดียวที่ reader/exporter เห็น
+   - **งานฝั่ง SecondBrain (ไม่ block release):** expose `source` ใน get-knowledge/catalog
+     → เมื่อทำแล้ว export เปลี่ยนมาอ่านจาก field ก่อน fallback ไปบรรทัด `Source:` ได้เลย
+     (กติกาเต็มใน GRAPH_PROTOCOL §1 ข้อ 7)
 
 ---
 
