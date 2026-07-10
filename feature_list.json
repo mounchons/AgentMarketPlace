@@ -66,7 +66,7 @@
       "description": "รับ OKF (Google, v0.1 — formalized llm-wiki) เป็นชั้น export/import interchange ของ brain: ความรู้ใน Neo4j ออกเป็น portable markdown bundle (git/แชร์/static visualizer) + รับ bundle ภายนอกเข้า graph ผ่าน taxonomy+lint write gate + resource field convention — ไม่แทน backend (graph เหนือกว่า: traversal/versioning/freshness) — อ่าน plans/brain-v34-okf-20260710/RESEARCH.md ก่อนเริ่มทุก feature ห้ามค้นคว้าซ้ำ",
       "bounded_context": "Plugin Development",
       "features": [16, 17, 18],
-      "progress": { "total": 3, "passed": 0, "in_progress": 0 }
+      "progress": { "total": 3, "passed": 1, "in_progress": 0 }
     }
   ],
 
@@ -1028,7 +1028,7 @@
       "module": "brain", "layer": "application", "category": "feature",
       "description": "/brain-export → OKF bundle — dump ความรู้ per-project จาก graph เป็น OKF v0.1 directory (note → .md + YAML frontmatter type/title/description/resource/tags/timestamp, LINKS_TO/wikilink → relative markdown link, MOC → index.md, folderPath → directory tree), option --all-projects, output default .brain-export/{project}/ — ใช้ได้กับ git/แชร์ข้ามทีม/Google static HTML visualizer — spec เต็มใน plans/brain-v34-okf-20260710/RESEARCH.md §4 F1 + Open Decisions §5.1-5.3",
       "priority": "high", "complexity": "medium", "risk_level": "medium",
-      "status": "in_progress", "blocked_reason": null,
+      "status": "passed", "blocked_reason": null,
       "subtasks": [
         { "id": "16.1", "description": "ออกแบบ OKF mapping เป็น section ใหม่ใน GRAPH_PROTOCOL.md: ตาราง graph↔OKF (note→file, namespace tag content/*→type + fallback Note, wikilink [[Title]]→relative link + unresolved คงไว้และรายงาน, MOC→index.md, timestamp จาก updated_at) — ตัดสิน Open Decisions §5.2 §5.3 ที่นี่จุดเดียว", "done": true, "committed_at": "2026-07-10T21:30:00+07:00", "commits": ["c29defe"], "depends_on": [], "files": ["plugins/brain/GRAPH_PROTOCOL.md"] },
         { "id": "16.2", "description": "สร้าง skills/brain-export/SKILL.md — เลือก strategy ตาม Open Decision §5.1: ถ้า server (SecondBrain) มี/เพิ่ม endpoint export ได้ → เรียกผ่าน MCP; ถ้าไม่ → plugin-side วนด้วย MCP tools ที่มี (list-projects → search → get-knowledge) พร้อมเตือน token cost; รองรับ --all-projects + custom output dir; mask secrets ตาม GRAPH_PROTOCOL §6 ก่อนเขียนไฟล์", "done": true, "committed_at": "2026-07-10T21:35:00+07:00", "commits": ["b32ce7d"], "depends_on": ["16.1"], "files": ["plugins/brain/skills/brain-export/SKILL.md"] },
@@ -1043,15 +1043,26 @@
         "ไม่มี secret ใน bundle (Secret Masking Protocol §6 ครอบก่อนเขียนไฟล์)",
         "GRAPH_PROTOCOL.md มี OKF mapping section ที่ตัดสิน type mapping + link conversion ชัดเจน"
       ],
-      "time_tracking": { "estimated_time": "60min", "actual_time": null, "started_at": "2026-07-10T21:20:00+07:00", "completed_at": null },
+      "time_tracking": { "estimated_time": "60min", "actual_time": "~36min", "started_at": "2026-07-10T21:20:00+07:00", "completed_at": "2026-07-10T21:56:04+07:00" },
       "dependencies": [],
       "references": ["plans/brain-v34-okf-20260710/RESEARCH.md", "plans/brain-v33-llmwiki-20260710/SERVER_ANALYSIS.md", "plugins/brain/GRAPH_PROTOCOL.md"],
       "design_doc_refs": { "entity_ref": null, "api_ref": null, "section": null, "diagram_refs": [], "pending_updates": [] },
       "mockup_validated": false, "mockup_version": null, "mockup_page_refs": [], "required_components": [], "design_tokens_used": [], "responsive_breakpoints": null, "interactions": [], "version_history": [],
-      "sync_status": "n/a", "passes": false, "tested_at": null,
-      "verification_results": null,
-      "assigned_model": "opus", "is_reference_impl": false, "review": null,
-      "notes": "หลักคิด: OKF = pg_dump ของ brain (rich graph storage + dumb-portable interchange) — ไม่ย้าย backend. Server-side endpoint (SecondBrain) เป็น option ตาม §5.1 ถ้าเลือกทางนั้นให้จดฝั่ง server แยก repo เหมือน v3.3",
+      "sync_status": "n/a", "passes": true, "tested_at": "2026-07-10T21:56:04+07:00",
+      "verification_results": {
+        "build": "n/a (markdown plugin — no build)",
+        "claude_plugin_validate": "passed (ก่อนและหลัง review-fix)",
+        "ac1_okf_frontmatter": "ทุกไฟล์ใน bundle มี frontmatter type + title/description/tags/timestamp ครบ — ตรวจ 2 ทาง: agent เปิดครบ 12 ไฟล์ + node validation script อิสระ PASS",
+        "ac2_links": "index.md ที่ root (generated case §8.4 — ไม่มี MOC), wikilinks 10 ตัว resolve เป็น relative links ถูกทุกเส้น, unresolved 1 ([[AgentMarketPlace - Integration Workflows]] = broken link ใน graph เอง) คงเป็น [[...]] + รายงานใน RESEARCH §5.1 + activity log",
+        "ac3_real_export": "export จริง project AgentMarketplace 11 notes → 12 ไฟล์ 8 categories ที่ .brain-export/AgentMarketplace/ — structural validation PASS ทุกข้อ (frontmatter/links/index-coverage/count) จาก validator อิสระ",
+        "ac4_secrets": "0 hits ทุก pattern §6.3 (สแกน 2 ทาง: agent staging + node script) — และขยาย §6.3 เพิ่ม colon-form/token literals จาก adversarial finding",
+        "ac5_mapping_section": "GRAPH_PROTOCOL §8 (8.1-8.5) ตัดสิน type mapping (content/* TitleCase alphabetical-first + fallback Note), link conversion 2 ทิศ (จาก source dir เสมอ + MOC→index.md ใน link table), reverse mapping สำหรับ #17",
+        "smoke_findings_fixed": "7 findings จาก smoke test แก้ใน spec (folder fallback chain, slug rules, strip MCP metadata, MOC-candidate ask-user, timestamp remark) + 4 server-side findings จดใน RESEARCH §5.1",
+        "adversarial_verify": "Workflow wf_dea53d21-976 — 3 refuting verifiers (spec-consistency / security-safety / acceptance-criteria) ทุกตัว pass-with-findings, 0 critical/high: 5 medium + 6 low + cosmetic → แก้ครบใน 403b404 (เด่น: MOC link-table gap ที่จะพัง project ที่มี MOC, secret patterns ขาด colon-form/token literals, overwrite policy กว้างเกิน, gitignore ขัด value prop → ตัดสินเป็น intentional + git check-ignore warning); refuted 1 false positive (README backslash); accepted 2 (v3.4 label pre-release, commit hash ใน freshness header)",
+        "qa_nfr_gates": "n/a (plugin-internal feature; no acceptance_criteria_id / no qa-tracker.json in repo)"
+      },
+      "assigned_model": "opus", "is_reference_impl": true, "review": null,
+      "notes": "หลักคิด: OKF = pg_dump ของ brain (rich graph storage + dumb-portable interchange) — ไม่ย้าย backend. Decision §5.1: v3.4 plugin-side; server endpoint = SecondBrain candidate (พร้อม 4 server findings ใน RESEARCH §5.1). Smoke test เจอ server ไม่มี get-project-catalog ใน session เก่า → fallback path ถูก exercise จริง. is_reference_impl: ตัวแรกของ OKF pattern — #17 ต้องอ่าน §8 + feature นี้ก่อน",
       "added_at": "2026-07-10T21:15:49+07:00"
     },
     {
@@ -1123,14 +1134,14 @@
 
   "summary": {
     "total": 18,
-    "passed": 15,
+    "passed": 16,
     "in_progress": 0,
     "blocked": 0,
-    "pending": 3,
-    "last_updated": "2026-07-10T21:15:49+07:00",
+    "pending": 2,
+    "last_updated": "2026-07-10T21:56:04+07:00",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
-      "opus": { "assigned": 17, "done": 14, "in_progress": 0, "pending_review": 0 },
+      "opus": { "assigned": 17, "done": 15, "in_progress": 0, "pending_review": 0 },
       "sonnet": { "assigned": 1, "done": 1, "in_progress": 0, "pending_review": 0, "reviewed": 1 }
     }
   }

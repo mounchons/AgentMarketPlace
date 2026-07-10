@@ -602,3 +602,28 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 ### Current status:
 - Total: 18 | passed: 15 | pending: 3 (#16, #17, #18)
 - Next: /continue เริ่ม Feature #16 (brain-export)
+
+---
+
+## Session: 2026-07-10 (Feature #16 — brain-export OKF bundle)
+**Type**: Coding | **Model**: opus (Fable main-loop) + adversarial verification
+
+### What was done (4 subtasks + review-fix):
+- ✅ 16.1 GRAPH_PROTOCOL §8 OKF Interchange Mapping — bundle layout/slug, frontmatter graph↔OKF, link conversion 2 ทิศ, MOC↔index.md, secret+freshness rules (`c29defe`)
+- ✅ 16.2 skills/brain-export/SKILL.md — catalog-first + fallback chain, pre-write secret check, structural validation, per-note degrade (`b32ce7d`)
+- ✅ 16.3 Smoke test จริง: export AgentMarketplace 11 notes → 12-file bundle @ .brain-export/ — validation PASS 2 ทาง (agent + node script อิสระ), secret 0, unresolved wikilink 1 (broken ใน graph); 7 spec fixes จาก findings + 4 server-side findings → RESEARCH §5.1 (`b85b29c`)
+- ✅ 16.4 README เพิ่ม /brain-export (17 skills) ไม่ bump version — รอ #18 (`acbb1d7`)
+- 🔧 review-fix(#16): 3 refuting verifiers → 5 medium + 6 low แก้ครบ (`403b404`) — เด่น: MOC link-table gap (จะพังทุก project ที่มี MOC — path ที่ smoke test ไม่ครอบ), §6.3 secret patterns ขยาย colon-form + token literals, overwrite policy แคบลง (ห้ามล้าง dir ที่ไม่ใช่ bundle เดิม), reverse mapping สำหรับ #17
+
+### Verification Pipeline (v2.3.0):
+- Build: n/a (markdown plugin) | `claude plugin validate` ✅ ×2 (ก่อน/หลัง review-fix)
+- AC1 OKF frontmatter ✅ | AC2 links+unresolved reported ✅ | AC3 real export + validation ✅ | AC4 secrets 0 ✅ | AC5 §8 decidable ✅
+- QA+NFR gates: n/a | **Pipeline Result: PASSED**
+
+### Adversarial Verification (wf_dea53d21-976, 3 refuting verifiers, 253k tokens):
+- spec-consistency / security-safety / acceptance-criteria → ทั้งหมด pass-with-findings, **0 critical/high**
+- แก้ครบ 403b404; refuted 1 false positive (README backslash); accepted 2 (v3.4 label — #18 ปิด epic, commit hash ใน freshness header — verifier judged acceptable)
+
+### Current status:
+- Features passed: **16/18** | epic brain-v34-okf: 1/3 | opus done: 15
+- Next: **Feature #17 — /brain-import จาก OKF bundle** (ใช้ §8 reverse mapping ที่เพิ่มแล้ว + round-trip test กับ bundle จาก #16)
