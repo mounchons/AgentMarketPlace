@@ -16,7 +16,7 @@ ALL responses MUST be in Thai language.
 ## Why Export
 
 - **Portability:** ความรู้ใน Neo4j เข้าถึงได้เฉพาะผ่าน MCP — bundle เป็น markdown ธรรมดา เปิดได้ทุกที่ ลง git ได้ แชร์ให้ agent/ทีมที่ไม่มี graph-brain ได้
-- **Visualizer:** bundle ตามสเปก OKF เปิดด้วย static HTML visualizer ของ OKF ได้ (ไม่ต้องมี backend)
+- **Visualizer:** bundle ตามสเปก OKF v0.1 → เปิดด้วย static HTML visualizer ของ OKF ได้ตามสเปก (ไม่ต้องมี backend — ยังไม่ได้ทดสอบกับ visualizer จริง; structural validation ใน step 7 ยืนยันเฉพาะรูปแบบ bundle)
 - **ไม่ใช่ backup แทน server:** graph ยังเป็น source of truth — bundle คือ snapshot (ดู §8.5)
 
 ## Mode Detection

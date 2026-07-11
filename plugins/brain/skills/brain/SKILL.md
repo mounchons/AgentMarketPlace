@@ -20,13 +20,13 @@ ALL responses MUST be in Thai language regardless of input language.
 - Follow `[[wiki links]]` in loaded notes — load linked notes for complete context (max 3 hops)
 - If results < 3 and at least 1 result exists → use `mcp__graph-brain__explore-graph` nodeId="{best-result-id}" depth=2 to find connected knowledge through relationships
 
-### Step 1.5: Freshness Check (v3.2 — Freshness Protocol §5.2 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`)
+### Step 1.5: Freshness Check (v3.4 — Freshness Protocol §5.2 + §5.4 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`)
 
 ก่อนใช้ notes ตอบ — เช็คว่าความรู้ยังตรงกับโค้ดปัจจุบัน:
 
 1. เช็คเฉพาะ notes ของ project ปัจจุบัน (projectName ตรง basename ของ cwd) — notes ข้าม project ข้าม check
 2. Parse `Scanned-At-Commit` จาก `## Scan Metadata` ของ notes ที่โหลด — ใช้อันที่ `Scanned-At` ล่าสุด (อันใด hash ตรง HEAD → ถือว่าสดทันที)
-3. **ไม่มี footer เลย** (notes เก่า pre-v3.2 หรือจาก brain-save) → ข้าม check เงียบๆ ไป Step 2
+3. **ไม่มี footer เลย** (notes เก่า pre-v3.2 หรือจาก brain-save) → ข้าม check เงียบๆ ไป Step 2 — **ยกเว้น**มีบรรทัด `Source:` (external-derived §1 ข้อ 7) และ note เป็นแหล่งหลักของคำตอบ → เช็คอายุตาม **§5.4**: อายุ (ล่าสุดของ `Source-Checked:` / Version History / `Created:`) เกิน 90 วัน → เตือน + ถาม [1] fetch source ซ้ำแล้ว update [2] ตอบจากข้อมูลเดิม — **คนละคำถาม/คนละ session memory กับข้อ 6-8** (commit-staleness); ระบุอายุไม่ได้ → ข้าม
 4. ตรวจ hash มีจริงก่อน: `git cat-file -e "{hash}^{commit}"` — **ต้อง quote argument** (PowerShell แตก `^{commit}` ถ้าไม่ quote) — fail → ข้อ 7
 5. `git rev-parse --short HEAD` ตรงกับ hash → สด → ไป Step 2 (ไม่แสดงอะไร)
 6. ไม่ตรง → `git rev-list "{hash}..HEAD" --count` = N — **N > 0** → เตือน + **ถามก่อน**:

@@ -31,9 +31,9 @@ ALL responses MUST be in Thai language.
    - Call `mcp__graph-brain__get-knowledge` for top 5 results
    - Priority order: architecture → workflow → data model → integrations → config
 
-3.5. **Freshness Check (v3.2 — Freshness Protocol §5.2 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`)**
+3.5. **Freshness Check (v3.4 — Freshness Protocol §5.2 + §5.4 ใน `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md`)**
    - เช็คเฉพาะ notes ของ project ปัจจุบัน — parse `Scanned-At-Commit` จาก `## Scan Metadata` (ใช้อันที่ `Scanned-At` ล่าสุด)
-   - ไม่มี footer เลย → ข้ามเงียบๆ (notes เก่า/conversation knowledge — backward compatible)
+   - ไม่มี footer เลย → ข้ามเงียบๆ (notes เก่า/conversation knowledge — backward compatible) — **ยกเว้น**มีบรรทัด `Source:` (external-derived) → เช็คอายุตาม §5.4 แต่ **ไม่ถามตอน load**: นับจำนวนใบที่อายุเกิน 90 วันไว้แสดงใน Step 4 (คำถามเกิดครั้งแรกที่ note ถูกใช้ตอบจริงใน /brain)
    - ตรวจ hash ก่อน: `git cat-file -e "{hash}^{commit}"` (**ต้อง quote** — PowerShell แตก token) — fail → "ไม่สามารถระบุความสดได้" + ถามชุดด้านล่าง
    - `git rev-parse --short HEAD` ตรง → สด — ไม่เตือน/ไม่ถาม (สถานะไปแสดงเป็นบรรทัดเดียวใน Step 4)
    - ไม่ตรง → `git rev-list "{hash}..HEAD" --count` = N → เตือน + ถาม:
@@ -48,7 +48,7 @@ ALL responses MUST be in Thai language.
 
 4. **Report to user (Thai)**
    - If found: list loaded notes with descriptions
-   - Freshness status (from Step 3.5): "🔖 ความสด: ตรงกับ HEAD ({hash})" หรือ "⚠️ เก่ากว่าโค้ด {N} commits" หรือไม่แสดงถ้าไม่มี footer
+   - Freshness status (from Step 3.5): "🔖 ความสด: ตรงกับ HEAD ({hash})" หรือ "⚠️ เก่ากว่าโค้ด {N} commits" หรือไม่แสดงถ้าไม่มี footer; ถ้ามี external notes อายุเกิน 90 วัน (§5.4) → เพิ่ม "📎 external-source notes เก่ากว่า 90 วัน: {N} ใบ (จะถามเมื่อถูกใช้ตอบ)"
    - If project context available (from Step 1.5):
      - Show: "🏗️ Tech Stack: [{technologies}]"
      - Show: "🔗 Connected Projects: [{related project names}]"

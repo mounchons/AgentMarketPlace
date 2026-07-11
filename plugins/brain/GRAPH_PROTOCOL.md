@@ -184,17 +184,19 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 
 ครอบ note ที่ derive จาก **external source** (มีบรรทัด `Source:` ตาม §1 ข้อ 7 แต่**ไม่มี** Scan Metadata footer — ถ้ามี footer ให้ใช้ §5.2 ตาม commit ซึ่งแม่นกว่า):
 
-1. **ไม่มี commit ให้เทียบ** — ใช้เกณฑ์อายุ: ถ้า note ถูกใช้เป็นแหล่งหลักของคำตอบ และอายุ (จาก `Created:`/`updatedAt` ที่ server แสดง) **เกิน 90 วัน** → เตือน + ถามก่อน:
+1. **ไม่มี commit ให้เทียบ — ใช้เกณฑ์อายุ:** "อายุ" นับจาก**วันล่าสุด**ระหว่าง (ก) บรรทัด `Source-Checked: YYYY-MM-DD` ใต้ `Source:` ถ้ามี (ข) entry ล่าสุดใน `## Version History` (ค) `Created:` ที่ server แสดง — ห้ามใช้ `Created:` อย่างเดียว (note ที่เพิ่ง refresh จะโดนเตือนซ้ำตลอดกาลเพราะ `get-knowledge` ไม่ expose `updatedAt`); อายุ**เกิน 90 วัน** และ note ถูกใช้เป็นแหล่งหลักของคำตอบ → เตือน + ถามก่อน:
    ```
-   ⚠️ ความรู้นี้มาจาก external source บันทึกเมื่อ {date} ({N} วันก่อน) — ต้นทางอาจเปลี่ยนแล้ว
+   ⚠️ ความรู้นี้มาจาก external source บันทึก/ตรวจล่าสุดเมื่อ {date} ({N} วันก่อน) — ต้นทางอาจเปลี่ยนแล้ว
    Source: {pointer}
    [1] เปิด/fetch source ซ้ำแล้ว update note ก่อนตอบ (แนะนำเมื่อ pointer เป็น URL/ไฟล์ที่เข้าถึงได้)
    [2] ตอบจากข้อมูลเดิม (ระบุวันที่บันทึกในคำตอบ)
    ```
-2. Pointer ที่ **fetch ซ้ำไม่ได้** (`conversation YYYY-MM-DD`, meeting, ticket ระบบปิด) → ข้าม check เงียบๆ — เตือนได้อย่างเดียวว่าข้อมูลเป็น snapshot ณ วันนั้นเมื่อ user ถามเจาะจง
-3. **จำคำตอบต่อ session** เหมือน §5.2 ข้อ 8 (ถามครั้งเดียวต่อ session ไม่ว่าจะเจอกี่ note)
-4. **Never block** — fetch fail / URL ตาย → แจ้งสั้นๆ ว่า source ไม่ available แล้วตอบจากข้อมูลเดิม (พร้อมระบุวันที่บันทึก); ห้าม error ห้ามวน retry
-5. user เลือก [1] → fetch แล้วต่างจาก note → update ผ่าน Versioning Protocol §2 (reason ระบุ "refresh from source")
+   **จุดเช็ค:** `/brain` (query) เช็คเฉพาะ note ที่ใช้เป็นแหล่งหลักของคำตอบนั้น; `/brain-load` (session start) **ไม่ถาม** — แค่นับ external note ที่อายุเกินแล้วรายงานบรรทัดเดียวใน load summary (คำถามเกิดครั้งแรกที่ note ถูกใช้ตอบจริง)
+2. **Tie-break ด้วยรูปแบบ pointer:** pointer ที่เป็น **URL หรือ path ไฟล์** → ใช้ข้อ 1 เสมอ (รวม ticket ที่เป็น URL — fetch ไม่ได้ก็ตกข้อ 4 อยู่แล้ว); pointer ที่**ไม่ใช่** URL/path (`conversation YYYY-MM-DD`, meeting, ticket id เปล่าๆ) → fetch ซ้ำไม่ได้ → ข้าม check เงียบๆ — เตือนได้อย่างเดียวว่าข้อมูลเป็น snapshot ณ วันนั้นเมื่อ user ถามเจาะจง
+3. **จำคำตอบต่อ session** — กลไกเดียวกับ §5.2 ข้อ 8 แต่**คนละคำถาม คนละ memory** (commit-staleness กับ external-staleness ความหมาย [1] ต่างกัน) — แต่ละแบบถามได้อย่างมาก 1 ครั้งต่อ session
+4. **Never block** — fetch fail / URL ตาย → แจ้งสั้นๆ ว่า source ไม่ available แล้วตอบจากข้อมูลเดิม (พร้อมระบุวันที่บันทึก); ระบุอายุไม่ได้ (ไม่มี `Created:` / parse date ไม่ได้) → **ข้าม check** (catch-all เดียวกับ §5.2 ข้อ 10); ห้าม error ห้ามวน retry
+5. user เลือก [1] → fetch แล้วต่างจาก note → update ผ่าน Versioning Protocol §2 (reason ระบุ "refresh from source") **+ เขียน/อัปเดตบรรทัด `Source-Checked: {YYYY-MM-DD}` ใต้บรรทัด `Source:`** (ให้ข้อ 1 เห็นว่าเพิ่งตรวจ — แม้เนื้อหาไม่ต่างก็เขียนบรรทัดนี้ได้โดยไม่ต้องทำ §2 เต็มรูป)
+6. **Scope:** ตาม §5.2 ข้อ 1 (เฉพาะ project ปัจจุบัน) โดยเจตนา — age check ไม่พึ่ง git ก็จริง แต่ notes ข้าม project มักถูกโหลดเป็น context เสริม การเตือนทุก project ที่แตะจะ noisy เกิน; ถ้า note ข้าม project ถูกใช้เป็นแหล่งหลักจริง agent เตือนแบบ informational ได้โดยไม่ถาม
 
 ## 6. Secret Masking Protocol
 
