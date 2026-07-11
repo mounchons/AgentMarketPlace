@@ -656,3 +656,38 @@ Feature #4 — 6 subtasks (commit ราย subtask) + 4 review-fix หลัง
 
 ### Next feature:
 - Feature #18 (opus): resource field convention (GRAPH_PROTOCOL §1/§5 + brain-save/brain-scan) + bump v3.4.0 + marketplace sync + README changelog — ใช้ผลตรวจ #17 ว่า save-knowledge มี `source` param จริง (RESEARCH §5 ข้อ 5)
+
+---
+
+## Session: 2026-07-11 (Feature #18 — resource convention + release v3.4.0, ตัวปิด epic brain-v34-okf 🎉)
+**Type**: Coding (Feature #18, ตัวปิด epic) | **Model**: Fable 5 main-loop (>= opus per force_opus_all) + adversarial verification
+
+### What was done (3 subtasks + review-fix):
+- ✅ 18.1 ปิด Open Decision §5.5 — convention = **dual-write** (param `source` + บรรทัด `Source:` ต้นเนื้อหา; อ่านจากบรรทัดเพราะ get-knowledge ยังไม่ expose field — ผลตรวจจาก #17) (`20b9c88`)
+- ✅ 18.2 GRAPH_PROTOCOL **§1 ข้อ 7 Resource pointer** (external-only, URL ผ่าน §6.2/2, แยกจาก Source-Files §5.1) + **§5.4 External Source Freshness** (90 วัน + ask, never block) + §5.2 ข้อ 3 routing + brain-save Step 3/4 + brain-scan footer section + resolve placeholder §8.2 (`6e67cf9`)
+- ✅ 18.3 **release v3.4.0** — plugin.json + marketplace (desc + 3 tags: okf/knowledge-interchange/portable-bundle) + README header/changelog 3 features; triad SYNC, stale 3.3.0 = 0, validate ✅ (`b13762c`)
+- 🔧 review-fix(#18): 1 high + 1 medium + 4 low + 1 cosmetic แก้ครบ (`4a64687`)
+
+### Verification Pipeline (v2.3.0):
+- Build: N/A (markdown plugin) | `claude plugin validate` ✅ ×3 | triad node check = 3.4.0 ทั้งสามจุด | fences balanced
+- AC1 §1.7+§5.4 ✅ | AC2 skills อ้างกติกา + §8.2 สองทิศ ✅ | AC3 triad + no stale ✅ | AC4 validate/plugin-root/Thai/degrade ✅ | AC5 changelog 3 features ✅
+- QA+NFR gates: N/A | **Pipeline Result: PASSED**
+
+### Adversarial Verification (wf_f1d06c61-759, 3 refuting verifiers, 304k tokens):
+- freshness-decidability → **FAIL: 1 high** (§5.4 เป็น dead text — brain/brain-load มี inline §5.2 copy เก่า "ไม่มี footer → ข้ามเงียบๆ" ทำให้ §5.4 ไม่มีวันถูกเรียก) + 1 medium (อายุจาก Created: ล้าง warning ไม่ได้หลัง refresh) + 3 low + 1 cosmetic
+- release-hygiene → 2 low (stale "Feature #18" ref ใน brain-import, visualizer claim ไม่มี test รองรับ)
+- protocol-consistency → agent **ชน session limit** → **manual-verified 5 มิติแทน** (dual-write ทุกจุดตรงกัน, external-only boundary, secret loop ปิด, ตำแหน่ง Source:/Version History ไม่ชน, stale refs = 0)
+- **แก้ครบ 7/7** (`4a64687`): wire §5.4 เข้า brain Step 1.5 + brain-load Step 3.5/4, age = ล่าสุดของ Source-Checked:/VH/Created: + refresh เขียน `Source-Checked:`, defer-to-use ที่ brain-load, คนละ session memory, URL tie-break + catch-all, hedge visualizer claim
+
+### Current status:
+- Features passed: **18/18** 🎉 | epic brain-v34-okf: **3/3 ครบ** | opus done: 17 | sonnet done+reviewed: 1
+- **pending: 0 — epic brain-v34-okf เสร็จสมบูรณ์ | brain v3.3.0 → v3.4.0 released**
+
+### Epic brain-v34-okf สรุป (brain v3.3.0 → v3.4.0 "OKF Interchange"):
+- #16 /brain-export → OKF bundle (§8 mapping, smoke test 11 notes → 12-file bundle)
+- #17 /brain-import → write gate 3 ชั้น + round-trip lossless + พิสูจน์ upsert=GLOBAL scope
+- #18 resource convention (§1.7 dual-write) + §5.4 external freshness + release v3.4.0
+- รวม 13 commits (c29defe → 4a64687), adversarial verify ทุก feature (#16: 12 findings, #17: 23, #18: 7 — แก้ครบทั้งหมด), server-side findings 10 ข้อจดใน RESEARCH §5.1-5.2
+
+### Next feature:
+- ไม่มี — ทุก feature ใน backlog เสร็จครบ. งานค้าง (out-of-scope): push ขึ้น remote, งานฝั่ง SecondBrain (expose source/updatedAt/folderPath ใน get-knowledge, ระบุ upsert scope, IN_FOLDER backfill — จดใน RESEARCH §5.1-5.2)

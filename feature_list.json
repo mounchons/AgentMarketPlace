@@ -105,8 +105,8 @@
       ],
       "progress": {
         "total": 3,
-        "passed": 2,
-        "in_progress": 1
+        "passed": 3,
+        "in_progress": 0
       }
     }
   ],
@@ -2585,7 +2585,7 @@
       "priority": "medium",
       "complexity": "simple",
       "risk_level": "low",
-      "status": "in_progress",
+      "status": "passed",
       "blocked_reason": null,
       "subtasks": [
         {
@@ -2640,9 +2640,9 @@
       ],
       "time_tracking": {
         "estimated_time": "30min",
-        "actual_time": null,
+        "actual_time": "190min",
         "started_at": "2026-07-10T23:55:07.893Z",
-        "completed_at": null
+        "completed_at": "2026-07-11T03:05:29.429Z"
       },
       "dependencies": [
         16,
@@ -2668,29 +2668,34 @@
       "interactions": [],
       "version_history": [],
       "sync_status": "n/a",
-      "passes": false,
-      "tested_at": null,
-      "verification_results": null,
+      "passes": true,
+      "tested_at": "2026-07-11T03:05:29.429Z",
+      "verification_results": {
+        "pipeline": "PASSED",
+        "build": "n/a (markdown plugin) — claude plugin validate passed x3; version triad SYNC 3.4.0; stale 3.3.0 = 0; fences balanced",
+        "acceptance_criteria": "5/5 — AC1 SS1.7 + SS5.4 มีจริง, AC2 brain-save/brain-scan อ้างกติกา + SS8.2 map 2 ทิศ (placeholder resolved), AC3 triad 3.4.0 node check, AC4 validate + plugin-root + Thai + degrade, AC5 changelog ครอบ 3 features",
+        "adversarial": "wf_f1d06c61-759 — freshness-decidability FAIL(1 high: SS5.4 dead text ไม่ถูก wire เข้า brain/brain-load) + release-hygiene pass-with-findings; protocol-consistency ชน session limit -> manual-verified 5 มิติ; แก้ครบ 7/7 (4a64687)"
+      },
       "assigned_model": "opus",
       "is_reference_impl": false,
       "review": null,
-      "notes": "ตัวปิด epic brain-v34-okf — ทำหลัง #16/#17 เพื่อ release ครั้งเดียว (pattern เดียวกับ #15 ปิด brain-v32). ถ้า §5.5 พบว่า server ต้องเพิ่ม field → จดเป็นงานฝั่ง SecondBrain แยก repo ไม่ block release (ใช้ content convention ไปก่อน)",
+      "notes": "ตัวปิด epic brain-v34-okf — release v3.4.0. Convention: dual-write (source param + Source: line) เพราะ get-knowledge ยังไม่ expose field. High finding สำคัญ: protocol แก้แล้วแต่ executor (brain/brain-load) มี inline copy เก่า -> ต้อง wire ทุกครั้งที่เพิ่ม protocol section ใหม่",
       "added_at": "2026-07-10T21:15:49+07:00"
     }
   ],
   "summary": {
     "total": 18,
-    "passed": 17,
-    "in_progress": 1,
+    "passed": 18,
+    "in_progress": 0,
     "blocked": 0,
     "pending": 0,
-    "last_updated": "2026-07-11T00:00:33.089Z",
+    "last_updated": "2026-07-11T03:05:29.429Z",
     "traceability_score": "100% (3 mapped / 3 in-scope; 3 ignored, 10 legacy, 0 orphan)",
     "model_workload": {
       "opus": {
         "assigned": 17,
-        "done": 16,
-        "in_progress": 1,
+        "done": 17,
+        "in_progress": 0,
         "pending_review": 0
       },
       "sonnet": {
