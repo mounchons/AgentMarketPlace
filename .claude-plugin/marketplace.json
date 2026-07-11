@@ -309,8 +309,8 @@
     {
       "name": "brain",
       "source": "./plugins/brain",
-      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.3.0: Knowledge Hygiene (llm-wiki patterns) — Tag Taxonomy (alias→canonical normalize + block date/version/status-flag tags + search alias expansion), /brain-lint 8 checks (duplicate tags, orphan notes, mirror notes, broken wikilinks ฯลฯ propose-don't-auto-execute), /brain-moc Map of Content + Catalog-First retrieval (token saver). ต้องใช้ graph-brain server v3.3+ (SecondBrain)",
-      "version": "3.3.0",
+      "description": "Graph Brain knowledge management — Brain First strategy: ค้น brain ก่อน codebase, auto-save findings ใหม่, deep scan ด้วย dependency tracing + permission matrix, รองรับ incremental scan และ cross-project knowledge. v3.4.0: OKF Interchange — /brain-export + /brain-import แปลงความรู้เป็น Open Knowledge Format bundle (portable markdown ลง git/แชร์/เปิด visualizer ได้โดยไม่ต้องมี MCP) พร้อม write gate (tag taxonomy + secret scan + dry-run confirm), resource provenance convention + external-source freshness. v3.3: Knowledge Hygiene — Tag Taxonomy, /brain-lint 8 checks, /brain-moc Catalog-First retrieval. ต้องใช้ graph-brain server v3.3+ (SecondBrain)",
+      "version": "3.4.0",
       "category": "knowledge",
       "tags": [
         "graph-brain",
@@ -329,7 +329,10 @@
         "tag-taxonomy",
         "lint",
         "map-of-content",
-        "llm-wiki"
+        "llm-wiki",
+        "okf",
+        "knowledge-interchange",
+        "portable-bundle"
       ],
       "author": {
         "name": "Mounchons"

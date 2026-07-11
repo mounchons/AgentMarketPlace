@@ -1,6 +1,6 @@
 # Brain — Graph-First Knowledge Management
 
-**Version: 3.3.0**
+**Version: 3.4.0**
 
 Plugin จัดการความรู้แบบ Graph-First บน Graph Brain (Neo4j-backed Second Brain) — ใช้ยุทธศาสตร์ **Brain First**: ถามความรู้จาก brain ก่อนเสมอ แล้วค่อยอ่าน codebase เมื่อความรู้ไม่พอ จากนั้นเสนอบันทึกสิ่งที่ค้นพบกลับเข้า brain
 
@@ -82,6 +82,14 @@ User ถามเกี่ยวกับโปรเจกต์
 | **system-design-doc** | optional upstream — query ความรู้เดิมก่อน brainstorm design |
 
 ## 📝 Changelog
+
+### v3.4.0 (2026-07-11) — OKF Interchange (Open Knowledge Format)
+เป้าหมาย: ปิด gap ตัวจริงจาก v3.3 — **portability** (ความรู้ติดอยู่ใน Neo4j เข้าถึงได้เฉพาะผ่าน MCP) — รับ [OKF v0.1](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) ของ Google เป็น **interchange layer** แบบ "pg_dump ของ brain" (ไม่แทน Neo4j backend — graph เหนือกว่าเรื่อง traversal/versioning/freshness); ใช้ tools เดิมของ server v3.3 ไม่ต้องอัปเกรด server
+- 📤 **`/brain-export`** — dump per-project เป็น OKF bundle: 1 note = 1 ไฟล์ markdown + YAML frontmatter, LINKS_TO → relative links, MOC → `index.md`, ลง git/แชร์ข้ามทีม/เปิด static visualizer ได้โดยไม่ต้องมี MCP; catalog-first + pre-write secret check (§6.3) + structural validation; read-only ต่อ graph
+- 📥 **`/brain-import`** — รับ bundle ภายนอก (จาก brain-export/ทีมอื่น/enrichment agent) เข้า graph ผ่าน **write gate 3 ชั้น**: ทุก tag ผ่าน Tag Taxonomy, secret scan ตัด note ที่เจอ (ลบถาวรไม่ได้), **dry-run + user ยืนยันก่อนเขียนเสมอ** (ไม่มี flag ข้าม); title ชน → upsert (NoteHistory เก็บของเดิม) / `--no-overwrite`; ผ่าน round-trip test จริง 11 notes lossless + adversarial verification 23 findings
+- 🔗 **Resource provenance convention** (GRAPH_PROTOCOL §1 ข้อ 7) — note จาก external source (URL/เอกสาร/ticket/บทสนทนา) ต้องมี pointer กลับต้นทาง dual-write (param `source` + บรรทัด `Source:`); **§5.4 External Source Freshness** — note จาก external source อายุ > 90 วัน → เตือน + เสนอ fetch ซ้ำก่อนตอบ (never block)
+- 📐 กติกากลางทั้งหมดอยู่ **GRAPH_PROTOCOL §8 OKF Interchange Mapping** (bundle layout/slug, frontmatter ↔ graph สองทิศ, link conversion, MOC ↔ index.md, ความปลอดภัย) — export/import ใช้ contract เดียวกันคนละทิศ กัน drift
+- 🔬 ผลตรวจ semantics ฝั่ง server ระหว่าง epic (จดใน `plans/brain-v34-okf-20260710/RESEARCH.md` §5.1-5.2): upsert-by-title เป็น **global scope** (§2 มี warning แล้ว — ทุก skill ต้องเช็ค title ชนข้าม project), tags เป็น union ตอน upsert, server ไม่ backfill LINKS_TO, `get-knowledge` ยังไม่ expose `source`/`updatedAt`/`folderPath`
 
 ### v3.3.0 (2026-07-10) — Knowledge Hygiene (llm-wiki patterns)
 เป้าหมาย (จาก improvement directive): **หาได้ตรง + เชื่อมโยงครบ + token น้อยลง** — เอา discipline ของ llm-wiki (Karpathy) มาลง graph; ต้องใช้กับ graph-brain server v3.3 ขึ้นไป (SecondBrain)
