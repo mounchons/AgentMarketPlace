@@ -2,7 +2,7 @@
   "name": "agent-marketplace",
   "metadata": {
     "description": "Mounchons's custom plugin marketplace for Thai enterprise development",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "homepage": "https://github.com/mounchons/agentmarketplace"
   },
   "owner": {
@@ -376,6 +376,33 @@
         "ai-agent",
         "sidebar",
         "auto-activate",
+        "thai"
+      ],
+      "author": {
+        "name": "Mounchons"
+      }
+    },
+    {
+      "name": "quotation-builder",
+      "source": "./plugins/quotation-builder",
+      "description": "เขียนใบเสนอราคา / ขอบเขตงาน (quotation) ตามรูปแบบ Excel ที่ใช้เสนอลูกค้าจริง แบบ Markdown-first — ร่าง .md ให้ review/กรอกราคาก่อน แล้ว export เป็น .xlsx ตามฟอร์แมตเดิม (Srikrung / TBSC / CMI / Expend). หัวเอกสาร (ชื่อระบบ, tech stack, ระยะเวลาพัฒนา, รับประกันผลงาน) + ตาราง No | Module | Description | Comment | Price (คอลัมน์ Price ของ Module เว้นว่างให้ผู้ใช้กรอกเอง — ไม่เดาราคา) + แถวรวมทั้งหมด + ส่วนงานนอกขอบเขต (ค่า Hardware/License/ค่าเช่า Cloud เป็น exclusion + งาน optional เช่น Penetration Testing, ย้าย Cloud คิดเป็น Manday) พร้อมค่า default (1 Manday = 8,000, source เดียวที่ references/defaults.md). Exporter เป็น Python + openpyxl (scripts/export_xlsx.py). seed module จาก scenarios.json/features.json ได้. Quotation-only (ยังไม่รวม invoice / timeline). 3 commands: /quotation-builder:quote, :export, :help",
+      "version": "0.1.0",
+      "category": "productivity",
+      "tags": [
+        "quotation",
+        "quote",
+        "scope-of-work",
+        "sow",
+        "pre-sales",
+        "proposal",
+        "pricing",
+        "xlsx-export",
+        "openpyxl",
+        "out-of-scope",
+        "manday",
+        "estimate",
+        "excel",
+        "markdown-first",
         "thai"
       ],
       "author": {

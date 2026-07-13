@@ -1,0 +1,8 @@
+{
+  "name": "quotation-builder",
+  "version": "0.1.0",
+  "description": "เขียนใบเสนอราคา / ขอบเขตงาน (quotation) ตามรูปแบบ Excel ที่ใช้เสนอลูกค้าจริง แบบ Markdown-first — ร่าง .md (หัวเอกสาร: ชื่อระบบ, tech stack, ระยะเวลาพัฒนา, รับประกันผลงาน; ตาราง No | Module | Description | Comment | Price โดยคอลัมน์ Price ของ Module เว้นว่างให้ผู้ใช้กรอกเอง; แถวรวมทั้งหมด; และส่วนงานนอกขอบเขต ค่า Hardware/License/ค่าเช่า Cloud + งาน optional เช่น Penetration Testing, ย้าย Cloud คิดเป็น Manday) พร้อมค่า default (1 Manday = 8,000). หลัง review + กรอกราคา สคริปต์ Python + openpyxl (scripts/export_xlsx.py) render เป็น .xlsx ตามฟอร์แมตเดิม (Srikrung / TBSC / CMI / Expend). seed module จาก scenarios.json/features.json ได้ ไม่เดาราคา Module เอง. Quotation-only (ยังไม่รวม invoice / timeline)",
+  "author": {
+    "name": "Mounchons"
+  }
+}
