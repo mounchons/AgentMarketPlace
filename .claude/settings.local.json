@@ -10,7 +10,8 @@
       "mcp__graph-brain__brain-stats",
       "mcp__big-brain__search_memory_nodes",
       "PowerShell(& .\\\\tools\\\\rename-plugin-suffix.ps1 -Plugin brain-dev -Mode remove -DryRun)",
-      "PowerShell(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json','utf8'\\)\\); console.log\\('JSON OK'\\)\")"
+      "PowerShell(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('D:/GitHub/AgentMarketPlace/plugins/qa-ui-test/skills/qa-ui-test/templates/qa-tracker.json','utf8'\\)\\); console.log\\('JSON OK'\\)\")",
+      "Skill(long-running:continue)"
     ]
   },
   "spinnerTipsEnabled": true
