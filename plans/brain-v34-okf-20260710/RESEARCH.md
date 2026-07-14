@@ -7,6 +7,9 @@ based_on:
   - plans/brain-v33-llmwiki-20260710/SERVER_ANALYSIS.md (SecondBrain architecture)
 sources:
   - https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing (Google, OKF v0.1 announcement)
+  - https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md (formal SPEC v0.1 — **authoritative**; อ่านนี่ก่อน ไม่ใช่แค่บล็อก)
+follow_up:
+  - plans/brain-v34-okf-20260710/SPEC_GAP_ANALYSIS.md (2026-07-14: เทียบกับ formal SPEC.md → G1-G5; v3.4.1-3.4.3 ปิดครบ ยกเว้น visualizer test)
 ---
 
 # Open Knowledge Format (OKF) → brain v3.4 Design Mapping

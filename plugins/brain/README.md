@@ -1,6 +1,6 @@
 # Brain — Graph-First Knowledge Management
 
-**Version: 3.4.2**
+**Version: 3.4.4**
 
 Plugin จัดการความรู้แบบ Graph-First บน Graph Brain (Neo4j-backed Second Brain) — ใช้ยุทธศาสตร์ **Brain First**: ถามความรู้จาก brain ก่อนเสมอ แล้วค่อยอ่าน codebase เมื่อความรู้ไม่พอ จากนั้นเสนอบันทึกสิ่งที่ค้นพบกลับเข้า brain
 
@@ -82,6 +82,19 @@ User ถามเกี่ยวกับโปรเจกต์
 | **system-design-doc** | optional upstream — query ความรู้เดิมก่อน brainstorm design |
 
 ## 📝 Changelog
+
+### v3.4.4 (2026-07-14) — ทดสอบ Reference Visualizer จริง → log.md เป็น opt-in
+เป้าหมาย: ปิด item สุดท้าย — ทดสอบ bundle กับ **Google reference visualizer จริง** (รัน `reference_agent generate_visualization` จาก knowledge-catalog repo กับ bundle ตามฟอร์แมต export)
+- 🧪 **ผลทดสอบเชิงประจักษ์:** G1 (okf_version) + G2 (frontmatter-free index) + G4 (path-identity) + concept files → **ผ่านหมด** (index.md ถูก skip, ไม่ error, กราฟถูกต้อง); viz.html generate สำเร็จ
+- ⚠️ **เจอ spec-vs-reference gap จริง:** reference `_walk_concepts` reserve **แค่ `index.md` ไม่ reserve `log.md`** (ขัด SPEC §7) → log.md ที่ v3.4.2 default-on กลายเป็น **node ปลอม "log" (type Unknown) link ทุกโน้ต** = hub ยักษ์ทำลาย graph layout
+- 🔧 **แก้:** flip `log.md` เป็น **opt-in `--log` (default OFF)** — default bundle เปิด visualizer สะอาด; `--history-detail` implies `--log`; log.md ยัง optional ใน spec → omit ได้ conformant (GRAPH_PROTOCOL §8.7)
+- ✅ **OKF conformance ครบ 100%:** G1-G5 แก้แล้ว + reference visualizer test ผ่าน (บันทึกใน SPEC_GAP_ANALYSIS)
+
+### v3.4.3 (2026-07-14) — OKF Gap Analysis ปิดครบ (G4 + G5, docs)
+เป้าหมาย: ปิด 2 backlog สุดท้ายจาก SPEC_GAP_ANALYSIS เป็น doc clarification (ไม่เปลี่ยน behavior) → OKF gap analysis G1-G5 ครบ
+- 🆔 **G4 — identity-semantics** (GRAPH_PROTOCOL §8.1) — doc ความต่างสำคัญ: OKF key concept ด้วย **path** (Concept ID = file path) แต่ brain key ด้วย **title** (upsert global §2) → interop footgun: rename ไฟล์แต่คง title = note เดิม, เปลี่ยน title ที่ path เดิม = คนละ note (กลับด้านกับ path-keyed tool); cross-system ให้คง title เป็น join key
+- 📚 **G5 — conventional-heading equivalence** (GRAPH_PROTOCOL §8.2) — doc ว่า brain **ไม่ synthesize** OKF `# Schema`/`# Examples`/`# Citations` (optional); provenance ใช้บรรทัด `Source:` (round-trip ได้ตาม §1.7) ทำหน้าที่แทน `# Citations` แต่คงเป็น **line ไม่ใช่ heading** เพื่อให้ import อ่านกลับได้ — ไม่มีอะไรหาย แค่ render แบบ brain-idiomatic
+- ✅ **OKF conformance สรุป:** G1 (okf_version) + G2 (frontmatter-free index) + G3 (log.md) แก้ code แล้ว; G4 + G5 doc แล้ว — เหลือแค่ทดสอบกับ Google static visualizer จริง (conformance check ปลายทาง)
 
 ### v3.4.2 (2026-07-14) — OKF log.md Change History (G3)
 เป้าหมาย: ปิด backlog G3 จาก SPEC_GAP_ANALYSIS — v3.4.1 ปิด conformance แต่ยังไม่ emit `log.md` (OKF §7 change-history convention) → bundle มี timeline การเปลี่ยนแปลงแล้ว, static visualizer โชว์ได้

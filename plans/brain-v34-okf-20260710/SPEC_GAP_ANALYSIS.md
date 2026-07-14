@@ -86,8 +86,10 @@ compared_against:
 - log.md เป็น derived/export-only (ไม่ round-trip); import skip (NoteHistory = internal source of truth)
 - **บทเรียน design:** เลือก timestamp-based default (ไม่มี call เพิ่ม) แทน NoteHistory-based เพราะ get-note-history
   ต่อ note = double call count; rich history เป็น opt-in ตาม pattern เตือน cost ของ skill
+- **UPDATE v3.4.4 (จาก visualizer test — ดู §6):** flip log.md เป็น **opt-in `--log` (default OFF)** — reference
+  visualizer reserve แค่ index.md ไม่ reserve log.md → default-on ทำให้เกิด spurious hub node; default OFF กัน
 
-### 🟡 G4 — identity semantics ต่าง (path vs title) — **P2, doc-only**
+### ✅ G4 — identity semantics ต่าง (path vs title) — **DONE (v3.4.3, doc §8.1)**
 - **สเปก:** "Concept ID = the path of the concept's file within the bundle, `.md` removed"
   → OKF key ด้วย **path**
 - **brain:** identity = **`title`** (upsert-by-title, GLOBAL scope — §8.1/§2); slug/path เป็นแค่กัน
@@ -96,9 +98,10 @@ compared_against:
   เป็น stable ID ส่วน brain มอง title → ถ้า title เปลี่ยนแต่ path เดิม (หรือกลับกัน) สองระบบ key ต่างกัน
 - **Fix:** doc ใน §8.1 ระบุ semantic diff ให้ชัด (ไม่ต้องแก้ code) — เตือนผู้ใช้ cross-system
 
-### 🟡 G5 — ไม่ใช้ conventional body headings (`# Schema`/`# Citations`) — **P3, optional**
+### ✅ G5 — conventional body headings (`# Schema`/`# Citations`) — **DONE (v3.4.3, doc §8.2)**
 - brain ใส่ provenance เป็นบรรทัด `Source: <pointer>` แทน `# Citations`; ไม่ generate `# Schema`
-- optional ทั้งหมด — brain-tolerated; ปรับให้ idiomatic ได้ภายหลัง (ค่าต่ำ)
+- optional ทั้งหมด — **แก้เป็น doc:** §8.2 ระบุว่า `Source:` line ทำหน้าที่แทน `# Citations` แต่คงเป็น line (ไม่ใช่ heading)
+  เพื่อ round-trip readback; schema คงอยู่ใน body — nothing lost, brain-idiomatic rendering (ไม่เปลี่ยน behavior)
 
 ---
 
@@ -114,12 +117,33 @@ OKF v0.1 จงใจ minimal — brain วางตัวเป็น "rich bac
 
 ---
 
-## 5. Recommendation
+## 5. Recommendation — STATUS (2026-07-14: G1-G5 + visualizer test ปิดครบ 100%)
 
-1. **ทำ G1 + G2 เป็น patch v3.4.1** (conformance fix) — คุ้มสุด: ทำให้ bundle อ้าง OKF v0.1 conformance
-   ได้จริง + ปลอดภัยกับ static visualizer ของ Google; G1 ต่ำมาก, G2 กลาง (แก้ export write + import classify)
-2. ~~G3/G4 รวมเป็น v3.4.2~~ → **G3 DONE (v3.4.2)**; G4 (identity-doc) ยังเป็น backlog — doc-only, ไม่เร่ง
-3. **G5 = optional idiom** — เปิดทิ้งไว้
-4. **ต้องทำจริงจึงยืนยันได้:** ทดสอบ bundle กับ **static HTML visualizer ของ Google** — เป็น
-   conformance check ปลายทางเดียวที่ RESEARCH.md ยอมรับว่ายังไม่เคยทำ (SKILL step 7 ยืนยันแค่ structural)
-5. **อัปเดต RESEARCH.md `sources:`** ให้รวม SPEC.md — กันรุ่นถัดไปพลาดกฎ conformance เพราะอิงบล็อกอย่างเดียว
+1. ✅ **G1 + G2 (v3.4.1)** — conformance fix: bundle อ้าง OKF v0.1 ได้จริง (okf_version + frontmatter-free index)
+2. ✅ **G3 (v3.4.2 → v3.4.4)** — export log.md change-history; **flip เป็น opt-in `--log`** หลัง visualizer test (§6)
+3. ✅ **G4 + G5 (v3.4.3, docs)** — identity-semantics (§8.1) + conventional-heading equivalence (§8.2)
+4. ✅ **ทดสอบ Google reference visualizer (v3.4.4, §6)** — รัน `generate_visualization` จริง: G1/G2/G4/concept ผ่าน;
+   เจอ reference ไม่ reserve log.md → flip log.md เป็น opt-in
+5. ✅ **RESEARCH.md `sources:` อัปเดตแล้ว** (เพิ่ม SPEC.md + pointer มาไฟล์นี้) — กันรุ่นถัดไปพลาดกฎ conformance เพราะอิงบล็อกอย่างเดียว
+
+---
+
+## 6. Reference Visualizer Test (2026-07-14, v3.4.4)
+
+รัน **`reference_agent` `generate_visualization`** ตัวจริงจาก [knowledge-catalog](https://github.com/GoogleCloudPlatform/knowledge-catalog) (บันทึกวิธี: curl `bundle/document.py` + `viewer/generator.py` + assets → ประกอบ minimal package → รันกับ test bundle ตามฟอร์แมต export)
+
+**อ่าน parser (`viewer/generator.py` `_walk_concepts`) + รันจริง — ผล:**
+| ฟีเจอร์ | ผล |
+|---|---|
+| G2 frontmatter-free index.md | ✅ `if md_path.name == "index.md": continue` — skip, content ไม่ถูกแตะ, ไม่ error |
+| G1 okf_version | ✅ ignored (index.md skip ทั้งไฟล์); ไม่มีการอ่าน okf_version |
+| G4 path-identity | ✅ `concept_id = "/".join(rel.parts)` — key ด้วย path เป๊ะ |
+| concept files | ✅ parse lenient, **ไม่เรียก `validate()`** — frontmatter ขาด key ไม่ error; `fm.get("type") or "Unknown"` |
+| non-ASCII (Thai) slug | ✅ visualize path ไม่เรียก `_validate_segment` (paths.py) → Thai slug ใช้ได้ (เกินคาด — เดิมกังวลว่าจะ fail) |
+| **G3 log.md** | ⚠️ reserve **แค่ index.md ไม่ reserve log.md** → log.md = node ปลอม (id `log`, type `Unknown`, link ทุกโน้ต) |
+
+**การรันจริง (test bundle 2 concept + index + log):** `CONCEPTS walked: 3` (รวม `log` ปลอม), `edges: 4`, viz.html 14289 bytes ไม่ crash → ยืนยัน finding
+
+**การตัดสินใจ:** flip log.md เป็น opt-in `--log` (default OFF) — reference visualizer เป็น consumer จริงตัวเดียวตอนนี้ + log.md optional ใน spec → default OFF interop-first (§8.7)
+
+**Reference-agent gap (จด — อาจ report upstream):** `viewer/generator.py::_walk_concepts` + `bundle/index.py::regenerate_indexes` reserve แค่ `index.md` ไม่ครอบ `log.md` ที่ SPEC.md §7 นิยามเป็น reserved
