@@ -54,6 +54,39 @@ Display this command reference to the user:
                         ตัวอย่าง: /brain-history Auth Flow
                         ตัวอย่าง: /brain-history entity models
 
+━━━ สุขภาพ & แผนที่ความรู้ (v3.3) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/brain-moc [project]    สร้าง/รีเฟรช Map of Content — โน้ตเดียวที่ [[link]]
+                        ทุกโน้ตในโปรเจกต์ จัดกลุ่มตาม category
+                        (index-first retrieval — ประหยัด token + แก้ orphan)
+                        ไม่มี argument = ใช้ชื่อ folder ปัจจุบัน
+                        ตัวอย่าง: /brain-moc
+                        ตัวอย่าง: /brain-moc my-project
+
+/brain-lint [project]   ตรวจสุขภาพ graph 8 เช็ก (tag ซ้ำ, metadata-in-tag,
+                        orphan, link density ต่ำ, mirror, broken wikilink,
+                        link suggestion, stale) → เสนอ fix ทำเฉพาะที่ยืนยัน
+                        ไม่มี argument = ตรวจ global; ระบุ = scope เฉพาะ project
+                        ตัวอย่าง: /brain-lint
+                        ตัวอย่าง: /brain-lint AgentMarketPlace
+
+━━━ แลกเปลี่ยนความรู้ OKF (v3.4) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/brain-export [project]  export ความรู้เป็น OKF bundle (portable markdown +
+                        frontmatter) ลง git/แชร์/เปิด visualizer ได้โดยไม่ต้องมี
+                        MCP — read-only ต่อ graph
+   Options:
+   --all-projects       วน export ทุก project (เตือนก่อนเขียน)
+   --output <dir>       เปลี่ยน parent dir (default .brain-export/)
+                        ตัวอย่าง: /brain-export
+                        ตัวอย่าง: /brain-export --all-projects
+
+/brain-import [bundle]   import OKF bundle เข้า graph ผ่าน write gate 3 ชั้น
+                        (tag taxonomy + secret scan + dry-run ยืนยันก่อนเขียน)
+   Options:
+   --project <name>     target project override
+   --no-overwrite       title ชน note เดิม → ข้าม (default = upsert)
+                        ตัวอย่าง: /brain-import
+                        ตัวอย่าง: /brain-import ./bundle --project MyApp
+
 ━━━ ระบบ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /brain-load [project]   โหลดความรู้ก่อนเริ่มงาน (auto ตอน session start)
                         ไม่มี argument = ใช้ชื่อ folder ปัจจุบัน

@@ -261,9 +261,9 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 
 ## 8. OKF Interchange Mapping (v3.4)
 
-ใช้กับ skill `brain-export` (graph → bundle) และ `brain-import` (bundle → graph)
+Used by the skills `brain-export` (graph → bundle) and `brain-import` (bundle → graph)
 
-**หลักการ:** [Open Knowledge Format v0.1](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) เป็น **interchange format ไม่ใช่ backend** — graph (Neo4j) ยังเป็น source of truth; OKF bundle = snapshot แบบ portable (เทียบ `pg_dump` ของ database) เอาไปลง git / แชร์ข้ามทีม / เปิดด้วย OKF visualizer ได้โดยไม่ต้องมี MCP server
+**Principle:** [Open Knowledge Format v0.1](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) is an **interchange format, not a backend** — the graph (Neo4j) is still the source of truth; an OKF bundle = a portable snapshot (like a database `pg_dump`) that you can commit to git / share across teams / open with the OKF visualizer without an MCP server
 
 ### 8.1 Bundle Layout
 
@@ -271,68 +271,88 @@ brain-scan Smart Scan หา last scan state ตามลำดับ:
 
 ```
 .brain-export/{project}/
-├── index.md              ← จาก MOC note (§8.4)
+├── index.md              ← from the MOC note (§8.4)
 ├── core/
-│   ├── index.md          ← จาก sub-MOC (ถ้ามี hub-of-hubs)
-│   └── {slug}.md         ← 1 note = 1 ไฟล์
+│   ├── index.md          ← from a sub-MOC (if there is a hub-of-hubs)
+│   └── {slug}.md         ← 1 note = 1 file
 ├── workflow/
 ├── database/
-└── changelog/            ← changelog notes export ด้วย (lossless round-trip)
+└── changelog/            ← changelog notes are exported too (lossless round-trip)
 ```
 
-- directory = category จาก `folderPath` (`/projects/{project}/{category}/` → `{category}/`); note ที่อยู่ root ของ project (เช่น MOC) → root ของ bundle
-- **Folder determination fallback chain** (smoke-tested 2026-07-10 — `get-knowledge` ไม่คืน folderPath และ `explore-graph` แสดง Folder node ไม่ครบทุก note):
-  1. `get-project-catalog` (มี folder ต่อ note ครบ) — ทางหลัก
-  2. ไม่มี catalog tool → `explore-graph` depth=1 หา Folder node
-  3. ยังไม่ได้ → **infer จาก tags**: tag `changelog` → `changelog/` เสมอ; ไม่งั้น tag ที่ตรงชื่อ category ใน §1 — **match ทั้งรูปเอกพจน์และพหูพจน์** (domain tag §1 เป็นเอกพจน์ `dependency`/`permission`/`document`/`release`/`requirement` แต่ category เป็นพหูพจน์ → map เอกพจน์เข้า category พหูพจน์ให้เสมอ); ถ้า match หลายตัว เลือกตัวที่คำนั้นปรากฏใน title ก่อน, ไม่มีในไทเทิลเลย → ตัวแรกตามลำดับ §1; ไม่ match เลย → `core/`
-  4. ทุกครั้งที่ใช้ข้อ 3 → รายงาน user ว่า folder เป็นการเดา (อาจไม่ตรง graph จริง)
-- **filename slug** จาก title: lowercase (เฉพาะ ASCII), whitespace และ em-dash `—`/en-dash `–` → `-`, **ตัดทิ้ง**: อักขระต้องห้ามของ filesystem (`\ / : * ? " < > |`), `#`, backtick, วงเล็บ `( ) [ ]`, `+`, `&`, `,`, `%`, `'`, `@`, `;`, `=` (กัน URL-hostile filename), ยุบ `-` ซ้ำ, ตัด `-` หัวท้าย; อักษร non-ASCII (ไทย ฯลฯ) คงไว้ตามเดิม; slug ว่างหลังตัดทั้งหมด → ใช้ `untitled`; slug ที่ได้เท่ากับ `log` หรือ `index` → ต่อท้าย `-2` เสมอ (reserved โดยความหมาย OKF: `log.md` = change history, `index.md` = MOC/index — §8.4); ชื่อชน → ต่อท้าย `-2`, `-3`
-- **Path safety:** segment `{project}` และ `{category}` ใน output path ต้องผ่านกฎตัดอักขระชุดเดียวกับ slug (ห้ามมี `/ \ :` หรือ segment `..`) — ค่าสองตัวนี้มาจาก graph/argument ภายนอก ห้ามใช้ verbatim
-- ⚠️ **identity ของ note = frontmatter `title` ไม่ใช่ filename** — slug ใช้แค่ให้ไฟล์ไม่ชนกัน; import ต้อง match note ด้วย title เสมอ (upsert by title ตาม §2)
+- directory = category from `folderPath` (`/projects/{project}/{category}/` → `{category}/`); a note at the project root (e.g. the MOC) → the bundle root
+- **Folder determination fallback chain** (smoke-tested 2026-07-10 — `get-knowledge` does not return folderPath and `explore-graph` shows the Folder node for only some notes):
+  1. `get-project-catalog` (has the folder for every note) — the main path
+  2. no catalog tool → `explore-graph` depth=1 to find the Folder node
+  3. still nothing → **infer from tags**: tag `changelog` → always `changelog/`; otherwise a tag matching a category name in §1 — **match both singular and plural forms** (a §1 domain tag is singular `dependency`/`permission`/`document`/`release`/`requirement` but the category is plural → always map the singular into the plural category); if several match, pick the one whose word appears in the title first, none in the title → the first in §1 order; no match at all → `core/`
+  4. whenever rule 3 is used → report to the user that the folder is a guess (may not match the real graph)
+- **filename slug** from the title: lowercase (ASCII only), whitespace and em-dash `—`/en-dash `–` → `-`, **drop**: filesystem-forbidden characters (`\ / : * ? " < > |`), `#`, backtick, brackets `( ) [ ]`, `+`, `&`, `,`, `%`, `'`, `@`, `;`, `=` (avoid URL-hostile filenames), collapse repeated `-`, trim leading/trailing `-`; non-ASCII characters (Thai etc.) are kept as-is; slug empty after all dropping → use `untitled`; a resulting slug equal to `log` or `index` → always append `-2` (reserved by OKF meaning: `log.md` = change history, `index.md` = MOC/index — §8.4); name collision → append `-2`, `-3`
+- **Path safety:** the `{project}` and `{category}` segments in the output path must pass the same character-dropping rules as the slug (must not contain `/ \ :` or a `..` segment) — these two values come from the graph/external argument, must not be used verbatim
+- ⚠️ **a note's identity = frontmatter `title`, not the filename** — the slug only keeps files from colliding; import must always match a note by title (upsert by title per §2)
 
 ### 8.2 Frontmatter Mapping (graph → YAML)
 
-| OKF field | จาก graph | หมายเหตุ |
+| OKF field | from graph | notes |
 |---|---|---|
-| `type` (บังคับ) | **ลำดับแหล่ง:** (1) `category` ของ note (catalog แสดงเป็น `{note_type}/{category}` เช่น `permanent/pattern`) → TitleCase; (2) ไม่มี category → namespace tag `content/{x}` → TitleCase (ค่า hyphenated: ตัด `-` แล้ว capitalize ทุกคำ เช่น `content/how-to` → `HowTo`); (3) ไม่มีทั้งคู่ → `Note` | tag `content/*` หลายตัว → ตัวแรกตามลำดับ alphabetical (ห้ามพึ่งลำดับที่ server คืน — ไม่ stable, ทำ git diff เพี้ยน) — พบจาก round-trip test (2026-07-11): graph มี category field จริง (`pattern`/`overview`) ที่ mapping เดิมมองข้าม |
-| `title` | note title ตรงตัว | ห้ามแปลง — คือ identity |
-| `description` | summary 1 บรรทัด (จาก catalog หรือประโยคแรกของ content) | |
-| `resource` | pointer กลับต้นทาง จากบรรทัด `Source: <pointer>` ใน content (convention §1 ข้อ 7 — dual-write; อ่านจากบรรทัดเพราะ server ยังไม่ expose field `source` ผ่าน get-knowledge) | ไม่มีบรรทัด `Source:` → ละ field; เมื่อ server expose field แล้ว → อ่านจาก field ก่อน fallback มาบรรทัดนี้ |
-| `tags` | tags ทั้งหมดตาม canonical (รวม namespace tags — **ไม่ตัด `content/*` ออก**) | lossless: type เป็นค่า derive ซ้ำได้ |
-| `timestamp` | `updatedAt` ของ note (fallback: `createdAt`) ISO8601 | ⚠️ server ปัจจุบัน `get-knowledge` expose แค่ `Created:` → note ที่ update แล้วได้ timestamp เก่ากว่าจริง — จดเป็นงานฝั่ง SecondBrain; ระหว่างนี้ใช้ createdAt |
-| `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` / `note` (enum เต็มของ server — `note` = general default) | OKF อนุญาต key เพิ่ม — importer อื่นข้ามได้ |
-| `project` (extension) | projectName | ให้ bundle self-describing |
+| `type` (required) | **source order:** (1) the note's `category` (the catalog shows it as `{note_type}/{category}`, e.g. `permanent/pattern`) → TitleCase; (2) no category → namespace tag `content/{x}` → TitleCase (hyphenated value: drop `-` then capitalize every word, e.g. `content/how-to` → `HowTo`); (3) neither → `Note` | multiple `content/*` tags → the first in alphabetical order (must not rely on the order the server returns — not stable, makes git diff noisy) — found via the round-trip test (2026-07-11): the graph has a real category field (`pattern`/`overview`) the old mapping overlooked |
+| `title` | note title verbatim | must not transform — it is the identity |
+| `description` | 1-line summary (from the catalog or the first sentence of content) | |
+| `resource` | pointer back to the source, from the `Source: <pointer>` line in content (convention §1 item 7 — dual-write; read from the line because the server does not yet expose the `source` field through get-knowledge) | no `Source:` line → omit the field; once the server exposes the field → read from the field first, fall back to this line |
+| `tags` | all tags per canonical (including namespace tags — **do not drop `content/*`**) | lossless: type is a re-derivable value |
+| `timestamp` | the note's `updatedAt` (fallback: `createdAt`) ISO8601 | ⚠️ the current server `get-knowledge` exposes only `Created:` → a note that has been updated gets an older-than-real timestamp — noted as SecondBrain-side work; use createdAt meanwhile |
+| `note_type` (extension) | brain note type: `permanent` / `fleeting` / `literature` / `note` (the server's full enum — `note` = general default) | OKF allows extra keys — other importers can skip them |
+| `project` (extension) | projectName | makes the bundle self-describing |
 
-Body = content ของ note ตรงตัว (รวม `## Version History`, `## Scan Metadata` — เป็นเนื้อหา) **ยกเว้น**:
-- wikilinks ถูกแปลงตาม §8.3
-- **strip MCP display metadata** — `get-knowledge` แถมของที่ไม่ใช่ content: header block ต้นไฟล์ (`# {title}` + บรรทัด `**Type:** ... | **Tags:** ...` + `**Created:** ...`) และ trailer `**Links to:** ...` ท้ายไฟล์ (มี noteId ดิบ) — ต้องตัดทั้งสองส่วนก่อนเขียน ไม่งั้น title ซ้ำสองชั้น + noteId หลุดเข้า bundle
+Body = the note's content verbatim (including `## Version History`, `## Scan Metadata` — these are content) **except**:
+- wikilinks are converted per §8.3
+- **strip MCP display metadata** — `get-knowledge` adds things that are not content: a header block at the top of the file (`# {title}` + a `**Type:** ... | **Tags:** ...` line + `**Created:** ...`) and a `**Links to:** ...` trailer at the end (with a raw noteId) — both must be stripped before writing, otherwise the title is doubled + the noteId leaks into the bundle
 
-**Reverse mapping (import — ใช้ใน brain-import):**
-- `type` → ถ้า kebab-case(type) ตรง enum `category` ของ `save-knowledge` (concept/entity/pattern/decision/howto/overview/synthesis) → ส่งเป็น param `category` **เสมอ** (category เป็น first-class field); ไม่ตรง enum → tag `content/{kebab-case(type)}` (เช่น `Runbook` → `content/runbook`); `type: Note`/`Index` → ไม่เพิ่มอะไร; clause "ถ้า tags ใน frontmatter มี `content/*` อยู่แล้ว → ไม่ derive ซ้ำ" ใช้กับ**branch derive-tag เท่านั้น** — ไม่ suppress การส่ง category param
-- **folderPath ขา upsert:** note ที่ title ชนของเดิม → **คง folderPath เดิมจาก catalog** (ห้ามย้าย folder เป็น side effect ของ import — graph จริงมี casing ปน เช่น `/projects/AgentMarketPlace/` กับ `/projects/agentmarketplace/`; ส่ง path ที่ derive ใหม่จะสร้าง casing ที่สาม); bundle dir ต่างจาก folder เดิม → รายงานใน dry-run ไม่ย้ายเอง — note ใหม่เท่านั้นที่ใช้ folderPath จาก directory tree
-- `note_type` มีและอยู่ใน enum (`note`/`fleeting`/`literature`/`permanent`) → ใช้ตรงตัว; ไม่มีหรือค่านอก enum (bundle จากระบบอื่น) → default `literature` (ความรู้จาก external source ตามนิยาม §1) + จดใน report
-- `resource` → dual-write ตาม §1 ข้อ 7: ส่งเป็น param `source` ของ `save-knowledge` + บรรทัด `Source: <pointer>` ใน content เฉพาะเมื่อยังไม่มี (กันซ้ำกับ bundle ที่ body มี `Source:` อยู่แล้ว)
-- `timestamp` → ไม่ round-trip — server กำหนด createdAt/updatedAt เองตอน save; `description` → ไม่ส่ง (server derive summary เอง)
-- tags ทุกตัวผ่าน Tag Taxonomy write gate (§1) เสมอ — **lossless-first**: ใช้ชุดจาก frontmatter ตามเดิม เติมได้เฉพาะเมื่อขาด minimum (project tag / ครบ 2 ตัว — ขา import ใช้เกณฑ์นับจำนวนเท่านั้น ไม่บังคับ domain-tag composition ของ §1 ซึ่งใช้กับขา save ปกติ) และต้องรายงานทุก tag ที่เติม
+**Reverse mapping (import — used in brain-import):**
+- `type` → if kebab-case(type) matches the `category` enum of `save-knowledge` (concept/entity/pattern/decision/howto/overview/synthesis) → **always** send as param `category` (category is a first-class field); not in the enum → tag `content/{kebab-case(type)}` (e.g. `Runbook` → `content/runbook`); `type: Note`/`Index` → add nothing; the clause "if the frontmatter tags already have `content/*` → do not derive again" applies **only to the derive-tag branch** — it does not suppress sending the category param
+- **folderPath on upsert:** a note whose title collides with an existing one → **keep the original folderPath from the catalog** (must not move the folder as a side effect of import — the real graph has mixed casing, e.g. `/projects/AgentMarketPlace/` and `/projects/agentmarketplace/`; sending a re-derived path would create a third casing); bundle dir differs from the original folder → report in the dry-run, do not move it — only new notes use the folderPath from the directory tree
+- `note_type` present and in the enum (`note`/`fleeting`/`literature`/`permanent`) → use as-is; missing or out-of-enum (bundle from another system) → default `literature` (knowledge from an external source per the §1 definition) + note in the report
+- `resource` → dual-write per §1 item 7: send as the `source` param of `save-knowledge` + a `Source: <pointer>` line in content only when not already present (avoid duplicating a bundle whose body already has `Source:`)
+- `timestamp` → does not round-trip — the server sets createdAt/updatedAt itself on save; `description` → not sent (the server derives the summary itself)
+- every tag passes the Tag Taxonomy write gate (§1) always — **lossless-first**: use the set from frontmatter as-is, add only when below the minimum (project tag / reaching 2 tags — the import side uses the count criterion only, it does not enforce the domain-tag composition of §1 which applies to the normal save path) and must report every added tag
 
 ### 8.3 Link Conversion
 
-- **Export:** `[[Title]]` ที่ resolve เป็น note ใน project เดียวกัน → relative markdown link คำนวณ**จาก directory ของไฟล์ต้นทางเสมอ**: ต้นทางอยู่ root ของ bundle (เช่น `index.md`) → `{category}/{slug}.md`; ต้นทางอยู่ category → same dir = `{slug}.md`, ข้าม category = `../{category}/{slug}.md`; resolve ไม่ได้ (โน้ตข้าม project / broken link) → **คง `[[Title]]` ตามเดิม** + รายงานใน export report (ห้ามเงียบหาย — โยง broken-wikilinks check ของ §7)
-- **Link table ต้องรวม MOC:** title ที่ตรง MOC pattern (§8.4) map ไปที่ `index.md` (root) / `{category}/index.md` — **ไม่ใช่** slug ปกติ (ไม่งั้น wikilink `[[{Project} — MOC: Database]]` ใน MOC หลักจะชี้ไฟล์ที่ไม่มีจริง)
-- **Import:** `.md` link ทั้ง **relative** และ **root-absolute** (`[x](/tables/customers.md)` — นับจาก bundle root, เป็นรูปแบบตามตัวอย่าง OKF ของ Google) → resolve เข้า title table (title ตาม identity fallback ของ importer — ไม่จำกัดแค่ frontmatter) → `[[Title]]`; `[[...]]` ที่คงอยู่ในไฟล์ → เก็บตามเดิม
-- **Server สร้าง LINKS_TO เฉพาะ ณ เวลา save และไม่ backfill ย้อนหลัง** (พิสูจน์ 2026-07-11: note ที่ wikilink ชี้ title ซึ่งยังไม่มีจะไม่ได้ edge แม้ note เป้าหมายถูกสร้างทีหลัง) → bundle ที่มี **create** หลายใบ link ถึงกัน: หลังเขียนครบทุกใบ ให้ **re-save รอบสอง**เฉพาะใบที่มี wikilink ชี้ไป note ที่ถูก create ทีหลัง เพื่อให้ edge ครบ
+- **Export:** `[[Title]]` that resolves to a note in the same project → a relative markdown link computed **always from the source file's directory**: source at the bundle root (e.g. `index.md`) → `{category}/{slug}.md`; source in a category → same dir = `{slug}.md`, across categories = `../{category}/{slug}.md`; unresolvable (cross-project note / broken link) → **keep `[[Title]]` as-is** + report in the export report (must not vanish silently — ties into the broken-wikilinks check of §7)
+- **The link table must include MOCs:** a title matching the MOC pattern (§8.4) maps to `index.md` (root) / `{category}/index.md` — **not** the normal slug (otherwise the wikilink `[[{Project} — MOC: Database]]` in the main MOC would point to a nonexistent file)
+- **Import:** `.md` links, both **relative** and **root-absolute** (`[x](/tables/customers.md)` — counted from the bundle root, the format used in Google's OKF examples) → resolve into the title table (title per the importer's identity fallback — not limited to frontmatter) → `[[Title]]`; `[[...]]` already present in a file → keep as-is
+- **The server creates LINKS_TO only at save time and does not backfill retroactively** (proven 2026-07-11: a note whose wikilink points to a title that does not yet exist gets no edge even if the target note is created later) → a bundle with several **create** notes linking to each other: after writing all of them, **re-save a second pass** for just the notes whose wikilinks point to notes created later, to complete the edges
 
-### 8.4 MOC ↔ index.md
+### 8.4 MOC ↔ index.md (v3.4.1: index.md is frontmatter-free per SPEC.md §6)
 
-- MOC note (`"{Project} — MOC (Map of Content)"`) → `index.md` ที่ root ของ bundle (ไม่ export ซ้ำเป็นไฟล์ปกติ); sub-MOC (`"{Project} — MOC: {Category}"`) → `{category}/index.md`
-- **MOC candidate ที่ไม่ตรง pattern** (note ติด tag `moc`/`index` หรือ title มี "Knowledge Map"/"Index" ที่ทำหน้าที่ catalog อยู่แล้ว) → **ถาม user** ว่าใช้เป็น `index.md` หรือ export เป็นไฟล์ปกติ + generate index แยก (ห้ามเดาเอง — กัน index ซ้อนสองชั้นใน bundle)
-- ไม่มี MOC → generate `index.md` จาก catalog (1 บรรทัด/note: `[Title](path) — summary`) + ระบุใน frontmatter `type: Index` ว่า generated — **แนะนำรัน `/brain-moc` ก่อน export** เพื่อได้ index ที่ curate แล้ว
-- Import: `index.md` ที่ derive จาก MOC (title ตรง MOC pattern) → สร้าง/อัปเดต MOC note ตาม upsert semantics §2 + กติกา bulk import §8.5 (**ไม่สร้าง changelog note** — ไม่ใช่ §2 เต็มรูป) และไม่ import เป็น note ธรรมดา; `index.md` ที่เป็น **generated index** (frontmatter `type: Index`) → **ข้าม** — ไม่ fabricate MOC note ที่ไม่เคยมีใน graph ต้นทาง (แนะนำ user รัน `/brain-moc` แทนถ้าต้องการ); `index.md` ที่ไม่เข้าทั้งสองเงื่อนไข (bundle จากระบบอื่น — เป็นเนื้อหาจริงตาม OKF progressive disclosure) → import เป็น note ปกติ
+**OKF rule (SPEC.md §6/§11 — verbatim):** "Index files contain no frontmatter." The only exception is `okf_version` at the **root `index.md` only** ("the only place frontmatter is permitted in an `index.md`" — see §8.6) → brain keeps an index's marker/identity in an **HTML comment on the first line of the body** (`<!-- okf:moc -->` / `<!-- okf:generated-index -->`), not frontmatter — an OKF consumer can ignore the comment, brain-import uses it to classify; a MOC title can already be reconstructed from project+position (§8.1) so there is no need to rely on frontmatter `title`
 
-### 8.5 กติกาความปลอดภัย + ความสด
+**Export (graph → index.md) — always body-only:**
+- MOC note (`"{Project} — MOC (Map of Content)"`) → `index.md` at the bundle root (do not export it again as a normal file); sub-MOC (`"{Project} — MOC: {Category}"`) → `{category}/index.md` — write **only the MOC content** (drop the MOC note's frontmatter) + first line `<!-- okf:moc -->`
+- no MOC → generate `index.md` from the catalog (1 line/note: `[Title](path) — summary`) + first line `<!-- okf:generated-index -->` (**replacing** the old frontmatter `type: Index`) — **suggest running `/brain-moc` before export** for a curated index
+- **a MOC candidate not matching the pattern** (a note tagged `moc`/`index` or a title with "Knowledge Map"/"Index" that already acts as a catalog) → **ask the user** whether to use it as `index.md` or export it as a normal file + generate a separate index (do not guess — avoid a double-nested index in the bundle)
+- **order in the body:** the `<!-- okf:… -->` comment always precedes the `> Exported: …` blockquote header (§8.5); both live in the body — an index.md's frontmatter is empty, except the root which has `okf_version` (§8.6)
 
-- **Pre-write secret check:** ก่อนเขียน bundle ลง disk → scan ทุกไฟล์ด้วย pattern §6.3 — เจอ = หยุด รายงาน user (bundle ไป git/แชร์ต่อ ยิ่งอันตรายกว่า note ใน server)
-- Bundle มี staleness ตั้งแต่วินาทีที่ export — ใส่ header ใน `index.md`: `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth คือ graph`
-- Export **ไม่แก้ graph** (read-only); Import **ทุก write ผ่าน write gate**: tags ผ่าน Tag Taxonomy (§1), title ชน → upsert, dry-run ก่อนเสมอ (propose-don't-execute ตาม §7.1)
-- **Bulk import upsert** ใช้ upsert semantics ของ §2 (save-knowledge title เดิม → server เก็บ version เดิมใน NoteHistory อัตโนมัติ) + ส่ง `reason="brain-import: ..."` — **ไม่สร้าง changelog note ต่อใบ** (changelog-note layer ของ §2 มีไว้สำหรับ interactive edit; bulk import N ใบจะ flood graph ด้วย changelog N ใบ) — audit trail อยู่ที่ NoteHistory + activity log
-- **Secret check ขา import (§6.3):** note ที่ scan เจอ secret → ตัดออกจาก write เสมอ ห้าม override (secret เข้า graph แล้วลบถาวรไม่ได้ — §6); user ต้องแก้ไฟล์ใน bundle แล้วรันใหม่
+**Import (index.md → graph) — classify in order (a reserved filename does not go through the "must have `type`" rule):**
+1. **root `index.md`:** read `okf_version` (frontmatter — the only place allowed) → validate per §8.6 (warn on major mismatch in the dry-run) before classifying further
+2. body first line `<!-- okf:moc -->` **or** (legacy v3.4.0) frontmatter `title` matching the MOC pattern → create/update a **MOC note**: title = (a) frontmatter `title` if present, otherwise (b) reconstruct from target project + position (root → `"{target} — MOC (Map of Content)"`; `{category}/` → `"{target} — MOC: {TitleCase(category)}"`); **content = the body after stripping the `<!-- okf:… -->` comment first line + the `> Exported:` blockquote header (added by export, not MOC content — not stripping it bloats every round-trip into version churn) then trim whitespace (§8.2)**; per upsert §2 + the bulk rule §8.5 (**no changelog note**); source ≠ target (the project in title/reconstruct does not match) → **ask the user** ([1] rename to target [2] original name [3] skip); **do not import as a normal note**
+3. body first line `<!-- okf:generated-index -->` **or** (legacy v3.4.0) frontmatter `type: Index` → **skip** — do not fabricate a MOC note that never existed in the source graph (suggest the user run `/brain-moc` instead)
+4. any other index.md (bundle from another system — frontmatter-free, no okf marker) = OKF navigation per §6 (not a concept) → **skip** as a concept + report it as a `/brain-moc` candidate; **except** if it has frontmatter `type` other than `Index`/MOC (some producers put real content there) → import as a normal note
+
+### 8.5 Safety + Freshness Rules
+
+- **Pre-write secret check:** before writing the bundle to disk → scan every file with the pattern set §6.3 — found = stop, report to the user (a bundle goes to git / is shared onward, even more dangerous than a note in the server)
+- A bundle has staleness from the second it is exported — put a header in `index.md`: `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth is the graph`
+- Export **does not modify the graph** (read-only); Import **routes every write through the write gate**: tags pass the Tag Taxonomy (§1), title collision → upsert, always dry-run first (propose-don't-execute per §7.1)
+- **Bulk import upsert** uses the upsert semantics of §2 (save-knowledge with an existing title → the server keeps the old version in NoteHistory automatically) + sends `reason="brain-import: ..."` — **no changelog note per note** (the changelog-note layer of §2 is meant for interactive edits; a bulk import of N notes would flood the graph with N changelogs) — the audit trail lives in NoteHistory + the activity log
+- **Secret check on import (§6.3):** a note that scans as containing a secret → always dropped from the write, no override (a secret that has entered the graph cannot be permanently deleted — §6); the user must fix the file in the bundle and rerun
+
+### 8.6 OKF Version Declaration (v3.4.1)
+
+brain supports **OKF v0.1** (the whole §8 mapping) — a bundle declares the spec version it targets per SPEC.md §11
+
+- **Export:** the bundle's root `index.md` gets frontmatter **`okf_version: "0.1"`** — SPEC.md §11: *"Bundles MAY declare the OKF version … in a bundle-root `index.md` frontmatter block (the only place frontmatter is permitted in an `index.md`)"* → this is the **only place in the bundle** where an index has frontmatter; concept files still have full frontmatter per §8.2 as usual (a concept is not a reserved file)
+- **Import:** read `okf_version` from the root `index.md` **before classifying the index** (§8.4 item 1):
+  - no field → pre-declaration bundle (e.g. a v3.4.0 bundle or another system) → import may continue (the field is optional) + note in the report
+  - major = `0` (e.g. `0.1`, `0.2`) → brain understands the mapping → import as usual
+  - major ≠ `0` (e.g. `1.x`) → **warn in the dry-run**: the bundle targets a spec newer than brain v3.4.1 understands (new fields/formats may be dropped from the §8 mapping) → user confirms before writing
+- **Validation (export step 7 / import parse):** check that every `index.md` is frontmatter-free **except** the root, which may have only `okf_version` — any other key in an index.md's frontmatter → export fixes it before reporting success; import classifies per §8.4 (legacy frontmatter is still accepted for backward-compat)

@@ -11,108 +11,110 @@ argument-hint: "[bundle-dir] [--project <name>] [--no-overwrite] — default bun
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` — **§8 OKF Interchange Mapping (กฎหลักของ skill นี้ — reverse mapping §8.2, link import §8.3, MOC import §8.4, write gate §8.5)**, §1 Save Rules (Tag Taxonomy), §2 upsert semantics, §6.3 secret check, §7.1 propose-don't-execute
+**Graph Protocol:** Follow `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` — **§8 OKF Interchange Mapping (the core rules of this skill — reverse mapping §8.2, link import §8.3, MOC import §8.4, write gate §8.5)**, §1 Save Rules (Tag Taxonomy), §2 upsert semantics, §6.3 secret check, §7.1 propose-don't-execute
 
-## Why a Write Gate (หัวใจของ skill นี้)
+## Why a Write Gate (the heart of this skill)
 
-Import คือด้านเสี่ยงของ interchange — bundle มาจากภายนอก (ทีมอื่น / enrichment agent / ไฟล์เก่า) แล้ว**เขียนเข้า graph**:
+Import is the risky side of interchange — the bundle comes from outside (another team / enrichment agent / old files) and then **writes into the graph**:
 
-- secret ที่หลุดเข้า graph **ลบถาวรไม่ได้** (version history เก็บทุกอย่าง — §6) → ต้อง scan ก่อนเขียน
-- tag เพี้ยนจาก bundle ภายนอกกระจายเข้า taxonomy กลางที่ใช้ร่วมทุก project → ทุก tag ผ่าน Tag Taxonomy (§1)
-- **dry-run เป็น default เสมอ ไม่มี flag ข้าม** — สรุปทุกอย่างที่จะเกิดก่อน แล้ว user ยืนยันจึงเขียน (propose-don't-execute §7.1)
+- a secret leaked into the graph **cannot be permanently deleted** (version history keeps everything — §6) → must scan before writing
+- tags distorted from an external bundle spread into the shared central taxonomy used by every project → every tag passes the Tag Taxonomy (§1)
+- **dry-run is always the default, with no flag to skip it** — summarize everything that will happen first, then the user confirms before writing (propose-don't-execute §7.1)
 
 ## Mode Detection
 
 | Input | Mode |
 |---|---|
-| (no args) | bundle = `.brain-export/{basename of cwd}/` (match ชื่อ subdirectory แบบ **case-insensitive** — ชื่อ project ใน graph อาจ casing ต่างจาก cwd); ไม่เจอแต่ `.brain-export/` มี subdirectory เดียว → เสนอตัวนั้น; ไม่มี → ถาม user ระบุ path |
-| `{dir}` | import bundle จาก directory ที่ระบุ |
-| `--project <name>` | target project override (default: `project` field ใน bundle → basename of cwd) |
-| `--no-overwrite` | title ชน note เดิม → **ข้าม** note นั้น (default = upsert ตาม §2) |
+| (no args) | bundle = `.brain-export/{basename of cwd}/` (match the subdirectory name **case-insensitively** — the project name in the graph may differ in casing from cwd); not found but `.brain-export/` has a single subdirectory → offer it; none → ask the user to specify a path |
+| `{dir}` | import the bundle from the specified directory |
+| `--project <name>` | target project override (default: `project` field in the bundle → basename of cwd) |
+| `--no-overwrite` | title collides with an existing note → **skip** that note (default = upsert per §2) |
 
 ## Steps
 
-### Phase A — Parse (read-only, ยังไม่แตะ graph)
+### Phase A — Parse (read-only, does not touch the graph yet)
 
 1. **Resolve bundle + target project**
-   - validate bundle: directory มีจริง + มีไฟล์ `.md` อย่างน้อย 1 — ไม่ผ่าน → แจ้ง user แล้วจบ
-   - source project = frontmatter `project` ของ `index.md` (fallback: ไฟล์แรกที่มี field นี้; ไม่มีเลย = bundle จากระบบอื่น)
-   - target project = `--project` > source project > basename of cwd — **source ≠ target → ถาม user ยืนยันก่อนเสมอ** (กันเทความรู้เข้าผิด project)
-   - MCP ล่ม/ไม่ตอบ → แจ้ง user แล้วจบ อย่า retry วน (never block)
+   - validate the bundle: the directory exists + has at least 1 `.md` file — otherwise → notify the user and stop
+   - source project = frontmatter `project` of `index.md` (fallback: the first file that has this field; none at all = bundle from another system)
+   - target project = `--project` > source project > basename of cwd — **source ≠ target → always ask the user to confirm first** (guard against pouring knowledge into the wrong project)
+   - MCP down/unresponsive → notify the user and stop; do not retry in a loop (never block)
 
-2. **Walk + parse ทุกไฟล์ `.md`** (recursive)
-   - frontmatter ต้องมี `type` อย่างน้อย (minimum OKF) — field อื่น optional ทั้งหมด
-   - **title (identity — §8.1):** frontmatter `title` → ไม่มีใช้ H1 แรกใน body → ไม่มีอีกใช้ filename slug แปลงกลับ (`-`→space, capitalize คำ) — 2 กรณีหลังต้องระบุใน dry-run report ว่า identity เป็นการเดา
-   - parse fail รายไฟล์ (frontmatter พัง / ไม่มี `type` / tags เป็น YAML block list ที่ parser อ่านไม่ได้ — **ห้ามกิน tags เงียบๆ** ให้นับเป็น parse fail) → ข้ามไฟล์นั้น + list ใน report (per-file degrade — ห้ามทั้ง import ล้มเพราะไฟล์เดียว)
-   - `log.md` **ที่ไม่มี frontmatter `title`** (OKF optional change history) → ข้าม ไม่ import เป็น note — brain มี NoteHistory อยู่แล้ว + list ใน report; `log.md` ที่มี frontmatter title ครบ = note จริงที่ slug บังเอิญเป็น log (export รุ่นเก่า) → import ปกติ
-   - **> 100 ไฟล์ → เตือน token/call cost** (ต้อง `save-knowledge` ทีละใบ) แล้วถาม user ก่อน; เสนอทางเลือก: import เฉพาะบาง directory
+2. **Walk + parse every `.md` file** (recursive)
+   - **reserved files (`index.md`/`log.md`) do not go through the "must have `type`" rule** (SPEC.md §9 — only non-reserved files require frontmatter) → route them to step 3 (index.md) or the log.md handling below; do not count them as a parse fail for lacking `type`
+   - concept file (any other `.md`): frontmatter must have at least `type` (minimum OKF) — all other fields optional
+   - **title (identity — §8.1):** frontmatter `title` → if missing use the first H1 in the body → if still missing convert the filename slug back (`-`→space, capitalize words) — the latter two cases must be flagged in the dry-run report as a guessed identity
+   - per-file parse fail (broken frontmatter / no `type` / tags is a YAML block list the parser cannot read — **must not swallow tags silently**, count it as a parse fail) → skip that file + list it in the report (per-file degrade — must not fail the whole import over one file)
+   - `log.md` **without frontmatter `title`** (OKF optional change history) → skip, do not import as a note — brain already has NoteHistory + list it in the report; a `log.md` with a full frontmatter title = a real note whose slug happens to be log (older export) → import normally
+   - **> 100 files → warn about token/call cost** (must `save-knowledge` one by one) then ask the user first; offer an alternative: import only some directories
 
-3. **จำแนก `index.md` ตาม §8.4 (Import rules)**
-   - title ตรง MOC pattern (`"{Project} — MOC (Map of Content)"` / `"{Project} — MOC: {Category}"`) → จะสร้าง/อัปเดต **MOC note**; ถ้า source ≠ target project ({Project} ใน title ไม่ตรง target) → **ถาม user**: [1] rename เป็น `{target} — MOC...` [2] import ชื่อเดิม [3] ข้าม — กัน MOC ชื่อผิด project ซ้อนกับที่ `/brain-moc` จะสร้าง
-   - frontmatter `type: Index` (generated index จาก brain-export) → **ข้าม** — ไม่ fabricate MOC ที่ไม่เคยมีใน graph ต้นทาง; แนะนำ user รัน `/brain-moc` หลัง import แทน
-   - ไม่เข้าทั้งสองเงื่อนไข (bundle จากระบบอื่น — `index.md` เป็นเนื้อหาจริงตาม OKF progressive disclosure) → import เป็น note ปกติ
+3. **Classify `index.md` per §8.4 (Import rules — v3.4.1 comment-based)**
+   - **root `index.md` — read `okf_version` first (§8.6):** no field → pre-declaration bundle (import may continue + note it in the report); major `0` (`0.1`) → normal; major ≠ `0` (`1.x`) → **warn in the dry-run** that the bundle targets a spec newer than brain v3.4.1 (mapping §8 may drop fields) and have the user confirm
+   - body first line `<!-- okf:moc -->` **or** (legacy v3.4.0) frontmatter `title` matching the MOC pattern (`"{Project} — MOC (Map of Content)"` / `"{Project} — MOC: {Category}"`) → create/update a **MOC note**: title = frontmatter `title` if present, otherwise reconstruct from target + position (root → `"{target} — MOC (Map of Content)"`; `{category}/` → `"{target} — MOC: {TitleCase(category)}"`); source ≠ target ({Project} in title/reconstruct does not match target) → **ask the user**: [1] rename to `{target} — MOC...` [2] import under the original name [3] skip
+   - body first line `<!-- okf:generated-index -->` **or** (legacy v3.4.0) frontmatter `type: Index` → **skip** — do not fabricate a MOC that never existed in the source graph; suggest the user run `/brain-moc` after import instead
+   - none of the above (bundle from another system — frontmatter-free, no okf marker) = OKF navigation per SPEC.md §6 (not a concept) → **skip** as a concept + report it as a `/brain-moc` candidate; **except** if it has frontmatter `type` other than `Index`/MOC (some producers put real content there) → import as a normal note
 
-4. **Build title table + แปลง links (§8.3 Import)**
-   - จากทุกไฟล์ที่ผ่าน parse: `relative path → title` (title ตามกฎ identity ข้อ 2 — รวม fallback H1/filename) — ใช้ resolve ทุก link
-   - **title ซ้ำกันเองใน bundle** (คนละไฟล์ title เดียวกัน — เสี่ยงพิเศษเมื่อ title มาจาก H1 fallback) → server จะ upsert ทับกันเงียบๆ ตอนเขียน **ห้ามปล่อยเป็น create ทั้งคู่**: list เป็น conflict ชนิด intra-bundle duplicate ใน dry-run → user เลือก ข้ามใบหลัง / ยกเลิก
-   - `.md` link ใน body ทั้ง **relative** และ **root-absolute** (`[x](/dir/file.md)` — resolve จาก bundle root ตามรูปแบบตัวอย่าง OKF) → `[[Title]]` ของไฟล์เป้าหมาย
-   - link ชี้ไฟล์ที่ไม่อยู่ใน bundle / non-`.md` / URL ภายนอก → **คงไว้ตามเดิม** + นับใน report
-   - `[[wikilink]]` ที่อยู่ในไฟล์อยู่แล้ว → เก็บตามเดิม
+4. **Build title table + convert links (§8.3 Import)**
+   - from every file that parsed: `relative path → title` (title per the identity rule in step 2 — including the H1/filename fallback) — used to resolve every link
+   - **titles duplicated within the bundle** (different files with the same title — especially risky when the title comes from the H1 fallback) → the server will silently upsert them over each other on write; **must not leave both as create**: list it as an intra-bundle duplicate conflict in the dry-run → the user chooses skip-the-later-one / cancel
+   - `.md` links in the body, both **relative** and **root-absolute** (`[x](/dir/file.md)` — resolve from bundle root per the OKF example format) → `[[Title]]` of the target file
+   - a link pointing to a file not in the bundle / non-`.md` / an external URL → **keep as-is** + count in the report
+   - `[[wikilink]]` already present in a file → keep as-is
 
-5. **Reverse mapping ต่อ note (§8.2 — ห้าม define ตารางซ้ำ ใช้ของ protocol)**
-   - `type` → kebab-case ตรง enum `category` ของ `save-knowledge` (pattern/overview/howto/...) → ส่งเป็น param `category`; ไม่ตรง → tag `content/{kebab-case(type)}`; `Note`/`Index` → ไม่เพิ่ม; tags มี `content/*` อยู่แล้ว → ใช้ของ tags ไม่ derive ซ้ำ (§8.2)
-   - `note_type` มีและอยู่ใน enum (`note`/`fleeting`/`literature`/`permanent`) → ใช้ตรงตัว; ไม่มีหรือค่านอก enum → default `literature` + จดใน report (ห้ามส่งค่านอก enum — save จะ fail ที่ schema validation ทั้งใบ)
-   - **body:** trim leading/trailing whitespace ก่อนสร้าง payload — กัน re-import bundle เดิมสร้าง NoteHistory version ใหม่จาก whitespace ต่างกันอย่างเดียว (version churn)
-   - `resource` → ส่งเป็น `source` param ของ `save-knowledge` + บรรทัด `Source: <URL>` ใน content **เฉพาะเมื่อ content ยังไม่มีบรรทัดนั้น** (bundle จาก brain-export มี `Source:` ใน body อยู่แล้ว — ห้ามเขียนซ้ำ); convention เต็มรูปแบบอยู่ที่ GRAPH_PROTOCOL §1 ข้อ 7 (dual-write)
-   - `timestamp` → **ไม่ round-trip** — server กำหนด createdAt/updatedAt เอง (จดใน report ว่า timestamp ต้นทางอยู่ใน bundle)
-   - `tags` → **ใช้ทั้งชุดจาก frontmatter ตามเดิม (lossless-first — ห้าม "ปรับปรุง" tags ของ bundle)** เติมเฉพาะเมื่อขาด minimum ของ Save Rules §1: ไม่มี `{target-project-lowercase}` → เพิ่ม; เติมแล้วยัง < 2 tags → เพิ่ม domain tag inferred จาก directory (map พหูพจน์→เอกพจน์ ย้อนกฎ §8.1 ข้อ 3 เช่น `dependencies/`→`dependency`); ยังไม่ครบ → import ตามที่มี + รายงานใน dry-run — ทุก tag ที่เติมต้องแสดงใน dry-run report
-   - **folderPath จาก directory tree:** `{bundle}/{dir}/note.md` → `/projects/{target-project}/{dir}/` (คง nested path ตามจริง); ไฟล์ที่ root ของ bundle → `/projects/{target-project}/`; directory ที่ไม่ตรง category convention §1 → import ตามจริง + flag ใน report
+5. **Reverse mapping per note (§8.2 — must not redefine the table, use the protocol's)**
+   - `type` → if kebab-case matches the `category` enum of `save-knowledge` (pattern/overview/howto/...) → send as param `category`; if not → tag `content/{kebab-case(type)}`; `Note`/`Index` → add nothing; tags already have `content/*` → use those tags, do not derive again (§8.2)
+   - `note_type` present and in the enum (`note`/`fleeting`/`literature`/`permanent`) → use as-is; missing or out-of-enum → default `literature` + note it in the report (must not send an out-of-enum value — save will fail schema validation for the whole note)
+   - **body:** trim leading/trailing whitespace before building the payload — prevents re-importing the same bundle from creating a new NoteHistory version over whitespace alone (version churn)
+   - `resource` → send as the `source` param of `save-knowledge` + a `Source: <URL>` line in content **only when content does not already have that line** (a bundle from brain-export already has `Source:` in the body — must not write it twice); the full convention is in GRAPH_PROTOCOL §1 item 7 (dual-write)
+   - `timestamp` → **does not round-trip** — the server sets createdAt/updatedAt itself (note in the report that the source timestamp is in the bundle)
+   - `tags` → **use the whole set from frontmatter as-is (lossless-first — must not "improve" the bundle's tags)**; add only when below the minimum of Save Rules §1: no `{target-project-lowercase}` → add it; still < 2 tags after that → add a domain tag inferred from the directory (map plural→singular, reversing §8.1 rule 3, e.g. `dependencies/`→`dependency`); still not enough → import as-is + report in the dry-run — every added tag must be shown in the dry-run report
+   - **folderPath from the directory tree:** `{bundle}/{dir}/note.md` → `/projects/{target-project}/{dir}/` (preserve the nested path as-is); a file at the bundle root → `/projects/{target-project}/`; a directory that does not match the category convention §1 → import as-is + flag in the report
 
-### Phase B — Gate (ตัดสินว่าอะไรจะถูกเขียน)
+### Phase B — Gate (decide what will be written)
 
 6. **Conflict detection (catalog-first — §3 Step 0)**
-   - `mcp__graph-brain__get-project-catalog` project="{target}" → เทียบ title ทุก note: ไม่ชน = **create**, ชน = **upsert** (default) หรือ **skip** (`--no-overwrite`)
-   - **note ที่ upsert → คง folderPath เดิมจาก catalog เสมอ** (§8.2 — ห้ามย้าย folder เป็น side effect; graph จริงมี casing ปน); bundle dir ต่างจาก folder เดิม → แจ้งใน dry-run report เฉยๆ
-   - **note ที่จะ create → เช็ค title ชนนอก target ด้วย** `search-knowledge` query="{title}" — **upsert-by-title ของ server เป็น GLOBAL ไม่ scope ต่อ project (พิสูจน์ 2026-07-11 — §2)**: title ที่ชน note ใน project อื่นจะไม่ create แต่**ทับ note ของ project อื่นทั้งใบ** → default = **ข้าม note นั้น** + ระบุใน dry-run ว่าชนกับ note ของ project ไหน ให้ user อนุญาตเป็นรายใบเท่านั้น
-   - catalog tool ไม่มี (server เก่ากว่า v1.1.0) → fallback `search-knowledge` query="{title}" ทีละใบ (ช้ากว่า — เตือน user เมื่อ note เยอะ)
+   - `mcp__graph-brain__get-project-catalog` project="{target}" → compare every note's title: no collision = **create**, collision = **upsert** (default) or **skip** (`--no-overwrite`)
+   - **a note being upserted → always keep the original folderPath from the catalog** (§8.2 — must not move the folder as a side effect; the real graph has mixed casing); bundle dir differs from the original folder → just report it in the dry-run
+   - **a note being created → also check for a title collision outside the target** with `search-knowledge` query="{title}" — **the server's upsert-by-title is GLOBAL, not scoped per project (proven 2026-07-11 — §2)**: a title colliding with a note in another project will not create but **overwrite that other project's note entirely** → default = **skip that note** + state in the dry-run which project's note it collides with, letting the user allow it only per-note
+   - catalog tool missing (server older than v1.1.0) → fallback `search-knowledge` query="{title}" one at a time (slower — warn the user when there are many notes)
 
 7. **Tag gate preview (client-side, best-effort)**
-   - ตรวจ tags ทุก note กับ blocklist §1: date-string (`2026-06-03`), version tag (`net9`, `v1.2`), status flag (`pending`, `auto-generated`, `wip`) → คาดว่าจะถูก **drop**; alias ที่รู้จัก (เช่น `efcore`→`ef-core`) คาดว่าจะถูก **normalize** — เทียบกับ canonical list ใน description ของ `save-knowledge` ถ้ามี; **server จริงอาจไม่ embed list** (ตรวจ 2026-07-11: มีแค่คำแนะนำ ไม่มี list) → ใช้ `list-tags` แทน หรือข้าม alias preview แล้วพึ่งผล normalize จริงใน step 10
-   - ผลจริงตัดสินที่ server ตอน save (§1) — preview มีไว้ให้ dry-run report บอก user ล่วงหน้า ไม่ใช่ตัวตัดสิน
+   - check every note's tags against blocklist §1: date-string (`2026-06-03`), version tag (`net9`, `v1.2`), status flag (`pending`, `auto-generated`, `wip`) → expected to be **dropped**; known aliases (e.g. `efcore`→`ef-core`) expected to be **normalized** — compare against the canonical list in the `save-knowledge` description if present; **the real server may not embed the list** (checked 2026-07-11: only guidance, no list) → use `list-tags` instead, or skip the alias preview and rely on the real normalize result in step 10
+   - the real result is decided at the server on save (§1) — the preview exists to tell the user in advance in the dry-run report, not to decide
 
-8. **Secret check (§6.3 — MANDATORY ก่อนเขียนทุกครั้ง)**
-   - scan **payload สุดท้ายที่จะส่ง `save-knowledge`** ด้วย pattern ชุดเต็ม §6.3 (key=value/key:value + URL/signature + token literals) — คือ content **หลัง**แปลง link + เติมบรรทัด `Source:` แล้ว **และทุก field ที่จะส่ง**: `source` (จาก `resource` — จุด bypass ที่พิสูจน์แล้ว 2026-07-11: credential ฝังใน resource URL หลุด gate ได้ถ้า scan แค่ body ก่อนประกอบ), title, description
-   - **Masked value (`***`/`<masked>`) ไม่ใช่ hit** — mask ถูกต้องตาม §6.2 ข้อ 5 → รายงานเป็น info; นโยบายด้านล่างใช้กับค่า literal เท่านั้น
-   - **เจอค่า literal → note นั้นถูกตัดออกจาก write ทันที** + รายงานไฟล์/บรรทัด — secret ที่เข้า graph แล้วลบถาวรไม่ได้ (§6) จึงห้าม import แม้ user ขอ; ให้ user แก้ไฟล์ใน bundle แล้วรันใหม่
+8. **Secret check (§6.3 — MANDATORY before every write)**
+   - scan the **final payload to be sent to `save-knowledge`** with the full pattern set §6.3 (key=value/key:value + URL/signature + token literals) — that is content **after** link conversion + adding the `Source:` line **and every field to be sent**: `source` (from `resource` — a proven bypass point 2026-07-11: a credential embedded in the resource URL can slip past the gate if you scan only the body before assembling), title, description
+   - **a masked value (`***`/`<masked>`) is not a hit** — masking is correct per §6.2 item 5 → report as info; the policy below applies only to literal values
+   - **a literal value found → that note is immediately dropped from the write** + report the file/line — a secret that has entered the graph cannot be permanently deleted (§6), so it must not be imported even if the user asks; have the user fix the file in the bundle and rerun
 
 ### Phase C — Confirm + Write
 
-9. **Dry-run report (default — ทุกครั้ง ไม่มีข้อยกเว้น)**
-   - แสดง (ไทย): create N ใบ / upsert M ใบ (ระบุ title ที่ชน — content เดิมจะถูกทับ กู้ได้จาก NoteHistory) / skip K ใบ (--no-overwrite / secret / parse fail / log.md / generated index / intra-bundle duplicate) / MOC action / tags ที่คาดว่าจะ normalize+drop / **tags ที่เติมเอง** (พร้อมเหตุผล §1 minimum — จากข้อ 5) / link แปลงได้ X คงเดิม Y / folder ที่ไม่ตรง convention / **note upsert ที่ bundle dir ต่างจาก folder เดิม** (จากข้อ 6) / title ที่เป็นการเดา / title ที่ชน note นอก target project
-   - ถาม user: **[1] เขียนทั้งหมดตามรายงาน [2] เลือก import บาง note [3] ยกเลิก** — ไม่ตอบ = ไม่เขียน
+9. **Dry-run report (default — always, no exception)**
+   - show (in Thai): **the bundle's `okf_version`** (`0.1` / not declared / warn on major mismatch — from step 3) / create N / upsert M (state the colliding titles — the old content will be overwritten, recoverable from NoteHistory) / skip K (--no-overwrite / secret / parse fail / log.md / generated index / foreign index navigation / intra-bundle duplicate) / MOC action / tags expected to normalize+drop / **self-added tags** (with the §1 minimum reason — from step 5) / links converted X kept Y / folders not matching the convention / **upserted notes whose bundle dir differs from the original folder** (from step 6) / guessed titles / titles colliding with a note outside the target project
+   - ask the user: **[1] write everything per the report [2] select some notes to import [3] cancel** — no answer = no write
 
-10. **Write phase (หลัง user ยืนยันเท่านั้น)**
-    - ทีละ note: `mcp__graph-brain__save-knowledge` — title/content(หลังแปลง link)/tags(หลังเติม)/folderPath/projectName={target}/type={note_type}/source={resource ถ้ามี}; note ที่ upsert → ส่ง `reason="brain-import: OKF bundle {bundle-path} ({YYYY-MM-DD})"` (server เก็บ version เดิมใน NoteHistory อัตโนมัติ — §2 upsert semantics; bulk import ไม่สร้าง changelog note ต่อใบ)
-    - อ่าน `Tag normalization:` ใน response ทุกใบ → สะสม**เฉพาะบรรทัด normalize (alias→canonical) กับ drop (blocked)**; บรรทัด `... is a NEW tag` เป็นรายงาน registry ฝั่ง server ที่มี known quirk (รายงาน NEW ซ้ำสำหรับ tag ที่มีอยู่แล้ว — round-trip test 2026-07-11) ห้ามใช้ตัดสิน gate; normalize/drop ที่ต่างจาก preview ข้อ 7 → รายงาน user ตอนจบ
-    - **Server เก่าไม่มี Tag Taxonomy (pre-v3.3):** ถ้า preview ข้อ 7 คาดว่าต้องมี drop/normalize แต่ response ใบแรกๆ ไม่มีบรรทัด `Tag normalization:` เลย → **หยุดก่อนเขียนใบต่อไป** แจ้ง user ว่า server ไม่ normalize (blocked tag จะเข้า graph ทั้งชุด) แล้วถาม: [1] ตัด blocked tag ฝั่ง client ตาม preview แล้วเขียนต่อ [2] เขียนต่อตามเดิม [3] ยกเลิกที่เหลือ
-    - save fail รายใบ → ข้าม + list ใน report แล้วทำใบต่อไป (ห้ามทั้ง import ล้มเพราะใบเดียว)
-    - MOC note (จากข้อ 3) → เขียนเป็นใบสุดท้าย (หลังทุก note มีจริง — wikilink ใน MOC จะ resolve เป็น LINKS_TO ครบ)
-    - **Create-heavy bundle (§8.3):** server สร้าง LINKS_TO เฉพาะ ณ เวลา save ไม่ backfill — note ที่ถูก create ก่อนแล้วมี wikilink ชี้ note ที่ create ทีหลัง → หลังเขียนครบ **re-save รอบสอง**เฉพาะใบเหล่านั้น (content เดิม, reason="brain-import: link resolve pass") เพื่อให้ edge ครบ; upsert ล้วน (title มีครบอยู่แล้ว) ไม่ต้องทำ
+10. **Write phase (only after the user confirms)**
+    - one note at a time: `mcp__graph-brain__save-knowledge` — title/content(after link conversion)/tags(after additions)/folderPath/projectName={target}/type={note_type}/source={resource if any}; an upserted note → send `reason="brain-import: OKF bundle {bundle-path} ({YYYY-MM-DD})"` (the server keeps the old version in NoteHistory automatically — §2 upsert semantics; bulk import does not create a changelog note per note)
+    - read `Tag normalization:` in every response → accumulate **only the normalize lines (alias→canonical) and drop lines (blocked)**; the `... is a NEW tag` line is a server-side registry report with a known quirk (it reports NEW repeatedly for a tag that already exists — round-trip test 2026-07-11), must not use it to decide the gate; normalize/drop differing from the step 7 preview → report to the user at the end
+    - **old server without Tag Taxonomy (pre-v3.3):** if the step 7 preview expected drop/normalize but the first few responses have no `Tag normalization:` line at all → **stop before writing the next note**, tell the user the server does not normalize (the whole blocked-tag set will enter the graph), then ask: [1] strip blocked tags client-side per the preview and continue [2] continue as-is [3] cancel the rest
+    - per-note save fail → skip + list in the report, then do the next note (must not fail the whole import over one note)
+    - MOC note (from step 3) → write it last (after every note actually exists — the wikilinks in the MOC will resolve to LINKS_TO fully)
+    - **Create-heavy bundle (§8.3):** the server creates LINKS_TO only at save time, no backfill — a note created earlier with a wikilink pointing to a note created later → after writing all, **re-save a second pass** for just those notes (same content, reason="brain-import: link resolve pass") to complete the edges; a pure-upsert set (all titles already exist) does not need this
 
 11. **Post-import validation**
-    - `get-project-catalog` target อีกครั้ง → จำนวน note เพิ่มตรงตาม create count (upsert ไม่เพิ่มจำนวน)
-    - เสนอรัน `/brain-lint {target}` — ตรวจ broken wikilinks + tag hygiene หลัง import (โดยเฉพาะ bundle จากระบบอื่น)
+    - `get-project-catalog` for the target again → the note count increases exactly by the create count (upsert does not increase the count)
+    - suggest running `/brain-lint {target}` — check broken wikilinks + tag hygiene after import (especially for a bundle from another system)
 
 12. **Report + activity log**
-    - รายงาน (ไทย): created/upserted/skipped ต่อ folder, tag changes จริงจาก server, link ที่คงเป็น `[[...]]` ไม่ resolve, คำแนะนำถัดไป (`/brain-lint`, `/brain-moc` ถ้า generated index ถูกข้าม)
+    - report (in Thai): created/upserted/skipped per folder, real tag changes from the server, links kept as `[[...]]` that did not resolve, next-step suggestions (`/brain-lint`, `/brain-moc` if the generated index was skipped)
     - Append `.brain/activity-log.json`: command="brain-import", details={bundle, target_project, created, upserted, skipped, tag_changes}
 
-## Round-trip expectation (คู่กับ brain-export)
+## Round-trip expectation (paired with brain-export)
 
-bundle ที่ export ด้วย `/brain-export` แล้ว import กลับ project เดิม → **lossless ในขอบเขต §8**: note count (ไม่รวม generated `index.md`), wikilinks, canonical tags, note_type, content ตรงเดิม (หลัง normalize leading/trailing whitespace — ข้อ 5) — สิ่งที่ไม่ round-trip: `timestamp` (server กำหนดเอง), `description` (derive ใหม่จาก content ได้)
+a bundle exported with `/brain-export` then imported back to the same project → **lossless within the scope of §8**: note count (excluding the generated `index.md`), wikilinks, canonical tags, note_type, content identical (after normalizing leading/trailing whitespace — step 5) — what does not round-trip: `timestamp` (the server sets it), `description` (re-derivable from content)
 
 ## Degrade Behavior
 
-- MCP ล่ม → แจ้ง user, ไม่ import, ไม่ block งานอื่น
-- parse fail / save fail รายใบ → ข้ามใบนั้น + list ใน report (per-note degrade)
-- catalog tool ไม่มี → fallback search-knowledge ต่อ title + เตือนเรื่องความช้า
+- MCP down → notify the user, do not import, do not block other work
+- per-file parse fail / save fail → skip that note + list in the report (per-note degrade)
+- catalog tool missing → fallback search-knowledge per title + warn about slowness

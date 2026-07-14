@@ -11,73 +11,77 @@ argument-hint: "[project] [--all-projects] [--output <dir>] — default: basenam
 
 ALL responses MUST be in Thai language.
 
-**Graph Protocol:** Follow `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` — **§8 OKF Interchange Mapping (กฎหลักของ skill นี้)**, §6.3 pre-save sanity check (ใช้เป็น pre-write check), §3 Step 0 catalog-first
+**Graph Protocol:** Follow `${CLAUDE_PLUGIN_ROOT}/GRAPH_PROTOCOL.md` — **§8 OKF Interchange Mapping (the core rules of this skill)**, §6.3 pre-save sanity check (used as a pre-write check), §3 Step 0 catalog-first
 
 ## Why Export
 
-- **Portability:** ความรู้ใน Neo4j เข้าถึงได้เฉพาะผ่าน MCP — bundle เป็น markdown ธรรมดา เปิดได้ทุกที่ ลง git ได้ แชร์ให้ agent/ทีมที่ไม่มี graph-brain ได้
-- **Visualizer:** bundle ตามสเปก OKF v0.1 → เปิดด้วย static HTML visualizer ของ OKF ได้ตามสเปก (ไม่ต้องมี backend — ยังไม่ได้ทดสอบกับ visualizer จริง; structural validation ใน step 7 ยืนยันเฉพาะรูปแบบ bundle)
-- **ไม่ใช่ backup แทน server:** graph ยังเป็น source of truth — bundle คือ snapshot (ดู §8.5)
+- **Portability:** knowledge in Neo4j is reachable only through MCP — a bundle is plain markdown, openable anywhere, committable to git, shareable with agents/teams that do not have graph-brain
+- **Visualizer:** a bundle following the OKF v0.1 spec → openable with the OKF static HTML visualizer per spec (no backend required — not yet tested against the real visualizer; the structural validation in step 7 confirms only the bundle format)
+- **Not a backup that replaces the server:** the graph is still the source of truth — the bundle is a snapshot (see §8.5)
 
 ## Mode Detection
 
 | Input | Mode |
 |---|---|
 | (no args) | export project = basename of cwd |
-| `{project}` | export project ที่ระบุ |
-| `--all-projects` | วน export ทุก project จาก `list-projects` — **เตือน user ก่อน**: ความรู้ข้าม project (อาจเป็นงานลูกค้า/repo อื่น) จะถูกเขียนลง working tree ของ repo ปัจจุบัน |
-| `--output <dir>` | เปลี่ยน **parent directory** (default = `.brain-export`) — ไฟล์ลง `{output}/{project}/` เสมอ ทั้ง single และ --all-projects |
+| `{project}` | export the specified project |
+| `--all-projects` | loop-export every project from `list-projects` — **warn the user first**: cross-project knowledge (which may be client work / another repo) will be written into the working tree of the current repo |
+| `--output <dir>` | change the **parent directory** (default = `.brain-export`) — files always go to `{output}/{project}/`, for both single and --all-projects |
 
 ## Steps
 
 1. **Resolve scope**
-   - project จาก argument หรือ basename ของ cwd; `--all-projects` → `mcp__graph-brain__list-projects` แล้ววนทีละ project (ทำ step 2-8 ต่อ project)
-   - MCP ล่ม/ไม่ตอบ → แจ้ง user แล้วจบ อย่า retry วน (never block)
+   - project from the argument or basename of cwd; `--all-projects` → `mcp__graph-brain__list-projects` then loop per project (do steps 2-8 per project)
+   - MCP down/unresponsive → notify the user and stop; do not retry in a loop (never block)
 
 2. **Get catalog**
-   - `mcp__graph-brain__get-project-catalog` project="{name}" → ได้ทุก note: title + summary + folder + `{note_type}/{category}` (category ใช้เป็นแหล่งแรกของ OKF `type` ตาม §8.2 — เช่น `permanent/pattern` → `type: Pattern`)
-   - tool ไม่มี (server เก่ากว่า v1.1.0) → fallback: `search-by-tags` tags=["{project-lowercase}"] + `search-knowledge` เพื่อรวบรวมรายชื่อ note ให้ครบที่สุด แล้วแจ้ง user ว่า catalog ไม่มี อาจตกหล่น; folder ของแต่ละ note ใช้ **fallback chain §8.1** (explore-graph → tag inference) + รายงานเมื่อเป็นการเดา
-   - 0 notes → แจ้ง user + แนะนำ `/brain-scan` ก่อน; จบ
-   - **> 100 notes → เตือน token cost** (ต้อง `get-knowledge` ทีละใบ) แล้วถาม user ก่อนดำเนินการ; เสนอทางเลือก: export เฉพาะบาง category
+   - `mcp__graph-brain__get-project-catalog` project="{name}" → returns every note: title + summary + folder + `{note_type}/{category}` (category is the first source of OKF `type` per §8.2 — e.g. `permanent/pattern` → `type: Pattern`)
+   - tool missing (server older than v1.1.0) → fallback: `search-by-tags` tags=["{project-lowercase}"] + `search-knowledge` to gather as complete a note list as possible, then tell the user the catalog is missing and notes may be dropped; each note's folder uses the **fallback chain §8.1** (explore-graph → tag inference) + report when it is a guess
+   - 0 notes → notify the user + suggest `/brain-scan` first; stop
+   - **> 100 notes → warn about token cost** (must `get-knowledge` one by one) then ask the user before proceeding; offer an alternative: export only some categories
 
-3. **Build link table** (ก่อนเขียนไฟล์ใดๆ)
-   - จาก catalog: `title → (category, slug)` ตามกฎ slug ใน §8.1 — ตารางนี้ใช้ resolve wikilink ทุกไฟล์
-   - slug ชนกันใน category เดียว → ต่อท้าย `-2`, `-3` ตามลำดับที่เจอ
+3. **Build link table** (before writing any file)
+   - from the catalog: `title → (category, slug)` per the slug rules in §8.1 — this table resolves wikilinks in every file
+   - slugs colliding within one category → append `-2`, `-3` in the order encountered
 
-4. **Fetch + convert ทีละ note**
+4. **Fetch + convert one note at a time**
    - `mcp__graph-brain__get-knowledge` noteId → full content, tags, type, timestamps
-   - สร้างไฟล์ตาม §8.2 (frontmatter + **strip MCP display metadata** หัว/ท้าย output ของ get-knowledge) + §8.3 (แปลง `[[wikilink]]` → relative link ด้วยตารางจาก step 3; resolve ไม่ได้ → คง `[[...]]` + เก็บเข้า unresolved list)
-   - MOC note → `index.md` ตาม §8.4 (ห้าม export ซ้ำเป็นไฟล์ปกติ); ไม่มี MOC → generate index.md จาก catalog + แนะนำ user รัน `/brain-moc` เพื่อได้ index ที่ curate แล้ว
+   - build the file per §8.2 (frontmatter + **strip MCP display metadata** from the head/tail of get-knowledge output) + §8.3 (convert `[[wikilink]]` → relative link using the table from step 3; unresolvable → keep `[[...]]` + collect into the unresolved list)
+   - MOC note → `index.md` per §8.4 (must not export it again as a normal file); no MOC → generate index.md from the catalog + suggest the user run `/brain-moc` for a curated index
+   - **`index.md` is frontmatter-free (§8.4/SPEC.md §6)** — write body-only, first line an HTML comment `<!-- okf:moc -->` (from a MOC) or `<!-- okf:generated-index -->` (generated); **must not** put frontmatter `type: Index`/`title`/`project` in index.md (the marker has moved to the comment)
 
 5. **Pre-write secret check (MANDATORY — §8.5)**
-   - scan เนื้อหาทุกไฟล์ที่จะเขียนด้วย **pattern ชุดเต็มใน §6.3** (key=value/key:value + URL/signature + token literals: AWS/GitHub/Slack/JWT/Bearer/PEM) — สำคัญเป็นพิเศษกับ notes เก่าที่ save ก่อนมี masking rules
-   - **เจอ → หยุดทั้ง export** รายงาน note ที่มีปัญหา ให้ user แก้ note ใน brain ก่อน (bundle ไป git/แชร์ต่อ — อันตรายกว่า note ใน server)
+   - scan the content of every file to be written with the **full pattern set in §6.3** (key=value/key:value + URL/signature + token literals: AWS/GitHub/Slack/JWT/Bearer/PEM) — especially important for old notes saved before masking rules existed
+   - **found → stop the whole export**, report the offending note, have the user fix the note in brain first (a bundle goes to git / is shared onward — more dangerous than a note in the server)
 
 6. **Write bundle**
-   - เขียนลง `{output}/{project}/` ตาม layout §8.1 (+ path safety: project/category segments ผ่านกฎ slug)
-   - **Overwrite policy:** directory เป้าหมายมีไฟล์อยู่ →
-     - ดูเหมือน bundle เดิม (มี `index.md` ที่มี header `Exported:`) → ถาม user ยืนยันก่อนล้างแล้วเขียนใหม่
-     - **ไม่ใช่ bundle เดิม → abort** แจ้ง user ให้เปลี่ยน `--output` (ห้ามเสนอล้าง directory ที่ไม่ใช่ของ exporter — เสี่ยงลบไฟล์ user)
-     - user ปฏิเสธการล้าง → **abort** (ไม่ merge-write — จะทับ index.md/slug ชนกันเงียบๆ)
-   - `index.md` ใส่ header ความสด: `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth คือ graph` (hash จาก `git rev-parse --short HEAD` ของ repo ปัจจุบัน; non-git → ละ commit)
+   - write to `{output}/{project}/` per layout §8.1 (+ path safety: project/category segments pass the slug rules)
+   - **Overwrite policy:** target directory already has files →
+     - looks like a previous bundle (has an `index.md` with an `Exported:` header) → ask the user to confirm before clearing and rewriting
+     - **not a previous bundle → abort**, tell the user to change `--output` (must not offer to clear a directory that is not the exporter's — risks deleting user files)
+     - user declines clearing → **abort** (do not merge-write — it would silently overwrite index.md / collide slugs)
+   - **root `index.md`** gets frontmatter `okf_version: "0.1"` (§8.6 — the only place in the bundle where an index has frontmatter); a sub-index (`{category}/index.md`) has no frontmatter at all
+   - `index.md` gets the freshness header **in the body** (after the `<!-- okf:… -->` comment): `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth is the graph` (hash from `git rev-parse --short HEAD` of the current repo; non-git → omit commit) — the header is a blockquote in the body, not frontmatter
 
-7. **Structural validation (ก่อนรายงานสำเร็จ)**
-   - ทุกไฟล์ `.md` มี frontmatter ที่มี `type` อย่างน้อย
-   - ทุก relative link ชี้ไฟล์ที่มีจริงใน bundle
-   - `index.md` ครอบทุกไฟล์ (ยกเว้น index เอง)
-   - ข้อใด fail → แก้ก่อนรายงาน อย่ารายงานสำเร็จทั้งที่ validation แดง
+7. **Structural validation (before reporting success)**
+   - every concept file (`.md` that is **not** `index.md`/`log.md` — reserved) has frontmatter with at least `type`
+   - **every `index.md` is frontmatter-free (§8.4/§8.6)** — root may have only `okf_version: "0.1"`; a sub-index has no frontmatter at all; an index.md with any other frontmatter key (`type`/`title`/`project`) → **fail** (violates SPEC.md §6 — move the marker into the `<!-- okf:… -->` comment)
+   - every index.md has an HTML comment on its first line (`<!-- okf:moc -->` or `<!-- okf:generated-index -->`)
+   - every relative link points to a file that actually exists in the bundle
+   - `index.md` covers every file (except the index itself)
+   - any failure → fix before reporting; do not report success while validation is red
 
 8. **Report + activity log**
-   - รายงาน (ไทย): จำนวน notes ต่อ category, path ของ bundle, unresolved wikilinks (ถ้ามี — ระบุว่าโยง broken-link check ของ `/brain-lint`), คำแนะนำถัดไป (ลง git / เปิด visualizer / `/brain-import` ฝั่งรับ)
-   - **ก่อนแนะนำ "ลง git":** เช็ค `git check-ignore <bundle-path>` — ถ้าถูก ignore (หลาย repo gitignore `.brain-export/` ไว้เพราะเป็น derived artifact) ให้บอก user ตรงๆ พร้อมทางเลือก: `--output` ไปที่ที่ track ได้ หรือ `git add -f` เมื่อตั้งใจ commit
+   - report (in Thai): note count per category, bundle path, unresolved wikilinks (if any — note that they tie into the broken-link check of `/brain-lint`), next-step suggestions (commit to git / open the visualizer / `/brain-import` on the receiving side)
+   - **before suggesting "commit to git":** check `git check-ignore <bundle-path>` — if ignored (many repos gitignore `.brain-export/` because it is a derived artifact) tell the user directly, with options: `--output` to a trackable location, or `git add -f` when intentionally committing
    - Append `.brain/activity-log.json`: command="brain-export", details={project, note_count, output, unresolved_links}
 
-## Cross-check กับ skills อื่น
+## Cross-check with other skills
 
-- **ก่อน export:** ถ้า lint ยังไม่เคยรัน แนะนำ `/brain-lint` — bundle ที่ export จาก graph ที่สะอาด (ไม่มี broken link/orphan) จะ validate ผ่านง่ายกว่า
-- **MOC drift:** ถ้า MOC เก่ากว่าโน้ตล่าสุด (lint check) → แนะนำ `/brain-moc` ก่อน export
+- **before export:** if lint has never run, suggest `/brain-lint` — a bundle exported from a clean graph (no broken links/orphans) validates more easily
+- **MOC drift:** if the MOC is older than the latest note (lint check) → suggest `/brain-moc` before export
 
 ## Degrade Behavior
 
-- MCP ล่ม → แจ้ง user, ไม่ export, ไม่ block งานอื่น
-- `get-knowledge` fail รายใบ → ข้ามใบนั้น + ลิสต์ไว้ใน report (ห้ามทั้ง export ล้มเพราะใบเดียว)
+- MCP down → notify the user, do not export, do not block other work
+- `get-knowledge` fails for one note → skip that note + list it in the report (must not fail the whole export over one note)

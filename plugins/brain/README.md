@@ -1,6 +1,6 @@
 # Brain — Graph-First Knowledge Management
 
-**Version: 3.4.0**
+**Version: 3.4.1**
 
 Plugin จัดการความรู้แบบ Graph-First บน Graph Brain (Neo4j-backed Second Brain) — ใช้ยุทธศาสตร์ **Brain First**: ถามความรู้จาก brain ก่อนเสมอ แล้วค่อยอ่าน codebase เมื่อความรู้ไม่พอ จากนั้นเสนอบันทึกสิ่งที่ค้นพบกลับเข้า brain
 
@@ -82,6 +82,13 @@ User ถามเกี่ยวกับโปรเจกต์
 | **system-design-doc** | optional upstream — query ความรู้เดิมก่อน brainstorm design |
 
 ## 📝 Changelog
+
+### v3.4.1 (2026-07-14) — OKF v0.1 Conformance (เทียบ formal SPEC.md)
+เป้าหมาย: v3.4.0 ออกแบบ mapping จาก**บล็อก** OKF อย่างเดียว — รอบนี้เทียบกับ [**formal SPEC.md**](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) (มีกฎ conformance §6/§11 ที่บล็อกไม่มี) → ปิด 2 จุดขัดสเปกให้ bundle อ้าง OKF v0.1 ได้จริง + ปลอดภัยกับ static visualizer (วิเคราะห์เต็มที่ `plans/brain-v34-okf-20260710/SPEC_GAP_ANALYSIS.md`)
+- 🏷️ **G1 — `okf_version: "0.1"` declaration** (GRAPH_PROTOCOL §8.6) — export ใส่ `okf_version` ที่ frontmatter ของ **root `index.md`** (SPEC.md §11: ที่เดียวที่ frontmatter อนุญาตใน index.md); import อ่าน + เตือนใน dry-run เมื่อ major mismatch (`1.x`)
+- 📄 **G2 — index.md เป็น frontmatter-free** (GRAPH_PROTOCOL §8.4) — SPEC.md §6: *"Index files contain no frontmatter"*; เดิม brain ใส่ `type: Index`/MOC frontmatter บน index.md (ขัดสเปก → visualizer อาจ mis-parse) → ย้าย marker ไป **HTML comment** (`<!-- okf:moc -->` / `<!-- okf:generated-index -->`); import จำแนกจาก comment + reconstruct MOC title จาก project+ตำแหน่ง; **คง backward-compat** กับ bundle v3.4.0 (รับ legacy frontmatter `title`/`type: Index` ได้)
+- ✅ export validation เพิ่มเช็ค index.md frontmatter-free (root ยกเว้น `okf_version`) + มี okf comment; import ยกเว้น reserved file (`index.md`/`log.md`) จากกฎ "ต้องมี `type`" (SPEC.md §9)
+- 🔒 ไม่แตะ server/DB (SecondBrain) — OKF เป็น interchange format ฝั่ง plugin ล้วน (decision #16); Neo4j data + MCP tools เดิมไม่เปลี่ยน
 
 ### v3.4.0 (2026-07-11) — OKF Interchange (Open Knowledge Format)
 เป้าหมาย: ปิด gap ตัวจริงจาก v3.3 — **portability** (ความรู้ติดอยู่ใน Neo4j เข้าถึงได้เฉพาะผ่าน MCP) — รับ [OKF v0.1](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing) ของ Google เป็น **interchange layer** แบบ "pg_dump ของ brain" (ไม่แทน Neo4j backend — graph เหนือกว่าเรื่อง traversal/versioning/freshness); ใช้ tools เดิมของ server v3.3 ไม่ต้องอัปเกรด server
