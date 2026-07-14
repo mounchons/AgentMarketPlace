@@ -77,13 +77,15 @@ compared_against:
   import จำแนกจาก comment + โครงสร้าง แทน `type: Index`; root index.md เก็บได้เฉพาะ `okf_version`
 - **หมายเหตุ:** ต้องแก้ทั้ง §8.4 (export write) + import classification (brain-import step 3)
 
-### 🟡 G3 — ไม่ export `log.md` จาก NoteHistory — **P2, effort กลาง**
+### ✅ G3 — export `log.md` change-history — **DONE (v3.4.2, 2026-07-14)**
 - **สเปก:** `log.md` = change history, date-grouped `YYYY-MM-DD`, prefix `**Update**`/`**Creation**`
-- **brain:** มี NoteHistory + activity log (rich กว่า) แต่ **ไม่ emit** log.md → OKF change-history
-  convention ว่างเปล่า; import ก็ skip log.md (ถูกต้องแล้วสำหรับ log.md ไร้ frontmatter)
-- **ผล:** completeness gap ฝั่ง export เท่านั้น; log.md เป็น optional จึงไม่ขัด conformance
-- **Fix (ถ้าทำ):** export generate `log.md` (ไร้ frontmatter) ต่อ bundle จาก activity-log/NoteHistory
-  ตามรูปแบบ §7 — เป็น "nice to have" ให้ visualizer โชว์ timeline ได้
+- **แก้แล้ว (GRAPH_PROTOCOL §8.7 + brain-export SKILL):** export สร้าง root `log.md` frontmatter-free
+  (`<!-- okf:changelog -->` + `# Changelog` + date sections newest-first). **Default = ฟรี** ใช้ `createdAt`
+  ที่ get-knowledge ดึงมาแล้ว (§8.2 — server expose แค่ `Created:` → ส่วนใหญ่เป็น `**Creation**`);
+  flag `--history-detail` เรียก `get-note-history` ทีละ note สำหรับ `**Update**` + reason จริง (เตือน N calls)
+- log.md เป็น derived/export-only (ไม่ round-trip); import skip (NoteHistory = internal source of truth)
+- **บทเรียน design:** เลือก timestamp-based default (ไม่มี call เพิ่ม) แทน NoteHistory-based เพราะ get-note-history
+  ต่อ note = double call count; rich history เป็น opt-in ตาม pattern เตือน cost ของ skill
 
 ### 🟡 G4 — identity semantics ต่าง (path vs title) — **P2, doc-only**
 - **สเปก:** "Concept ID = the path of the concept's file within the bundle, `.md` removed"
@@ -116,7 +118,7 @@ OKF v0.1 จงใจ minimal — brain วางตัวเป็น "rich bac
 
 1. **ทำ G1 + G2 เป็น patch v3.4.1** (conformance fix) — คุ้มสุด: ทำให้ bundle อ้าง OKF v0.1 conformance
    ได้จริง + ปลอดภัยกับ static visualizer ของ Google; G1 ต่ำมาก, G2 กลาง (แก้ export write + import classify)
-2. **G3/G4 รวมเป็น v3.4.2 หรือฝากไว้ backlog** — completeness/doc, ไม่เร่ง
+2. ~~G3/G4 รวมเป็น v3.4.2~~ → **G3 DONE (v3.4.2)**; G4 (identity-doc) ยังเป็น backlog — doc-only, ไม่เร่ง
 3. **G5 = optional idiom** — เปิดทิ้งไว้
 4. **ต้องทำจริงจึงยืนยันได้:** ทดสอบ bundle กับ **static HTML visualizer ของ Google** — เป็น
    conformance check ปลายทางเดียวที่ RESEARCH.md ยอมรับว่ายังไม่เคยทำ (SKILL step 7 ยืนยันแค่ structural)

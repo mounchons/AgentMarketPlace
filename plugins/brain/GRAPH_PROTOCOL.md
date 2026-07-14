@@ -356,3 +356,16 @@ brain supports **OKF v0.1** (the whole §8 mapping) — a bundle declares the sp
   - major = `0` (e.g. `0.1`, `0.2`) → brain understands the mapping → import as usual
   - major ≠ `0` (e.g. `1.x`) → **warn in the dry-run**: the bundle targets a spec newer than brain v3.4.1 understands (new fields/formats may be dropped from the §8 mapping) → user confirms before writing
 - **Validation (export step 7 / import parse):** check that every `index.md` is frontmatter-free **except** the root, which may have only `okf_version` — any other key in an index.md's frontmatter → export fixes it before reporting success; import classifies per §8.4 (legacy frontmatter is still accepted for backward-compat)
+
+### 8.7 log.md — Change History (v3.4.2)
+
+OKF `log.md` (SPEC.md §7) = a change-history file: date-grouped (newest first), `YYYY-MM-DD` headings, prose entries prefixed with bold action keywords (`**Creation**`, `**Update**`). Like `index.md` it is a **reserved, frontmatter-free** file (SPEC.md forbids frontmatter in `log.md`).
+
+**Export (graph → log.md) — one root `log.md` per bundle, body-only:**
+- First line marker `<!-- okf:changelog -->`, then `# Changelog`, then date sections newest-first.
+- **Default source = the timestamps already fetched in the per-note pass (§8.2) — no extra MCP calls:** each note contributes `- **Creation** [Title](relative-path)` dated by `createdAt`; if `updatedAt` is available and later than `createdAt`, add `- **Update** [Title](relative-path)` on the `updatedAt` date. ⚠️ the current server `get-knowledge` exposes only `Created:` (§8.2), so in practice most entries are `**Creation**`; richer `**Update**` history needs `--history-detail`.
+- Group entries by `YYYY-MM-DD`, **newest date first**; within a date sort by title. Links are relative to the bundle root (`{category}/{slug}.md`, same table as §8.3).
+- **`--history-detail` (opt-in — costs N extra calls):** for each note also call `mcp__graph-brain__get-note-history` → emit one `**Update**` entry per version with its changelog reason; **warn about the extra call/token cost first** (same threshold as the >100 notes warning). Not default because it doubles the call count.
+- `log.md` is **derived and export-only** (like a generated `index.md`) — it does not round-trip and is not a concept; a note whose slug would be `log` is renamed to `log-2` (§8.1) so it never collides with the change-history file.
+
+**Import (log.md → graph):** a frontmatter-free `log.md` (OKF change history) is **skipped** — brain's NoteHistory (§2/§6) is the internal source of truth and the server sets its own timestamps (§8.2: `timestamp` does not round-trip), so re-ingesting a derived log would be redundant and lossy. Handled by §8.4 reserved-file routing + the `log.md` rule in brain-import step 2 (a `log.md` that *does* carry a frontmatter `title` = a real note from an older export → imported normally).

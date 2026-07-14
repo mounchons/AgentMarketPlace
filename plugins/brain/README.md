@@ -1,6 +1,6 @@
 # Brain — Graph-First Knowledge Management
 
-**Version: 3.4.1**
+**Version: 3.4.2**
 
 Plugin จัดการความรู้แบบ Graph-First บน Graph Brain (Neo4j-backed Second Brain) — ใช้ยุทธศาสตร์ **Brain First**: ถามความรู้จาก brain ก่อนเสมอ แล้วค่อยอ่าน codebase เมื่อความรู้ไม่พอ จากนั้นเสนอบันทึกสิ่งที่ค้นพบกลับเข้า brain
 
@@ -82,6 +82,13 @@ User ถามเกี่ยวกับโปรเจกต์
 | **system-design-doc** | optional upstream — query ความรู้เดิมก่อน brainstorm design |
 
 ## 📝 Changelog
+
+### v3.4.2 (2026-07-14) — OKF log.md Change History (G3)
+เป้าหมาย: ปิด backlog G3 จาก SPEC_GAP_ANALYSIS — v3.4.1 ปิด conformance แต่ยังไม่ emit `log.md` (OKF §7 change-history convention) → bundle มี timeline การเปลี่ยนแปลงแล้ว, static visualizer โชว์ได้
+- 📜 **`/brain-export` สร้าง root `log.md`** (GRAPH_PROTOCOL §8.7) — frontmatter-free ตาม SPEC.md §7 (`<!-- okf:changelog -->` + `# Changelog` + section วันที่ `YYYY-MM-DD` newest-first, prefix `**Creation**`/`**Update**`)
+- ⚡ **Default = ฟรี ไม่มี call เพิ่ม** — ใช้ `createdAt` ที่ `get-knowledge` ดึงมาแล้วใน step 4 (เป็น `**Creation**` เป็นหลักเพราะ server expose แค่ `Created:` — §8.2); ต้องการ `**Update**` + reason จริง → flag **`--history-detail`** (เรียก `get-note-history` ทีละ note — เตือน N calls ก่อน)
+- 🔁 log.md เป็น **derived/export-only** (ไม่ round-trip เหมือน generated index.md) — import skip (NoteHistory เป็น internal source of truth); export validation เพิ่มเช็ค log.md frontmatter-free + links resolve
+- 📌 backlog เหลือ: G4 (identity-semantics doc) / G5 (`# Citations` idiom) + ทดสอบกับ Google static visualizer จริง
 
 ### v3.4.1 (2026-07-14) — OKF v0.1 Conformance (เทียบ formal SPEC.md)
 เป้าหมาย: v3.4.0 ออกแบบ mapping จาก**บล็อก** OKF อย่างเดียว — รอบนี้เทียบกับ [**formal SPEC.md**](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) (มีกฎ conformance §6/§11 ที่บล็อกไม่มี) → ปิด 2 จุดขัดสเปกให้ bundle อ้าง OKF v0.1 ได้จริง + ปลอดภัยกับ static visualizer (วิเคราะห์เต็มที่ `plans/brain-v34-okf-20260710/SPEC_GAP_ANALYSIS.md`)

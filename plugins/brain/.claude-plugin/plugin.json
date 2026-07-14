@@ -1,7 +1,7 @@
 {
   "name": "brain",
-  "description": "Graph-First knowledge management — Relationship-centric search, traversal-first navigation, knowledge versioning, cross-project intelligence, Brain First strategy. v3.4 OKF Interchange: brain-export/brain-import — Open Knowledge Format bundle (portable markdown + frontmatter) with write gate (tag taxonomy + secret scan + dry-run confirm) + resource provenance convention + external-source freshness. v3.4.1 OKF v0.1 conformance (vs formal SPEC.md): bundle-root okf_version declaration + frontmatter-free index.md (marker via HTML comment). v3.3 Knowledge Hygiene: Tag Taxonomy, brain-lint (8 checks), brain-moc (Catalog-First retrieval)",
-  "version": "3.4.1",
+  "description": "Graph-First knowledge management — Relationship-centric search, traversal-first navigation, knowledge versioning, cross-project intelligence, Brain First strategy. v3.4 OKF Interchange: brain-export/brain-import — Open Knowledge Format bundle (portable markdown + frontmatter) with write gate (tag taxonomy + secret scan + dry-run confirm) + resource provenance convention + external-source freshness. v3.4.1 OKF v0.1 conformance (vs formal SPEC.md): bundle-root okf_version declaration + frontmatter-free index.md (marker via HTML comment). v3.4.2 export OKF log.md change-history (frontmatter-free, date-grouped; --history-detail for per-version reasons). v3.3 Knowledge Hygiene: Tag Taxonomy, brain-lint (8 checks), brain-moc (Catalog-First retrieval)",
+  "version": "3.4.2",
   "author": {
     "name": "Mounchons"
   },

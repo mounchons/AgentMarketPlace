@@ -111,7 +111,7 @@ Import is the risky side of interchange — the bundle comes from outside (anoth
 
 ## Round-trip expectation (paired with brain-export)
 
-a bundle exported with `/brain-export` then imported back to the same project → **lossless within the scope of §8**: note count (excluding the generated `index.md`), wikilinks, canonical tags, note_type, content identical (after normalizing leading/trailing whitespace — step 5) — what does not round-trip: `timestamp` (the server sets it), `description` (re-derivable from content)
+a bundle exported with `/brain-export` then imported back to the same project → **lossless within the scope of §8**: note count (excluding the generated `index.md` and `log.md` — both export-only, §8.7), wikilinks, canonical tags, note_type, content identical (after normalizing leading/trailing whitespace — step 5) — what does not round-trip: `timestamp` (the server sets it), `description` (re-derivable from content), `log.md`/generated `index.md` (derived, never imported)
 
 ## Degrade Behavior
 

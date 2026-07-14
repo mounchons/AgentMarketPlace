@@ -27,6 +27,7 @@ ALL responses MUST be in Thai language.
 | `{project}` | export the specified project |
 | `--all-projects` | loop-export every project from `list-projects` — **warn the user first**: cross-project knowledge (which may be client work / another repo) will be written into the working tree of the current repo |
 | `--output <dir>` | change the **parent directory** (default = `.brain-export`) — files always go to `{output}/{project}/`, for both single and --all-projects |
+| `--history-detail` | enrich the root `log.md` with real per-version `**Update**` entries via `get-note-history` (§8.7) — **costs N extra MCP calls**, warn before running; default log.md uses only the timestamps already fetched |
 
 ## Steps
 
@@ -62,19 +63,21 @@ ALL responses MUST be in Thai language.
      - user declines clearing → **abort** (do not merge-write — it would silently overwrite index.md / collide slugs)
    - **root `index.md`** gets frontmatter `okf_version: "0.1"` (§8.6 — the only place in the bundle where an index has frontmatter); a sub-index (`{category}/index.md`) has no frontmatter at all
    - `index.md` gets the freshness header **in the body** (after the `<!-- okf:… -->` comment): `> Exported: {YYYY-MM-DD} @ commit {hash} — snapshot; source of truth is the graph` (hash from `git rev-parse --short HEAD` of the current repo; non-git → omit commit) — the header is a blockquote in the body, not frontmatter
+   - **root `log.md`** (change history, §8.7) — write frontmatter-free: first line `<!-- okf:changelog -->`, then `# Changelog`, then `YYYY-MM-DD` sections newest-first with `- **Creation** [Title](relative-path)` (dated by each note's `createdAt`, already fetched in step 4) and `- **Update** [Title](relative-path)` when `updatedAt` is later than `createdAt`; sort entries within a date by title. With `--history-detail`: also call `mcp__graph-brain__get-note-history` per note for real `**Update**` reasons — **warn about the N extra calls before running** (ask first when > 100 notes)
 
 7. **Structural validation (before reporting success)**
    - every concept file (`.md` that is **not** `index.md`/`log.md` — reserved) has frontmatter with at least `type`
    - **every `index.md` is frontmatter-free (§8.4/§8.6)** — root may have only `okf_version: "0.1"`; a sub-index has no frontmatter at all; an index.md with any other frontmatter key (`type`/`title`/`project`) → **fail** (violates SPEC.md §6 — move the marker into the `<!-- okf:… -->` comment)
    - every index.md has an HTML comment on its first line (`<!-- okf:moc -->` or `<!-- okf:generated-index -->`)
+   - **`log.md` is frontmatter-free (§8.7)**, starts with `<!-- okf:changelog -->`, and its links resolve to existing files
    - every relative link points to a file that actually exists in the bundle
-   - `index.md` covers every file (except the index itself)
+   - `index.md` covers every file (except the index and `log.md` themselves)
    - any failure → fix before reporting; do not report success while validation is red
 
 8. **Report + activity log**
-   - report (in Thai): note count per category, bundle path, unresolved wikilinks (if any — note that they tie into the broken-link check of `/brain-lint`), next-step suggestions (commit to git / open the visualizer / `/brain-import` on the receiving side)
+   - report (in Thai): note count per category, bundle path, `log.md` generated (entry count + whether `--history-detail` was used), unresolved wikilinks (if any — note that they tie into the broken-link check of `/brain-lint`), next-step suggestions (commit to git / open the visualizer / `/brain-import` on the receiving side)
    - **before suggesting "commit to git":** check `git check-ignore <bundle-path>` — if ignored (many repos gitignore `.brain-export/` because it is a derived artifact) tell the user directly, with options: `--output` to a trackable location, or `git add -f` when intentionally committing
-   - Append `.brain/activity-log.json`: command="brain-export", details={project, note_count, output, unresolved_links}
+   - Append `.brain/activity-log.json`: command="brain-export", details={project, note_count, output, unresolved_links, log_entries, history_detail}
 
 ## Cross-check with other skills
 
@@ -85,3 +88,4 @@ ALL responses MUST be in Thai language.
 
 - MCP down → notify the user, do not export, do not block other work
 - `get-knowledge` fails for one note → skip that note + list it in the report (must not fail the whole export over one note)
+- `--history-detail`: `get-note-history` fails for one note → fall back to that note's timestamp-based `log.md` entry (`**Creation**`/`**Update**`) + list it in the report (must not fail the whole export; `log.md` degrades gracefully, never blocks)
